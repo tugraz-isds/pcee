@@ -7132,13 +7132,13 @@ function invert(dimension) {
         .delay(5)
         .duration(0)
         .attr('visibility', 'hidden');
-    select$1('#select_')
+    /*d3.select('#select_')
         .selectAll('path')
-        .attr('d', (d) => { linePath(d, window.parcoords.newFeatures, window.parcoords); });
-    trans(selectable).each(function (d) {
-        select$1(this)
-            .attr('d', linePath(d, parcoords.newFeatures, parcoords));
-    });
+          .attr('d', (d) => { linePath(d, window.parcoords.newFeatures, window.parcoords) });
+          trans(selectable).each(function (d) {
+              d3.select(this)
+                  .attr('d', linePath(d, parcoords.newFeatures, parcoords));
+          }) */
 }
 function getInversionStatus(dimension) {
     const invertId = '#dimension_invert_' + cleanString(dimension);
@@ -7188,13 +7188,13 @@ function setInversionStatus(dimension, status) {
         .delay(5)
         .duration(0)
         .attr('visibility', 'hidden');
-    select$1('#select_')
+    /*d3.select('#select_')
         .selectAll('path')
-        .attr('d', (d) => { linePath(d, window.parcoords.newFeatures, window.parcoords); });
-    trans(selectable).each(function (d) {
-        select$1(this)
-            .attr('d', linePath(d, parcoords.newFeatures, parcoords));
-    });
+          .attr('d', (d) => { linePath(d, window.parcoords.newFeatures, window.parcoords) });
+          trans(selectable).each(function (d) {
+              d3.select(this)
+                  .attr('d', linePath(d, parcoords.newFeatures, parcoords));
+    }) */
 }
 function isInverted(dimension) {
     const invertId = '#dimension_invert_' + cleanString(dimension);
@@ -7236,13 +7236,13 @@ function moveByOne(dimension, direction) {
     featureAxis.attr('transform', (d) => {
         return 'translate(' + position(d.name, parcoords.dragging, parcoords.xScales) + ')';
     });
-    select$1('#select_')
-        .selectAll('path')
-        .attr('d', (d) => { linePath(d, parcoords.newFeatures, parcoords); });
-    trans(selectable).each(function (d) {
-        select$1(this)
-            .attr('d', linePath(d, parcoords.newFeatures, parcoords));
-    });
+    /*d3.select('#select_')
+      .selectAll('path')
+        .attr('d', (d) => { linePath(d, parcoords.newFeatures, parcoords) });
+        trans(selectable).each(function (d) {
+            d3.select(this)
+                .attr('d', linePath(d, parcoords.newFeatures, parcoords));
+        }) */
     delete parcoords.dragging[dimension];
     delete parcoords.dragging[neighbour];
 }
@@ -7303,13 +7303,13 @@ function swap(dimensionA, dimensionB) {
     featureAxis.attr('transform', (d) => {
         return 'translate(' + position(d.name, parcoords.dragging, parcoords.xScales) + ')';
     });
-    select$1('#select_')
-        .selectAll('path')
-        .attr('d', (d) => { linePath(d, parcoords.newFeatures, parcoords); });
-    trans(selectable).each(function (d) {
-        select$1(this)
-            .attr('d', linePath(d, parcoords.newFeatures, parcoords));
-    });
+    /*d3.select('#select_')
+      .selectAll('path')
+        .attr('d', (d) => { linePath(d, parcoords.newFeatures, parcoords) });
+        trans(selectable).each(function (d) {
+            d3.select(this)
+                .attr('d', linePath(d, parcoords.newFeatures, parcoords));
+    })*/
     delete parcoords.dragging[dimensionA];
     delete parcoords.dragging[dimensionB];
 }
@@ -7352,13 +7352,13 @@ function setDimensionRange(dimension, min, max) {
         .duration(0)
         .attr('visibility', 'hidden');
     // draw selectable lines
-    select$1('#select_')
-        .selectAll('path')
-        .attr('d', (d) => { linePath(d, window.parcoords.newFeatures, window.parcoords); });
-    trans(selectable).each(function (d) {
-        select$1(this)
-            .attr('d', linePath(d, parcoords.newFeatures, parcoords));
-    });
+    /*d3.select('#select_')
+      .selectAll('path')
+        .attr('d', (d) => { linePath(d, window.parcoords.newFeatures, window.parcoords) });
+        trans(selectable).each(function (d) {
+            d3.select(this)
+                .attr('d', linePath(d, parcoords.newFeatures, parcoords));
+        })*/
 }
 function setDimensionRangeRounded(dimension, min, max) {
     const inverted = isInverted(dimension);
@@ -7395,13 +7395,13 @@ function setDimensionRangeRounded(dimension, min, max) {
         .duration(0)
         .attr('visibility', 'hidden');
     // draw selectable lines
-    select$1('#select_')
-        .selectAll('path')
-        .attr('d', (d) => { linePath(d, window.parcoords.newFeatures, window.parcoords); });
-    trans(selectable).each(function (d) {
-        select$1(this)
-            .attr('d', linePath(d, parcoords.newFeatures, parcoords));
-    });
+    /*d3.select('#select_')
+      .selectAll('path')
+        .attr('d', (d) => { linePath(d, window.parcoords.newFeatures, window.parcoords) });
+        trans(selectable).each(function (d) {
+            d3.select(this)
+                .attr('d', linePath(d, parcoords.newFeatures, parcoords));
+        }) */
 }
 function getMinValue(dimension) {
     const item = window.parcoords.currentPosOfDims.find((object) => object.key == dimension);
@@ -7448,8 +7448,8 @@ function getSelected() {
     const records = getAllRecords();
     for (let i = 0; i < records.length; i++) {
         let selectedLine = cleanLinePathString(records[i]);
-        let isVisible = select$1('#select_' + selectedLine).style('visibility');
-        if (isVisible == 'visible') {
+        let isselected = isSelected(selectedLine);
+        if (isselected) {
             selected.push(records[i]);
         }
     }
@@ -7458,13 +7458,12 @@ function getSelected() {
 function setSelection(records) {
     let selectableLines = [];
     for (let i = 0; i < records.length; i++) {
-        let selectedLine = cleanLinePathString(records[i]);
         window.active.each(function (d) {
-            if (d[window.hoverlabel] == selectedLine) {
+            if (cleanLinePathString(d[window.hoverlabel]) == records[i]) {
                 selectableLines.push(d);
             }
         });
-        select$1('.' + selectedLine)
+        select$1('.' + records[i])
             .transition()
             .style('visibility', 'hidden');
     }
@@ -7672,10 +7671,24 @@ function setDimensionForHovering(dimension) {
 // ---------- Needed for Built-In Interactivity Functions ---------- //
 function setUpParcoordData(data, newFeatures) {
     window.padding = 80;
-    window.paddingXaxis = 60;
+    window.paddingXaxis = 75;
     window.width = newFeatures.length * 100;
     window.height = 400;
     window.longLabels = false;
+    const label = newFeatures[newFeatures.length - 1];
+    data.sort((a, b) => {
+        const item1 = a[label];
+        const item2 = b[label];
+        if (item1 < item2) {
+            return -1;
+        }
+        else if (item1 > item2) {
+            return 1;
+        }
+        else {
+            return 0;
+        }
+    });
     let dataset = prepareData(data, newFeatures);
     window.parcoords = {};
     window.parcoords.features = dataset[0];
@@ -7783,7 +7796,7 @@ function setupYAxis(features, yScales, newDataset) {
         let tempValues = newDataset.map(o => o[tempFeatures[counter]]);
         let labels = [];
         tempValues.forEach(function (element) {
-            labels.push(element.length > 10 ? element : element);
+            labels.push(element.length > 10 ? element.substr(0, 10) + '...' : element);
         });
         counter = counter + 1;
         if (isNaN(labels[0])) {
@@ -8290,21 +8303,19 @@ function setContextMenu(featureAxis, padding, parcoords, inactive, active, width
         .style('position', 'absolute')
         .style('display', 'none');
     popupWindowRange.append('div').text('Set Range for ').style('padding-left', 0.5 + 'rem').style('font-size', 'large');
-    let closeButtonRange = popupWindowRange.append('a').text('x').style('position', 'absolute').style('right', 0 + 'rem')
-        .style('top', 2 + 'rem').style('width', 2.5 + 'rem').style('height', 2.5 + 'rem')
+    let closeButtonRange = popupWindowRange.append('a').text('x').style('position', 'absolute').style('right', -1 + 'rem')
+        .style('top', 0.5 + 'rem').style('width', 2.5 + 'rem').style('height', 2.5 + 'rem')
         .style('opacity', 0.3).style('background-color', 'transparent').style('cursor', 'pointer').attr('id', 'closeButtonRange');
     let headerDimensionRange = popupWindowRange.append('div').style('padding-left', 0.5 + 'rem').style('font-size', 'large')
         .attr('id', 'headerDimensionRange');
     let infoRange = popupWindowRange.append('div').style('color', 'grey').style('font-size', 'smaller')
         .style('padding-left', 0.5 + 'rem').style('padding-bottom', 0.5 + 'rem').style('padding-top', 1 + 'rem').attr('id', 'infoRange');
     popupWindowRange.append('label').text('Min').style('padding', 0.5 + 'rem');
-    let inputMinRange = popupWindowRange.append('input').attr('id', 'minRangeValue').style('width', 2 + 'rem');
+    let inputMinRange = popupWindowRange.append('input').attr('id', 'minRangeValue').style('width', 2.5 + 'rem');
     popupWindowRange.append('label').text('Max').style('padding', 0.5 + 'rem');
-    let inputMaxRange = popupWindowRange.append('input').attr('id', 'maxRangeValue').style('width', 2 + 'rem');
+    let inputMaxRange = popupWindowRange.append('input').attr('id', 'maxRangeValue').style('width', 2.5 + 'rem');
     let rangeButton = popupWindowRange.append('button').text('Save').style('margin-left', 0.5 + 'rem')
         .style('width', 6.2 + 'rem').style('margin-top', 1 + 'rem').attr('id', 'buttonRange');
-    let resetRangeButton = popupWindowRange.append('button').text('Set Ranges from Data').style('margin-left', 0.5 + 'rem')
-        .style('width', 16 + 'rem').style('margin-top', 1 + 'rem').attr('id', 'resetRangeButton');
     let popupWindowRangeError = popupWindowRange
         .append('div')
         .attr('id', 'errorRange')
@@ -8318,8 +8329,8 @@ function setContextMenu(featureAxis, padding, parcoords, inactive, active, width
     popupWindowFilter.append('div').text('Set Filter for ').style('padding-left', 0.5 + 'rem').style('font-size', 'large');
     let headerDimensionFilter = popupWindowFilter.append('div').style('padding-left', 0.5 + 'rem').style('font-size', 'large')
         .attr('id', 'headerDimensionFilter');
-    let closeButtonFilter = popupWindowFilter.append('a').text('x').style('position', 'absolute').style('right', 0 + 'rem')
-        .style('top', 2 + 'rem').style('width', 2.5 + 'rem').style('height', 2.5 + 'rem')
+    let closeButtonFilter = popupWindowFilter.append('a').text('x').style('position', 'absolute').style('right', -1 + 'rem')
+        .style('top', 0.5 + 'rem').style('width', 2.5 + 'rem').style('height', 2.5 + 'rem')
         .style('opacity', 0.3).style('background-color', 'transparent').style('cursor', 'pointer').attr('id', 'closeButtonFilter');
     popupWindowFilter.append('label').text('Min').style('padding', 0.5 + 'rem');
     let inputMinFilter = popupWindowFilter.append('input').attr('id', 'minFilterValue').style('width', 2 + 'rem');
@@ -8347,7 +8358,11 @@ function setContextMenu(featureAxis, padding, parcoords, inactive, active, width
     contextMenu.append('div')
         .attr('id', 'resetRangeMenu')
         .attr('class', 'contextmenu')
-        .text('Reset Range');
+        .text('Set Range from Data');
+    contextMenu.append('div')
+        .attr('id', 'resetRoundRangeMenu')
+        .attr('class', 'contextmenu')
+        .text('Set Rounded Range from Data');
     contextMenu.append('div')
         .attr('id', 'filterMenu')
         .attr('class', 'contextmenu')
@@ -8433,8 +8448,20 @@ function setContextMenu(featureAxis, padding, parcoords, inactive, active, width
                 .on('click', (event) => {
                 let minRange = getCurrentMinRange(dimension);
                 let maxRange = getCurrentMaxRange(dimension);
-                inputMinRange.attr('value', minRange);
-                inputMaxRange.attr('value', maxRange);
+                var resultMin = (minRange - Math.floor(minRange)) !== 0;
+                var resultMax = (maxRange - Math.floor(maxRange)) !== 0;
+                let minValue = String(minRange);
+                let maxValue = String(maxRange);
+                if (resultMin && !resultMax) {
+                    const count = minValue.split('.')[1].length;
+                    maxValue = maxRange.toFixed(count);
+                }
+                else if (!resultMin && resultMax) {
+                    const count = maxValue.split('.')[1].length;
+                    minValue = minRange.toFixed(count);
+                }
+                inputMinRange.attr('value', minValue);
+                inputMaxRange.attr('value', maxValue);
                 popupWindowRange.style('display', 'block')
                     .style('width', 17 + 'rem')
                     .style('height', 12 + 'rem')
@@ -8448,10 +8475,11 @@ function setContextMenu(featureAxis, padding, parcoords, inactive, active, width
                     .style('bottom', 0)
                     .style('left', 0)
                     .style('z-index', 10);
-                headerDimensionRange.text(dimension);
+                const newText = dimension.length > 25 ? dimension.substr(0, 25) + '...' : dimension;
+                headerDimensionRange.text(newText);
                 infoRange.text('The original range of ' + dimension + ' is between ' +
-                    getMinValue(dimension) + ' and ' +
-                    getMaxValue(dimension) + '.');
+                    minValue + ' and ' +
+                    maxValue + '.');
                 rangeButton.on('click', () => {
                     let min = select$1('#minRangeValue').node().value;
                     let max = select$1('#maxRangeValue').node().value;
@@ -8461,8 +8489,8 @@ function setContextMenu(featureAxis, padding, parcoords, inactive, active, width
                         if (max < getMinValue(dimension) ||
                             min > getMaxValue(dimension)) {
                             popupWindowRangeError.text(`The range has to be bigger than 
-                                ${getMinValue(dimension)} and 
-                                ${getMaxValue(dimension)}.`)
+                                ${minValue} and 
+                                ${maxValue}.`)
                                 .style('display', 'block')
                                 .style('padding-left', 0.5 + 'rem')
                                 .style('padding-top', 0.5 + 'rem')
@@ -8475,8 +8503,8 @@ function setContextMenu(featureAxis, padding, parcoords, inactive, active, width
                         if (min > getMinValue(dimension) ||
                             max < getMaxValue(dimension)) {
                             popupWindowRangeError.text(`The range has to be bigger than 
-                                ${getMinValue(dimension)} and 
-                                ${getMaxValue(dimension)}.`)
+                                ${minValue} and 
+                                ${maxValue}.`)
                                 .style('display', 'block')
                                 .style('padding-left', 0.5 + 'rem')
                                 .style('padding-top', 0.5 + 'rem')
@@ -8503,12 +8531,8 @@ function setContextMenu(featureAxis, padding, parcoords, inactive, active, width
                         document.getElementById("buttonRange").click();
                     }
                 });
-                resetRangeButton.on('click', () => {
-                    setDimensionRange(dimension, getMinValue(dimension), getMaxValue(dimension));
-                    popupWindowRange.style('display', 'none');
-                });
                 closeButtonRange.on('click', () => {
-                    popupWindowRange.remove();
+                    popupWindowRange.style('display', 'none');
                 });
                 event.stopPropagation();
             });
@@ -8529,6 +8553,19 @@ function setContextMenu(featureAxis, padding, parcoords, inactive, active, width
         }
         else {
             select$1('#resetRangeMenu').style('display', 'false')
+                .style('color', 'lightgrey');
+        }
+        if (!isNaN(values[0])) {
+            select$1('#resetRoundRangeMenu')
+                .style('visibility', 'visible')
+                .style('color', 'black')
+                .on('click', (event) => {
+                setDimensionRangeRounded(dimension, getMinValue(dimension), getMaxValue(dimension));
+                event.stopPropagation();
+            });
+        }
+        else {
+            select$1('#resetRoundRangeMenu').style('display', 'false')
                 .style('color', 'lightgrey');
         }
         if (!isNaN(values[0])) {
@@ -8553,7 +8590,8 @@ function setContextMenu(featureAxis, padding, parcoords, inactive, active, width
                     .style('bottom', 0)
                     .style('left', 0)
                     .style('z-index', 10);
-                headerDimensionFilter.text(dimension);
+                const newText1 = dimension.length > 25 ? dimension.substr(0, 25) + '...' : dimension;
+                headerDimensionFilter.text(newText1);
                 filterButton.on('click', () => {
                     let min = select$1('#minFilterValue').node().value;
                     let max = select$1('#maxFilterValue').node().value;
