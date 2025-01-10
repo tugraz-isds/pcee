@@ -76,7 +76,6 @@ const handleStepEnter = (element) => {
   position: sticky;
   margin: auto auto auto auto;
   top: 0;
-  left: -200;
   background-color: #fff;
   padding: 1rem 0;
   width: 30rem;
