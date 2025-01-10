@@ -1,14 +1,12 @@
 # pcee
 
-An Explorable Explainer for Parallel Coordinates.
+An explorable explainer for parallel coordinates.
 
-## Recommended IDE Setup
+## Dependencies
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+The explorable explainer uses the [SPCD3](https://github.com/tugraz-isds/spcd3) to generate and
+visualise parallel coordinates and [scrollama](https://github.com/russellsamora/scrollama) for scrollytelling.
 
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
 
 ## Project Setup
 
@@ -33,3 +31,7 @@ yarn build
 ```sh
 yarn lint
 ```
+
+## Licence
+
+pcee is distributed under the MIT Licence.
