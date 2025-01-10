@@ -55,18 +55,26 @@ const initialize = () => {
 onMounted(() => initialize())
 
 const handleStepEnter = (element) => {
-  if (element.index == 0 && element.direction == 'down') {
+  if (element.index == 1 && element.direction == 'down') {
     spcd3.toggleSelection('Beta')
-  } else if (element.index == 0 && element.direction == 'up') {
-    spcd3.toggleSelection('Beta')
-  } else if (element.index == 1 && element.direction == 'down') {
-    spcd3.toggleSelection('Delta')
-  } else if (element.index == 1 && element.direction == 'up') {
-    spcd3.toggleSelection('Delta')
   } else if (element.index == 2 && element.direction == 'down') {
-    spcd3.setFilter('B', 20, 10)
+    spcd3.setInversionStatus('B', 'descending')
+    spcd3.toggleSelection('Beta')
   } else if (element.index == 2 && element.direction == 'up') {
-    spcd3.setFilter('B', 30, 10)
+    spcd3.setInversionStatus('B', 'ascending')
+  } else if (element.index == 3 && element.direction == 'down') {
+    spcd3.setFilter('B', 10, 20)
+  } else if (element.index == 3 && element.direction == 'up') {
+    spcd3.setFilter('B', 10, 30)
+  } else if (element.index == 4 && element.direction == 'down') {
+    spcd3.swap('B', 'D')
+  } else if (element.index == 4 && element.direction == 'up') {
+    spcd3.toggleSelection('Delta')
+    spcd3.swap('B', 'D')
+  } else if (element.index == 5 && element.direction == 'down') {
+    spcd3.toggleSelection('Delta')
+  } else if (element.index == 5 && element.direction == 'up') {
+    spcd3.toggleSelection('Delta')
   }
 }
 </script>
@@ -87,8 +95,9 @@ const handleStepEnter = (element) => {
 
 .mainText {
   text-align: justify;
-  padding-left: 2rem;
-  padding-right: 2rem;
+  padding-top: 3rem;
+  padding-left: 4rem;
+  padding-right: 4rem;
 }
 
 .step {
