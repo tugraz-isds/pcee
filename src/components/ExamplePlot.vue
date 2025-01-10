@@ -12,16 +12,16 @@
         <h2>An Explorable Explainer</h2>
         <h3>By Romana Gruber</h3>
       </div>
-      <div class="intro" data-step-no="2">
+      <div class="mainText" data-step-no="2">
         <h2>Introduction</h2>
         <div>{{introText}}
         </div>
       </div>
-      <div class="intro" data-step-no="3">
+      <div class="mainText" data-step-no="3">
         <h2>Data</h2>
         <div>{{explanationText}}</div>
       </div>
-      <div class="intro" data-step-no="4">
+      <div class="mainText" data-step-no="4">
         <div>{{exampleDataText}}</div>
       </div>
       <div class="step" data-step-no="5">
@@ -44,7 +44,7 @@ import { onMounted } from 'vue'
 
 const introExampleData = 'A,B,C,D\nAlpha,20,15,30\nBeta,15,30,30\nGamma,30,25,10\nDelta,10,10,20\n'
 var introText = "Parallel coordinates are a visualisation technique for multidimensional data, which uses parallel axes to represent dimensions and polylines to represent records. A dimension can be either numerical or categorical (strings). Each dimension can have its own range and scale, or dimensions can be normalised. Each record has a data value on each dimension. Parallel coordinates are primarily used for analysis to help identify patterns, trends, correlations, and outliers."
-var explanationText = "Multidimensional datasets are typically stored in tabular form, like a spreadsheet, with columns representing dimensions (variables) and rows representing records (data points). A header row often gives the names of the dimensions. Large multidimensional datasets can have hundreds or thousands of dimensions and thousands or tens of thousands of records. Limitations:"
+var explanationText = "Multidimensional datasets are typically stored in tabular form, like a spreadsheet, with columns representing dimensions (variables) and rows representing records (data points). A header row often gives the names of the dimensions. Large multidimensional datasets can have hundreds or thousands of dimensions and thousands or tens of thousands of records. Limitations: tbc\n"
 var exampleDataText = "A fictitious dataset of student marks and was created by Drescher et al. [2023b]. It consists of a header row, 30 rows of data (records), and 9 columns (dimensions), including the name of the student. Each row represents one student and their marks between 0 and 100 in 8 subjects. Each dimension, apart from the first, represents one subject. "
 
 const initialize = () => {
@@ -74,7 +74,9 @@ const handleStepEnter = (element) => {
 <style>
 .mainChart {
   position: sticky;
+  margin: auto auto auto auto;
   top: 0;
+  left: -200;
   background-color: #fff;
   padding: 1rem 0;
   width: 30rem;
@@ -82,6 +84,12 @@ const handleStepEnter = (element) => {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.mainText {
+  text-align: justify;
+  padding-left: 2rem;
+  padding-right: 2rem;
 }
 
 .step {
