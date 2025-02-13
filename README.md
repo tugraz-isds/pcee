@@ -10,6 +10,8 @@ visualise parallel coordinates and [scrollama](https://github.com/russellsamora/
 
 ## Project Setup
 
+Ensure Node version >= 23.0 or higher!
+
 ```sh
 yarn
 ```

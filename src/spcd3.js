@@ -3172,7 +3172,7 @@ function noevent(event) {
   event.stopImmediatePropagation();
 }
 
-function dragDisable(view) {
+function nodrag(view) {
   var root = view.document.documentElement,
       selection = select$1(view).on("dragstart.drag", noevent, nonpassivecapture);
   if ("onselectstart" in root) {
@@ -3278,7 +3278,7 @@ function drag() {
     select$1(event.view)
       .on("mousemove.drag", mousemoved, nonpassivecapture)
       .on("mouseup.drag", mouseupped, nonpassivecapture);
-    dragDisable(event.view);
+    nodrag(event.view);
     nopropagation(event);
     mousemoving = false;
     mousedownx = event.clientX;
@@ -7103,17 +7103,29 @@ function invert(dimension) {
     textElement.attr('href', 'data:image/svg+xml;base64,' + arrow);
     textElement.style('cursor', `url('data:image/svg+xml,${arrowStyle}') 8 8 , auto`);
     select$1(dimensionId)
+        .transition()
+        .duration(1000)
         .call(yAxis[dimension]
         .scale(parcoords.yScales[dimension]
         .domain(parcoords.yScales[dimension]
         .domain().reverse())))
-        .transition();
+        .ease(cubicInOut);
     let active = select$1('g.active')
         .selectAll('path')
-        .attr('d', (d) => { linePath(d, parcoords.newFeatures, parcoords); });
+        .transition()
+        .duration(1000)
+        .attr('d', (d) => {
+        return linePath(d, parcoords.newFeatures, parcoords);
+    })
+        .ease(cubicInOut);
     trans(active).each(function (d) {
         select$1(this)
-            .attr('d', linePath(d, parcoords.newFeatures, parcoords));
+            .transition()
+            .duration(1000)
+            .attr('d', (d) => {
+            return linePath(d, parcoords.newFeatures, parcoords);
+        })
+            .ease(cubicInOut);
     });
     addSettingsForBrushing(dimension, parcoords);
     if (isInverted(dimension)) {
@@ -7159,17 +7171,29 @@ function setInversionStatus(dimension, status) {
     textElement.attr('href', 'data:image/svg+xml;base64,' + arrow);
     textElement.style('cursor', `url('data:image/svg+xml,${arrowStyle}') 8 8 , auto`);
     select$1(dimensionId)
+        .transition()
+        .duration(1000)
         .call(yAxis[dimension]
         .scale(parcoords.yScales[dimension]
         .domain(parcoords.yScales[dimension]
         .domain().reverse())))
-        .transition();
+        .ease(cubicInOut);
     let active = select$1('g.active')
         .selectAll('path')
-        .attr('d', (d) => { linePath(d, parcoords.newFeatures, parcoords); });
+        .transition()
+        .duration(1000)
+        .attr('d', (d) => {
+        return linePath(d, parcoords.newFeatures, parcoords);
+    })
+        .ease(cubicInOut);
     trans(active).each(function (d) {
         select$1(this)
-            .attr('d', linePath(d, parcoords.newFeatures, parcoords));
+            .transition()
+            .duration(1000)
+            .attr('d', (d) => {
+            return linePath(d, parcoords.newFeatures, parcoords);
+        })
+            .ease(cubicInOut);
     });
     addSettingsForBrushing(dimension, parcoords);
     if (isInverted(dimension)) {
@@ -7229,13 +7253,18 @@ function moveByOne(dimension, direction) {
     parcoords.xScales.domain(parcoords.newFeatures);
     let active = select$1('g.active').selectAll('path');
     let featureAxis = selectAll('#feature');
-    active.each(function (d) {
-        select$1(this)
-            .attr('d', linePath(d, parcoords.newFeatures, parcoords));
-    });
-    featureAxis.attr('transform', (d) => {
+    active.transition()
+        .duration(1000)
+        .attr('d', function (d) {
+        return linePath(d, parcoords.newFeatures, parcoords);
+    })
+        .ease(cubicInOut);
+    featureAxis.transition()
+        .duration(1000)
+        .attr('transform', function (d) {
         return 'translate(' + position(d.name, parcoords.dragging, parcoords.xScales) + ')';
-    });
+    })
+        .ease(cubicInOut);
     /*d3.select('#select_')
       .selectAll('path')
         .attr('d', (d) => { linePath(d, parcoords.newFeatures, parcoords) });
@@ -7296,13 +7325,18 @@ function swap(dimensionA, dimensionB) {
     inactive.attr('visibility', 'hidden');
     let active = select$1('g.active').selectAll('path');
     let featureAxis = selectAll('#feature');
-    active.each(function (d) {
-        select$1(this)
-            .attr('d', linePath(d, parcoords.newFeatures, parcoords));
-    });
-    featureAxis.attr('transform', (d) => {
+    active.transition()
+        .duration(1000)
+        .attr('d', (d) => {
+        return linePath(d, parcoords.newFeatures, parcoords);
+    })
+        .ease(cubicInOut);
+    featureAxis.transition()
+        .duration(1000)
+        .attr('transform', (d) => {
         return 'translate(' + position(d.name, parcoords.dragging, parcoords.xScales) + ')';
-    });
+    })
+        .ease(cubicInOut);
     /*d3.select('#select_')
       .selectAll('path')
         .attr('d', (d) => { linePath(d, parcoords.newFeatures, parcoords) });
@@ -7333,13 +7367,24 @@ function setDimensionRange(dimension, min, max) {
     addRange(max, window.parcoords.currentPosOfDims, dimension, 'currentRangeTop');
     // draw active lines
     select$1('#dimension_axis_' + cleanString(dimension))
-        .call(yAxis[dimension]).transition();
+        .call(yAxis[dimension])
+        .transition()
+        .duration(1000)
+        .ease(cubicInOut);
     let active = select$1('g.active')
         .selectAll('path')
-        .attr('d', (d) => { linePath(d, window.parcoords.newFeatures, window.parcoords); });
-    trans(active).each(function (d) {
+        .transition()
+        .duration(1000)
+        .attr('d', (d) => {
+        return linePath(d, window.parcoords.newFeatures, window.parcoords);
+    })
+        .ease(cubicInOut);
+    active.each(function (d) {
         select$1(this)
-            .attr('d', linePath(d, window.parcoords.newFeatures, window.parcoords));
+            .transition()
+            .duration(1000)
+            .attr('d', linePath(d, window.parcoords.newFeatures, window.parcoords))
+            .ease(cubicInOut);
     });
     // draw inactive lines
     select$1('g.inactive')
@@ -7347,10 +7392,12 @@ function setDimensionRange(dimension, min, max) {
         .each(function (d) {
         select$1(this)
             .attr('d', linePath(d, window.parcoords.newFeatures, window.parcoords));
-    }).transition()
-        .delay(5)
-        .duration(0)
-        .attr('visibility', 'hidden');
+    })
+        .transition()
+        .delay(500)
+        .duration(1000)
+        .attr('visibility', 'hidden')
+        .ease(cubicInOut);
     // draw selectable lines
     /*d3.select('#select_')
       .selectAll('path')
@@ -7376,13 +7423,24 @@ function setDimensionRangeRounded(dimension, min, max) {
     addRange(max, window.parcoords.currentPosOfDims, dimension, 'currentRangeTop');
     // draw active lines
     select$1('#dimension_axis_' + cleanString(dimension))
-        .call(yAxis[dimension]).transition();
+        .call(yAxis[dimension])
+        .transition()
+        .duration(1000)
+        .ease(cubicInOut);
     let active = select$1('g.active')
         .selectAll('path')
-        .attr('d', (d) => { linePath(d, window.parcoords.newFeatures, window.parcoords); });
-    trans(active).each(function (d) {
+        .transition()
+        .duration(1000)
+        .attr('d', (d) => {
+        return linePath(d, window.parcoords.newFeatures, window.parcoords);
+    })
+        .ease(cubicInOut);
+    active.each(function (d) {
         select$1(this)
-            .attr('d', linePath(d, window.parcoords.newFeatures, window.parcoords));
+            .transition()
+            .duration(1000)
+            .attr('d', linePath(d, window.parcoords.newFeatures, window.parcoords))
+            .ease(cubicInOut);
     });
     // draw inactive lines
     select$1('g.inactive')
@@ -7390,10 +7448,12 @@ function setDimensionRangeRounded(dimension, min, max) {
         .each(function (d) {
         select$1(this)
             .attr('d', linePath(d, window.parcoords.newFeatures, window.parcoords));
-    }).transition()
-        .delay(5)
-        .duration(0)
-        .attr('visibility', 'hidden');
+    })
+        .transition()
+        .delay(500)
+        .duration(1000)
+        .attr('visibility', 'hidden')
+        .ease(cubicInOut);
     // draw selectable lines
     /*d3.select('#select_')
       .selectAll('path')
@@ -7447,7 +7507,8 @@ function getSelected() {
     let selected = [];
     const records = getAllRecords();
     for (let i = 0; i < records.length; i++) {
-        let selectedLine = cleanLinePathString(records[i]);
+        let editRecord = records[i].length > 10 ? records[i].substr(0, 10) + '...' : records[i];
+        let selectedLine = cleanLinePathString(editRecord);
         let isselected = isSelected(selectedLine);
         if (isselected) {
             selected.push(records[i]);
@@ -7457,13 +7518,15 @@ function getSelected() {
 }
 function setSelection(records) {
     let selectableLines = [];
+    let editRecord;
     for (let i = 0; i < records.length; i++) {
         window.active.each(function (d) {
-            if (cleanLinePathString(d[window.hoverlabel]) == records[i]) {
+            editRecord = records[i].length > 10 ? records[i].substr(0, 10) + '...' : records[i];
+            if (cleanLinePathString(d[window.hoverlabel]) == cleanLinePathString(editRecord)) {
                 selectableLines.push(d);
             }
         });
-        select$1('.' + records[i])
+        select$1('.' + cleanLinePathString(editRecord))
             .transition()
             .style('visibility', 'hidden');
     }
@@ -7493,7 +7556,8 @@ function setSelection(records) {
     });
 }
 function isSelected(record) {
-    let cleanedRecord = cleanLinePathString(record);
+    let editRecord = record.length > 10 ? record.substr(0, 10) + '...' : record;
+    let cleanedRecord = cleanLinePathString(editRecord);
     const path = select$1('#select_' + cleanedRecord);
     if (path.size() != 0) {
         return true;
@@ -7517,7 +7581,8 @@ function setSelected(record) {
     setSelection(selectableLines);
 }
 function setUnselected(record) {
-    const path = cleanLinePathString(record);
+    let editRecord = record.length > 10 ? record.substr(0, 10) + '...' : record;
+    const path = cleanLinePathString(editRecord);
     select$1('#select_' + path)
         .remove();
     select$1('.' + path)
@@ -7576,7 +7641,7 @@ function drawChart(content) {
     let inactive = setInactivePathLines(svg, content, window.parcoords);
     window.active = setActivePathLines(svg, content, ids, window.parcoords);
     setFeatureAxis(svg, yAxis, window.active, inactive, window.parcoords, width, window.padding);
-    //setBrushRectangle();
+    selectionWithRectangle();
     window.svg
         .on('click', (event) => {
         if (!(event.shiftKey) && !(event.ctrlKey) && !(event.metaKey)) {
@@ -7621,6 +7686,75 @@ function deleteChart() {
     select$1('#contextmenuRecords').remove();
     select$1('#popupFilter').remove();
     select$1('#popupRange').remove();
+}
+function selectionWithRectangle() {
+    const svg = window.svg;
+    let selectionRect = svg.append('rect')
+        .style('fill', 'none')
+        .style('stroke', 'black')
+        .style('stroke-dasharray', '3')
+        .style('visibility', 'hidden');
+    let isSelecting = false;
+    let startX;
+    let startY;
+    svg.on('mousedown', function (event) {
+        isSelecting = true;
+        const [x, y] = pointer(event);
+        startX = x;
+        startY = y;
+        selectionRect
+            .attr('x', startX)
+            .attr('y', startY)
+            .attr('width', 0)
+            .attr('height', 0)
+            .style('visibility', 'visible');
+    });
+    svg.on('mousemove', function (event) {
+        if (!isSelecting)
+            return;
+        const [x, y] = pointer(event);
+        const width = Math.abs(x - startX);
+        const height = Math.abs(y - startY);
+        selectionRect
+            .attr('x', Math.min(x, startX))
+            .attr('y', Math.min(y, startY))
+            .attr('width', width)
+            .attr('height', height);
+    });
+    svg.on('mouseup', function () {
+        if (!isSelecting)
+            return;
+        isSelecting = false;
+        const x1 = parseFloat(selectionRect.attr('x'));
+        const y1 = parseFloat(selectionRect.attr('y'));
+        const x2 = x1 + parseFloat(selectionRect.attr('width'));
+        const y2 = y1 + parseFloat(selectionRect.attr('height'));
+        svg.selectAll('g.active path')
+            .each(function (d) {
+            const path = select$1(this).node();
+            const pathData = path.getAttribute('d');
+            const pathCoords = pathData.match(/[ML]\s*(-?\d+\.?\d*),\s*(-?\d+\.?\d*)/g);
+            let isInSelection = false;
+            if (pathCoords) {
+                pathCoords.forEach(function (coord) {
+                    const matches = coord.match(/[-+]?\d*\.?\d+/g);
+                    const [x, y] = matches.map(Number);
+                    if (x >= x1 && x <= x2 && y >= y1 && y <= y2) {
+                        isInSelection = true;
+                    }
+                });
+            }
+            if (isInSelection) {
+                select$1(this)
+                    .each(function () {
+                    const pathElement = select$1(this);
+                    const pathId = pathElement.attr('id');
+                    setSelected(pathId);
+                });
+            }
+        });
+        selectionRect.style('visibility', 'hidden');
+    });
 }
 //---------- Helper Functions ----------
 function getAllRecords() {
@@ -7674,7 +7808,6 @@ function setUpParcoordData(data, newFeatures) {
     window.paddingXaxis = 75;
     window.width = newFeatures.length * 100;
     window.height = 400;
-    window.longLabels = false;
     const label = newFeatures[newFeatures.length - 1];
     data.sort((a, b) => {
         const item1 = a[label];
@@ -7693,19 +7826,6 @@ function setUpParcoordData(data, newFeatures) {
     window.parcoords = {};
     window.parcoords.features = dataset[0];
     window.parcoords.newDataset = dataset[1];
-    for (let i = 0; i < newFeatures.length; i++) {
-        let values = window.parcoords.newDataset.map(o => o[newFeatures[i]]);
-        if (isNaN(values[0])) {
-            values.forEach(item => {
-                if (item.length > 20) {
-                    window.width = newFeatures.length * 200;
-                    window.paddingXaxis = 200;
-                    window.longLabels = true;
-                    return;
-                }
-            });
-        }
-    }
     window.parcoords.xScales = setupXScales(window.width, window.paddingXaxis, dataset[0]);
     window.parcoords.yScales = setupYScales(window.height, window.padding, dataset[0], dataset[1]);
     window.parcoords.dragging = {};
@@ -7763,7 +7883,7 @@ function setupYScales(height, padding, features, newDataset) {
         let labels = [];
         if (isNaN(values[0]) !== false) {
             values.forEach(function (element) {
-                labels.push(element.length > 10 ? element : element);
+                labels.push(element.length > 10 ? element.substr(0, 10) + '...' : element);
             });
             yScales[x.name] = point()
                 .domain(labels)
@@ -7805,7 +7925,7 @@ function setupYAxis(features, yScales, newDataset) {
             });
             if (uniqueArray.length > limit) {
                 let filteredArray = labels.filter(function (value, index, array) {
-                    return index % 3 == 0;
+                    return index % 4 == 0;
                 });
                 yAxis[key[0]] = axisLeft(key[1]).tickValues(filteredArray);
             }
@@ -7833,13 +7953,7 @@ function redrawChart(content, newFeatures) {
     deleteChart();
     setUpParcoordData(content, newFeatures);
     let height = 360;
-    let width = 0;
-    if (longLabels) {
-        width = newFeatures.length * 200;
-    }
-    else {
-        width = newFeatures.length * 100;
-    }
+    let width = newFeatures.length * 100;
     window.svg = select$1('#parallelcoords')
         .append('svg')
         .attr('id', 'pc_svg')
@@ -7890,9 +8004,45 @@ function cleanTooltip() {
     selectAll(".tooltip")
         .remove();
 }
+let delay = null;
+let selectedPath = null;
+let tooltipPath;
+const clearExistingDelay = () => {
+    if (delay) {
+        clearTimeout(delay);
+        delay = null;
+    }
+};
+const handlePointerEnter = (event, d) => {
+    const data = getAllPointerEventsData(event);
+    window.hoverdata = [...data];
+    selectedPath = highlight(data);
+    createTooltipForPathLine(data, tooltipPath, event);
+    clearExistingDelay();
+    const datasetMap = new Map();
+    parcoords.newDataset.forEach((record) => {
+        const recordData = record[window.hoverlabel];
+        datasetMap.set(recordData, record);
+    });
+    data.forEach((item) => {
+        const matchingRecord = datasetMap.get(item);
+        if (matchingRecord) {
+            delay = setTimeout(() => {
+                createToolTipForValues(matchingRecord);
+            }, 150);
+        }
+    });
+};
+const handlePointerLeaveOrOut = () => {
+    doNotHighlight(selectedPath);
+    clearExistingDelay();
+    if (tooltipPath) {
+        tooltipPath.style('visibility', 'hidden');
+    }
+    cleanTooltip();
+};
 function setActivePathLines(svg, content, ids, parcoords) {
-    let selectedPath;
-    let tooltipPath = select$1('#parallelcoords')
+    tooltipPath = select$1('#parallelcoords')
         .append('g')
         .style('position', 'absolute')
         .style('visibility', 'hidden');
@@ -7921,7 +8071,6 @@ function setActivePathLines(svg, content, ids, parcoords) {
         .attr('id', 'removeSelection')
         .attr('class', 'contextmenu')
         .text('Remove from Selection');
-    let delay;
     let active = svg.append('g')
         .attr('class', 'active')
         .selectAll('path')
@@ -7939,6 +8088,8 @@ function setActivePathLines(svg, content, ids, parcoords) {
         return d[window.key];
     })
         .each(function (d) {
+        let element = d[window.key].length > 10 ? d[window.key].substr(0, 10) + '...' : d[window.key];
+        d[window.key] = element;
         select$1(this)
             .attr('d', linePath(d, parcoords.newFeatures, parcoords));
     })
@@ -7947,44 +8098,9 @@ function setActivePathLines(svg, content, ids, parcoords) {
         .style('stroke', 'rgb(0, 129, 175)')
         .style('stroke-width', '0.1rem')
         .style('fill', 'none')
-        .on('pointerenter', (event, d) => {
-        const data = getAllPointerEventsData(event);
-        window.hoverdata = [];
-        window.hoverdata = data.slice();
-        selectedPath = highlight(data);
-        createTooltipForPathLine(data, tooltipPath, event);
-        if (delay) {
-            clearTimeout(delay);
-        }
-        for (let i = 0; i < data.length; i++) {
-            for (let j = 0; j < parcoords.newDataset.length; j++) {
-                let recordData = parcoords.newDataset[j][window.hoverlabel];
-                if (recordData == data[i]) {
-                    delay = setTimeout(function () {
-                        createToolTipForValues(parcoords.newDataset[j]);
-                    }, 150);
-                }
-            }
-        }
-    })
-        .on('pointerleave', () => {
-        doNotHighlight(selectedPath);
-        if (delay) {
-            clearTimeout(delay);
-        }
-        delay = null;
-        tooltipPath.style('visibility', 'hidden');
-        return cleanTooltip();
-    })
-        .on('pointerout', () => {
-        doNotHighlight(selectedPath);
-        if (delay) {
-            clearTimeout(delay);
-        }
-        delay = null;
-        tooltipPath.style('visibility', 'hidden');
-        return cleanTooltip();
-    })
+        .on('pointerenter', handlePointerEnter)
+        .on('pointerleave', handlePointerLeaveOrOut)
+        .on('pointerout', handlePointerLeaveOrOut)
         .on('click', () => {
         select(window.hoverdata);
     })
@@ -8040,8 +8156,8 @@ function setActivePathLines(svg, content, ids, parcoords) {
     });
     return active;
 }
-const delay = 50;
-const throttleShowValues = throttle(createToolTipForValues, delay);
+const delay1 = 50;
+const throttleShowValues = throttle(createToolTipForValues, delay1);
 function trans(g) {
     return g.transition().duration(50);
 }
@@ -8077,61 +8193,48 @@ function createTooltipForPathLine(tooltipText, tooltipPath, event) {
     }
 }
 function createToolTipForValues(recordData) {
-    let dimensions = getAllVisibleDimensionNames();
+    const dimensions = getAllVisibleDimensionNames();
     let counter = 0;
-    let firstDimension;
-    for (let i = 0; i < dimensions.length; i++) {
-        let cleanString$1 = cleanString(dimensions[i]);
-        cleanLinePathString(recordData[window.hoverlabel]);
+    const rectLeft = select$1('#rect_' + dimensions[0])?.node()?.getBoundingClientRect().left;
+    dimensions.forEach(dimension => {
+        const cleanString$1 = cleanString(dimension);
         if (isElementVisible(select$1('#rect_' + cleanString$1))) {
-            if (firstDimension === undefined) {
-                firstDimension = cleanString$1;
-            }
-            let tooltipValues = select$1('#parallelcoords')
+            const tooltipValues = select$1('#parallelcoords')
                 .append('g')
                 .attr('class', 'tooltip')
                 .style('position', 'absolute')
                 .style('visibility', 'hidden');
-            const dimensionName = dimensions[i];
-            const invertStatus = isInverted(dimensionName);
-            const maxValue = invertStatus == false ? parcoords.yScales[dimensionName].domain()[1] :
-                parcoords.yScales[dimensionName].domain()[0];
-            const minValue = invertStatus == false ? parcoords.yScales[dimensionName].domain()[0] :
-                parcoords.yScales[dimensionName].domain()[1];
+            const invertStatus = isInverted(dimension);
+            const scale = parcoords.yScales[dimension];
+            const maxValue = invertStatus ? scale.domain()[0] : scale.domain()[1];
+            const minValue = invertStatus ? scale.domain()[1] : scale.domain()[0];
             const range = maxValue - minValue;
             let value;
             if (invertStatus) {
-                value = isNaN(maxValue) ? parcoords.yScales[dimensionName](recordData[dimensions[i]]) :
-                    240 / range * (recordData[dimensions[i]] - minValue) + 80;
+                value = isNaN(maxValue) ? scale(recordData[dimension]) :
+                    240 / range * (recordData[dimension] - minValue) + 80;
             }
             else {
-                value = isNaN(maxValue) ? parcoords.yScales[dimensionName](recordData[dimensions[i]]) :
-                    240 / range * (maxValue - recordData[dimensions[i]]) + 80;
+                value = isNaN(maxValue) ? scale(recordData[dimension]) :
+                    240 / range * (maxValue - recordData[dimension]) + 80;
             }
-            let x;
-            let posLeft = select$1('#rect_' + firstDimension).node().getBoundingClientRect().left;
-            if (window.longLabels) {
-                x = posLeft + (counter * 200);
-            }
-            else {
-                x = posLeft + 5 + (counter * 100);
-            }
-            counter = counter + 1;
-            let y = value + 150;
-            let tempText = recordData[dimensions[i]].toString();
-            tooltipValues.text(tempText);
-            tooltipValues.style('visibility', 'visible');
-            tooltipValues.style('top', y + 'px').style('left', x + 'px');
-            tooltipValues.style('font-size', '0.65rem')
-                .style('margin', 0.5 + 'rem')
+            const x = rectLeft + 5 + (counter * 100);
+            const y = value + 150;
+            tooltipValues.text(recordData[dimension].toString())
+                .style('visibility', 'visible')
+                .style('top', `${y}px`)
+                .style('left', `${x}px`)
+                .style('font-size', '0.65rem')
+                .style('margin', '0.5rem')
                 .style('color', 'red')
                 .style('background-color', '#d3d3d3ad')
                 .style('font-weight', 'bold')
-                .style('padding', 0.12 + 'rem')
+                .style('padding', '0.12rem')
                 .style('white-space', 'pre-line')
-                .style('margin-left', 0.5 + 'rem');
+                .style('margin-left', '0.5rem');
+            counter++;
         }
-    }
+    });
 }
 function getAllPointerEventsData(event) {
     const selection = selectAll(document.elementsFromPoint(event.clientX, event.clientY)).filter('path');
@@ -8199,28 +8302,20 @@ function setFeatureAxis(svg, yAxis, active, inactive, parcoords, width, padding)
 // Hovering
 function highlight(data) {
     let selectedPath = '';
-    let dataWoSpecialC = [];
-    for (let i = 0; i < data.length; i++) {
-        let temp = data[i].replaceAll(/[.,]/g, '');
-        dataWoSpecialC.push(temp);
-    }
+    const dataWoSpecialC = data.map(item => item.replace(/[.,]/g, ''));
     if (dataWoSpecialC.length !== 0) {
-        let tempText = dataWoSpecialC.toString();
-        tempText = tempText.replaceAll(',', ',.');
+        let tempText = dataWoSpecialC.join(',').replace(/,/g, ',.');
         tempText = cleanLinePathArrayString(tempText);
         selectedPath = tempText;
-        dataWoSpecialC = tempText.split(',.');
-        let newTempText = [];
-        for (let i = 0; i < dataWoSpecialC.length; i++) {
-            newTempText.push(dataWoSpecialC[i].replace(/,./g, ''));
-            if (isSelected(dataWoSpecialC[i])) {
-                setUnselected(dataWoSpecialC[i]);
-                if (window.hoverSelected == undefined) {
-                    window.hoverSelected = [];
-                }
-                window.hoverSelected.push(dataWoSpecialC[i]);
+        const newTempText = dataWoSpecialC.map((item) => {
+            let cleanedItem = item.replace(/,./g, '');
+            if (isSelected(item)) {
+                setUnselected(item);
+                window.hoverSelected = window.hoverSelected || [];
+                window.hoverSelected.push(item);
             }
-        }
+            return cleanedItem;
+        });
         selectedPath = newTempText.join(',.');
         if (selectedPath) {
             selectAll('.' + selectedPath)
@@ -8233,16 +8328,16 @@ function highlight(data) {
 }
 function doNotHighlight(selectedPath) {
     if (selectedPath !== '') {
-        let tempText = selectedPath.split(',.');
-        let newTempText = [];
-        for (let i = 0; i < tempText.length; i++) {
-            newTempText.push(tempText[i]);
-            if (window.hoverSelected != undefined && window.hoverSelected.includes(tempText[i])) {
-                setSelected(tempText[i]);
-                const index = window.hoverSelected.indexOf(tempText[i]);
+        const tempText = selectedPath.split(',.');
+        const newTempText = [];
+        tempText.forEach(item => {
+            newTempText.push(item);
+            if (window.hoverSelected && window.hoverSelected.includes(item)) {
+                setSelected(item);
+                const index = window.hoverSelected.indexOf(item);
                 window.hoverSelected.splice(index, 1);
             }
-        }
+        });
         selectedPath = newTempText.join(',.');
         if (selectedPath) {
             selectAll('.' + selectedPath)
@@ -8310,6 +8405,8 @@ function setContextMenu(featureAxis, padding, parcoords, inactive, active, width
         .attr('id', 'headerDimensionRange');
     let infoRange = popupWindowRange.append('div').style('color', 'grey').style('font-size', 'smaller')
         .style('padding-left', 0.5 + 'rem').style('padding-bottom', 0.5 + 'rem').style('padding-top', 1 + 'rem').attr('id', 'infoRange');
+    let infoRange2 = popupWindowRange.append('div').style('color', 'grey').style('font-size', 'smaller')
+        .style('padding-left', 0.5 + 'rem').style('padding-bottom', 0.5 + 'rem').style('padding-top', 1 + 'rem').attr('id', 'infoRange2');
     popupWindowRange.append('label').text('Min').style('padding', 0.5 + 'rem');
     let inputMinRange = popupWindowRange.append('input').attr('id', 'minRangeValue').style('width', 2.5 + 'rem');
     popupWindowRange.append('label').text('Max').style('padding', 0.5 + 'rem');
@@ -8464,7 +8561,7 @@ function setContextMenu(featureAxis, padding, parcoords, inactive, active, width
                 inputMaxRange.attr('value', maxValue);
                 popupWindowRange.style('display', 'block')
                     .style('width', 17 + 'rem')
-                    .style('height', 12 + 'rem')
+                    .style('height', 13 + 'rem')
                     .style('background', 'white')
                     .style('border', '1px solid black')
                     .style('border-radius', 0.25 + 'rem')
@@ -8477,9 +8574,12 @@ function setContextMenu(featureAxis, padding, parcoords, inactive, active, width
                     .style('z-index', 10);
                 const newText = dimension.length > 25 ? dimension.substr(0, 25) + '...' : dimension;
                 headerDimensionRange.text(newText);
-                infoRange.text('The original range of ' + dimension + ' is between ' +
+                infoRange.text('The current range of ' + dimension + ' is between ' +
                     minValue + ' and ' +
                     maxValue + '.');
+                infoRange2.text('The original range of ' + dimension + ' is between ' +
+                    getMinValue(dimension) + ' and ' +
+                    getMaxValue(dimension) + '.');
                 rangeButton.on('click', () => {
                     let min = select$1('#minRangeValue').node().value;
                     let max = select$1('#maxRangeValue').node().value;
@@ -9136,7 +9236,7 @@ var cjs = {
 	    };
 	}
 	function processingInstruction(matchDeclaration) {
-	    const m = matchDeclaration ? match(/^<\?(xml)\s*/) : match(/^<\?([\w-:.]+)\s*/);
+	    const m = matchDeclaration ? match(/^<\?(xml(-stylesheet)?)\s*/) : match(/^<\?([\w-:.]+)\s*/);
 	    if (!m)
 	        return;
 	    // tag
@@ -9433,7 +9533,8 @@ var cjs = {
 	                            child.content = '';
 	                        }
 	                    }
-	                    if (child.content.trim().length > 0) {
+	                    // If there is some content or whitespaces have been removed and there is no other siblings
+	                    if (child.content.trim().length > 0 || nodeChildren.length === 1) {
 	                        containsTextNodes = true;
 	                    }
 	                }
