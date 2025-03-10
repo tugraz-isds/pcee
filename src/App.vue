@@ -1,10 +1,10 @@
 <script setup>
-import ExamplePlot from './components/ExamplePlot.vue'
+import ExplorableExplainer from './components/ExplorableExplainer.vue'
 </script>
 
 <template>
   <main>
-    <div><ExamplePlot /></div>
+    <div><ExplorableExplainer /></div>
   </main>
 </template>
 

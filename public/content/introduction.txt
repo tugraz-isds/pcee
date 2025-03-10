@@ -1,0 +1,17 @@
+<p>Parallel coordinates are a powerful visualisation technique used to analyse
+<strong>multidimensional data</strong>. Unlike traditional plots, which 
+represent data along a single axis, parallel coordinates map each data 
+dimension onto <strong>parallel vertical axes</strong>. Each record is
+represented as a <strong>polyline</strong> connecting values across these axes, 
+allowing for an intuitive comparison of multiple variables simultaneously.</p>
+
+<p>Parallel coordinates are especially useful when dealing with
+multidimensional datasets, as it helps uncover patterns, correlations, and
+outliers that might otherwise be difficult to detect. By observing how 
+polylines intersect or cluster across axes, analysts can gain insights into 
+relationships between variables and identify trends or anomalies within the 
+data.</p>
+
+<p>Parallel coordinates have become an essential tool in data exploration, 
+enabling users to better understand complex datasets and make informed 
+decisions based on multidimensional information.</p>

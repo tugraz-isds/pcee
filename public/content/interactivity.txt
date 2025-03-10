@@ -1,0 +1,66 @@
+<p>A static parallel coordinates plot provides an overview of the entire 
+dataset, but only interactivity really brings it to life. Numerous interaction 
+techniques help an analyst explore a multidimensional dataset and find relevant 
+insights. Some interaction techniques relate to dimensions (variables) of the 
+data: showing and hiding dimensions, adjusting a dimension’s range, moving 
+dimensions, and inverting dimensions, as well as displaying histograms. Others 
+relate to records (data points): selecting, brushing and linking, filtering, 
+and hovering over records.</p>
+
+<h4>Exploring Available Interactions in Charts</h4>
+
+<p data-step-no="1"><b>Inverting Dimensions:</b> 
+By default, a dimension’s axis places higher values at the top and lower 
+values at the bottom. A dimension can be inverted either by clicking the 
+arrow above the dimension axis or by right-clicking the dimension name to 
+activate the context menu and selecting Invert. Inverting a dimension can 
+be helpful to corroborate a suspected correlation between adjacent dimensions.
+</p>
+
+<p data-step-no="2"><b>Moving Dimensions:</b> 
+When looking for correlations between dimensions, meaningful relationships 
+are only revealed between adjacent dimensions. Hence, it is important to be 
+able to move one dimension next to another dimension of interest. With drag and 
+drop a dimension can be moved at the desired position.</p>
+
+<p data-step-no="3"><b>Hiding Dimensions:</b> 
+Displaying too many dimensions can be overwhelming, so it is important to 
+be able to hide individual dimensions. A dimension can hidden by 
+right-clicking the dimension name to activate the context menu and 
+selecting <i>Hide</i>.</p>
+
+<p data-step-no="4"><b>Adjusting a Dimension's Range:</b> 
+By default, the range of the dimension’s axis is set to the rounded minimum 
+and rounded maximum values present in the current dataset. The user can 
+adjust the range of a dimension from its context menu, where three options 
+are available: <i>Set Range</i> to set the range to specific values,  
+<i>Set Range from Data</i> to set the dimension to the original range
+and <i>Set Rounded Range from Data</i> to reset the dimension to the
+rounded values.</p>
+
+<p data-step-no="5"><b>Filter Records:</b> 
+Records can be activated and deactivated by setting filters on one or more 
+dimensions. A double-edged range slider can be manipulated on every 
+dimension to filter out records by values on that dimension. Records 
+outside of the range are automatically deactivated and greyed out. A 
+further option is to set and reset filters from a dimension’s context menu: 
+<i>Set Filter</i> sets a filter to specific values and <i>Reset Filter</i> 
+reset the filter to include all records.</p>
+
+<p><b>Hovering over Records:</b> 
+If there are a large number of records, a parallel coordinates visualisation 
+contains a large number of potentially crossing and overlapping polylines, so 
+it is challenging to recognise which polyline belongs to which record. Hovering 
+over one or more polylines highlights the polyline(s) beneath the mouse pointer 
+in red and displays tooltips with the labels and values of the corresponding 
+records.</p>
+
+<p data-step-no="6"><b>Selecting Records:</b> 
+It is helpful to be able to select one or more records in the dataset and 
+to highlight them accordingly. Left-clicking one or more polylines selects 
+the corresponding record(s) and highlights them in orange. 
+Shift-left-clicking adds one or more records to the current selection. 
+Control-left-clicking toggles the selection status of the corresponding 
+records. Left-clicking in empty space clears the current selection. A 
+further option is to select, unselect records from a records context menu.
+</p>
