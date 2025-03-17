@@ -7040,7 +7040,8 @@ function show(dimension) {
         window.parcoords.currentPosOfDims.forEach(function (item) {
             if (getHiddenStatus(item.key) != 'hidden') {
                 if (item.isInverted) {
-                    invert(item.key);
+                    console.log(item.key);
+                    invertWoTransition(item.key);
                 }
                 if (item.top != 80 || item.bottom != 320) {
                     filterWithCoords(item.top, item.bottom, parcoords.currentPosOfDims, item.key);
@@ -7066,7 +7067,7 @@ function hide(dimension) {
         window.parcoords.currentPosOfDims.forEach(function (item) {
             if (getHiddenStatus(item.key) != 'hidden') {
                 if (item.isInverted) {
-                    invert(item.key);
+                    invertWoTransition(item.key);
                 }
                 if (item.top != 80 || item.bottom != 320) {
                     filterWithCoords(item.top, item.bottom, parcoords.currentPosOfDims, item.key);
@@ -7124,6 +7125,41 @@ function invert(dimension) {
             return linePath(d, parcoords.newFeatures, parcoords);
         })
             .ease(cubicInOut);
+    });
+    addSettingsForBrushing(dimension, parcoords);
+    if (isInverted(dimension)) {
+        addInvertStatus(true, parcoords.currentPosOfDims, dimension, "isInverted");
+    }
+    else {
+        addInvertStatus(false, parcoords.currentPosOfDims, dimension, "isInverted");
+    }
+}
+function invertWoTransition(dimension) {
+    const processedDimensionName = cleanString(dimension);
+    const invertId = '#dimension_invert_' + processedDimensionName;
+    const dimensionId = '#dimension_axis_' + processedDimensionName;
+    const textElement = select$1(invertId);
+    const currentArrowStatus = textElement.text();
+    const arrow = currentArrowStatus === 'down' ? '#arrow_image_up' : '#arrow_image_down';
+    const arrowStyle = currentArrowStatus === 'down' ? setSize(getArrowDown(), 12) : setSize(getArrowUp(), 12);
+    textElement.text(currentArrowStatus === 'down' ? 'up' : 'down');
+    textElement.attr('href', arrow);
+    textElement.style('cursor', `url('data:image/svg+xml,${arrowStyle}') 8 8 , auto`);
+    select$1(dimensionId)
+        .call(yAxis[dimension]
+        .scale(parcoords.yScales[dimension]
+        .domain(parcoords.yScales[dimension]
+        .domain().reverse())));
+    let active = select$1('g.active')
+        .selectAll('path')
+        .attr('d', (d) => {
+        return linePath(d, parcoords.newFeatures, parcoords);
+    });
+    trans(active).each(function (d) {
+        select$1(this)
+            .attr('d', (d) => {
+            return linePath(d, parcoords.newFeatures, parcoords);
+        });
     });
     addSettingsForBrushing(dimension, parcoords);
     if (isInverted(dimension)) {
@@ -7197,7 +7233,7 @@ function moveByOne(dimension, direction) {
     const neighbour = parcoords.newFeatures[indexOfNeighbor];
     const pos = parcoords.xScales(dimension);
     const posNeighbour = parcoords.xScales(neighbour);
-    const distance = 97.5; //(width-window.paddingXaxis)/parcoords.newFeatures.length;
+    const distance = 93.5; //(width-window.paddingXaxis)/parcoords.newFeatures.length;
     parcoords.dragging[dimension] = direction == 'right' ? pos + distance :
         pos - distance;
     parcoords.dragging[neighbour] = direction == 'right' ? posNeighbour - distance :
@@ -7599,12 +7635,7 @@ function selectionWithRectangle() {
     let isSelecting = false;
     let startX;
     let startY;
-    // Beschränke den Auswahlbereich auf den Bereich, der tatsächlich die Pfade enthält
-    svg.selectAll('g.active path').on('mousedown', function (event) {
-        // Verhindere, dass Ticks oder Labels mit dem Rechteck selektiert werden
-        if (!select$1(event.target).classed('active')) {
-            return;
-        }
+    svg.on('mousedown', function (event) {
         isSelecting = true;
         const [x, y] = pointer(event);
         startX = x;
@@ -7636,26 +7667,21 @@ function selectionWithRectangle() {
         const y1 = parseFloat(selectionRect.attr('y'));
         const x2 = x1 + parseFloat(selectionRect.attr('width'));
         const y2 = y1 + parseFloat(selectionRect.attr('height'));
-        // Überprüfe alle Pfade, ob sie im Auswahlbereich sind
         svg.selectAll('g.active path')
             .each(function (d) {
             const path = select$1(this).node();
             const pathData = path.getAttribute('d');
-            // Extrahiere alle Koordinaten aus dem 'd' Attribut des Pfades
             const pathCoords = pathData.match(/[ML]\s*(-?\d+\.?\d*),\s*(-?\d+\.?\d*)/g);
             let isInSelection = false;
-            // Überprüfe, ob ein Punkt im Auswahlbereich liegt
             if (pathCoords) {
                 pathCoords.forEach(function (coord) {
                     const matches = coord.match(/[-+]?\d*\.?\d+/g);
                     const [x, y] = matches.map(Number);
-                    // Prüfe, ob der Punkt im Auswahlbereich liegt
                     if (x >= x1 && x <= x2 && y >= y1 && y <= y2) {
                         isInSelection = true;
                     }
                 });
             }
-            // Wenn mindestens ein Punkt des Pfades im Auswahlbereich ist, selektiere den Pfad
             if (isInSelection) {
                 select$1(this)
                     .each(function () {
@@ -7665,7 +7691,6 @@ function selectionWithRectangle() {
                 });
             }
         });
-        // Verstecke das Auswahlrechteck
         selectionRect.style('visibility', 'hidden');
     });
 }
@@ -8147,6 +8172,8 @@ function setFeatureAxis(svg, yAxis, active, parcoords, width, padding) {
         .data(parcoords.features)
         .enter()
         .append('g')
+        .attr('class', 'feature')
+        .attr('id', 'feature')
         .attr('transform', d => ('translate(' + parcoords.xScales(d.name) + ')'));
     let tooltipValuesLabel = select$1('#parallelcoords')
         .append('g')

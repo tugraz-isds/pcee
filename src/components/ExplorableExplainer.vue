@@ -1,13 +1,8 @@
 <template>
     <div class="explorable-explainer">
-      <div class="content">
+      <div class="content" @scroll="onScroll" ref="textArea">
         <div id="parallelcoords" class="mainChart"></div>
         <div class="textContent">
-          <VueScrollama
-            :debug="true"
-            @step-enter="handleStepEnter"
-            class="main__scrollama"
-          >
             <div class="intro">
               <h1>Parallel Coordinates</h1>
               <h1>An Explorable Explainer</h1>
@@ -15,66 +10,93 @@
             </div>
             <div class="mainText">
               <h2>1. Introduction</h2>
-              <div v-html="fullIntro"></div>
+              <div v-html="introText"></div>
             </div>
             <div class="mainText">
               <h2>2. Multidimensional Data</h2>
-              <div v-html="fullData"></div>
+              <div v-html="dataText"></div>
+              <h4>Choose a Dataset:</h4>
+              <div class="radio-group">
+                <input 
+                  type="radio" 
+                  id="cars"
+                  class="radio"
+                  v-model="selectedDataset" 
+                  value="cars" 
+                />
+                <label for="cars">Cars</label>
+                <input 
+                  type="radio" 
+                  id="students"
+                  class="radio"
+                  v-model="selectedDataset" 
+                  value="students" 
+                />
+                <label for="students">Student Marks</label>
+              </div>
+              <div v-if="selectedDataset === 'cars'">
+                <div v-html="carsDatasetText"></div>
+              </div>
+              <div v-if="selectedDataset === 'students'">
+                <div v-html="studentDatasetText"></div>
+              </div>
+              <div v-if="selectedDataset">
               <table border="1">
-              <thead>
-                <tr>
-                  <th v-for="(column, index) in columns" :key="index">{{ 
-                    column }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(row, rowIndex) in tableData" :key="rowIndex">
-                  <td v-for="(column, colIndex) in columns" :key="colIndex">
-                    <input v-model="row[column]" type="text" />
-                  </td>
-                </tr>
-              </tbody>
+                <thead>
+                  <tr>
+                    <th v-for="(column, index) in columns" :key="index">{{ column }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(row, rowIndex) in selectedData" :key="rowIndex">
+                    <td v-for="(column, colIndex) in columns" :key="colIndex">
+                      <input v-model="row[column]" type="text"/>
+                    </td>  
+                  </tr>
+                </tbody>
               </table>
               <button @click="addRow" id="addButton">Add Row</button>
               <button @click="addColumn">Add Column</button>
               <button @click="redrawChart">Redraw Chart</button>
+              </div>
             </div>
             <div class="mainText">
               <h2>3. Interactive Data Exploration</h2>
-              <div v-html="fullInteractivity"></div>
+              <div v-html="interactivityText"></div>
             </div>
-          </VueScrollama>
         </div>
       </div>
     </div>
   </template>
   
   <script setup>
-  import { ref, computed, onMounted } from 'vue';
+  import { ref, onMounted, computed } from 'vue';
   import * as spcd3 from '../spcd3'
-  import VueScrollama from 'vue3-scrollama';
 
-  const introText = ref([]);
-  const dataText = ref([]);
-  const interactivityText = ref([]);
-
-  const fullIntro = computed(() => introText.value.join(' '));
-  const fullData = computed(() => dataText.value.join(' '));
-  const fullInteractivity = computed(() => interactivityText.value.join(' '));
+  const introText = ref('');
+  const dataText = ref('');
+  const interactivityText = ref('');
+  const carsDatasetText = ref('');
+  const studentDatasetText = ref('');
+  const textArea = ref(null);
+  const lastScrollTop = ref(0);
+  const carsDataset = ref('');
+  const studentDataset = ref('');
+  const selectedDataset = ref('cars');
 
   const addRow = () => {
     const newRow = {};
     columns.value.forEach((column) => {
       newRow[column] = '';
     });
-    tableData.value.push(newRow);
+    rows.value.push(newRow);
   };
 
   const addColumn = () => {
     const newColumnName = prompt('Enter new column name:');
     if (newColumnName) {
       columns.value.push(newColumnName);
-      tableData.value.forEach((row) => {
+      rows.value.forEach((row) => {
         row[newColumnName] = '';
       });
     }
@@ -83,18 +105,18 @@
   const redrawChart = () => {
     const headers = columns.value.join(','); 
 
-    const rows = tableData.value.map(row => {
+    const newRows = rows.value.map(row => {
       return columns.value.map(column => row[column]).join(',');
     }).join('\n');
 
-    const csvData = `${headers}\n${rows}`;
+    const csvData = `${headers}\n${newRows}`;
     let newData = spcd3.loadCSV(csvData);
     spcd3.drawChart(newData);
   };
 
   const columns = ref(['Car', 'Speed', 'FuelEfficiency', 'Weight', 'Price']);
 
-  const tableData = ref([
+  const rows = ref([
     { Car: 'Car A', Speed: 180, FuelEfficiency: 8, Weight: 1500, Price: 25 },
     { Car: 'Car B', Speed: 200, FuelEfficiency: 7.5, Weight: 1400, Price: 28 },
     { Car: 'Car C', Speed: 160, FuelEfficiency: 9, Weight: 1600, Price: 22 },
@@ -103,50 +125,137 @@
     { Car: 'Car F', Speed: 210, FuelEfficiency: 7, Weight: 1300, Price: 30 }
   ]);
 
-  const loadContent = async (textArray, filePath) => {
+  const selectedData = computed(() => {
+    if (selectedDataset.value === 'cars') {
+      columns.value = ['Car', 'Speed', 'FuelEfficiency', 'Weight', 'Price'];
+      rows.value = [
+    { Car: 'Car A', Speed: 180, FuelEfficiency: 8, Weight: 1500, Price: 25 },
+    { Car: 'Car B', Speed: 200, FuelEfficiency: 7.5, Weight: 1400, Price: 28 },
+    { Car: 'Car C', Speed: 160, FuelEfficiency: 9, Weight: 1600, Price: 22 },
+    { Car: 'Car D', Speed: 190, FuelEfficiency: 8.5, Weight: 1450, Price: 27 },
+    { Car: 'Car E', Speed: 170, FuelEfficiency: 10, Weight: 1550, Price: 20 },
+    { Car: 'Car F', Speed: 210, FuelEfficiency: 7, Weight: 1300, Price: 30 }
+    ];
+    drawChart(carsDataset.value);
+    } else if (selectedDataset.value === 'students') {
+      columns.value = ['Name', 'Maths', 'English', 'PE', 'Art', 'History', 'IT', 'Biology', 'German'];
+      rows.value = [
+      { Name: 'Adrian', Maths: 95, English: 24, PE: 82, Art: 49, History: 58, IT: 85, Biology: 21, German: 24 },
+      { Name: 'Amelia', Maths: 92, English: 98, PE: 60, Art: 45, History: 82, IT: 85, Biology: 78, German: 92 },
+      { Name: 'Brooke', Maths: 27, English: 35, PE: 84, Art: 45, History: 23, IT: 50, Biology: 15, German: 22 },
+      { Name: 'Chloe', Maths: 78, English: 9, PE: 83, Art: 66, History: 80, IT: 63, Biology: 29, German: 12 },
+      { Name: 'Dylan', Maths: 92, English: 47, PE: 91, Art: 56, History: 47, IT: 81, Biology: 60, German: 51 },
+      { Name: 'Emily', Maths: 67, English: 3, PE: 98, Art: 77, History: 25, IT: 100, Biology: 50, German: 34 },
+      { Name: 'Evan', Maths: 53, English: 60, PE: 97, Art: 74, History: 21, IT: 78, Biology: 72, German: 75 },
+      { Name: 'Finn', Maths: 42, English: 73, PE: 65, Art: 52, History: 43, IT: 61, Biology: 82, German: 85 },
+      { Name: 'Gia', Maths: 50, English: 81, PE: 85, Art: 80, History: 43, IT: 46, Biology: 73, German: 91 },
+      { Name: 'Grace', Maths: 24, English: 95, PE: 98, Art: 94, History: 89, IT: 25, Biology: 91, German: 69 },
+      { Name: 'Harper', Maths: 69, English: 9, PE: 97, Art: 77, History: 56, IT: 94, Biology: 38, German: 2 },
+      { Name: 'Hayden', Maths: 2, English: 72, PE: 74, Art: 53, History: 40, IT: 40, Biology: 66, German: 64 },
+      { Name: 'Isabella', Maths: 8,English: 99, PE: 84, Art: 69, History: 86, IT: 20, Biology: 86, German: 85 },
+      { Name: 'Jesse', Maths: 63, English: 39, PE: 93, Art: 84, History: 30, IT: 71, Biology: 86, German: 19 },
+      { Name: 'Jordan', Maths: 11,English: 80, PE: 87, Art: 68, History: 88, IT: 20, Biology: 96, German: 81 },
+      { Name: 'Kai', Maths: 27, English: 65, PE: 62, Art: 92, History: 81, IT: 28, Biology: 94, German: 84 },
+      { Name: 'Kaitlyn', Maths: 7, English: 70, PE: 51, Art: 77, History: 79, IT: 29, Biology: 96, German: 73 },
+      { Name: 'Lydia', Maths: 75, English: 49, PE: 98, Art: 55, History: 68, IT: 67, Biology: 91, German: 87 },
+      { Name: 'Mark', Maths: 51, English: 70, PE: 87, Art: 40, History: 97, IT: 94, Biology: 60, German: 95 },
+      { Name: 'Monica', Maths: 62, English: 89, PE: 98, Art: 90, History: 85, IT: 66, Biology: 84, German: 99 },
+      { Name: 'Nicole', Maths: 70, English: 8, PE: 84, Art: 64, History: 26, IT: 70, Biology: 12, German: 8 },
+      { Name: 'Oswin', Maths: 96, English: 14, PE: 62, Art: 35, History: 56, IT: 98, Biology: 5, German: 12 },
+      { Name: 'Peter', Maths: 98, English: 10, PE: 71, Art: 41, History: 55, IT: 66, Biology: 38, German: 29 },
+      { Name: 'Renette', Maths: 96,English: 39, PE: 82, Art: 43, History: 26, IT: 92, Biology: 20, German: 2 },
+      { Name: 'Robert', Maths: 78, English: 32, PE: 98, Art: 55, History: 56, IT: 81, Biology: 46, German: 29 },
+      { Name: 'Sasha', Maths: 87, English: 1, PE: 84, Art: 70, History: 56, IT: 88, Biology: 49, German: 2 },
+      { Name: 'Sylvia', Maths: 86,English: 12, PE: 97, Art: 4, History: 19, IT: 80, Biology: 36, German: 8 },
+      { Name: 'Thomas', Maths: 76, English: 47, PE: 99, Art: 34, History: 48, IT: 92, Biology: 30, German: 38 },
+      { Name: 'Victor', Maths: 5, English: 60, PE: 70, Art: 65, History: 97, IT: 19, Biology: 63, German: 83 },
+      { Name: 'Zack', Maths: 19, English: 84, PE: 83, Art: 42, History: 93, IT: 15, Biology: 98, German: 95 }
+    ];
+    drawChart(studentDataset.value);
+    }
+    return rows.value;
+  });
+
+  const loadContent = async (htmlContent, filePath) => {
     try {
       const response = await fetch(filePath);
       const data = await response.text();
-      textArray.value = data.split('\n');
+      htmlContent.value = data;
     } catch (error) {
       console.error('Error loading data:', error);
     }
   };
 
-  const drawChart = async () => {
+  const drawChart = async (dataset) => {
     try {
-      const response = await fetch('/data/cars.csv');
-      const csv = await response.text();
-      let newData = spcd3.loadCSV(csv);
+      let newData = spcd3.loadCSV(dataset);
       spcd3.drawChart(newData);
     } catch (error) {
         console.error('Error drawing data:', error);
     }
   };
 
-  const handleStepEnter = (element) => {
-    if (element.index == 1 && element.direction == 'down') {
-      spcd3.setInversionStatus('Speed', 'descending');
-    } else if (element.index == 2 && element.direction == 'down') {
-      spcd3.swap('Speed', 'Fuel Efficiency');
-    } else if (element.index == 3 && element.direction == 'down') {
-      spcd3.hide('Price');
-    } else if (element.index == 4 && element.direction == 'down') {
-      spcd3.setDimensionRange('Fuel Efficiency', 0, 15);
-    } else if (element.index == 5 && element.direction == 'down') {
-      spcd3.setFilter('Fuel Efficiency', 5, 10);
-    } else if (element.index == 6 && element.direction == 'down') {
-      spcd3.setSelected('Car C');
-    } /*else if (element.index == 5 && element.direction == 'up') {
-      spcd3.toggleSelection('Delta')
-    }*/
+  const loadDataset = async (filePath) => {
+    try {
+      const response = await fetch(filePath);
+      const csv = await response.text();
+      return csv;
+    } catch (error) {
+      console.error('Error loading dataset:', error);
+      return null;
+    }
   };
 
-  onMounted(() => {
-    loadContent(introText, '/content/introduction.txt');
-    loadContent(dataText, 'content/data.txt')
-    loadContent(interactivityText, 'content/interactivity.txt')
-    drawChart();
+  const onScroll = () => {
+    const currentScrollTop = textArea.value.scrollTop;
+    let direction = currentScrollTop > lastScrollTop.value ? 'down' : 'up';
+
+    lastScrollTop.value = currentScrollTop <= 0 ? 0 : currentScrollTop;
+    handleParagraphInView(direction);
+  };
+
+  const handleParagraphInView = (direction) => {
+    const paragraphs = textArea.value.querySelectorAll("p");
+    let currentParagraph = null;
+  
+    paragraphs.forEach(paragraph => {
+      const rect = paragraph.getBoundingClientRect();
+      if (rect.top >= 0 && rect.bottom <= window.innerHeight) {
+        currentParagraph = paragraph;
+        triggerActionBasedOnParagraph(currentParagraph.id, direction);
+      }
+    });
+  };
+
+  const triggerActionBasedOnParagraph = (paragraphId, direction) => {
+    switch (paragraphId) {
+      case 'invert':
+        if (direction === 'down') {
+          spcd3.setInversionStatus('Speed', 'descending');
+        } else {
+          spcd3.setInversionStatus('Speed', 'ascending');
+        }
+        break;
+      case 'move':
+        if (direction === 'down') {
+          spcd3.swap('Speed', 'Fuel Efficiency');
+        } else {
+          spcd3.swap('Speed', 'Fuel Efficiency');
+        }
+        break;
+      default:
+        console.log('No action for this paragraph');
+    }
+  };
+
+  onMounted(async () => {
+    carsDataset.value = await loadDataset('/data/cars.csv');
+    studentDataset.value = await loadDataset('/data/student-marks.csv');
+    loadContent(introText, '/content/introduction.html');
+    loadContent(dataText, 'content/data.html');
+    loadContent(interactivityText, 'content/interactivity.html');
+    loadContent(carsDatasetText, 'content/carsdata.html');
+    loadContent(studentDatasetText, 'content/studentmarksdata.html');
   });
 </script>
   
@@ -165,6 +274,8 @@
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  height: 100vh;
+  overflow-y: scroll;
   /*background-color: rgba(255, 255, 0, 0.3);*/
 }
   
@@ -181,9 +292,11 @@
 }
 
 .textContent {
+  height: 1500px;
   width: 45rem;
   padding: 2rem;
 }
+
   
 .mainText {
   text-align: justify;
@@ -234,10 +347,6 @@ ul {
   padding-left: 1rem;
 }
 
-ul:hover {
-  border-color: rgba(0, 129, 175, 0.5);
-}
-
 button {
   padding: 0.5rem;
   margin-top: 0.5rem;
@@ -248,12 +357,23 @@ button {
   margin-left: 2rem;
 }
 
-input {
+input[type="text"] {
   width: 100%;
   padding: 0.313rem;
   box-sizing: border-box;
 }
-  
+
+.radio-group {
+  display: flex;
+  gap: 5rem;
+  padding-left: 2rem;
+  padding-bottom: 3rem;
+}
+
+input[type="radio"] {
+  padding-left: 2rem;
+}
+
 @media (max-width: 40rem) {
   .content {
     flex-direction: column;
@@ -267,4 +387,3 @@ input {
   }
 }
 </style>
-  
