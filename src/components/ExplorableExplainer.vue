@@ -15,25 +15,7 @@
             <div class="mainText">
               <h2>2. Multidimensional Data</h2>
               <div v-html="dataText"></div>
-              <h4>Choose a Dataset:</h4>
-              <div class="radio-group">
-                <input 
-                  type="radio" 
-                  id="cars"
-                  class="radio"
-                  v-model="selectedDataset" 
-                  value="cars" 
-                />
-                <label for="cars">Cars</label>
-                <input 
-                  type="radio" 
-                  id="students"
-                  class="radio"
-                  v-model="selectedDataset" 
-                  value="students" 
-                />
-                <label for="students">Student Marks</label>
-              </div>
+              <h4>Example Datasets Cars:</h4>
               <div v-if="selectedDataset === 'cars'">
                 <div v-html="carsDatasetText"></div>
               </div>
@@ -44,20 +26,42 @@
               <table border="1">
                 <thead>
                   <tr>
-                    <th v-for="(column, index) in columns" :key="index">{{ column }}</th>
+                    <th v-for="(column, index) in columns" :key="index">{{ column }}
+                    </th>
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-for="(row, rowIndex) in selectedData" :key="rowIndex">
                     <td v-for="(column, colIndex) in columns" :key="colIndex">
                       <input v-model="row[column]" type="text"/>
-                    </td>  
+                    </td>
+                    <td>
+                    <button class="delete" @click="deleteRow(rowIndex)">Delete</button>
+                    </td>
                   </tr>
                 </tbody>
+                <tfoot>
+                  <tr>
+                    <td v-for="(column, index) in columns" :key="index">
+                    <button class="delete" @click="deleteColumn(index)">Delete {{ column }}</button>
+                    </td>
+                    <td></td>
+                  </tr>
+                </tfoot>
               </table>
               <button @click="addRow" id="addButton">Add Row</button>
-              <button @click="addColumn">Add Column</button>
-              <button @click="redrawChart">Redraw Chart</button>
+              <button @click="openModal">Add Column</button>
+              <button @click="redrawChart" :disabled="!isFormValid">Redraw Chart</button>
+              <div v-if="isModalOpen" class="modal">
+                <div class="modal-content">
+                  <div>Add new column name:</div>
+                  <input v-model="newColumn" type="text" placeholder="Enter column name..." />
+                  <button class="add" @click="addColumn">Add</button>
+                  <button class="add" @click="closeModal">Cancel</button>
+               </div>
+              </div>
+              
               </div>
             </div>
             <div class="mainText">
@@ -83,6 +87,8 @@
   const carsDataset = ref('');
   const studentDataset = ref('');
   const selectedDataset = ref('cars');
+  const isModalOpen = ref(false);
+  const newColumn = ref('');
 
   const addRow = () => {
     const newRow = {};
@@ -92,15 +98,40 @@
     rows.value.push(newRow);
   };
 
+  const deleteRow = (index) => {
+    if (index >= 0 && index < rows.value.length) {
+      rows.value.splice(index, 1);
+    }
+    redrawChart();
+  };
+
+  const openModal = () => {
+    isModalOpen.value = true;
+  };
+
+  const closeModal = () => {
+    isModalOpen.value = false;
+    newColumn.value = '';
+  };
+
   const addColumn = () => {
-    const newColumnName = prompt('Enter new column name:');
-    if (newColumnName) {
-      columns.value.push(newColumnName);
-      rows.value.forEach((row) => {
-        row[newColumnName] = '';
+    if (newColumn.value.trim()) {
+      columns.value.push(newColumn.value.trim());
+      rows.value.forEach(row => {
+        row[newColumn.value.trim()] = '';
       });
+      closeModal();
     }
   };
+
+  const deleteColumn = (index) => {
+      columns.value.splice(index, 1);
+      rows.value.forEach(row => {
+        const columnName = columns.value[index];
+        delete row[columnName];
+      });
+      redrawChart();
+    };
 
   const redrawChart = () => {
     const headers = columns.value.join(','); 
@@ -113,6 +144,15 @@
     let newData = spcd3.loadCSV(csvData);
     spcd3.drawChart(newData);
   };
+
+  const isFormValid = computed(() => {
+    return rows.value.every(row =>
+      columns.value.every(column => {
+        const value = row[column];
+        return value && String(value).trim() !== '';
+      })
+    );
+  });
 
   const columns = ref(['Car', 'Speed', 'FuelEfficiency', 'Weight', 'Price']);
 
@@ -292,11 +332,10 @@
 }
 
 .textContent {
-  height: 1500px;
+  height: 93.75rem;
   width: 45rem;
   padding: 2rem;
 }
-
   
 .mainText {
   text-align: justify;
@@ -328,29 +367,74 @@ table {
   margin-left: 2rem;
 }
 
-th, td {
+td {
+  background-color: rgba(255, 255, 0, 0.3);
   padding: 0.2rem;
   text-align: left;
 }
 
 th {
   background-color: rgba(0, 129, 175, 0.3);
-}
-
-td {
-  background-color: rgba(255, 255, 0, 0.3);
+  text-align: left;
+  padding: 0.3rem;
 }
 
 ul {
   border-left: 1rem solid transparent;
   transition: border-color 0.3s ease;
-  padding-left: 1rem;
+  padding-left: 2rem;
+}
+
+ul ul {
+  padding-left: 0.5rem;
+}
+
+ol {
+  border-left: 1rem solid transparent;
+  transition: border-color 0.3s ease;
+}
+
+ul:hover {
+  border-color: rgba(0, 129, 175, 0.5);
+}
+
+#test {
+  border-left: 1rem solid transparent;
+  transition: border-color 0.3s ease;
+}
+
+#test:hover {
+  border-color: white;
+}
+
+ol:hover {
+  border-color: rgba(0, 129, 175, 0.5);
 }
 
 button {
   padding: 0.5rem;
   margin-top: 0.5rem;
   margin-right: 0.5rem;
+}
+
+.delete {
+  padding: 0.3rem;
+  margin-top: 0;
+  margin-right: 0;
+}
+
+.add {
+  padding: 0.3rem;
+  margin-top: 0.3rem;
+  margin-right: 0.3rem;
+}
+
+tfoot button {
+  width: 100%;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #addButton {
@@ -371,6 +455,10 @@ input[type="text"] {
 }
 
 input[type="radio"] {
+  padding-left: 2rem;
+}
+
+.modal-content {
   padding-left: 2rem;
 }
 
