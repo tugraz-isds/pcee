@@ -1,6 +1,6 @@
 <template>
     <div class="explorable-explainer">
-      <div class="content" @scroll="onScroll" ref="textArea">
+      <div class="content" ref="textArea">
         <div id="parallelcoords" class="mainChart"></div>
         <div class="textContent">
             <div class="intro">
@@ -66,7 +66,7 @@
             </div>
             <div class="mainText">
               <h2>3. Interactive Data Exploration</h2>
-              <div v-html="interactivityText"></div>
+              <div class="trigger" v-html="interactivityText" ref="trigger"></div>
             </div>
         </div>
       </div>
@@ -74,7 +74,7 @@
   </template>
   
   <script setup>
-  import { ref, onMounted, computed } from 'vue';
+  import { ref, onMounted, computed, nextTick } from 'vue';
   import * as spcd3 from '../spcd3'
 
   const introText = ref('');
@@ -83,7 +83,7 @@
   const carsDatasetText = ref('');
   const studentDatasetText = ref('');
   const textArea = ref(null);
-  const lastScrollTop = ref(0);
+  const trigger = ref(null);
   const carsDataset = ref('');
   const studentDataset = ref('');
   const selectedDataset = ref('cars');
@@ -221,10 +221,28 @@
       const response = await fetch(filePath);
       const data = await response.text();
       htmlContent.value = data;
+
+      nextTick(() => {
+        setupIntersectionObserver();
+      });
     } catch (error) {
       console.error('Error loading data:', error);
     }
   };
+
+  const setupIntersectionObserver = () => {
+      const paragraphs = document.querySelectorAll('.trigger p');
+      const observer = new IntersectionObserver((entries, observer) => {
+        handleIntersection(entries);
+      }, {
+        root: null,
+        threshold: 0.5
+      });
+
+      paragraphs.forEach(paragraph => {
+        observer.observe(paragraph);
+      });
+    };
 
   const drawChart = async (dataset) => {
     try {
@@ -246,47 +264,34 @@
     }
   };
 
-  const onScroll = () => {
-    const currentScrollTop = textArea.value.scrollTop;
-    let direction = currentScrollTop > lastScrollTop.value ? 'down' : 'up';
-
-    lastScrollTop.value = currentScrollTop <= 0 ? 0 : currentScrollTop;
-    handleParagraphInView(direction);
-  };
-
-  const handleParagraphInView = (direction) => {
-    const paragraphs = textArea.value.querySelectorAll("p");
-    let currentParagraph = null;
-  
-    paragraphs.forEach(paragraph => {
-      const rect = paragraph.getBoundingClientRect();
-      if (rect.top >= 0 && rect.bottom <= window.innerHeight) {
-        currentParagraph = paragraph;
-        triggerActionBasedOnParagraph(currentParagraph.id, direction);
-      }
-    });
-  };
-
-  const triggerActionBasedOnParagraph = (paragraphId, direction) => {
-    switch (paragraphId) {
-      case 'invert':
-        if (direction === 'down') {
+  const updateChart = (index) => {
+      switch (parseInt(index)) {
+        case 1:
           spcd3.setInversionStatus('Speed', 'descending');
-        } else {
+          break;
+        case 2:
+          spcd3.swap('Speed', 'Fuel Efficiency');
+          break;
+        case 3:
           spcd3.setInversionStatus('Speed', 'ascending');
+          break;
+        case 4:
+          break;
+        case 5:
+          break;
+        case 6:
+          break;
+      }
+    };
+
+  const handleIntersection = (entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const index = entry.target.id.split('-')[1];
+          updateChart(index);
         }
-        break;
-      case 'move':
-        if (direction === 'down') {
-          spcd3.swap('Speed', 'Fuel Efficiency');
-        } else {
-          spcd3.swap('Speed', 'Fuel Efficiency');
-        }
-        break;
-      default:
-        console.log('No action for this paragraph');
-    }
-  };
+      });
+    };
 
   onMounted(async () => {
     carsDataset.value = await loadDataset('/data/cars.csv');
@@ -460,6 +465,13 @@ input[type="radio"] {
 
 .modal-content {
   padding-left: 2rem;
+}
+
+.header {
+  font-size: large;
+  color: rgba(0, 128, 175, 0.786);
+  padding-bottom: 2rem;
+  margin-bottom: 2rem;
 }
 
 @media (max-width: 40rem) {
