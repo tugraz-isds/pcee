@@ -68,6 +68,10 @@
               <h2>3. Interactive Data Exploration</h2>
               <div class="trigger" v-html="interactivityText" ref="trigger"></div>
             </div>
+            <div class="mainText">
+              <h2>4. Usage</h2>
+              <div v-html="usageText"></div>
+            </div>
         </div>
       </div>
     </div>
@@ -80,6 +84,7 @@
   const introText = ref('');
   const dataText = ref('');
   const interactivityText = ref('');
+  const usageText = ref('');
   const carsDatasetText = ref('');
   const studentDatasetText = ref('');
   const textArea = ref(null);
@@ -96,6 +101,19 @@
       newRow[column] = '';
     });
     rows.value.push(newRow);
+  };
+
+  const addClickEvent = () => {
+      const button = document.getElementById('addOutlier');
+      if (button) {
+        button.addEventListener('click', addOutlier);
+      }
+    }
+
+  const addOutlier = () => {
+    rows.value.push( { Car: 'Car G', Speed: 140, FuelEfficiency: 6, Weight: 1000, Price: 15 });
+    redrawChart();
+    document.getElementById('addOutlier').disabled = true;
   };
 
   const deleteRow = (index) => {
@@ -224,6 +242,7 @@
 
       nextTick(() => {
         setupIntersectionObserver();
+        addClickEvent();
       });
     } catch (error) {
       console.error('Error loading data:', error);
@@ -270,7 +289,7 @@
           spcd3.setInversionStatus('Speed', 'descending');
           break;
         case 2:
-          spcd3.swap('Speed', 'Fuel Efficiency');
+          spcd3.swap('Speed', 'Price');
           break;
         case 3:
           spcd3.setInversionStatus('Speed', 'ascending');
@@ -299,6 +318,7 @@
     loadContent(introText, '/content/introduction.html');
     loadContent(dataText, 'content/data.html');
     loadContent(interactivityText, 'content/interactivity.html');
+    loadContent(usageText, 'content/usage.html');
     loadContent(carsDatasetText, 'content/carsdata.html');
     loadContent(studentDatasetText, 'content/studentmarksdata.html');
   });
@@ -350,6 +370,10 @@
 
 h2 {
   color: rgba(0, 129, 175, 0.5);
+}
+
+h3 {
+  padding-left: 2rem;
 }
 
 h4 {
@@ -472,6 +496,23 @@ input[type="radio"] {
   color: rgba(0, 128, 175, 0.786);
   padding-bottom: 2rem;
   margin-bottom: 2rem;
+}
+
+.option-header {
+  font-weight: bold;
+}
+
+.options-header {
+  font-weight: bold;
+  padding-left: 2rem;
+}
+
+.options-header:hover {
+  border-color: white;
+}
+
+.italic {
+  font-style: italic;
 }
 
 @media (max-width: 40rem) {

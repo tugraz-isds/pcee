@@ -1,4 +1,4 @@
-Car,Speed,Fuel Efficiency,Weight,Price
+Car,Speed,FuelEfficiency,Weight,Price
 Car A,180,8,1500,25
 Car B,200,7.5,1400,28
 Car C,160,9,1600,22

@@ -1,0 +1,58 @@
+<p>Parallel coordinates are used for:
+    
+<ul>
+    <li>Discovering clusters and outliers.</li>
+    <li>Find correlations between dimensions.</li>
+</ul>
+</p>
+<p><span class="header">Identifying Outliers and Clusters of Records</span><br>
+
+Outliers stand out clearly because their polylines follow a different path to 
+those of other records.</p><br>
+
+<p><span class="option-header">Example outliers:</span><br>
+With the current dataset, there are no outliers to identify, but we can add 
+one.
+<button id="addOutlier">Add outlier</button><br>
+What can you observe?
+<br>
+A: Car G is completely outside the norm and has no similarities with the other cars.
+</p>
+
+<p>Clusters are groups of data records which have similar characteristics, so 
+their polylines follow similar paths.<br></p>
+
+<!--<div>
+    <img :src="require('@src/assets/images/clusters-and-outliers.png')" 
+    alt="Scatterplots in the top row and their corresponding PC in the bottom 
+    row. The first five pairs show different examples of clustering. The 
+    rightmost pair shows an outlier.">
+</div>-->
+
+<p><span class="header">Looking for Correlations Between Dimensions</span><br>
+
+If two dimensions are positively correlated, high values in one dimension will 
+map to high values in the other, and low values to low values. If low values 
+map to high values and vice versa, the two dimensions are negatively correlated.
+
+</p>
+
+<p><span class="option-header">Example negative correlation:</span><br>
+
+<span class=italic>Place weight next to speed!</span><br>
+What can you observe?
+<br>
+A: Cars with higher speeds tend to be lighter than those with lower speeds. 
+This suggests that there is a negative correlation between speed and weight.
+</p>
+
+<p><span class="option-header">Example positive correlation:</span><br>
+<span class=italic>Place price next to speed!</span><br>
+What can you observe?
+<br>
+A: Cars with higher speeds tend to be more expensive than those 
+with lower speeds. This indicates a positive correlation between speed and 
+price. 
+<br>
+
+</p>
