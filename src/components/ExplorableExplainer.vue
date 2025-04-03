@@ -72,6 +72,10 @@
               <h2>4. Usage</h2>
               <div v-html="usageText"></div>
             </div>
+            <div class="mainText">
+              <h2>5. Case Study</h2>
+              <div class="trigger" v-html="caseStudyText" ref="trigger"></div>
+            </div>
         </div>
       </div>
     </div>
@@ -85,6 +89,7 @@
   const dataText = ref('');
   const interactivityText = ref('');
   const usageText = ref('');
+  const caseStudyText = ref('');
   const carsDatasetText = ref('');
   const studentDatasetText = ref('');
   const textArea = ref(null);
@@ -94,6 +99,7 @@
   const selectedDataset = ref('cars');
   const isModalOpen = ref(false);
   const newColumn = ref('');
+
 
   const addRow = () => {
     const newRow = {};
@@ -257,7 +263,6 @@
         root: null,
         threshold: 0.5
       });
-
       paragraphs.forEach(paragraph => {
         observer.observe(paragraph);
       });
@@ -292,13 +297,38 @@
           spcd3.swap('Speed', 'Price');
           break;
         case 3:
-          spcd3.setInversionStatus('Speed', 'ascending');
           break;
         case 4:
           break;
         case 5:
           break;
         case 6:
+          break;
+        case 7:
+          break;
+        case 8:
+          drawChart(studentDataset.value);
+          break;
+        case 9:
+          const dimensions1 = spcd3.getAllDimensionNames();
+          dimensions1.forEach(function(dimension) {
+            if (!isNaN(spcd3.getMinValue(dimension))) {
+              let min = 0;
+              let max = spcd3.getMaxValue(dimension);
+              spcd3.setDimensionRangeRounded(dimension, min, max);
+            }
+          });
+          break;
+        case 10:
+          spcd3.setSelected('Sylvia');
+          break;
+        case 11:
+          break;
+        case 12:
+          drawChart(studentDataset.value);
+          spcd3.move('German', true, 'English');
+          break;
+        case 13:
           break;
       }
     };
@@ -319,6 +349,7 @@
     loadContent(dataText, 'content/data.html');
     loadContent(interactivityText, 'content/interactivity.html');
     loadContent(usageText, 'content/usage.html');
+    loadContent(caseStudyText, 'content/casestudy.html');
     loadContent(carsDatasetText, 'content/carsdata.html');
     loadContent(studentDatasetText, 'content/studentmarksdata.html');
   });
