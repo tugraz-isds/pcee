@@ -1,89 +1,92 @@
 <template>
-    <div class="explorable-explainer">
-      <div class="content" ref="textArea">
-        <div id="parallelcoords" class="mainChart"></div>
-        <div class="textContent">
-            <div class="intro">
-              <h1>Parallel Coordinates</h1>
-              <h1>An Explorable Explainer</h1>
-              <h3>By Romana Gruber</h3>
-            </div>
-            <div class="mainText">
-              <h2>1. Introduction</h2>
-              <div v-html="introText"></div>
-            </div>
-            <div class="mainText">
-              <h2>2. Multidimensional Data</h2>
-              <div v-html="dataText"></div>
-              <h4>Example Datasets Cars:</h4>
-              <div v-if="selectedDataset === 'cars'">
-                <div v-html="carsDatasetText"></div>
-              </div>
-              <div v-if="selectedDataset === 'students'">
-                <div v-html="studentDatasetText"></div>
-              </div>
-              <div v-if="selectedDataset">
-              <table border="1">
-                <thead>
-                  <tr>
-                    <th v-for="(column, index) in columns" :key="index">{{ column }}
-                    </th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(row, rowIndex) in selectedData" :key="rowIndex">
-                    <td v-for="(column, colIndex) in columns" :key="colIndex">
-                      <input v-model="row[column]" type="text"/>
-                    </td>
-                    <td>
-                    <button class="delete" @click="deleteRow(rowIndex)">Delete</button>
-                    </td>
-                  </tr>
-                </tbody>
-                <tfoot>
-                  <tr>
-                    <td v-for="(column, index) in columns" :key="index">
-                    <button class="delete" @click="deleteColumn(index)">Delete {{ column }}</button>
-                    </td>
-                    <td></td>
-                  </tr>
-                </tfoot>
-              </table>
-              <button @click="addRow" id="addButton">Add Row</button>
-              <button @click="openModal">Add Column</button>
-              <button @click="redrawChart" :disabled="!isFormValid">Redraw Chart</button>
-              <div v-if="isModalOpen" class="modal">
-                <div class="modal-content">
-                  <div>Add new column name:</div>
-                  <input v-model="newColumn" type="text" placeholder="Enter column name..." />
-                  <button class="add" @click="addColumn">Add</button>
-                  <button class="add" @click="closeModal">Cancel</button>
-               </div>
-              </div>
-              
-              </div>
-            </div>
-            <div class="mainText">
-              <h2>3. Interactive Data Exploration</h2>
-              <div class="trigger" v-html="interactivityText" ref="trigger"></div>
-            </div>
-            <div class="mainText">
-              <h2>4. Usage</h2>
-              <div v-html="usageText"></div>
-            </div>
-            <div class="mainText">
-              <h2>5. Case Study</h2>
-              <div class="trigger" v-html="caseStudyText" ref="trigger"></div>
-            </div>
+  <div id="sticky-parallax-header">
+    <div>Parallel Coordinates - An Explorable Explainer</div> 
+  </div>
+
+  <div class="header-spacer"></div>
+
+  <div class="explorable-explainer">
+    
+    <div class="chart-container" ref="textArea">
+      <div id="parallelcoords" class="main-chart"></div>
+    </div>    
+      
+    <div class="text-container">
+      <div class="main-text">
+        <h2>1. Introduction</h2>
+        <div v-html="introText"></div>
+      </div>
+      <div class="main-text">
+        <h2>2. Multidimensional Data</h2>
+        <div v-html="dataText"></div>
+        <h4>Example Datasets Cars:</h4>
+        <div v-if="selectedDataset === 'cars'">
+          <div v-html="carsDatasetText"></div>
+        </div>
+        <div v-if="selectedDataset === 'students'">
+          <div v-html="studentDatasetText"></div>
         </div>
       </div>
+        <div class="table-container" v-if="selectedDataset">
+          <table border="1">
+            <thead>
+              <tr>
+                <th v-for="(column, index) in columns" :key="index">{{ column }}
+                </th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(row, rowIndex) in selectedData" :key="rowIndex">
+              <td v-for="(column, colIndex) in columns" :key="colIndex">
+                <input v-model="row[column]" type="text"/>
+              </td>
+              <td>
+                <button class="delete" @click="deleteRow(rowIndex)">Delete</button>
+              </td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr>
+              <td v-for="(column, index) in columns" :key="index">
+                <button class="delete" @click="deleteColumn(index)">Delete {{ column }}</button>
+              </td>
+              <td></td>
+              </tr>
+            </tfoot>
+          </table>
+          <button @click="addRow">Add Row</button>
+          <button @click="openModal">Add Column</button>
+          <button @click="redrawChart" :disabled="!isFormValid">Redraw Chart</button>
+          <div v-if="isModalOpen" class="modal">
+            <div class="modal-content">
+              <div>Add new column name:</div>
+              <input v-model="newColumn" type="text" placeholder="Enter column name..." />
+              <button class="add" @click="addColumn">Add</button>
+              <button class="add" @click="closeModal">Cancel</button>
+            </div>
+          </div>      
+        </div>
+      
+      <div class="main-text">
+        <h2>3. Interactive Data Exploration</h2>
+        <div class="trigger" v-html="interactivityText" ref="trigger"></div>
+      </div>
+      <div class="main-text">
+        <h2>4. Usage</h2>
+        <div v-html="usageText"></div>
+      </div>
+      <div class="main-text">
+        <h2>5. Case Study</h2>
+        <div class="trigger" v-html="caseStudyText" ref="trigger"></div>
+      </div>
     </div>
-  </template>
-  
-  <script setup>
-  import { ref, onMounted, computed, nextTick } from 'vue';
-  import * as spcd3 from '../spcd3'
+  </div>
+</template>
+
+<script setup>
+  import { ref, onMounted, computed, nextTick, watch } from 'vue';
+  import * as spcd3 from '../../public/lib/spcd3';
 
   const introText = ref('');
   const dataText = ref('');
@@ -178,6 +181,13 @@
     );
   });
 
+  /*watch(selectedData, async (newVal) => {
+    if (newVal) {
+      await nextTick();
+      drawChart(carsDataset.value);
+    }
+  });*/
+
   const columns = ref(['Car', 'Speed', 'FuelEfficiency', 'Weight', 'Price']);
 
   const rows = ref([
@@ -271,7 +281,9 @@
   const drawChart = async (dataset) => {
     try {
       let newData = spcd3.loadCSV(dataset);
-      spcd3.drawChart(newData);
+      if (newData.length !== 0) {
+          spcd3.drawChart(newData);
+      }
     } catch (error) {
         console.error('Error drawing data:', error);
     }
@@ -353,50 +365,124 @@
     loadContent(carsDatasetText, 'content/carsdata.html');
     loadContent(studentDatasetText, 'content/studentmarksdata.html');
   });
+
 </script>
   
 <style>
-.explorable-explainer {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: flex-start;
-  font-family: Verdana, Geneva, Tahoma, sans-serif;
-  font-size: medium;
-  line-height: 2;
-}
-  
-.content {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  height: 100vh;
-  overflow-y: scroll;
-  /*background-color: rgba(255, 255, 0, 0.3);*/
-}
-  
-.mainChart {
-  width: 45rem;
-  height: 50rem;
-  background-color: white;
-  position: sticky;
-  top: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding-left: 3rem;
+
+* {
+  box-sizing: border-box;
 }
 
-.textContent {
-  height: 93.75rem;
-  width: 45rem;
-  padding: 2rem;
+#sticky-parallax-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  color: black;
+  background: linear-gradient(to bottom, rgba(0, 129, 175, 0.5), rgba(255, 255, 0, 0.3));
+  backdrop-filter: blur(4px);
+  pointer-events: none;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+
+  will-change: transform, height, font-size;
+  contain: layout style;
+
+  animation: sticky-parallax-header-move-and-size linear forwards;
+  animation-timeline: scroll();
+  animation-range: 0vh 90vh;
 }
-  
-.mainText {
+
+
+@keyframes sticky-parallax-header-move-and-size {
+	from {
+		background-position: 50% 0;
+		height: 100vh;
+    width: 100%;
+		font-size: calc(3vw + 1rem);
+	}
+	to {
+		background-position: 50% 100%;
+		background-color: rgba(0, 129, 175, 0.5);
+		height: 10vh;
+    width: 100%;
+		font-size: 2rem;
+	}
+}
+
+.header-spacer {
+  height: 100vh;
+}
+
+.explorable-explainer {
+  display: flex;
+  gap: 1rem;
+}
+
+.chart-container {
+  flex: 1;
+  position: relative;
+}
+
+.main-chart {
+  position: sticky;
+  top: calc(10vh + 2rem);
+  height: 80vh;
+  width: 100%;
+  padding-top: 2.5rem;
+}
+
+.text-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: calc(100% - 2rem);
+  max-width: 100%;
+}
+
+.main-text {
   text-align: justify;
-  padding-top: 3rem;
-  padding-right: 3rem;
+  width: calc(100% - 2rem);
+  max-width: 100%;
+  background: rgba(237, 237, 231, 0.972);
+  border-radius: 1rem;
+  margin-top: 2rem;
+  opacity: 0;
+  transform: translateY(100px);
+  padding-right: 1rem;
+  
+  animation: slide-in-from-bottom 1s ease-out forwards;
+  animation-timeline: scroll();
+  animation-range: 0vh 100vh; 
+}
+
+@keyframes slide-in-from-bottom {
+  from {
+    opacity: 0;
+    transform: translateY(100px) rotate(50deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg);
+  }
+}
+
+.table-container {
+  padding-right: 2rem;
+  padding-top: 2rem;
+}
+
+table {
+  width: 100%;
+  text-align: justify;
+  border-collapse: collapse;
 }
 
 h2 {
@@ -419,12 +505,6 @@ p {
 
 p:hover {
   border-color: rgba(0, 129, 175, 0.5);
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-left: 2rem;
 }
 
 td {
@@ -497,10 +577,6 @@ tfoot button {
   justify-content: center;
 }
 
-#addButton {
-  margin-left: 2rem;
-}
-
 input[type="text"] {
   width: 100%;
   padding: 0.313rem;
@@ -547,14 +623,14 @@ input[type="radio"] {
 }
 
 @media (max-width: 40rem) {
-  .content {
+  .chart-container {
     flex-direction: column;
   }
-  .mainChart {
+  .main-chart {
     width: 100%;
     height: 16rem;
   }
-  .textContent {
+  .text-container {
     width: 100%;
   }
 }

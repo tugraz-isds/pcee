@@ -21,6 +21,8 @@
   "author": "Romana Gruber",
   "license": "MIT",
   "dependencies": {
+    "@tauri-apps/api": "^2.4.1",
+    "@tauri-apps/cli": "^2.4.1",
     "vue": "^3.5.13",
     "vue3-scrollama": "^0.2.2"
   },
