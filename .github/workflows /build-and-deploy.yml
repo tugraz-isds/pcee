@@ -27,10 +27,10 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install dependencies
-        run: yarn
+        run: npm install
 
       - name: Build project
-        run: yarn build -- --base-href /pcee/
+        run: npm run build -- --base-href /pcee/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
