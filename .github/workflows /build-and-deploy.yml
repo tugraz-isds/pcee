@@ -30,8 +30,8 @@ jobs:
           rm -rf docs
           cp -r dist/* docs/
 
-      - name: Commit and push to main
+      - name: Commit and push to gh-pages
         run: |
           git add docs
           git commit -m "Deploy to GitHub Pages"
-          git push origin main  # Push auf den `main` Branch
+          git push origin gh-pages  # Push auf den `gh-pages` Branch
