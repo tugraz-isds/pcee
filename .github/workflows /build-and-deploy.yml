@@ -1,4 +1,4 @@
-name: Deploy Vue 3 to GitHub Pages
+name: Deploy to GitHub Pages
 
 on:
   push:
@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
@@ -22,7 +22,7 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
-      - name: Build
+      - name: Build project
         run: yarn build
 
       - name: Deploy to GitHub Pages
