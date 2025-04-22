@@ -1,38 +1,44 @@
 # pcee
 
-An explorable explainer for parallel coordinates.
+An explorable explainer which guides a reader through an interactive tutorial about parallel coordinates.
+This is a single page web application (SPA) built using [Vue3](https://vuejs.org/). 
+The project focuses on delivering a smooth and dynamic user experience without page reloads.
+
 
 ## Dependencies
 
-The explorable explainer uses the [SPCD3](https://github.com/tugraz-isds/spcd3) to generate and
-visualise parallel coordinates and [scrollama](https://github.com/russellsamora/scrollama) for scrollytelling.
-
+The explorable explainer uses [SPCD3](https://github.com/tugraz-isds/spcd3) to generate and
+visualise parallel coordinates.
 
 ## Project Setup
 
 Ensure Node version ≥ 22.0.
 
-```sh
+Open terminal and execute the following command to install all the dependencies:
+
+```
 yarn
 ```
 
 ### Compile and Hot-Reload for Development
 
-```sh
+```
 yarn dev
 ```
 
 ### Compile and Minify for Production
 
-```sh
+```
 yarn build
 ```
 
 ### Lint with [ESLint](https://eslint.org/)
 
-```sh
+```
 yarn lint
 ```
+
+**Important:** To run the build, a live web server must be started.
 
 ## Licence
 

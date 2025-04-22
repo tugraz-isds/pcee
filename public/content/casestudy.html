@@ -1,24 +1,24 @@
 <h3>The student marks dataset</h3>
 
-<p id="paragraph-8">A fictitious dataset of student marks was created by Drescher et al. [2023]. It consists of a header row, 30 rows of data (records), and 9 columns (dimensions), including the name of the student.<br>
+<p id="paragraph-1">A fictitious dataset of student marks was created by Drescher et al. [2023]. It consists of a header row, 30 rows of data (records), and 9 columns (dimensions), including the name of the student.<br>
     
 The dataset was deliberately curated to contain interesting patterns and relationships. Each row represents one student and their marks in 8 subjects. Each dimension, apart from the first, represents one subject.
 </p>
 
 
-<p id="paragraph-9">With the created parallel coordinates, note that the PE dimension in the plot ranges from 50 to 100 (and both History and IT range from 10 to 100). This is because, by default, Parallel Coordinates set the viewing range for each dimension to match the minimum and maximum values in the dataset, sometimes rounding up or down. In this case, each student is awarded between 0 and 100 points in each subject. However, in PE, no students were awarded less than 51 or higher than 99 points. For this particular dataset, it would make sense to show the range of each subject dimension from 0 to 100 since that would be more consistent and better represent the original data domain.
+<p id="paragraph-2">With the created parallel coordinates, note that the PE dimension in the plot ranges from 50 to 100 (and both History and IT range from 10 to 100). This is because, by default, Parallel Coordinates set the viewing range for each dimension to match the minimum and maximum values in the dataset, sometimes rounding up or down. In this case, each student is awarded between 0 and 100 points in each subject. However, in PE, no students were awarded less than 51 or higher than 99 points. For this particular dataset, it would make sense to show the range of each subject dimension from 0 to 100 since that would be more consistent and better represent the original data domain.
 </p>
 
 
-<p id="paragraph-10">Exploring the records, one noticeable feature is that all students have 50 or better in PE. There is also one student who is performing particularly badly in Art compared to the other students. Hovering over this student reveals her to be student Sylvia.</p>
+<p id="paragraph-3">Exploring the records, one noticeable feature is that all students have 50 or better in PE. There is also one student who is performing particularly badly in Art compared to the other students. Hovering over this student reveals her to be student Sylvia.</p>
 
-<p id="paragraph-11"> 
+<p id="paragraph-4"> 
 Another technique to explore a dataset is to filter out records in one dimension, say by moving the upper or lower filter control up and down, and seeing how those changes are reflected in other dimensions. For example, records with scores lower than 50 in the dimension English have been filtered out, and it is noticeable that records with scores lower than 50 in the dimension German are analogously filtered out.</p>
 
-<p id="paragraph-12">
+<p id="paragraph-5">
 Often, analysts want to directly compare dimensions and look for correlations. In order to compare two dimensions, they must be placed next to each other. The dimension German has been moved next to English to test the theory that students who are good in one language also tend to be good in other languages (positive correlation). Straight, almost parallel lines between two dimensions are an indication of a positive correlation. There are not many line crossings between English and German.</p>
 
-<p id="paragraph-13">
+<p id="paragraph-6">
 For confirmation, one of the two dimensions can be inverted. In Figure 3.8, the dimension English has been inverted. A classic cross pattern can be seen, indicating a (now) negative correlation. This is a good visual confirmation that the two dimensions are, in fact, positively correlated.</p>
 
 <p></p>

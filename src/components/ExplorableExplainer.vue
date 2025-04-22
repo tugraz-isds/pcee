@@ -77,7 +77,7 @@
         <div v-html="usageText"></div>
       </div>
       <div class="main-text">
-        <h2>5. Case Study</h2>
+        <h2>5. Case Study (in progress)</h2>
         <div class="trigger" v-html="caseStudyText" ref="trigger"></div>
       </div>
     </div>
@@ -113,17 +113,61 @@
   };
 
   const addClickEvent = () => {
-      const button = document.getElementById('addOutlier');
+      const button = document.getElementById('showOutlier');
       if (button) {
-        button.addEventListener('click', addOutlier);
+        button.addEventListener('click', selectOutlier);
+      }
+      const buttonNegCorr = document.getElementById('showNegativeCorrelation');
+      if (buttonNegCorr) {
+        buttonNegCorr.addEventListener('click', showNegativeCorrelation);
+      }
+      const buttonPosCorr = document.getElementById('showPositiveCorrelation');
+      if (buttonPosCorr) {
+        buttonPosCorr.addEventListener('click', showPositiveCorrelation);
       }
     }
 
-  const addOutlier = () => {
-    rows.value.push( { Car: 'Car G', Speed: 140, FuelEfficiency: 6, Weight: 1000, Price: 15 });
-    redrawChart();
-    document.getElementById('addOutlier').disabled = true;
+  const selectOutlier = () => {
+    spcd3.toggleSelection('Car G');
+    if (spcd3.isSelected('Car G')) {
+      document.getElementById('showOutlier').textContent = 'Unselect Outlier';
+    }
+    else {
+      document.getElementById('showOutlier').textContent = 'Show Outlier';
+    }
   };
+
+  const showNegativeCorrelation = () => {
+    const pos = spcd3.getDimensionPosition('Speed');
+    if (pos === 3) {
+      spcd3.move('Speed', true, 'FuelEfficiency');
+      document.getElementById('showNegativeCorrelation').textContent = 'Redo';
+    }
+    else if (pos === 2) {
+      spcd3.move('Speed', false, 'FuelEfficiency');
+      document.getElementById('showNegativeCorrelation').textContent = 'Show negative correlation';
+    }
+    else {
+      // should not happen
+    }
+  }
+
+  const showPositiveCorrelation = () => {
+    const pos = spcd3.getDimensionPosition('Speed');
+    if (pos === 3) {
+      spcd3.move('Speed', true, 'FuelEfficiency');
+      spcd3.setInversionStatus('Speed', 'descending');
+      document.getElementById('showPositiveCorrelation').textContent = 'Redo';
+    }
+    else if (pos === 2) {
+      spcd3.move('Speed', false, 'FuelEfficiency');
+      spcd3.setInversionStatus('Speed', 'ascending');
+      document.getElementById('showPositiveCorrelation').textContent = 'Show positive correlation';
+    }
+    else {
+      // should not happen
+    }
+  }
 
   const deleteRow = (index) => {
     if (index >= 0 && index < rows.value.length) {
@@ -196,7 +240,8 @@
     { Car: 'Car C', Speed: 160, FuelEfficiency: 9, Weight: 1600, Price: 22 },
     { Car: 'Car D', Speed: 190, FuelEfficiency: 8.5, Weight: 1450, Price: 27 },
     { Car: 'Car E', Speed: 170, FuelEfficiency: 10, Weight: 1550, Price: 20 },
-    { Car: 'Car F', Speed: 210, FuelEfficiency: 7, Weight: 1300, Price: 30 }
+    { Car: 'Car F', Speed: 210, FuelEfficiency: 7, Weight: 1300, Price: 30 },
+    { Car: 'Car G', Speed: 140, FuelEfficiency: 5, Weight: 1700, Price: 15 }
   ]);
 
   const selectedData = computed(() => {
@@ -208,7 +253,8 @@
     { Car: 'Car C', Speed: 160, FuelEfficiency: 9, Weight: 1600, Price: 22 },
     { Car: 'Car D', Speed: 190, FuelEfficiency: 8.5, Weight: 1450, Price: 27 },
     { Car: 'Car E', Speed: 170, FuelEfficiency: 10, Weight: 1550, Price: 20 },
-    { Car: 'Car F', Speed: 210, FuelEfficiency: 7, Weight: 1300, Price: 30 }
+    { Car: 'Car F', Speed: 210, FuelEfficiency: 7, Weight: 1300, Price: 30 },
+    { Car: 'Car G', Speed: 140, FuelEfficiency: 5, Weight: 1700, Price: 15 }
     ];
     drawChart(carsDataset.value);
     } else if (selectedDataset.value === 'students') {
@@ -303,25 +349,9 @@
   const updateChart = (index) => {
       switch (parseInt(index)) {
         case 1:
-          spcd3.setInversionStatus('Speed', 'descending');
-          break;
-        case 2:
-          spcd3.swap('Speed', 'Price');
-          break;
-        case 3:
-          break;
-        case 4:
-          break;
-        case 5:
-          break;
-        case 6:
-          break;
-        case 7:
-          break;
-        case 8:
           drawChart(studentDataset.value);
           break;
-        case 9:
+        case 2:
           const dimensions1 = spcd3.getAllDimensionNames();
           dimensions1.forEach(function(dimension) {
             if (!isNaN(spcd3.getMinValue(dimension))) {
@@ -331,16 +361,19 @@
             }
           });
           break;
-        case 10:
+        case 3:
           spcd3.setSelected('Sylvia');
           break;
-        case 11:
+        case 4:
           break;
-        case 12:
+        case 5:
+          document.getElementById('showOutlier').disabled = true;
+          document.getElementById('showNegativeCorrelation').disabled = true;
+          document.getElementById('showPositiveCorrelation').disabled = true;
           drawChart(studentDataset.value);
           spcd3.move('German', true, 'English');
           break;
-        case 13:
+        case 6:
           break;
       }
     };
@@ -453,14 +486,15 @@
   max-width: 100%;
   background: rgba(237, 237, 231, 0.972);
   border-radius: 1rem;
-  margin-top: 2rem;
+  margin-top: 3rem;
   opacity: 0;
   transform: translateY(100px);
   padding-right: 1rem;
   
   animation: slide-in-from-bottom 1s ease-out forwards;
   animation-timeline: scroll();
-  animation-range: 0vh 100vh; 
+  animation-range: 0vh 100vh;
+  animation-duration: 1s;
 }
 
 @keyframes slide-in-from-bottom {
@@ -487,6 +521,7 @@ table {
 
 h2 {
   color: rgba(0, 129, 175, 0.5);
+  padding-left: 0.5rem;
 }
 
 h3 {
@@ -544,7 +579,7 @@ ul:hover {
 }
 
 #test:hover {
-  border-color: white;
+  border-color: rgba(237, 237, 231, 0.972);
 }
 
 ol:hover {
@@ -599,14 +634,12 @@ input[type="radio"] {
 }
 
 .header {
-  font-size: large;
-  color: rgba(0, 128, 175, 0.786);
-  padding-bottom: 2rem;
-  margin-bottom: 2rem;
+  font-size: larger;
+  color: rgba(113, 136, 44, 0.786);
 }
 
 .option-header {
-  font-weight: bold;
+  text-decoration: underline;
 }
 
 .options-header {
@@ -620,6 +653,18 @@ input[type="radio"] {
 
 .italic {
   font-style: italic;
+}
+
+#showOutlier {
+  margin-bottom: 0.5rem;
+}
+
+#showNegativeCorrelation {
+  margin-bottom: 0.5rem;
+}
+
+#showPositiveCorrelation {
+  margin-bottom: 0.5rem;
 }
 
 @media (max-width: 40rem) {
