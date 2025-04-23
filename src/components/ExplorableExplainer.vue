@@ -660,14 +660,6 @@ input[type="radio"] {
   font-style: italic;
 }
 
-#showNegativeCorrelation {
-  margin-bottom: 0.5rem;
-}
-
-#showPositiveCorrelation {
-  margin-bottom: 0.5rem;
-}
-
 @media (max-width: 40rem) {
   .chart-container {
     flex-direction: column;
