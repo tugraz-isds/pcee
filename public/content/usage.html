@@ -13,8 +13,14 @@ those of other records. Clusters are groups of data records which have similar c
 <p><span class="option-header">Example outliers:</span><br>
 With the current dataset, there is one obvious outlier to identify.<br>
 <button id="showOutlier">Show outlier</button><br>
-<br>
-Car G is completely outside the norm and has no similarities with the other cars.
+<p>Patient 6 stands out as a clear outlier, with:
+<ul>
+    <li>Significantly higher blood pressure and cholesterol,</li>
+    <li>Lower heart rate,</li>
+    <li>High BMI,</li>
+    <li>Advanced age.</li>
+</ul></p>
+<p>This patient could be flagged for potential cardiovascular risk.
 </p>
 
 <!--<div>
@@ -32,22 +38,19 @@ map to high values and vice versa, the two dimensions are negatively correlated.
 
 </p>
 
-<p><span class="option-header">Example negative correlation:</span><br>
-In the current dataset a negative correlation can be found between speed and
-weight.<br>
+<p id="paragraph-0"><span class="option-header">Example negative correlation:</span><br>
+In the current dataset a negative correlation can be found between age and
+heart rate when one of the dimension is inverted.<br>
 <button id="showNegativeCorrelation">Show negative correlation</button><br>
 <br>
-Cars with higher speeds tend to be lighter than those with lower speeds. 
-This suggests that there is a negative correlation between speed and weight.
+With age, the resting heart rate often decreases slightly – it becomes slower.
 </p>
 
 <p><span class="option-header">Example positive correlation:</span><br>
-In the current dataset a positive correlation between speed and weight can be found when one of the dimension is inverted.<br>
+In the current dataset a positive correlation between age and bmi.<br>
 <button id="showPositiveCorrelation">Show positive correlation</button><br>
 <br>
-Cars with higher speeds tend to be more expensive than those 
-with lower speeds. This indicates a positive correlation between speed and 
-price. 
+Tendentially, BMI increases with age.
 <br>
 
 </p>

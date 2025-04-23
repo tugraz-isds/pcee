@@ -19,9 +19,9 @@
       <div class="main-text">
         <h2>2. Multidimensional Data</h2>
         <div v-html="dataText"></div>
-        <h4>Example Datasets Cars:</h4>
-        <div v-if="selectedDataset === 'cars'">
-          <div v-html="carsDatasetText"></div>
+        <h4>Example Dataset Heart Health:</h4>
+        <div v-if="selectedDataset === 'health'">
+          <div v-html="healthDatasetText"></div>
         </div>
         <div v-if="selectedDataset === 'students'">
           <div v-html="studentDatasetText"></div>
@@ -74,7 +74,7 @@
       </div>
       <div class="main-text">
         <h2>4. Usage</h2>
-        <div v-html="usageText"></div>
+        <div class="trigger" v-html="usageText" ref="trigger"></div>
       </div>
       <div class="main-text">
         <h2>5. Case Study (in progress)</h2>
@@ -93,13 +93,13 @@
   const interactivityText = ref('');
   const usageText = ref('');
   const caseStudyText = ref('');
-  const carsDatasetText = ref('');
+  const healthDatasetText = ref('');
   const studentDatasetText = ref('');
   const textArea = ref(null);
   const trigger = ref(null);
-  const carsDataset = ref('');
+  const healthDataset = ref('');
   const studentDataset = ref('');
-  const selectedDataset = ref('cars');
+  const selectedDataset = ref('health');
   const isModalOpen = ref(false);
   const newColumn = ref('');
 
@@ -128,23 +128,26 @@
     }
 
   const selectOutlier = () => {
-    spcd3.toggleSelection('Car G');
-    if (spcd3.isSelected('Car G')) {
+    if (spcd3.isSelected('Patient_F')) {
+      spcd3.setUnselected('Patient_F')
       document.getElementById('showOutlier').textContent = 'Unselect Outlier';
     }
     else {
+      spcd3.setSelected('Patient_F');
       document.getElementById('showOutlier').textContent = 'Show Outlier';
     }
   };
 
   const showNegativeCorrelation = () => {
-    const pos = spcd3.getDimensionPosition('Speed');
-    if (pos === 3) {
-      spcd3.move('Speed', true, 'FuelEfficiency');
+    const pos = spcd3.getDimensionPosition('Age');
+    if (pos === 4) {
+      spcd3.move('Age', false, 'HeartRate');
+      spcd3.setInversionStatus('Age', 'descending');
       document.getElementById('showNegativeCorrelation').textContent = 'Redo';
     }
-    else if (pos === 2) {
-      spcd3.move('Speed', false, 'FuelEfficiency');
+    else if (pos === 3) {
+      spcd3.move('Age', false, 'BloodPressure');
+      spcd3.setInversionStatus('Age', 'ascending');
       document.getElementById('showNegativeCorrelation').textContent = 'Show negative correlation';
     }
     else {
@@ -153,15 +156,13 @@
   }
 
   const showPositiveCorrelation = () => {
-    const pos = spcd3.getDimensionPosition('Speed');
-    if (pos === 3) {
-      spcd3.move('Speed', true, 'FuelEfficiency');
-      spcd3.setInversionStatus('Speed', 'descending');
+    const pos = spcd3.getDimensionPosition('Age');
+    if (pos === 4) {
+      spcd3.move('Age', false, 'BMI');
       document.getElementById('showPositiveCorrelation').textContent = 'Redo';
     }
     else if (pos === 2) {
-      spcd3.move('Speed', false, 'FuelEfficiency');
-      spcd3.setInversionStatus('Speed', 'ascending');
+      spcd3.move('Age', false, 'BloodPressure');
       document.getElementById('showPositiveCorrelation').textContent = 'Show positive correlation';
     }
     else {
@@ -228,35 +229,33 @@
   /*watch(selectedData, async (newVal) => {
     if (newVal) {
       await nextTick();
-      drawChart(carsDataset.value);
+      drawChart(healthDataset.value);
     }
   });*/
 
-  const columns = ref(['Car', 'Speed', 'FuelEfficiency', 'Weight', 'Price']);
+  const columns = ref(['Patient', 'Age', 'BloodPressure', 'HeartRate', 'BMI']);
 
   const rows = ref([
-    { Car: 'Car A', Speed: 180, FuelEfficiency: 8, Weight: 1500, Price: 25 },
-    { Car: 'Car B', Speed: 200, FuelEfficiency: 7.5, Weight: 1400, Price: 28 },
-    { Car: 'Car C', Speed: 160, FuelEfficiency: 9, Weight: 1600, Price: 22 },
-    { Car: 'Car D', Speed: 190, FuelEfficiency: 8.5, Weight: 1450, Price: 27 },
-    { Car: 'Car E', Speed: 170, FuelEfficiency: 10, Weight: 1550, Price: 20 },
-    { Car: 'Car F', Speed: 210, FuelEfficiency: 7, Weight: 1300, Price: 30 },
-    { Car: 'Car G', Speed: 140, FuelEfficiency: 5, Weight: 1700, Price: 15 }
-  ]);
+  { Patient: 'Patient_A', Age: 45, BloodPressure: 120, HeartRate: 72, BMI: 25, Cholesterol: 200 },
+  { Patient: 'Patient_B', Age: 48, BloodPressure: 125, HeartRate: 75, BMI: 26, Cholesterol: 210 },
+  { Patient: 'Patient_C', Age: 51, BloodPressure: 130, HeartRate: 78, BMI: 27, Cholesterol: 220 },
+  { Patient: 'Patient_D', Age: 54, BloodPressure: 135, HeartRate: 81, BMI: 28, Cholesterol: 230 },
+  { Patient: 'Patient_E', Age: 57, BloodPressure: 140, HeartRate: 84, BMI: 29, Cholesterol: 240 },
+  { Patient: 'Patient_F', Age: 70, BloodPressure: 180, HeartRate: 60, BMI: 35, Cholesterol: 800 }
+]);
 
   const selectedData = computed(() => {
-    if (selectedDataset.value === 'cars') {
-      columns.value = ['Car', 'Speed', 'FuelEfficiency', 'Weight', 'Price'];
+    if (selectedDataset.value === 'health') {
+      columns.value = ['Patient', 'Age', 'BloodPressure', 'HeartRate', 'BMI'];
       rows.value = [
-    { Car: 'Car A', Speed: 180, FuelEfficiency: 8, Weight: 1500, Price: 25 },
-    { Car: 'Car B', Speed: 200, FuelEfficiency: 7.5, Weight: 1400, Price: 28 },
-    { Car: 'Car C', Speed: 160, FuelEfficiency: 9, Weight: 1600, Price: 22 },
-    { Car: 'Car D', Speed: 190, FuelEfficiency: 8.5, Weight: 1450, Price: 27 },
-    { Car: 'Car E', Speed: 170, FuelEfficiency: 10, Weight: 1550, Price: 20 },
-    { Car: 'Car F', Speed: 210, FuelEfficiency: 7, Weight: 1300, Price: 30 },
-    { Car: 'Car G', Speed: 140, FuelEfficiency: 5, Weight: 1700, Price: 15 }
+      { Patient: 'Patient_A', Age: 45, BloodPressure: 120, HeartRate: 72, BMI: 25, Cholesterol: 200 },
+  { Patient: 'Patient_B', Age: 48, BloodPressure: 125, HeartRate: 75, BMI: 26, Cholesterol: 210 },
+  { Patient: 'Patient_C', Age: 51, BloodPressure: 130, HeartRate: 78, BMI: 27, Cholesterol: 220 },
+  { Patient: 'Patient_D', Age: 54, BloodPressure: 135, HeartRate: 81, BMI: 28, Cholesterol: 230 },
+  { Patient: 'Patient_E', Age: 57, BloodPressure: 140, HeartRate: 84, BMI: 29, Cholesterol: 240 },
+  { Patient: 'Patient_F', Age: 70, BloodPressure: 180, HeartRate: 60, BMI: 35, Cholesterol: 800 }
     ];
-    drawChart(carsDataset.value);
+    drawChart(healthDataset.value);
     } else if (selectedDataset.value === 'students') {
       columns.value = ['Name', 'Maths', 'English', 'PE', 'Art', 'History', 'IT', 'Biology', 'German'];
       rows.value = [
@@ -348,7 +347,16 @@
 
   const updateChart = (index) => {
       switch (parseInt(index)) {
+        case 0:
+          drawChart(healthDataset.value);
+          document.getElementById('showOutlier').disabled = false;
+          document.getElementById('showNegativeCorrelation').disabled = false;
+          document.getElementById('showPositiveCorrelation').disabled = false;
+          break;
         case 1:
+          document.getElementById('showOutlier').disabled = true;
+          document.getElementById('showNegativeCorrelation').disabled = true;
+          document.getElementById('showPositiveCorrelation').disabled = true;
           drawChart(studentDataset.value);
           break;
         case 2:
@@ -367,9 +375,6 @@
         case 4:
           break;
         case 5:
-          document.getElementById('showOutlier').disabled = true;
-          document.getElementById('showNegativeCorrelation').disabled = true;
-          document.getElementById('showPositiveCorrelation').disabled = true;
           drawChart(studentDataset.value);
           spcd3.move('German', true, 'English');
           break;
@@ -388,14 +393,14 @@
     };
 
   onMounted(async () => {
-    carsDataset.value = await loadDataset('/data/cars.csv');
+    healthDataset.value = await loadDataset('/data/healthdata.csv');
     studentDataset.value = await loadDataset('/data/student-marks.csv');
     loadContent(introText, '/content/introduction.html');
     loadContent(dataText, 'content/data.html');
     loadContent(interactivityText, 'content/interactivity.html');
     loadContent(usageText, 'content/usage.html');
     loadContent(caseStudyText, 'content/casestudy.html');
-    loadContent(carsDatasetText, 'content/carsdata.html');
+    loadContent(healthDatasetText, 'content/healthdata.html');
     loadContent(studentDatasetText, 'content/studentmarksdata.html');
   });
 
@@ -653,10 +658,6 @@ input[type="radio"] {
 
 .italic {
   font-style: italic;
-}
-
-#showOutlier {
-  margin-bottom: 0.5rem;
 }
 
 #showNegativeCorrelation {
