@@ -6,80 +6,61 @@
   <div class="header-spacer"></div>
 
   <div class="explorable-explainer">
-    
     <div class="chart-container" ref="textArea">
       <div id="parallelcoords" class="main-chart"></div>
-    </div>    
-      
+    </div>     
     <div class="text-container">
-      <div class="main-text">
-        <h2>1. Introduction</h2>
-        <div v-html="introText"></div>
-      </div>
-      <div class="main-text">
-        <h2>2. Multidimensional Data</h2>
-        <div v-html="dataText"></div>
-        <h4>Example Dataset Heart Health:</h4>
-        <div v-if="selectedDataset === 'health'">
-          <div v-html="healthDatasetText"></div>
-        </div>
-        <div v-if="selectedDataset === 'students'">
-          <div v-html="studentDatasetText"></div>
-        </div>
-      </div>
-        <div class="table-container" v-if="selectedDataset">
-          <table border="1">
-            <thead>
-              <tr>
-                <th v-for="(column, index) in columns" :key="index">{{ column }}
-                </th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(row, rowIndex) in selectedData" :key="rowIndex">
-              <td v-for="(column, colIndex) in columns" :key="colIndex">
-                <input v-model="row[column]" type="text"/>
-              </td>
-              <td>
-                <button class="delete" @click="deleteRow(rowIndex)">Delete</button>
-              </td>
-              </tr>
-            </tbody>
-            <tfoot>
-              <tr>
-              <td v-for="(column, index) in columns" :key="index">
-                <button class="delete" @click="deleteColumn(index)">Delete {{ column }}</button>
-              </td>
-              <td></td>
-              </tr>
-            </tfoot>
-          </table>
-          <button @click="addRow">Add Row</button>
-          <button @click="openModal">Add Column</button>
-          <button @click="redrawChart" :disabled="!isFormValid">Redraw Chart</button>
-          <div v-if="isModalOpen" class="modal">
-            <div class="modal-content">
-              <div>Add new column name:</div>
-              <input v-model="newColumn" type="text" placeholder="Enter column name..." />
-              <button class="add" @click="addColumn">Add</button>
-              <button class="add" @click="closeModal">Cancel</button>
-            </div>
-          </div>      
-        </div>
+      <div v-html="introText"></div>
+      <div v-html="dataText"></div>
+      <div v-html="healthDatasetText"></div>
       
-      <div class="main-text">
-        <h2>3. Interactive Data Exploration</h2>
-        <div class="trigger" v-html="interactivityText" ref="trigger"></div>
+      <div class="table-container">
+        <table border="1">
+        <thead>
+        <tr>
+        <th v-for="column in columns" :key="column.key">{{ column.label }}
+        </th>
+        <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="(row, rowIndex) in rows" :key="rowIndex">
+        <td v-for="column in columns" :key="column.key">
+        <input v-model="row[column.key]" type="text"/>
+        </td>
+        <td>
+        <button class="delete" @click="deleteRow(rowIndex)">Delete</button>
+        </td>
+        </tr>
+        </tbody>
+        <tfoot>
+        <tr>
+        <td v-for="column in columns" :key="column.key">
+        <button class="delete" @click="deleteColumn(column.key)">Delete {{ column.label }}
+        </button>
+        </td>
+        <td></td>
+        </tr>
+        </tfoot>
+        </table>
+        <button @click="addRow">Add Row</button>
+        <button @click="openModal">Add Column</button>
+        <button @click="redrawChart" :disabled="!isFormValid">Redraw Chart
+        </button>
+        <div v-if="isModalOpen" class="modal">
+        <div class="modal-content">
+        <div>Add new column name:</div>
+        <input v-model="newColumn" type="text"
+        placeholder="Enter column name..." />
+        <button class="add" @click="addColumn">Add</button>
+        <button class="add" @click="closeModal">Cancel</button>
+        </div>
+        </div>      
       </div>
-      <div class="main-text">
-        <h2>4. Usage</h2>
-        <div class="trigger" v-html="usageText" ref="trigger"></div>
-      </div>
-      <div class="main-text">
-        <h2>5. Case Study (in progress)</h2>
-        <div class="trigger" v-html="caseStudyText" ref="trigger"></div>
-      </div>
+      
+      <div class="trigger" v-html="interactivityText" ref="trigger"></div>
+      <div class="trigger" v-html="usageText" ref="trigger"></div>
+      <div class="trigger" v-html="caseStudyText" ref="trigger"></div>
     </div>
   </div>
 </template>
@@ -99,33 +80,24 @@
   const trigger = ref(null);
   const healthDataset = ref('');
   const studentDataset = ref('');
-  const selectedDataset = ref('health');
   const isModalOpen = ref(false);
   const newColumn = ref('');
 
-
-  const addRow = () => {
-    const newRow = {};
-    columns.value.forEach((column) => {
-      newRow[column] = '';
-    });
-    rows.value.push(newRow);
-  };
-
+  // Click events button in usage section
   const addClickEvent = () => {
-      const button = document.getElementById('showOutlier');
-      if (button) {
-        button.addEventListener('click', selectOutlier);
-      }
-      const buttonNegCorr = document.getElementById('showNegativeCorrelation');
-      if (buttonNegCorr) {
-        buttonNegCorr.addEventListener('click', showNegativeCorrelation);
-      }
-      const buttonPosCorr = document.getElementById('showPositiveCorrelation');
-      if (buttonPosCorr) {
-        buttonPosCorr.addEventListener('click', showPositiveCorrelation);
-      }
+    const button = document.getElementById('showOutlier');
+    if (button) {
+      button.addEventListener('click', selectOutlier);
     }
+    const buttonNegCorr = document.getElementById('showNegativeCorrelation');
+    if (buttonNegCorr) {
+      buttonNegCorr.addEventListener('click', showNegativeCorrelation);
+    }
+    const buttonPosCorr = document.getElementById('showPositiveCorrelation');
+    if (buttonPosCorr) {
+      buttonPosCorr.addEventListener('click', showPositiveCorrelation);
+    }
+  }
 
   const selectOutlier = () => {
     if (spcd3.isSelected('Patient_F')) {
@@ -170,6 +142,15 @@
     }
   }
 
+// Functions related to table
+  const addRow = () => {
+    const newRow = {};
+    columns.value.forEach((column) => {
+      newRow[column.key] = '';
+    });
+    rows.value.push(newRow);
+  };
+
   const deleteRow = (index) => {
     if (index >= 0 && index < rows.value.length) {
       rows.value.splice(index, 1);
@@ -187,29 +168,35 @@
   };
 
   const addColumn = () => {
-    if (newColumn.value.trim()) {
-      columns.value.push(newColumn.value.trim());
-      rows.value.forEach(row => {
-        row[newColumn.value.trim()] = '';
-      });
-      closeModal();
+    const trimmed = newColumn.value.trim();
+    let newCol = '';
+    if (trimmed) {
+      newCol = { key: trimmed,label: trimmed };
     }
+    
+    columns.value.push(newCol);
+    rows.value.forEach(row => {
+      row[newCol.key] = '';
+    });
+    closeModal();
   };
 
+  // TODO: Bug!
   const deleteColumn = (index) => {
-      columns.value.splice(index, 1);
-      rows.value.forEach(row => {
-        const columnName = columns.value[index];
-        delete row[columnName];
-      });
-      redrawChart();
-    };
+    const columnKey = columns.value[index].key;
+    columns.value.splice(index, 1);
+    rows.value.forEach(row => {
+      if (row && row[columnKey]) {
+        delete row[columnKey];
+      }
+    });
+    redrawChart();
+  };
 
   const redrawChart = () => {
-    const headers = columns.value.join(','); 
-
+    const headers = columns.value.map(column => column.label).join(',');
     const newRows = rows.value.map(row => {
-      return columns.value.map(column => row[column]).join(',');
+      return columns.value.map(column => row[column.key]).join(',');
     }).join('\n');
 
     const csvData = `${headers}\n${newRows}`;
@@ -220,81 +207,104 @@
   const isFormValid = computed(() => {
     return rows.value.every(row =>
       columns.value.every(column => {
-        const value = row[column];
+        const value = row[column.key];
         return value && String(value).trim() !== '';
       })
     );
   });
 
-  /*watch(selectedData, async (newVal) => {
-    if (newVal) {
-      await nextTick();
-      drawChart(healthDataset.value);
-    }
-  });*/
-
-  const columns = ref(['Patient', 'Age', 'BloodPressure', 'HeartRate', 'BMI']);
+  const columns = ref([
+    {key: 'Patient', label: 'Patient'},
+    {key: 'Age', label: 'Age'}, 
+    {key: 'BloodPressure', label: 'Blood Pressure'},
+    {key: 'HeartRate', label: 'Heart Rate'},
+    {key: 'BMI', label: 'BMI'},
+    {key: 'Cholesterol', label: 'Cholesterol'}
+  ]);
 
   const rows = ref([
-  { Patient: 'Patient_A', Age: 45, BloodPressure: 120, HeartRate: 72, BMI: 25, Cholesterol: 200 },
-  { Patient: 'Patient_B', Age: 48, BloodPressure: 125, HeartRate: 75, BMI: 26, Cholesterol: 210 },
-  { Patient: 'Patient_C', Age: 51, BloodPressure: 130, HeartRate: 78, BMI: 27, Cholesterol: 220 },
-  { Patient: 'Patient_D', Age: 54, BloodPressure: 135, HeartRate: 81, BMI: 28, Cholesterol: 230 },
-  { Patient: 'Patient_E', Age: 57, BloodPressure: 140, HeartRate: 84, BMI: 29, Cholesterol: 240 },
-  { Patient: 'Patient_F', Age: 70, BloodPressure: 180, HeartRate: 60, BMI: 35, Cholesterol: 800 }
-]);
+  { Patient: 'Patient A', Age: 45, BloodPressure: 120, HeartRate: 72, BMI: 25, Cholesterol: 200 },
+  { Patient: 'Patient B', Age: 48, BloodPressure: 125, HeartRate: 75, BMI: 26, Cholesterol: 210 },
+  { Patient: 'Patient C', Age: 51, BloodPressure: 130, HeartRate: 78, BMI: 27, Cholesterol: 220 },
+  { Patient: 'Patient D', Age: 54, BloodPressure: 135, HeartRate: 81, BMI: 28, Cholesterol: 230 },
+  { Patient: 'Patient E', Age: 57, BloodPressure: 140, HeartRate: 84, BMI: 29, Cholesterol: 240 },
+  { Patient: 'Patient F', Age: 70, BloodPressure: 180, HeartRate: 60, BMI: 35, Cholesterol: 800 }
+  ]);
 
-  const selectedData = computed(() => {
-    if (selectedDataset.value === 'health') {
-      columns.value = ['Patient', 'Age', 'BloodPressure', 'HeartRate', 'BMI'];
-      rows.value = [
-      { Patient: 'Patient_A', Age: 45, BloodPressure: 120, HeartRate: 72, BMI: 25, Cholesterol: 200 },
-  { Patient: 'Patient_B', Age: 48, BloodPressure: 125, HeartRate: 75, BMI: 26, Cholesterol: 210 },
-  { Patient: 'Patient_C', Age: 51, BloodPressure: 130, HeartRate: 78, BMI: 27, Cholesterol: 220 },
-  { Patient: 'Patient_D', Age: 54, BloodPressure: 135, HeartRate: 81, BMI: 28, Cholesterol: 230 },
-  { Patient: 'Patient_E', Age: 57, BloodPressure: 140, HeartRate: 84, BMI: 29, Cholesterol: 240 },
-  { Patient: 'Patient_F', Age: 70, BloodPressure: 180, HeartRate: 60, BMI: 35, Cholesterol: 800 }
-    ];
-    drawChart(healthDataset.value);
-    } else if (selectedDataset.value === 'students') {
-      columns.value = ['Name', 'Maths', 'English', 'PE', 'Art', 'History', 'IT', 'Biology', 'German'];
-      rows.value = [
-      { Name: 'Adrian', Maths: 95, English: 24, PE: 82, Art: 49, History: 58, IT: 85, Biology: 21, German: 24 },
-      { Name: 'Amelia', Maths: 92, English: 98, PE: 60, Art: 45, History: 82, IT: 85, Biology: 78, German: 92 },
-      { Name: 'Brooke', Maths: 27, English: 35, PE: 84, Art: 45, History: 23, IT: 50, Biology: 15, German: 22 },
-      { Name: 'Chloe', Maths: 78, English: 9, PE: 83, Art: 66, History: 80, IT: 63, Biology: 29, German: 12 },
-      { Name: 'Dylan', Maths: 92, English: 47, PE: 91, Art: 56, History: 47, IT: 81, Biology: 60, German: 51 },
-      { Name: 'Emily', Maths: 67, English: 3, PE: 98, Art: 77, History: 25, IT: 100, Biology: 50, German: 34 },
-      { Name: 'Evan', Maths: 53, English: 60, PE: 97, Art: 74, History: 21, IT: 78, Biology: 72, German: 75 },
-      { Name: 'Finn', Maths: 42, English: 73, PE: 65, Art: 52, History: 43, IT: 61, Biology: 82, German: 85 },
-      { Name: 'Gia', Maths: 50, English: 81, PE: 85, Art: 80, History: 43, IT: 46, Biology: 73, German: 91 },
-      { Name: 'Grace', Maths: 24, English: 95, PE: 98, Art: 94, History: 89, IT: 25, Biology: 91, German: 69 },
-      { Name: 'Harper', Maths: 69, English: 9, PE: 97, Art: 77, History: 56, IT: 94, Biology: 38, German: 2 },
-      { Name: 'Hayden', Maths: 2, English: 72, PE: 74, Art: 53, History: 40, IT: 40, Biology: 66, German: 64 },
-      { Name: 'Isabella', Maths: 8,English: 99, PE: 84, Art: 69, History: 86, IT: 20, Biology: 86, German: 85 },
-      { Name: 'Jesse', Maths: 63, English: 39, PE: 93, Art: 84, History: 30, IT: 71, Biology: 86, German: 19 },
-      { Name: 'Jordan', Maths: 11,English: 80, PE: 87, Art: 68, History: 88, IT: 20, Biology: 96, German: 81 },
-      { Name: 'Kai', Maths: 27, English: 65, PE: 62, Art: 92, History: 81, IT: 28, Biology: 94, German: 84 },
-      { Name: 'Kaitlyn', Maths: 7, English: 70, PE: 51, Art: 77, History: 79, IT: 29, Biology: 96, German: 73 },
-      { Name: 'Lydia', Maths: 75, English: 49, PE: 98, Art: 55, History: 68, IT: 67, Biology: 91, German: 87 },
-      { Name: 'Mark', Maths: 51, English: 70, PE: 87, Art: 40, History: 97, IT: 94, Biology: 60, German: 95 },
-      { Name: 'Monica', Maths: 62, English: 89, PE: 98, Art: 90, History: 85, IT: 66, Biology: 84, German: 99 },
-      { Name: 'Nicole', Maths: 70, English: 8, PE: 84, Art: 64, History: 26, IT: 70, Biology: 12, German: 8 },
-      { Name: 'Oswin', Maths: 96, English: 14, PE: 62, Art: 35, History: 56, IT: 98, Biology: 5, German: 12 },
-      { Name: 'Peter', Maths: 98, English: 10, PE: 71, Art: 41, History: 55, IT: 66, Biology: 38, German: 29 },
-      { Name: 'Renette', Maths: 96,English: 39, PE: 82, Art: 43, History: 26, IT: 92, Biology: 20, German: 2 },
-      { Name: 'Robert', Maths: 78, English: 32, PE: 98, Art: 55, History: 56, IT: 81, Biology: 46, German: 29 },
-      { Name: 'Sasha', Maths: 87, English: 1, PE: 84, Art: 70, History: 56, IT: 88, Biology: 49, German: 2 },
-      { Name: 'Sylvia', Maths: 86,English: 12, PE: 97, Art: 4, History: 19, IT: 80, Biology: 36, German: 8 },
-      { Name: 'Thomas', Maths: 76, English: 47, PE: 99, Art: 34, History: 48, IT: 92, Biology: 30, German: 38 },
-      { Name: 'Victor', Maths: 5, English: 60, PE: 70, Art: 65, History: 97, IT: 19, Biology: 63, German: 83 },
-      { Name: 'Zack', Maths: 19, English: 84, PE: 83, Art: 42, History: 93, IT: 15, Biology: 98, German: 95 }
-    ];
-    drawChart(studentDataset.value);
+  // Functions regarding scrollable storytelling
+  const setupIntersectionObserver = () => {
+    const paragraphs = document.querySelectorAll('.trigger p');
+    const observer = new IntersectionObserver((entries, observer) => {
+      handleIntersection(entries);
+    }, {
+      root: null,
+      threshold: 0.5
+    });
+    paragraphs.forEach(paragraph => {
+      observer.observe(paragraph);
+    });
+  };
+
+  const updateChart = (index) => {
+    switch (parseInt(index)) {
+      case 0:
+        drawChart(healthDataset.value);
+        document.getElementById('showOutlier').disabled = false;
+        document.getElementById('showNegativeCorrelation').disabled = false;
+        document.getElementById('showPositiveCorrelation').disabled = false;
+        break;
+      case 1:
+        document.getElementById('showOutlier').disabled = true;
+        document.getElementById('showNegativeCorrelation').disabled = true;
+        document.getElementById('showPositiveCorrelation').disabled = true;
+        drawChart(studentDataset.value);
+        break;
+      case 2:
+        const dimensions1 = spcd3.getAllDimensionNames();
+        dimensions1.forEach(function(dimension) {
+          if (!isNaN(spcd3.getMinValue(dimension))) {
+            let min = 0;
+            let max = spcd3.getMaxValue(dimension);
+            spcd3.setDimensionRangeRounded(dimension, min, max);
+          }
+        });
+        break;
+      case 3:
+        spcd3.setSelected('Sylvia');
+        break;
+      case 4:
+        break;
+      case 5:
+        drawChart(studentDataset.value);
+        spcd3.move('German', true, 'English');
+        break;
+      case 6:
+        break;
     }
-    return rows.value;
-  });
+  };
 
+  const handleIntersection = (entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const index = entry.target.id.split('-')[1];
+        updateChart(index);
+      }
+    });
+  };
+
+  // draw parallel coordinates with spcd3
+  const drawChart = async (dataset) => {
+    try {
+      let newData = spcd3.loadCSV(dataset);
+      if (newData.length !== 0) {
+        spcd3.drawChart(newData);
+      }
+    } catch (error) {
+      console.error('Error drawing data:', error);
+    }
+  };
+
+  // Load files from public/content/
   const loadContent = async (htmlContent, filePath) => {
     try {
       const response = await fetch(filePath);
@@ -310,30 +320,7 @@
     }
   };
 
-  const setupIntersectionObserver = () => {
-      const paragraphs = document.querySelectorAll('.trigger p');
-      const observer = new IntersectionObserver((entries, observer) => {
-        handleIntersection(entries);
-      }, {
-        root: null,
-        threshold: 0.5
-      });
-      paragraphs.forEach(paragraph => {
-        observer.observe(paragraph);
-      });
-    };
-
-  const drawChart = async (dataset) => {
-    try {
-      let newData = spcd3.loadCSV(dataset);
-      if (newData.length !== 0) {
-          spcd3.drawChart(newData);
-      }
-    } catch (error) {
-        console.error('Error drawing data:', error);
-    }
-  };
-
+  // Load files from public/data
   const loadDataset = async (filePath) => {
     try {
       const response = await fetch(filePath);
@@ -345,55 +332,9 @@
     }
   };
 
-  const updateChart = (index) => {
-      switch (parseInt(index)) {
-        case 0:
-          drawChart(healthDataset.value);
-          document.getElementById('showOutlier').disabled = false;
-          document.getElementById('showNegativeCorrelation').disabled = false;
-          document.getElementById('showPositiveCorrelation').disabled = false;
-          break;
-        case 1:
-          document.getElementById('showOutlier').disabled = true;
-          document.getElementById('showNegativeCorrelation').disabled = true;
-          document.getElementById('showPositiveCorrelation').disabled = true;
-          drawChart(studentDataset.value);
-          break;
-        case 2:
-          const dimensions1 = spcd3.getAllDimensionNames();
-          dimensions1.forEach(function(dimension) {
-            if (!isNaN(spcd3.getMinValue(dimension))) {
-              let min = 0;
-              let max = spcd3.getMaxValue(dimension);
-              spcd3.setDimensionRangeRounded(dimension, min, max);
-            }
-          });
-          break;
-        case 3:
-          spcd3.setSelected('Sylvia');
-          break;
-        case 4:
-          break;
-        case 5:
-          drawChart(studentDataset.value);
-          spcd3.move('German', true, 'English');
-          break;
-        case 6:
-          break;
-      }
-    };
-
-  const handleIntersection = (entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const index = entry.target.id.split('-')[1];
-          updateChart(index);
-        }
-      });
-    };
-
   onMounted(async () => {
     healthDataset.value = await loadDataset('/data/healthdata.csv');
+    drawChart(healthDataset.value);
     studentDataset.value = await loadDataset('/data/student-marks.csv');
     loadContent(introText, '/content/introduction.html');
     loadContent(dataText, 'content/data.html');
@@ -437,7 +378,6 @@
   animation-timeline: scroll();
   animation-range: 0vh 90vh;
 }
-
 
 @keyframes sticky-parallax-header-move-and-size {
 	from {
@@ -574,6 +514,10 @@ ol {
   transition: border-color 0.3s ease;
 }
 
+ol:hover {
+  border-color: rgba(0, 129, 175, 0.5);
+}
+
 ul:hover {
   border-color: rgba(0, 129, 175, 0.5);
 }
@@ -585,10 +529,6 @@ ul:hover {
 
 #test:hover {
   border-color: rgba(237, 237, 231, 0.972);
-}
-
-ol:hover {
-  border-color: rgba(0, 129, 175, 0.5);
 }
 
 button {
@@ -623,41 +563,8 @@ input[type="text"] {
   box-sizing: border-box;
 }
 
-.radio-group {
-  display: flex;
-  gap: 5rem;
-  padding-left: 2rem;
-  padding-bottom: 3rem;
-}
-
-input[type="radio"] {
-  padding-left: 2rem;
-}
-
 .modal-content {
   padding-left: 2rem;
-}
-
-.header {
-  font-size: larger;
-  color: rgba(113, 136, 44, 0.786);
-}
-
-.option-header {
-  text-decoration: underline;
-}
-
-.options-header {
-  font-weight: bold;
-  padding-left: 2rem;
-}
-
-.options-header:hover {
-  border-color: white;
-}
-
-.italic {
-  font-style: italic;
 }
 
 @media (max-width: 40rem) {

@@ -1,5 +1,4 @@
-
-<section>
+<section class="main-text">
 <h2>Interactive Data Exploration</h2>
 
 <p>
@@ -14,7 +13,6 @@ dimensions, as well as displaying histograms. Others relate to records
 hovering over records.
 </p>
 
-
 <h3>Inverting Dimensions</h3>
 
 <p>
@@ -28,112 +26,87 @@ suspected correlation between adjacent dimensions:
   selecting <span class="uiname">Invert</span>.</li>
 </ul>
 
-
+<h3>Moving Dimensions</h3>
 
 <p>
-
-<span class="header">Moving Dimensions</span><br><br>
-
 When looking for correlations between dimensions, meaningful relationships 
 are only revealed between adjacent dimensions. Hence, it is important to be 
-able to move one dimension next to another dimension of interest. <br><br>
+able to move one dimension next to another dimension of interest.
+With drag and drop a dimension can be moved at the desired position.</p>
 
-<span class="option-header">Option to Move a Dimension in the Chart:</span><br>
-<p class="options-header"></p>
-<p>With drag and drop a dimension can be moved at the desired position.</p>
+<h3>Hiding Dimensions</h3>
 
 <p>
-
-<span class="header">Hiding Dimensions</span><br><br>
-
 Displaying too many dimensions can be overwhelming, so it is important to 
-be able to hide individual dimensions.<br><br>
-
-<span class="option-header">Option to Hide a Dimension in the Chart:</span><br>
-
-<ul>
-    <li>A dimension can hidden by right-clicking the dimension name to activate 
-        the context menu and selecting <span class="italic">Hide</span>.</li>
-    <li>Hidden dimensions can be shown from every dimensions context menu,
-        by clicking on <span class="italic">Show All</span>.</li>
-</ul>
+be able to hide individual dimensions.
 </p>
 
-<p>
-
-<span class="header">Adjusting a Dimension's Range</span><br><br>
-
-By default, the range of the dimension’s axis is set to the rounded minimum 
-and rounded maximum values present in the current dataset.<br><br> 
-
-<span class="option-header">Options to Set Dimensions Range in the Chart:
-    </span><br>
-
-Adjust the range of a dimension from its context menu, where three options 
-are available:<br>
-
 <ul>
-    <li>By clicking <span class="italic">Set Range</span> to set the range to 
-        specific values.</li>
-    <li>By clicking <span class="italic">Set Range from Data</span> to set the 
-        dimension to the original
-        range.</li>
-    <li>By clicking <span class="italic">Set Rounded Range from Data</span> to 
-        reset the dimension to the
-        rounded values.</li>
+<li>A dimension can hidden by right-clicking the dimension name to activate 
+    the context menu and selecting <span class="uiname">Hide</span>.</li>
+<li>Hidden dimensions can be shown from every dimensions context menu,
+    by clicking on <span class="uiname">Show All</span>.</li>
 </ul>
 
+<h3>Adjusting a Dimension's Range</h3>
+
 <p>
+By default, the range of the dimension’s axis is set to the rounded minimum 
+and rounded maximum values present in the current dataset.
+Adjust the range of a dimension from its context menu, where three options 
+are available:
+</p>
 
-<span class="header">Filter Records</span><br><br>
+<ul>
+<li>By clicking <span class="uiname">Set Range</span> to set the range to 
+    specific values.</li>
+<li>By clicking <span class="uiname">Set Range from Data</span> to set the 
+    dimension to the original
+    range.</li>
+<li>By clicking <span class="uiname">Set Rounded Range from Data</span> to 
+    reset the dimension to the
+    rounded values.</li>
+</ul>
 
+<h3>Filter Records</h3>
+
+<p>
 Records can be activated and deactivated by setting filters on one or more 
 dimensions. Records outside of the range are automatically deactivated and 
-greyed out.<br><br>
-
-<span class="option-header">Options to Filter Records in the Chart:</span>
-
-<ul>
-    <li>A double-edged range slider can be manipulated on every dimension to 
-        filter out records by values on that dimension.</li>
-    <li>Set and reset filters from the dimension’s context menu. With <span class="italic">Set Filter</span> a filter to specific values can be set and by clicking <span class="italic">Reset Filter</span> the filter gets reseted to include all records.</li>
-</ul>
-
-<p>
-    
-<span class="header">Selecting Records</span><br><br>
-
-It is helpful to be able to select one or more records in the dataset and 
-to highlight them accordingly.<br><br>
-
-<span class="option-header">Options to Select Records in the Chart:</span>
-
-<ul>
-    <li>Left-clicking one or more polylines selects the corresponding record(s) 
-        and highlights them in orange.</li>
-    <li>Shift-left-clicking adds one or more records to the current selection. 
-    </li>
-    <li>Control-left-clicking toggles the selection status of the corresponding 
-        records.</li>
-    <li>Select, unselect records from a records context menu.</li>
-    <li>Left-clicking in empty space clears the current selection. </li>
-</ul>
+greyed out:
 </p>
 
+<ul>
+<li>A double-edged range slider can be manipulated on every dimension to 
+    filter out records by values on that dimension.</li>
+<li>Set and reset filters from the dimension’s context menu. With <span class="uiname">Set Filter</span> a filter to specific values can be set and by clicking <span class="uiname">Reset Filter</span> the filter gets reseted to include all records.</li>
+</ul>
+    
+<h3>Selecting Records</h3>
+
+<p>It is helpful to be able to select one or more records in the dataset and 
+to highlight them accordingly.
+</p>
+
+<ul>
+<li>Left-clicking one or more polylines selects the corresponding record(s) 
+    and highlights them in orange.</li>
+<li>Shift-left-clicking adds one or more records to the current selection. 
+</li>
+<li>Control-left-clicking toggles the selection status of the corresponding 
+    records.</li>
+<li>Select, unselect records from a records context menu.</li>
+<li>Left-clicking in empty space clears the current selection. </li>
+</ul>
+
+<h3>Hovering over Records</h3>
+
 <p>
-
-<span class="header">Hovering over Records</span><br><br>
-
 If there are a large number of records, a parallel coordinates visualisation 
 contains a large number of potentially crossing and overlapping polylines, so 
-it is challenging to recognise which polyline belongs to which record.<br><br>
-
-<span class="option-header">Option to Hover over Records in the Chart:</span><br>
-<p class="options-header"></p>
-<p>
+it is challenging to recognise which polyline belongs to which record.
 Hovering over one or more polylines highlights the polyline(s) beneath the 
 mouse pointer in red and displays tooltips with the labels and values of the 
-corresponding records.</p>
-
+corresponding records.
+</p>
 </section>
-
