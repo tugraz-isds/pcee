@@ -1,5 +1,5 @@
 <template>
-  <div id="sticky-parallax-header">
+  <div id="sticky-header">
     <div>Parallel Coordinates - An Explorable Explainer</div> 
   </div>
 
@@ -85,60 +85,37 @@
 
   // Click events button in usage section
   const addClickEvent = () => {
-    const button = document.getElementById('showOutlier');
+    const button = document.getElementById('outlier-button');
     if (button) {
       button.addEventListener('click', selectOutlier);
     }
-    const buttonNegCorr = document.getElementById('showNegativeCorrelation');
-    if (buttonNegCorr) {
-      buttonNegCorr.addEventListener('click', showNegativeCorrelation);
-    }
-    const buttonPosCorr = document.getElementById('showPositiveCorrelation');
+    const buttonPosCorr = document.getElementById('correlation-button');
     if (buttonPosCorr) {
       buttonPosCorr.addEventListener('click', showPositiveCorrelation);
     }
   }
 
   const selectOutlier = () => {
-    if (spcd3.isSelected('Patient_F')) {
-      spcd3.setUnselected('Patient_F')
-      document.getElementById('showOutlier').textContent = 'Unselect Outlier';
+    if (spcd3.isSelected('Patient F')) {
+      spcd3.setUnselected('Patient F')
+      document.getElementById('outlier-button').textContent = 'Show Outlier';
     }
     else {
-      spcd3.setSelected('Patient_F');
-      document.getElementById('showOutlier').textContent = 'Show Outlier';
+      spcd3.setSelected('Patient F');
+      document.getElementById('outlier-button').textContent = 'Unselect Outlier';
     }
   };
 
-  const showNegativeCorrelation = () => {
-    const pos = spcd3.getDimensionPosition('Age');
-    if (pos === 4) {
-      spcd3.move('Age', false, 'HeartRate');
-      spcd3.setInversionStatus('Age', 'descending');
-      document.getElementById('showNegativeCorrelation').textContent = 'Redo';
-    }
-    else if (pos === 3) {
-      spcd3.move('Age', false, 'BloodPressure');
-      spcd3.setInversionStatus('Age', 'ascending');
-      document.getElementById('showNegativeCorrelation').textContent = 'Show negative correlation';
-    }
-    else {
-      // should not happen
-    }
-  }
-
   const showPositiveCorrelation = () => {
-    const pos = spcd3.getDimensionPosition('Age');
-    if (pos === 4) {
-      spcd3.move('Age', false, 'BMI');
-      document.getElementById('showPositiveCorrelation').textContent = 'Redo';
+    if (spcd3.isInverted('Age'))
+    {
+      spcd3.setInversionStatus('Age', 'ascending');
+      document.getElementById('correlation-button').textContent = 'Show negative correlation';
     }
-    else if (pos === 2) {
-      spcd3.move('Age', false, 'BloodPressure');
-      document.getElementById('showPositiveCorrelation').textContent = 'Show positive correlation';
-    }
-    else {
-      // should not happen
+    else
+    {
+      spcd3.setInversionStatus('Age', 'descending');
+      document.getElementById('correlation-button').textContent = 'Show positive correlation';
     }
   }
 
@@ -181,13 +158,13 @@
     closeModal();
   };
 
-  // TODO: Bug!
-  const deleteColumn = (index) => {
-    const columnKey = columns.value[index].key;
+  const deleteColumn = (key) => {
+    const array = JSON.parse(JSON.stringify(columns.value));
+    const index = array.findIndex(column => column.key === key);
     columns.value.splice(index, 1);
     rows.value.forEach(row => {
-      if (row && row[columnKey]) {
-        delete row[columnKey];
+      if (row && row[key]) {
+        delete row[key];
       }
     });
     redrawChart();
@@ -249,14 +226,19 @@
     switch (parseInt(index)) {
       case 0:
         drawChart(healthDataset.value);
-        document.getElementById('showOutlier').disabled = false;
-        document.getElementById('showNegativeCorrelation').disabled = false;
-        document.getElementById('showPositiveCorrelation').disabled = false;
+        if (document.getElementById('outlier-button').textContent === 'Unselect Outlier') {
+          spcd3.setSelected('Patient F');
+        }
+        if (document.getElementById('correlation-button').textContent === 'Show positive correlation')
+        {
+          spcd3.setInversionStatus('Age', 'descending');
+        }
+        document.getElementById('outlier-button').disabled = false;
+        document.getElementById('correlation-button').disabled = false;
         break;
       case 1:
-        document.getElementById('showOutlier').disabled = true;
-        document.getElementById('showNegativeCorrelation').disabled = true;
-        document.getElementById('showPositiveCorrelation').disabled = true;
+        document.getElementById('outlier-button').disabled = true;
+        document.getElementById('correlation-button').disabled = true;
         drawChart(studentDataset.value);
         break;
       case 2:
@@ -353,7 +335,7 @@
   box-sizing: border-box;
 }
 
-#sticky-parallax-header {
+#sticky-header {
   position: fixed;
   top: 0;
   left: 0;
@@ -374,12 +356,12 @@
   will-change: transform, height, font-size;
   contain: layout style;
 
-  animation: sticky-parallax-header-move-and-size linear forwards;
+  animation: sticky-header-move-and-size linear forwards;
   animation-timeline: scroll();
   animation-range: 0vh 90vh;
 }
 
-@keyframes sticky-parallax-header-move-and-size {
+@keyframes sticky-header-move-and-size {
 	from {
 		background-position: 50% 0;
 		height: 100vh;
@@ -425,7 +407,7 @@
   max-width: 100%;
 }
 
-.main-text {
+section {
   text-align: justify;
   width: calc(100% - 2rem);
   max-width: 100%;
@@ -453,17 +435,6 @@
   }
 }
 
-.table-container {
-  padding-right: 2rem;
-  padding-top: 2rem;
-}
-
-table {
-  width: 100%;
-  text-align: justify;
-  border-collapse: collapse;
-}
-
 h2 {
   color: rgba(0, 129, 175, 0.5);
   padding-left: 0.5rem;
@@ -487,6 +458,17 @@ p:hover {
   border-color: rgba(0, 129, 175, 0.5);
 }
 
+.table-container {
+  padding-right: 2rem;
+  padding-top: 2rem;
+}
+
+table {
+  width: 100%;
+  text-align: justify;
+  border-collapse: collapse;
+}
+
 td {
   background-color: rgba(255, 255, 0, 0.3);
   padding: 0.2rem;
@@ -497,56 +479,6 @@ th {
   background-color: rgba(0, 129, 175, 0.3);
   text-align: left;
   padding: 0.3rem;
-}
-
-ul {
-  border-left: 1rem solid transparent;
-  transition: border-color 0.3s ease;
-  padding-left: 2rem;
-}
-
-ul ul {
-  padding-left: 0.5rem;
-}
-
-ol {
-  border-left: 1rem solid transparent;
-  transition: border-color 0.3s ease;
-}
-
-ol:hover {
-  border-color: rgba(0, 129, 175, 0.5);
-}
-
-ul:hover {
-  border-color: rgba(0, 129, 175, 0.5);
-}
-
-#test {
-  border-left: 1rem solid transparent;
-  transition: border-color 0.3s ease;
-}
-
-#test:hover {
-  border-color: rgba(237, 237, 231, 0.972);
-}
-
-button {
-  padding: 0.5rem;
-  margin-top: 0.5rem;
-  margin-right: 0.5rem;
-}
-
-.delete {
-  padding: 0.3rem;
-  margin-top: 0;
-  margin-right: 0;
-}
-
-.add {
-  padding: 0.3rem;
-  margin-top: 0.3rem;
-  margin-right: 0.3rem;
 }
 
 tfoot button {
@@ -565,6 +497,62 @@ input[type="text"] {
 
 .modal-content {
   padding-left: 2rem;
+}
+
+ul {
+  border-left: 1rem solid transparent;
+  transition: border-color 0.3s ease;
+  padding-left: 2rem;
+}
+
+ul ul {
+  padding-left: 0.5rem;
+  border-left: 1rem solid transparent;
+  transition: border-color 0.3s ease;
+}
+
+ul ul:hover {
+  border-color: rgba(237, 237, 231, 0.972);
+}
+
+ol {
+  border-left: 1rem solid transparent;
+  transition: border-color 0.3s ease;
+}
+
+ol:hover {
+  border-color: rgba(0, 129, 175, 0.5);
+}
+
+ul:hover {
+  border-color: rgba(0, 129, 175, 0.5);
+}
+
+button {
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+  margin-right: 0.5rem;
+}
+
+#outlier-button {
+  margin-left: 2rem;
+}
+
+#correlation-button {
+  margin-left: 2rem;
+}
+
+/* todo*/
+.delete {
+  padding: 0.3rem;
+  margin-top: 0;
+  margin-right: 0;
+}
+
+.add {
+  padding: 0.3rem;
+  margin-top: 0.3rem;
+  margin-right: 0.3rem;
 }
 
 @media (max-width: 40rem) {

@@ -1,4 +1,4 @@
-<section class="main-text">
+<section>
 <h2>Usage</h3>
 
 <p>Parallel coordinates are used for:</p>
@@ -16,15 +16,13 @@ to those of other records. Clusters are groups of data records which have
 similar characteristics, so their polylines follow similar paths.
 </p>
 
-<p>
-Example outliers:
-</p>
+<h4>Example outliers:</h4>
 
-<p>
+<p id="paragraph-0">
 With the current dataset, there is one obvious outlier to identify.
 </p>
 
-<button id="showOutlier">Show outlier</button>
+<button id="outlier-button">Show outlier</button>
 
 <p>
 Patient F stands out as a clear outlier, with:
@@ -37,13 +35,13 @@ Patient F stands out as a clear outlier, with:
 <li>Advanced age.</li>
 </ul>
 
-<p>
+<p id="paragraph-0">
 This patient could be flagged for potential cardiovascular risk.
 </p>
 
 <h3>Looking for Correlations Between Dimensions</h3>
 
-<p>
+<p id="paragraph-0">
 If two dimensions are positively correlated, high values in one dimension will 
 map to high values in the other, and low values to low values. If low values 
 map to high values and vice versa, the two dimensions are negatively correlated.
@@ -53,27 +51,14 @@ map to high values and vice versa, the two dimensions are negatively correlated.
     <img src="/images/correlations.png" alt="correlations" style="width: 25rem; height: auto; padding-left: 2rem;"/>
 </div>
 
-<h4>Example negative correlation:</h4>
-
-<p>
-In the current dataset a negative correlation can be found between age and
-heart rate when one of the dimension is inverted.
-</p>
-
-<button id="showNegativeCorrelation">Show negative correlation</button>
-
-<p>
-With age, the resting heart rate often decreases slightly – it becomes slower.
-</p>
-
-<h4>Example positive correlation:</h4>
-
-<p>
-In the current dataset a positive correlation between age and bmi.
-</p>
-
-<button id="showPositiveCorrelation">Show positive correlation</button>
+<h4>Example for positive and negative correlation:</h4>
 
 <p id="paragraph-0">
-Tendentially, BMI increases with age.
+In the current dataset a positive correlation can be find between Age and Blood Pressure. By inverting Age a negative correlation is shown.
+</p>
+
+<button id="correlation-button">Show negative correlation</button>
+
+<p id="paragraph-0">
+Tendentially, Blood Pressure increases with age.
 </p>
