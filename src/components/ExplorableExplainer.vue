@@ -29,14 +29,14 @@
         <input v-model="row[column.key]" type="text"/>
         </td>
         <td>
-        <button class="delete" @click="deleteRow(rowIndex)">Delete</button>
+        <button id="delete-button" @click="deleteRow(rowIndex)">Delete</button>
         </td>
         </tr>
         </tbody>
         <tfoot>
         <tr>
         <td v-for="column in columns" :key="column.key">
-        <button class="delete" @click="deleteColumn(column.key)">Delete {{ column.label }}
+        <button id="delete-button" @click="deleteColumn(column.key)">Delete {{ column.label }}
         </button>
         </td>
         <td></td>
@@ -52,8 +52,8 @@
         <div>Add new column name:</div>
         <input v-model="newColumn" type="text"
         placeholder="Enter column name..." />
-        <button class="add" @click="addColumn">Add</button>
-        <button class="add" @click="closeModal">Cancel</button>
+        <button id="add-button" @click="addColumn">Add</button>
+        <button id="add-button" @click="closeModal">Cancel</button>
         </div>
         </div>      
       </div>
@@ -225,7 +225,7 @@
   const updateChart = (index) => {
     switch (parseInt(index)) {
       case 0:
-        drawChart(healthDataset.value);
+        redrawChart();
         if (document.getElementById('outlier-button').textContent === 'Unselect Outlier') {
           spcd3.setSelected('Patient F');
         }
@@ -348,9 +348,9 @@
 
   color: black;
   background: linear-gradient(to bottom, rgba(0, 129, 175, 0.5), rgba(255, 255, 0, 0.3));
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(2.5rem);
   pointer-events: none;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  
   z-index: 1000;
 
   will-change: transform, height, font-size;
@@ -411,12 +411,13 @@ section {
   text-align: justify;
   width: calc(100% - 2rem);
   max-width: 100%;
-  background: rgba(237, 237, 231, 0.972);
+  background: rgba(255, 255, 0, 0.3);
   border-radius: 1rem;
-  margin-top: 3rem;
+  margin-top: 2rem;
   opacity: 0;
   transform: translateY(100px);
-  padding-right: 1rem;
+  padding-right: 1.5rem;
+  padding-bottom: 0.5rem;
   
   animation: slide-in-from-bottom 1s ease-out forwards;
   animation-timeline: scroll();
@@ -427,7 +428,7 @@ section {
 @keyframes slide-in-from-bottom {
   from {
     opacity: 0;
-    transform: translateY(100px) rotate(50deg);
+    transform: translateY(100%);
   }
   to {
     opacity: 1;
@@ -436,22 +437,24 @@ section {
 }
 
 h2 {
-  color: rgba(0, 129, 175, 0.5);
-  padding-left: 0.5rem;
+  color: rgba(62, 61, 55, 0.5);
+  padding-top: 1rem;
+  padding-left: 1rem;
 }
 
 h3 {
-  padding-left: 2rem;
+  padding-left: 1.5rem;
 }
 
 h4 {
-  padding-left: 2rem;
+  padding-left: 1.5rem;
 }
 
 p {
   border-left: 1rem solid transparent;
   transition: border-color 0.3s ease;
-  padding-left: 1rem;
+  padding-right: 0.5rem;
+  padding-left: 0.5rem;
 }
 
 p:hover {
@@ -496,13 +499,13 @@ input[type="text"] {
 }
 
 .modal-content {
-  padding-left: 2rem;
+  padding-left: 1.5rem;
 }
 
 ul {
   border-left: 1rem solid transparent;
   transition: border-color 0.3s ease;
-  padding-left: 2rem;
+  padding-left: 1.5rem;
 }
 
 ul ul {
@@ -535,21 +538,20 @@ button {
 }
 
 #outlier-button {
-  margin-left: 2rem;
+  margin-left: 1.5rem;
 }
 
 #correlation-button {
-  margin-left: 2rem;
+  margin-left: 1.5rem;
 }
 
-/* todo*/
-.delete {
+#delete-button {
   padding: 0.3rem;
   margin-top: 0;
   margin-right: 0;
 }
 
-.add {
+#add-button {
   padding: 0.3rem;
   margin-top: 0.3rem;
   margin-right: 0.3rem;

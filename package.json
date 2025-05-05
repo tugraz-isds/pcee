@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "tauri": "tauri build",
+    "tauri-dev": "tauri dev",
     "preview": "vite preview",
     "lint": "eslint . --fix"
   },
@@ -15,7 +17,8 @@
   "keywords": [
     "parallel coordinates",
     "explorable explainer",
-    "scrollama",
+    "scroll driven animations",
+    "intersection observer",
     "visualisation"
   ],
   "author": "Romana Gruber",
