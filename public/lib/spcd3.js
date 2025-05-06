@@ -6367,34 +6367,40 @@ function parseIsoNative(string) {
     : utcParse(isoSpecifier);
 
 function getArrowBottomCursor() {
-    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 5"><path fill="white" stroke="black" stroke-width="0.5" d="M 1 0 L 7 0 L 4 5 z"/></svg>';
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 5"><path fill="white" stroke="black" stroke-width="0.5" d="M 1 0 L 7 0 L 4 5 z"/></svg>';
 }
 function getArrowBottom() {
-    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="yellow" fill-opacity="0.4" stroke="black" stroke-width="0.2" d="M 0 0 L 6 0 L 3 5 z"/></svg>';
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="yellow" fill-opacity="0.4" stroke="black" stroke-width="0.2" d="M 0 0 L 6 0 L 3 5 z"/></svg>';
 }
 function getArrowDown() {
-    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3.9687499 3.96875"><path fill="white" stroke="black" stroke-width="0.318611" d="m 1.1578161,0.21695335 c -0.061702,-0.0329161 -0.81488983,-0.0133494 -0.81488983,-0.0133494 0,0 0.54265514,0.55608717 0.93827003,0.96284295 0.4433991,0.4558857 0.4777944,0.8151048 0.4777944,0.8151048 H 0.5130859 l 1.6505985,1.7274342 1.434036,-1.7247007 c -0.534692,-0.00674 -0.7326378,0.00633 -1.0334189,0.013349 0,0 -0.1208928,-1.09485632 -1.4064854,-1.78068085 z"/></svg>';
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 10"><path d="M 0 6 L 2 6 L 2 0 L 4 0 L 4 6 L 6 6 L 3 10 z"/></svg>';
+}
+function getArrowDownCursor() {
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3.9687499 3.96875"><path fill="white" stroke="black" stroke-width="0.318611" d="m 1.1578161,0.21695335 c -0.061702,-0.0329161 -0.81488983,-0.0133494 -0.81488983,-0.0133494 0,0 0.54265514,0.55608717 0.93827003,0.96284295 0.4433991,0.4558857 0.4777944,0.8151048 0.4777944,0.8151048 H 0.5130859 l 1.6505985,1.7274342 1.434036,-1.7247007 c -0.534692,-0.00674 -0.7326378,0.00633 -1.0334189,0.013349 0,0 -0.1208928,-1.09485632 -1.4064854,-1.78068085 z"/></svg>';
 }
 function getArrowLeftAndRight() {
-    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 6"><path fill="white" stroke="black" stroke-width="1" d="M 0 3 L 3 0 L 3 2 L 7 2 L 7 0 L 10 3 L 7 6 L 7 4 L 3 4 L 3 6 z"/></svg>';
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 6"><path fill="white" stroke="black" stroke-width="1" d="M 0 3 L 3 0 L 3 2 L 7 2 L 7 0 L 10 3 L 7 6 L 7 4 L 3 4 L 3 6 z"/></svg>';
 }
 function getArrowLeft() {
-    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 6"><path fill="white" stroke="black" stroke-width="1" d="M 0 2 L 6 2 L 6 0 L 10 3 L 6 6 L 6 4 L 0 4 z"/></svg>';
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 6"><path fill="white" stroke="black" stroke-width="1" d="M 0 2 L 6 2 L 6 0 L 10 3 L 6 6 L 6 4 L 0 4 z"/></svg>';
 }
 function getArrowRight() {
-    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 6"><path fill="white" stroke="black" stroke-width="1" d="M 0 3 L 4 0 L 4 2 L 10 2 L 10 4 L 4 4 L 4 6 z"/></svg>';
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 6"><path fill="white" stroke="black" stroke-width="1" d="M 0 3 L 4 0 L 4 2 L 10 2 L 10 4 L 4 4 L 4 6 z"/></svg>';
 }
 function getArrowTopAndBottom() {
-    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 12"><path fill="white" stroke="black" stroke-width="0.5" d="M 0 5.5 L 3 1 L 6 5.5 z"/><path fill="white" stroke="black" stroke-width="0.5" d="M 0 6.5 L 3 11 L 6 6.5 z"/></svg>';
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 12"><path fill="white" stroke="black" stroke-width="0.5" d="M 0 5.5 L 3 1 L 6 5.5 z"/><path fill="white" stroke="black" stroke-width="0.5" d="M 0 6.5 L 3 11 L 6 6.5 z"/></svg>';
 }
 function getArrowTopCursor() {
-    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 5"><path fill="white" stroke="black" stroke-width="0.5" d="M 1 5 L 4 0 L 7 5 z"/></svg>';
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 5"><path fill="white" stroke="black" stroke-width="0.5" d="M 1 5 L 4 0 L 7 5 z"/></svg>';
 }
 function getArrowTop() {
-    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="yellow" fill-opacity="0.4" stroke="black" stroke-width="0.2" d="M 0 5 L 3 0 L 6 5 z"/></svg>';
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="yellow" fill-opacity="0.4" stroke="black" stroke-width="0.2" d="M 0 5 L 3 0 L 6 5 z"/></svg>';
 }
 function getArrowUp() {
-    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3.9687499 3.96875"><path fill="white" stroke="black" stroke-width="0.318611" d="m 2.7893699,3.7809852 c 0.061702,0.032916 0.8148899,0.013349 0.8148899,0.013349 0,0 -0.5426551,-0.5560871 -0.9382701,-0.9628429 C 2.2225906,2.375606 2.1881953,2.0163869 2.1881953,2.0163869 H 3.4341002 L 1.7835016,0.28895256 0.34946563,2.0136534 c 0.534692,0.00674 0.73263777,-0.00633 1.03341887,-0.013349 0,0 0.1208928,1.0948563 1.4064854,1.7806808 z"/></svg>';
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 10"><path d="M 0 4 L 3 0 L 6 4 L 4 4 L 4 10 L 2 10 L 2 4 z"/></svg>';
+}
+function getArrowUpCursor() {
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3.9687499 3.96875"><path fill="white" stroke="black" stroke-width="0.318611" d="m 2.7893699,3.7809852 c 0.061702,0.032916 0.8148899,0.013349 0.8148899,0.013349 0,0 -0.5426551,-0.5560871 -0.9382701,-0.9628429 C 2.2225906,2.375606 2.1881953,2.0163869 2.1881953,2.0163869 H 3.4341002 L 1.7835016,0.28895256 0.34946563,2.0136534 c 0.534692,0.00674 0.73263777,-0.00633 1.03341887,-0.013349 0,0 0.1208928,1.0948563 1.4064854,1.7806808 z"/></svg>';
 }
 
 function cleanString(stringValue) {
@@ -6402,7 +6408,7 @@ function cleanString(stringValue) {
     return value.replace(/[.,*\-%&'\[{()}\]]/g, '');
 }
 function cleanLinePathString(stringValue) {
-    return stringValue.replace(/[*\- .,0123456789%&'\[{()}\]]/g, '');
+    return stringValue.replace(/[*\- .,%&'\[{()}\]]/g, '');
 }
 function cleanLinePathArrayString(stringValue) {
     return stringValue.replace(/[*\- 0123456789%&'\[{()}\]]/g, '');
@@ -6993,37 +6999,6 @@ const throttleBrushDown = throttle(brushDown, delay$1);
 const throttleBrushUp = throttle(brushUp, delay$1);
 const throttleDragAndBrush = throttle(dragAndBrush, delay$1);
 
-function getArrowDownBase64() {
-    return "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+Cgo8c3ZnCiAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHZpZXdCb3g9IjAgMCA4MCAxMDAiPgogIDxwYXRoIGQ9Ik0gMTAgNjAgTCAzMCA2MCBMIDMwIDAgTCA1MCAwIEwgNTAgNjAgTCA3MCA2MCBMIDQwIDEwMCB6Ii8+Cjwvc3ZnPg==";
-}
-function getArrowUpBase64() {
-    return "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+Cgo8c3ZnCiAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHZpZXdCb3g9IjAgMCA4MCAxMDAiPgogIDxwYXRoIGQ9Ik0gMTAgNDAgTCA0MCAwIEwgNzAgNDAgTCA1MCA0MCBMIDUwIDEwMCBMIDMwIDEwMCBMIDMwIDQwIHoiLz4KPC9zdmc+";
-}
-function getArrowLeftBase64() {
-    return "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+Cgo8c3ZnCiAgIHdpZHRoPSIxMiIKICAgaGVpZ2h0PSIxMiIKICAgdmlld0JveD0iMCAwIDEwIDYiCiAgIHZlcnNpb249IjEuMSIKICAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICAgIDxnPgogICAgICAgIDxwYXRoIGQ9Ik0gMCAyIEwgNiAyIEwgNiAwIEwgMTAgMyBMIDYgNiBMIDYgNCBMIDAgNCB6IiAvPgogICAgPC9nPgo8L3N2Zz4=";
-}
-function getArrowRightBase64() {
-    return "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+Cgo8c3ZnCiAgIHdpZHRoPSIxMiIKICAgaGVpZ2h0PSIxMiIJCiAgIHZpZXdCb3g9IjAgMCAxMCA2IgogICB2ZXJzaW9uPSIxLjEiCiAgIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgICA8Zz4KICAgICAgICA8cGF0aCBkPSJNIDAgMyBMIDQgMCBMIDQgMiBMIDEwIDIgTCAxMCA0IEwgNCA0IEwgNCA2IHoiIC8+CiAgICA8L2c+Cjwvc3ZnPg==";
-}
-function getArrowLeftAndRightBase64() {
-    return "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+Cgo8c3ZnCiAgIHdpZHRoPSIxMiIKICAgaGVpZ2h0PSIxMiIJCiAgIHZpZXdCb3g9IjAgMCAxMCA2IgogICB2ZXJzaW9uPSIxLjEiCiAgIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgICA8Zz4KICAgICAgICA8cGF0aCBkPSJNIDAgMyBMIDMgMCBMIDMgMiBMIDcgMiBMIDcgMCBMIDEwIDMgTCA3IDYgTCA3IDQgTCAzIDQgTCAzIDYgeiIgLz4KICAgIDwvZz4KPC9zdmc+";
-}
-function getArrowTopBase64() {
-    return "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+Cgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIKdmlld0JveD0iMCAwIDE0MCAxMDAiPgo8cGF0aCBkPSJNIDEwIDEwMCBMIDcwIDAgTCAxMzAgMTAwIHoiIGZpbGw9InllbGxvdyIgZmlsbC1vcGFjaXR5PSIwLjQiIHN0cm9rZT0iYmxhY2siIHN0cm9rZS13aWR0aD0iMS4yIi8+Cjwvc3ZnPg==";
-}
-function getArrowTopCursorBase64() {
-    return "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+Cgo8c3ZnCiAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHZpZXdCb3g9IjAgMCA4IDUiCiAgd2lkdGg9IjEzIgogIGhlaWdodD0iMTMiPgogIDxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iYmxhY2siIHN0cm9rZS13aWR0aD0iMC41IiBkPSJNIDEgNSBMIDQgMCBMIDcgNSB6Ii8+Cjwvc3ZnPg==";
-}
-function getArrowBottomBase64() {
-    return "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+Cgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIKdmlld0JveD0iMCAwIDE0MCAxMDAiPgo8cGF0aCBkPSJNIDEwIDAgTCAxMzAgMCBMIDcwIDEwMCB6IiBmaWxsPSJ5ZWxsb3ciIHN0cm9rZT0iYmxhY2siIGZpbGwtb3BhY2l0eT0iMC40IiBzdHJva2Utd2lkdGg9IjEuMiIvPgo8L3N2Zz4=";
-}
-function getArrowBottomCursorBase64() {
-    return "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+Cgo8c3ZnCiAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHZpZXdCb3g9IjAgMCA4IDUiCiAgd2lkdGg9IjEzIgogIGhlaWdodD0iMTMiPgogIDxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iYmxhY2siIHN0cm9rZS13aWR0aD0iMC41IiBkPSJNIDEgMCBMIDcgMCBMIDQgNSB6Ii8+Cjwvc3ZnPg==";
-}
-function getArrowTopAndBottomBase64() {
-    return "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+Cgo8c3ZnCiAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHZpZXdCb3g9IjAgMCA2IDEyIgogIHdpZHRoPSIxNyIKICBoZWlnaHQ9IjE3Ij4KICA8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9ImJsYWNrIiBzdHJva2Utd2lkdGg9IjAuNSIgZD0iTSAwIDUuNSBMIDMgMSBMIDYgNS41IHoiLz4KICA8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9ImJsYWNrIiBzdHJva2Utd2lkdGg9IjAuNSIgZD0iTSAwIDYuNSBMIDMgMTEgTCA2IDYuNSB6Ii8+Cjwvc3ZnPg==";
-}
-
 //******** API ********//
 //---------- Show and Hide Functions ----------
 function show(dimension) {
@@ -7097,10 +7072,10 @@ function invert(dimension) {
     const textElement = select$1(invertId);
     const currentArrowStatus = textElement.text();
     const arrow = currentArrowStatus === 'down' ? '#arrow_image_up' : '#arrow_image_down';
-    const arrowStyle = currentArrowStatus === 'down' ? setSize(getArrowDown(), 12) : setSize(getArrowUp(), 12);
+    const arrowStyle = currentArrowStatus === 'down' ? setSize(getArrowDownCursor(), 12) : setSize(getArrowUpCursor(), 12);
     textElement.text(currentArrowStatus === 'down' ? 'up' : 'down');
     textElement.attr('href', arrow);
-    textElement.style('cursor', `url('data:image/svg+xml,${arrowStyle}') 8 8 , auto`);
+    textElement.style('cursor', `url('data:image/svg+xml,${encodeURIComponent(arrowStyle)}') 8 8 , auto`);
     select$1(dimensionId)
         .transition()
         .duration(1000)
@@ -7109,15 +7084,16 @@ function invert(dimension) {
         .domain(parcoords.yScales[dimension]
         .domain().reverse())))
         .ease(cubicInOut);
-    let active = select$1('g.active')
-        .selectAll('path')
-        .transition()
-        .duration(1000)
-        .attr('d', (d) => {
-        return linePath(d, parcoords.newFeatures, parcoords);
-    })
-        .ease(cubicInOut);
-    trans(active).each(function (d) {
+    trans(window.active).each(function (d) {
+        select$1(this)
+            .transition()
+            .duration(1000)
+            .attr('d', (d) => {
+            return linePath(d, parcoords.newFeatures, parcoords);
+        })
+            .ease(cubicInOut);
+    });
+    trans(window.selectable).each(function (d) {
         select$1(this)
             .transition()
             .duration(1000)
@@ -7141,21 +7117,22 @@ function invertWoTransition(dimension) {
     const textElement = select$1(invertId);
     const currentArrowStatus = textElement.text();
     const arrow = currentArrowStatus === 'down' ? '#arrow_image_up' : '#arrow_image_down';
-    const arrowStyle = currentArrowStatus === 'down' ? setSize(getArrowDown(), 12) : setSize(getArrowUp(), 12);
+    const arrowStyle = currentArrowStatus === 'down' ? setSize(getArrowDownCursor(), 12) : setSize(getArrowUpCursor(), 12);
     textElement.text(currentArrowStatus === 'down' ? 'up' : 'down');
     textElement.attr('href', arrow);
-    textElement.style('cursor', `url('data:image/svg+xml,${arrowStyle}') 8 8 , auto`);
+    textElement.style('cursor', `url('data:image/svg+xml,${encodeURIComponent(arrowStyle)}') 8 8 , auto`);
     select$1(dimensionId)
         .call(yAxis[dimension]
         .scale(parcoords.yScales[dimension]
         .domain(parcoords.yScales[dimension]
         .domain().reverse())));
-    let active = select$1('g.active')
-        .selectAll('path')
-        .attr('d', (d) => {
-        return linePath(d, parcoords.newFeatures, parcoords);
+    trans(window.active).each(function (d) {
+        select$1(this)
+            .attr('d', (d) => {
+            return linePath(d, parcoords.newFeatures, parcoords);
+        });
     });
-    trans(active).each(function (d) {
+    trans(window.selectable).each(function (d) {
         select$1(this)
             .attr('d', (d) => {
             return linePath(d, parcoords.newFeatures, parcoords);
@@ -7181,10 +7158,10 @@ function setInversionStatus(dimension, status) {
     const dimensionId = '#dimension_axis_' + processedDimensionName;
     const textElement = select$1(invertId);
     const arrow = status === 'ascending' ? '#arrow_image_up' : '#arrow_image_down';
-    const arrowStyle = status === 'ascending' ? setSize(getArrowDown(), 12) : setSize(getArrowUp(), 12);
+    const arrowStyle = status === 'ascending' ? setSize(getArrowDownCursor(), 12) : setSize(getArrowUpCursor(), 12);
     textElement.text(status === 'ascending' ? 'up' : 'down');
     textElement.attr('href', arrow);
-    textElement.style('cursor', `url('data:image/svg+xml,${arrowStyle}') 8 8 , auto`);
+    textElement.style('cursor', `url('data:image/svg+xml,${encodeURIComponent(arrowStyle)}') 8 8 , auto`);
     select$1(dimensionId)
         .transition()
         .duration(1000)
@@ -7193,15 +7170,16 @@ function setInversionStatus(dimension, status) {
         .domain(parcoords.yScales[dimension]
         .domain().reverse())))
         .ease(cubicInOut);
-    let active = select$1('g.active')
-        .selectAll('path')
-        .transition()
-        .duration(1000)
-        .attr('d', (d) => {
-        return linePath(d, parcoords.newFeatures, parcoords);
-    })
-        .ease(cubicInOut);
-    trans(active).each(function (d) {
+    trans(window.active).each(function (d) {
+        select$1(this)
+            .transition()
+            .duration(1000)
+            .attr('d', (d) => {
+            return linePath(d, parcoords.newFeatures, parcoords);
+        })
+            .ease(cubicInOut);
+    });
+    trans(window.selectable).each(function (d) {
         select$1(this)
             .transition()
             .duration(1000)
@@ -7248,7 +7226,7 @@ function moveByOne(dimension, direction) {
     }
     parcoords.xScales.domain(parcoords.newFeatures);
     let active = select$1('g.active').selectAll('path');
-    let featureAxis = selectAll('#feature');
+    let featureAxis = selectAll('.dimensions');
     active.transition()
         .duration(1000)
         .attr('d', function (d) {
@@ -7311,7 +7289,7 @@ function swap(dimensionA, dimensionB) {
         [parcoords.newFeatures[indexOfDimensionB], parcoords.newFeatures[indexOfDimensionA]];
     parcoords.xScales.domain(parcoords.newFeatures);
     let active = select$1('g.active').selectAll('path');
-    let featureAxis = selectAll('#feature');
+    let featureAxis = selectAll('.dimensions');
     active.transition()
         .duration(1000)
         .attr('d', (d) => {
@@ -7575,8 +7553,9 @@ function drawChart(content) {
     window.svg = select$1('#parallelcoords')
         .append('svg')
         .attr('id', 'pc_svg')
-        .attr('viewBox', [0, 0, window.width, height])
+        .attr('viewBox', [-10, 0, window.width, height])
         .attr('font-family', 'Verdana, sans-serif');
+    setDefsForIcons();
     window.active = setActivePathLines(svg, content, ids, window.parcoords);
     setFeatureAxis(svg, yAxis, window.active, window.parcoords, width, window.padding);
     selectionWithRectangle();
@@ -8172,8 +8151,7 @@ function setFeatureAxis(svg, yAxis, active, parcoords, width, padding) {
         .data(parcoords.features)
         .enter()
         .append('g')
-        .attr('class', 'feature')
-        .attr('id', 'feature')
+        .attr('class', 'dimensions')
         .attr('transform', d => ('translate(' + parcoords.xScales(d.name) + ')'));
     let tooltipValuesLabel = select$1('#parallelcoords')
         .append('g')
@@ -8199,6 +8177,17 @@ function setFeatureAxis(svg, yAxis, active, parcoords, width, padding) {
             return tooltipValuesLabel.style('visibility', 'hidden');
         });
     });
+    let tickElements = document.querySelectorAll('g.tick');
+    console.log(tickElements);
+    tickElements.forEach((gElement) => {
+        let transformValue = gElement.getAttribute('transform');
+        let yValue = transformValue.match(/translate\(0,([^\)]+)\)/);
+        if (yValue) {
+            let originalValue = parseFloat(yValue[1]);
+            let shortenedValue = originalValue.toFixed(4);
+            gElement.setAttribute('transform', `translate(0,${shortenedValue})`);
+        }
+    });
     let tooltipValues = select$1('#parallelcoords')
         .append('g')
         .style('position', 'absolute')
@@ -8211,7 +8200,6 @@ function setFeatureAxis(svg, yAxis, active, parcoords, width, padding) {
         .append('g')
         .style('position', 'absolute')
         .style('visibility', 'hidden');
-    setDefsForIcons();
     setBrushDown(featureAxis, parcoords, active, tooltipValues);
     setBrushUp(featureAxis, parcoords, active, tooltipValues);
     setRectToDrag(featureAxis, svg, parcoords, active, tooltipValuesTop, tooltipValuesDown);
@@ -8226,22 +8214,22 @@ function setDefsForIcons() {
         .attr('id', 'arrow_image_up')
         .attr('width', 12)
         .attr('height', 12)
-        .attr('href', 'data:image/svg+xml;base64,' + getArrowUpBase64());
+        .attr('href', 'data:image/svg+xml;,' + getArrowUp());
     defs.append('image')
         .attr('id', 'arrow_image_down')
         .attr('width', 12)
         .attr('height', 12)
-        .attr('href', 'data:image/svg+xml;base64,' + getArrowDownBase64());
+        .attr('href', 'data:image/svg+xml;,' + getArrowDown());
     defs.append('image')
         .attr('id', 'brush_image_top')
         .attr('width', 14)
         .attr('height', 10)
-        .attr('href', 'data:image/svg+xml;base64,' + getArrowTopBase64());
+        .attr('href', 'data:image/svg+xml;,' + getArrowTop());
     defs.append('image')
         .attr('id', 'brush_image_bottom')
         .attr('width', 14)
         .attr('height', 10)
-        .attr('href', 'data:image/svg+xml;base64,' + getArrowBottomBase64());
+        .attr('href', 'data:image/svg+xml;,' + getArrowBottom());
 }
 // Hovering
 function highlight(data) {
@@ -8307,9 +8295,10 @@ function onInvert() {
     }
 }
 function setInvertIcon(featureAxis, padding) {
+    let value = (padding / 1.5).toFixed(4);
     featureAxis
         .append('svg')
-        .attr('y', padding / 1.5)
+        .attr('y', value)
         .attr('x', -6)
         .append('use')
         .attr('width', 12)
@@ -8322,7 +8311,7 @@ function setInvertIcon(featureAxis, padding) {
         select$1(this)
             .attr('id', 'dimension_invert_' + processedDimensionName)
             .text('up')
-            .style('cursor', `url('data:image/svg+xml,${setSize(getArrowDown(), 12)}') 8 8, auto`);
+            .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowDownCursor()), 12)}') 8 8, auto`);
     })
         .on('click', onInvert());
 }
@@ -8417,11 +8406,12 @@ function setContextMenu(featureAxis, padding, parcoords, active, width) {
         .attr('id', 'showAllMenu')
         .attr('class', 'contextmenu')
         .text('Show All');
+    let y_value = (padding / 1.7).toFixed(4);
     featureAxis
         .append('text')
-        .attr('id', 'dimension')
+        .attr('class', 'dimension')
         .attr('text-anchor', 'middle')
-        .attr('y', padding / 1.7)
+        .attr('y', y_value)
         .text(d => d.name.length > 10 ? d.name.substr(0, 10) + '...' : d.name)
         .style('font-size', '0.7rem')
         .call(drag()
@@ -8434,18 +8424,18 @@ function setContextMenu(featureAxis, padding, parcoords, active, width) {
         .on('mousemove', (event, d) => {
         if (getDimensionPosition(d.name) == 0) {
             featureAxis
-                .select('#dimension')
-                .style('cursor', `url('data:image/svg+xml,${setSize(getArrowRight(), 12)}') 8 8, auto`);
+                .select('.dimension')
+                .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowRight()), 12)}') 8 8, auto`);
         }
         else if (getDimensionPosition(d.name) == parcoords.newFeatures.length - 1) {
             featureAxis
-                .select('#dimension')
-                .style('cursor', `url('data:image/svg+xml,${setSize(getArrowLeft(), 12)}') 8 8, auto`);
+                .select('.dimension')
+                .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowLeft()), 12)}') 8 8, auto`);
         }
         else {
             featureAxis
-                .select('#dimension')
-                .style('cursor', `url('data:image/svg+xml,${setSize(getArrowLeftAndRight(), 12)}') 8 8, auto`);
+                .select('.dimension')
+                .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowLeftAndRight()), 12)}') 8 8, auto`);
         }
         tooltipFeatures.text(d.name);
         tooltipFeatures.style('top', 12.8 + 'rem').style('left', event.clientX / 16 + 'rem');
@@ -8809,7 +8799,7 @@ function setBrushUp(featureAxis, parcoords, active, tooltipValues) {
             .attr('width', 14)
             .attr('height', 10)
             .attr('href', '#brush_image_top')
-            .style('cursor', `url('data:image/svg+xml,${setSize(getArrowTopCursor(), 13)}') 8 8, auto`)
+            .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopCursor()), 13)}') 8 8, auto`)
             .call(drag().on('drag', (event, d) => {
             if (parcoords.newFeatures.length > 25) {
                 throttleBrushUp(processedDimensionName, event, d, parcoords, active, tooltipValues, window);
@@ -8837,7 +8827,7 @@ function setBrushDown(featureAxisG, parcoords, active, tooltipValues) {
             .attr('width', 14)
             .attr('height', 10)
             .attr('href', '#brush_image_bottom')
-            .style('cursor', `url('data:image/svg+xml,${setSize(getArrowBottomCursor(), 13)}') 8 8, auto`)
+            .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowBottomCursor()), 13)}') 8 8, auto`)
             .call(drag()
             .on('drag', (event, d) => {
             if (parcoords.newFeatures.length > 25) {
@@ -9575,11 +9565,34 @@ function saveAsSvg() {
 }
 function saveSvg(data, name) {
     data.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    data.querySelectorAll(".domain").forEach(el => {
+        el.removeAttribute("class");
+    });
     let svgData = data.outerHTML;
     svgData = svgData.replaceAll(/cursor: url\([^)]*\) 8 8, auto;/g, '');
     svgData = svgData.replaceAll(/style="cursor:[^"]*"/g, '');
+    svgData = svgData.replaceAll(/<rect style=[^>]*><\/rect>/g, '');
+    svgData = svgData.replaceAll(/id="pc_svg"/g, '');
+    let svgArrowUp = encodeURIComponent(getArrowUp());
+    let svgArrowDown = encodeURIComponent(getArrowDown());
+    let svgArrowBottom = encodeURIComponent(getArrowBottom());
+    let svgArrowTop = encodeURIComponent(getArrowTop());
+    let regexUp = /<image id="arrow_image_up"[^>]*href="data:image\/svg\+xml[^"]*">/g;
+    let regexDown = /<image id="arrow_image_down"[^>]*href="data:image\/svg\+xml[^"]*">/g;
+    let regexTop = /<image id="brush_image_top"[^>]*href="data:image\/svg\+xml[^"]*">/g;
+    let regexBottom = /<image id="brush_image_bottom"[^>]*href="data:image\/svg\+xml[^"]*">/g;
+    svgData = svgData.replaceAll(regexUp, getImageTag("arrow_image_up", svgArrowUp));
+    svgData = svgData.replaceAll(regexDown, getImageTag("arrow_image_down", svgArrowDown));
+    svgData = svgData.replaceAll(regexBottom, getImageTag("brush_image_bottom", svgArrowBottom));
+    svgData = svgData.replaceAll(regexTop, getImageTag("brush_image_top", svgArrowTop));
     let processedData = xmlFormat(svgData);
+    processedData = flattenTextTags(processedData);
+    processedData = cleanUseElements(processedData);
+    processedData = cleanPathElements(processedData);
+    processedData = removeEmptyOrHiddenRects(processedData);
+    processedData = processedData.replace(/pointer-events\s*:\s*[^;"]*;?/g, '');
     processedData = processedData.replace(/    /g, '  ');
+    processedData = processedData.replace('<svg', '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
     let preface = '<?xml version="1.0" standalone="no"?>\r\n';
     let svgBlob = new Blob([preface, processedData], { type: 'image/svg+xml;charset=utf-8' });
     let svgUrl = URL.createObjectURL(svgBlob);
@@ -9590,6 +9603,36 @@ function saveSvg(data, name) {
     downloadLink.click();
     document.body.removeChild(downloadLink);
 }
+function getImageTag(key, svg) {
+    return `<image id="${key}" width="12" height="12" href="data:image/svg+xml,${svg}">`;
+}
+function flattenTextTags(svgString) {
+    return svgString.replace(/<text([^>]*)>\s*([\s\S]*?)\s*<\/text>/g, (_, attrs, content) => {
+        const flattened = content.replace(/\s+/g, ' ').trim();
+        return `<text${attrs}>${flattened}</text>`;
+    });
+}
+function cleanUseElements(svgString) {
+    return svgString.replace(/<use([^>]*)>([\s\S]*?)<\/use>/g, (_, attrs) => {
+        return `<use${attrs}/>`;
+    });
+}
+function cleanPathElements(svgString) {
+    return svgString.replace(/<path([^>]*)>([\s\S]*?)<\/path>/g, (_, attrs) => {
+        return `<path${attrs}/>`;
+    });
+}
+function removeEmptyOrHiddenRects(svgString) {
+    return svgString.replace(/<rect([^>]*?)\s*\/?>/g, (match, attrs) => {
+        const hasZeroSize = /(?:\s|")width\s*=\s*["']?0(?:\.0*)?["']?/i.test(attrs) &&
+            /(?:\s|")height\s*=\s*["']?0(?:\.0*)?["']?/i.test(attrs);
+        const hasHiddenStyle = /visibility\s*:\s*hidden|display\s*:\s*none/i.test(attrs);
+        if (hasZeroSize || hasHiddenStyle) {
+            return '';
+        }
+        return match;
+    });
+}
 
-export { addInvertStatus, addNumberOfDigs, addPosition, addSettingsForBrushing, brushDown, brushUp, checkIfDuplicatesExists, cleanLinePathArrayString, cleanLinePathString, cleanString, deleteChart, digits, dragAndBrush, drawChart, filter, filterWithCoords, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getArrowBottom, getArrowBottomBase64, getArrowBottomCursor, getArrowBottomCursorBase64, getArrowDown, getArrowDownBase64, getArrowLeft, getArrowLeftAndRight, getArrowLeftAndRightBase64, getArrowLeftBase64, getArrowRight, getArrowRightBase64, getArrowTop, getArrowTopAndBottom, getArrowTopAndBottomBase64, getArrowTopBase64, getArrowTopCursor, getArrowTopCursorBase64, getArrowUp, getArrowUpBase64, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelected, hide, invert, isDimensionCategorical, isElementVisible, isInverted, isSelected, isSelectedWithRecordId, loadCSV, move, moveByOne, removeDuplicateColumnNames, saveAsSvg, saveSvg, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setFilter, setInversionStatus, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setSize, setUnselected, setUnselectedWithId, show, swap, throttle, throttleBrushDown, throttleBrushUp, throttleDragAndBrush, throttleShowValues, toggleSelection, toggleSelectionWithId };
+export { addInvertStatus, addNumberOfDigs, addPosition, addSettingsForBrushing, brushDown, brushUp, checkIfDuplicatesExists, cleanLinePathArrayString, cleanLinePathString, cleanString, deleteChart, digits, dragAndBrush, drawChart, filter, filterWithCoords, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getArrowBottom, getArrowBottomCursor, getArrowDown, getArrowDownCursor, getArrowLeft, getArrowLeftAndRight, getArrowRight, getArrowTop, getArrowTopAndBottom, getArrowTopCursor, getArrowUp, getArrowUpCursor, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelected, hide, invert, invertWoTransition, isDimensionCategorical, isElementVisible, isInverted, isSelected, isSelectedWithRecordId, loadCSV, move, moveByOne, removeDuplicateColumnNames, saveAsSvg, saveSvg, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setFilter, setInversionStatus, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setSize, setUnselected, setUnselectedWithId, show, swap, throttle, throttleBrushDown, throttleBrushUp, throttleDragAndBrush, throttleShowValues, toggleSelection, toggleSelectionWithId };
 //# sourceMappingURL=spcd3.js.map
