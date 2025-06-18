@@ -2,10 +2,9 @@
 <h2>Usage</h3>
 
 <p>Parallel coordinates are used for:</p>
-    
 <ul>
-<li>Discovering clusters and outliers.</li>
-<li>Find correlations between dimensions.</li>
+<li>Discovering clusters and outliers among records.</li>
+<li>Finding correlations between dimensions.</li>
 </ul>
 
 <h3>Identifying Outliers and Clusters of Records</h3>
@@ -16,10 +15,10 @@ to those of other records. Clusters are groups of data records which have
 similar characteristics, so their polylines follow similar paths.
 </p>
 
-<h4>Example outliers:</h4>
+<h4>Example Outlier</h4>
 
 <p id="paragraph-0">
-With the current dataset, there is one obvious outlier to identify.
+The Heart Health Dataset contains one obvious outlier:
 </p>
 
 <button id="outlier-button">Show outlier</button>
@@ -27,46 +26,62 @@ With the current dataset, there is one obvious outlier to identify.
 <p>
 Patient F stands out as a clear outlier, with:
 </p>
-
 <ul>
-<li>Significantly higher blood pressure and cholesterol,</li>
-<li>Lower heart rate,</li>
-<li>High BMI,</li>
-<li>Advanced age.</li>
+<li>significantly higher blood pressure and cholesterol,</li>
+<li>lower heart rate,</li>
+<li>high BMI, and</li>
+<li>advanced age.</li>
 </ul>
 
 <p id="paragraph-0">
 This patient could be flagged for potential cardiovascular risk.
 </p>
 
+
+
 <h3>Looking for Correlations Between Dimensions</h3>
 
 <p id="paragraph-0">
-If two dimensions are positively correlated, high values in one dimension will 
-map to high values in the other, and low values to low values.</p>
-
-<div>
-    <img src="/images/correlation-pos-pc.svg" alt="correlations" style="width: 10rem; height: auto; padding-left: 1.5rem;"/>
-    <img src="/images/correlation-pos-sp.svg" alt="correlations" style="width: 10rem; height: auto; padding-left: 1.5rem;"/>
-</div>
-
-<p>If low values map to high values and vice versa, the two dimensions are negatively correlated.
+If two dimensions are positively correlated, high values in one
+dimension correspond to high values in the other. Low values in one
+dimension correspond to low values in the other. In a parallel
+coordinates plot, this can be seen only when the two dimensions are
+adjacent to one another. Parallel, non-crossing straight line segments
+run betwen the two dimensions, as shown in Figure X. In a scatterplot,
+this corresponds to points falling along straight line, as shown in
+Figure Y.
 </p>
 
 <div>
-    <img src="/images/correlation-neg-pc.svg" alt="correlations" style="width: 10rem; height: auto; padding-left: 1.5rem;"/>
-    <img src="/images/correlation-neg-sp.svg" alt="correlations" style="width: 10rem; height: auto; padding-left: 1.5rem;"/>
+<img src="/images/correlation-pos-pc.svg" alt="correlations" style="width: 10rem; height: auto; padding-left: 1.5rem;"/>
+<img src="/images/correlation-pos-sp.svg" alt="correlations" style="width: 10rem; height: auto; padding-left: 1.5rem;"/>
 </div>
 
-<h4>Example for positive and negative correlation:</h4>
-
-<p id="paragraph-0">
-In the current dataset a positive correlation can be found between Age and 
-Blood Pressure. By inverting Age a negative correlation is shown.
+<p>
+If two dimensions are negatively correlated, low values in one
+correspond to high values in the other and vice versa. In a parallel
+coordinates plot, the line segments between the adjacent dimensions
+all cross in the middle, as shown in Figure X. In the equivalent
+scatterplot, the points fall along a negatively inclined straight
+line, as shown in Figure Y.
 </p>
 
-<button id="correlation-button">Show negative correlation</button>
+<div>
+<img src="/images/correlation-neg-pc.svg" alt="correlations" style="width: 10rem; height: auto; padding-left: 1.5rem;"/>
+<img src="/images/correlation-neg-sp.svg" alt="correlations" style="width: 10rem; height: auto; padding-left: 1.5rem;"/>
+</div>
+
+
+
+<h4>Example of a Positive Correlation</h4>
 
 <p id="paragraph-0">
-Tendentially, Blood Pressure increases with age.
+In the Heart Health Dataset, the dimensions Age and Blood Pressure are
+positively correlated. Tendentially, blood pressure increases with
+age. With real data, parallel non-crossing line segments are rare. It
+often makes sense to invert one of the two dimensions to check for the
+visual cross pattern. This can be seen by inverting the Age dimension:
 </p>
+
+<button id="correlation-button">Invert Age dimension</button>
+
