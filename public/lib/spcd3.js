@@ -923,6 +923,10 @@ function select$1(selector) {
       : new Selection$1([[selector]], root);
 }
 
+function create$1(name) {
+  return select$1(creator(name).call(document.documentElement));
+}
+
 var nextId = 0;
 
 function Local() {
@@ -1087,7 +1091,7 @@ function Timer() {
   this._next = null;
 }
 
-Timer.prototype = timer.prototype = {
+Timer.prototype = timer$1.prototype = {
   constructor: Timer,
   restart: function(callback, delay, time) {
     if (typeof callback !== "function") throw new TypeError("callback is not a function");
@@ -1110,7 +1114,7 @@ Timer.prototype = timer.prototype = {
   }
 };
 
-function timer(callback, delay, time) {
+function timer$1(callback, delay, time) {
   var t = new Timer;
   t.restart(callback, delay, time);
   return t;
@@ -1237,7 +1241,7 @@ function create(node, id, self) {
   // Initialize the self timer when the transition is created.
   // Note the actual delay is not known until the first callback!
   schedules[id] = self;
-  self.timer = timer(schedule, 0, self.time);
+  self.timer = timer$1(schedule, 0, self.time);
 
   function schedule(elapsed) {
     self.state = SCHEDULED;
@@ -3417,1014 +3421,663 @@ function drag() {
   return drag;
 }
 
-function constant(x) {
-  return function constant() {
-    return x;
-  };
+function getArrowBottomCursor() {
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 5"><path fill="white" stroke="black" stroke-width="0.5" d="M 1 0 L 7 0 L 4 5 z"/></svg>';
+}
+function getArrowBottom() {
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="yellow" fill-opacity="0.4" stroke="black" stroke-width="0.2" d="M 0 0 L 6 0 L 3 5 z"/></svg>';
+}
+function getArrowDown() {
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 10"><path d="M 0 6 L 2 6 L 2 0 L 4 0 L 4 6 L 6 6 L 3 10 z"/></svg>';
+}
+function getArrowDownCursor() {
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3.9687499 3.96875"><path fill="white" stroke="black" stroke-width="0.318611" d="m 1.1578161,0.21695335 c -0.061702,-0.0329161 -0.81488983,-0.0133494 -0.81488983,-0.0133494 0,0 0.54265514,0.55608717 0.93827003,0.96284295 0.4433991,0.4558857 0.4777944,0.8151048 0.4777944,0.8151048 H 0.5130859 l 1.6505985,1.7274342 1.434036,-1.7247007 c -0.534692,-0.00674 -0.7326378,0.00633 -1.0334189,0.013349 0,0 -0.1208928,-1.09485632 -1.4064854,-1.78068085 z"/></svg>';
+}
+function getArrowLeftAndRight() {
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 6"><path fill="white" stroke="black" stroke-width="1" d="M 0 3 L 3 0 L 3 2 L 7 2 L 7 0 L 10 3 L 7 6 L 7 4 L 3 4 L 3 6 z"/></svg>';
+}
+function getArrowLeft() {
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 6"><path fill="white" stroke="black" stroke-width="1" d="M 0 2 L 6 2 L 6 0 L 10 3 L 6 6 L 6 4 L 0 4 z"/></svg>';
+}
+function getArrowRight() {
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 6"><path fill="white" stroke="black" stroke-width="1" d="M 0 3 L 4 0 L 4 2 L 10 2 L 10 4 L 4 4 L 4 6 z"/></svg>';
+}
+function getArrowTopAndBottom() {
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 12"><path fill="white" stroke="black" stroke-width="0.5" d="M 0 5.5 L 3 1 L 6 5.5 z"/><path fill="white" stroke="black" stroke-width="0.5" d="M 0 6.5 L 3 11 L 6 6.5 z"/></svg>';
+}
+function getArrowTopCursor() {
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 5"><path fill="white" stroke="black" stroke-width="0.5" d="M 1 5 L 4 0 L 7 5 z"/></svg>';
+}
+function getArrowTop() {
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="yellow" fill-opacity="0.4" stroke="black" stroke-width="0.2" d="M 0 5 L 3 0 L 6 5 z"/></svg>';
+}
+function getArrowUp() {
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 10"><path d="M 0 4 L 3 0 L 6 4 L 4 4 L 4 10 L 2 10 L 2 4 z"/></svg>';
+}
+function getArrowUpCursor() {
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3.9687499 3.96875"><path fill="white" stroke="black" stroke-width="0.318611" d="m 2.7893699,3.7809852 c 0.061702,0.032916 0.8148899,0.013349 0.8148899,0.013349 0,0 -0.5426551,-0.5560871 -0.9382701,-0.9628429 C 2.2225906,2.375606 2.1881953,2.0163869 2.1881953,2.0163869 H 3.4341002 L 1.7835016,0.28895256 0.34946563,2.0136534 c 0.534692,0.00674 0.73263777,-0.00633 1.03341887,-0.013349 0,0 0.1208928,1.0948563 1.4064854,1.7806808 z"/></svg>';
+}
+function getRefreshIcon() {
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 8" width="15" height="18"><polyline points="6.5 4 8.5 4 8.5 2" fill="none" stroke="black" stroke-width="1"/><path d="M8.5 4 L 7 2.5 A 3 3 0 0 0 2.5 2.5" fill="none" stroke="black" stroke-width="1"/><polyline points="3.5 6 1.5 6 1.5 8" fill="none" stroke="black" stroke-width="1"/><path d="M1.5 6 L 2.5 7 A 3 3 0 0 0 7 7" fill="none" stroke="black" stroke-width="1"/></svg>';
+}
+function getTableIcon() {
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 8" width="15" height="18" fill="currentColor"><rect x="0.5" y="0.5" width="9" height="9" rx="1" ry="1" stroke="black" stroke-width="1" fill="none" /><line x1="0.5" y1="3.3" x2="9.5" y2="3.3" stroke="black" stroke-width="1"/><line x1="0.5" y1="6.6" x2="9.5" y2="6.6" stroke="black" stroke-width="1"/><line x1="3.3" y1="0.5" x2="3.3" y2="9.5" stroke="black" stroke-width="1"/><line x1="6.6" y1="0.5" x2="6.6" y2="9.5" stroke="black" stroke-width="1"/></svg>';
+}
+function getSelectionIcon() {
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 8" width="15" height="18" fill="currentColor"><rect x="0.5" y="0.5" width="9" height="9" rx="1" ry="1" stroke="black" stroke-width="1" stroke-dasharray="0.5,0.5" fill="none" /></svg>';
+}
+function getSelectionActiveIcon() {
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 8" width="15" height="18" fill="currentColor"><rect x="0.5" y="0.5" width="9" height="9" rx="1" ry="1" stroke="orange" stroke-width="1" stroke-dasharray="0.5,0.5" fill="none" /></svg>';
 }
 
-const epsilon$2 = 1e-12;
-
-const pi = Math.PI,
-    tau = 2 * pi,
-    epsilon$1 = 1e-6,
-    tauEpsilon = tau - epsilon$1;
-
-function append(strings) {
-  this._ += strings[0];
-  for (let i = 1, n = strings.length; i < n; ++i) {
-    this._ += arguments[i] + strings[i];
-  }
+function cleanString(stringValue) {
+    let value = stringValue.replace(/ /g, '_');
+    return value.replace(/[.,*\-%&'\[{()}\]]/g, '');
 }
-
-function appendRound(digits) {
-  let d = Math.floor(digits);
-  if (!(d >= 0)) throw new Error(`invalid digits: ${digits}`);
-  if (d > 15) return append;
-  const k = 10 ** d;
-  return function(strings) {
-    this._ += strings[0];
-    for (let i = 1, n = strings.length; i < n; ++i) {
-      this._ += Math.round(arguments[i] * k) / k + strings[i];
-    }
-  };
+function cleanLinePathString(stringValue) {
+    return stringValue.replace(/[*\- .,%&'\[{()}\]]/g, '');
 }
-
-class Path {
-  constructor(digits) {
-    this._x0 = this._y0 = // start of current subpath
-    this._x1 = this._y1 = null; // end of current subpath
-    this._ = "";
-    this._append = digits == null ? append : appendRound(digits);
-  }
-  moveTo(x, y) {
-    this._append`M${this._x0 = this._x1 = +x},${this._y0 = this._y1 = +y}`;
-  }
-  closePath() {
-    if (this._x1 !== null) {
-      this._x1 = this._x0, this._y1 = this._y0;
-      this._append`Z`;
+function cleanLinePathArrayString(stringValue) {
+    return stringValue.replace(/[*\- 0123456789%&'\[{()}\]]/g, '');
+}
+function setSize(stringValue, size) {
+    return stringValue.replace('viewBox', `width="${size}" height="${size}" viewBox`);
+}
+function throttle(func, delay) {
+    let lastExecTime = 0;
+    return function () {
+        const context = this;
+        const args = arguments;
+        const currentTime = Date.now();
+        if (currentTime - lastExecTime >= delay) {
+            func.apply(context, args);
+            lastExecTime = currentTime;
+        }
+    };
+}
+function digits(value) {
+    return value
+        .toString()
+        .length;
+}
+function addNumberOfDigs(number, currentPosOfDims, dimensionName, key) {
+    let newObject = {};
+    newObject[key] = number;
+    const target = currentPosOfDims.find((obj) => obj.key == dimensionName);
+    Object.assign(target, newObject);
+}
+//https://stackoverflow.com/questions/123999/how-can-i-tell-if-a-dom-element-is-visible-in-the-current-viewport
+function isElementVisible(element) {
+    let rect = element.node().getBoundingClientRect(), vWidth = window.innerWidth || document.documentElement.clientWidth, vHeight = window.innerHeight || document.documentElement.clientHeight, efp = function (x, y) { return document.elementFromPoint(x, y); };
+    if (rect.right < 0 || rect.bottom < 0
+        || rect.left > vWidth || rect.top > vHeight)
+        return false;
+    return (element.node().contains(efp(rect.left, rect.top))
+        || element.node().contains(efp(rect.right, rect.top))
+        || element.node().contains(efp(rect.right, rect.bottom))
+        || element.node().contains(efp(rect.left, rect.bottom)));
+}
+function getMouseCoords(event, targetContainer = document.body) {
+    if (targetContainer === document.body) {
+        return [event.clientX + window.scrollX, event.clientY + window.scrollY];
     }
-  }
-  lineTo(x, y) {
-    this._append`L${this._x1 = +x},${this._y1 = +y}`;
-  }
-  quadraticCurveTo(x1, y1, x, y) {
-    this._append`Q${+x1},${+y1},${this._x1 = +x},${this._y1 = +y}`;
-  }
-  bezierCurveTo(x1, y1, x2, y2, x, y) {
-    this._append`C${+x1},${+y1},${+x2},${+y2},${this._x1 = +x},${this._y1 = +y}`;
-  }
-  arcTo(x1, y1, x2, y2, r) {
-    x1 = +x1, y1 = +y1, x2 = +x2, y2 = +y2, r = +r;
-
-    // Is the radius negative? Error.
-    if (r < 0) throw new Error(`negative radius: ${r}`);
-
-    let x0 = this._x1,
-        y0 = this._y1,
-        x21 = x2 - x1,
-        y21 = y2 - y1,
-        x01 = x0 - x1,
-        y01 = y0 - y1,
-        l01_2 = x01 * x01 + y01 * y01;
-
-    // Is this path empty? Move to (x1,y1).
-    if (this._x1 === null) {
-      this._append`M${this._x1 = x1},${this._y1 = y1}`;
-    }
-
-    // Or, is (x1,y1) coincident with (x0,y0)? Do nothing.
-    else if (!(l01_2 > epsilon$1));
-
-    // Or, are (x0,y0), (x1,y1) and (x2,y2) collinear?
-    // Equivalently, is (x1,y1) coincident with (x2,y2)?
-    // Or, is the radius zero? Line to (x1,y1).
-    else if (!(Math.abs(y01 * x21 - y21 * x01) > epsilon$1) || !r) {
-      this._append`L${this._x1 = x1},${this._y1 = y1}`;
-    }
-
-    // Otherwise, draw an arc!
     else {
-      let x20 = x2 - x0,
-          y20 = y2 - y0,
-          l21_2 = x21 * x21 + y21 * y21,
-          l20_2 = x20 * x20 + y20 * y20,
-          l21 = Math.sqrt(l21_2),
-          l01 = Math.sqrt(l01_2),
-          l = r * Math.tan((pi - Math.acos((l21_2 + l01_2 - l20_2) / (2 * l21 * l01))) / 2),
-          t01 = l / l01,
-          t21 = l / l21;
-
-      // If the start tangent is not coincident with (x0,y0), line to.
-      if (Math.abs(t01 - 1) > epsilon$1) {
-        this._append`L${x1 + t01 * x01},${y1 + t01 * y01}`;
-      }
-
-      this._append`A${r},${r},0,0,${+(y01 * x20 > x01 * y20)},${this._x1 = x1 + t21 * x21},${this._y1 = y1 + t21 * y21}`;
+        const rect = targetContainer.getBoundingClientRect();
+        return [event.clientX - rect.left, event.clientY - rect.top];
     }
-  }
-  arc(x, y, r, a0, a1, ccw) {
-    x = +x, y = +y, r = +r, ccw = !!ccw;
+}
 
-    // Is the radius negative? Error.
-    if (r < 0) throw new Error(`negative radius: ${r}`);
-
-    let dx = r * Math.cos(a0),
-        dy = r * Math.sin(a0),
-        x0 = x + dx,
-        y0 = y + dy,
-        cw = 1 ^ ccw,
-        da = ccw ? a0 - a1 : a1 - a0;
-
-    // Is this path empty? Move to (x0,y0).
-    if (this._x1 === null) {
-      this._append`M${x0},${y0}`;
+let selectionArray = [];
+function brushDown(cleanDimensionName, event, d, parcoords, active, tooltipValues, window) {
+    const yPosBottom = Number(select$1('#triangle_up_' + cleanDimensionName).attr('y'));
+    let yPosTop;
+    let yPosRect;
+    let topToAdd;
+    if (event.y < 70) {
+        yPosTop = 70;
+        yPosRect = 80;
+        topToAdd = 80;
     }
-
-    // Or, is (x0,y0) not coincident with the previous point? Line to (x0,y0).
-    else if (Math.abs(this._x1 - x0) > epsilon$1 || Math.abs(this._y1 - y0) > epsilon$1) {
-      this._append`L${x0},${y0}`;
+    else if (event.y > yPosBottom - 10) {
+        yPosTop = yPosBottom - 10;
+        topToAdd = yPosBottom - 10;
+        yPosRect = 320;
     }
-
-    // Is this arc empty? We’re done.
-    if (!r) return;
-
-    // Does the angle go the wrong way? Flip the direction.
-    if (da < 0) da = da % tau + tau;
-
-    // Is this a complete circle? Draw two arcs to complete the circle.
-    if (da > tauEpsilon) {
-      this._append`A${r},${r},0,1,${cw},${x - dx},${y - dy}A${r},${r},0,1,${cw},${this._x1 = x0},${this._y1 = y0}`;
+    else if (event.y == yPosBottom - 10) {
+        yPosTop = yPosBottom - 10;
+        topToAdd = yPosBottom - 10;
+        yPosRect = yPosTop + 10;
     }
-
-    // Is this arc non-empty? Draw an arc!
-    else if (da > epsilon$1) {
-      this._append`A${r},${r},0,${+(da >= pi)},${cw},${this._x1 = x + r * Math.cos(a1)},${this._y1 = y + r * Math.sin(a1)}`;
+    else {
+        yPosTop = event.y;
+        topToAdd = event.y;
+        yPosRect = event.y + 10;
     }
-  }
-  rect(x, y, w, h) {
-    this._append`M${this._x0 = this._x1 = +x},${this._y0 = this._y1 = +y}h${w = +w}v${+h}h${-w}Z`;
-  }
-  toString() {
-    return this._;
-  }
-}
-
-function withPath(shape) {
-  let digits = 3;
-
-  shape.digits = function(_) {
-    if (!arguments.length) return digits;
-    if (_ == null) {
-      digits = null;
-    } else {
-      const d = Math.floor(_);
-      if (!(d >= 0)) throw new RangeError(`invalid digits: ${_}`);
-      digits = d;
+    addPosition(topToAdd, parcoords.currentPosOfDims, d.name, 'top');
+    if (yPosTop == 70 && yPosBottom == 320) {
+        select$1('#rect_' + cleanDimensionName)
+            .style('cursor', 'default');
     }
-    return shape;
-  };
-
-  return () => new Path(digits);
-}
-
-function array(x) {
-  return typeof x === "object" && "length" in x
-    ? x // Array, TypedArray, NodeList, array-like
-    : Array.from(x); // Map, Set, iterable, string, or anything else
-}
-
-function Linear(context) {
-  this._context = context;
-}
-
-Linear.prototype = {
-  areaStart: function() {
-    this._line = 0;
-  },
-  areaEnd: function() {
-    this._line = NaN;
-  },
-  lineStart: function() {
-    this._point = 0;
-  },
-  lineEnd: function() {
-    if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
-    this._line = 1 - this._line;
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-    switch (this._point) {
-      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
-      case 1: this._point = 2; // falls through
-      default: this._context.lineTo(x, y); break;
+    else {
+        select$1('#rect_' + cleanDimensionName)
+            .style('cursor', `url('data:image/svg+xml,${setSize(getArrowTopAndBottom(), 20)}') 8 8, auto`);
     }
-  }
-};
-
-function curveLinear(context) {
-  return new Linear(context);
-}
-
-function x(p) {
-  return p[0];
-}
-
-function y(p) {
-  return p[1];
-}
-
-function line(x$1, y$1) {
-  var defined = constant(true),
-      context = null,
-      curve = curveLinear,
-      output = null,
-      path = withPath(line);
-
-  x$1 = typeof x$1 === "function" ? x$1 : (x$1 === undefined) ? x : constant(x$1);
-  y$1 = typeof y$1 === "function" ? y$1 : (y$1 === undefined) ? y : constant(y$1);
-
-  function line(data) {
-    var i,
-        n = (data = array(data)).length,
-        d,
-        defined0 = false,
-        buffer;
-
-    if (context == null) output = curve(buffer = path());
-
-    for (i = 0; i <= n; ++i) {
-      if (!(i < n && defined(d = data[i], i, data)) === defined0) {
-        if (defined0 = !defined0) output.lineStart();
-        else output.lineEnd();
-      }
-      if (defined0) output.point(+x$1(d, i, data), +y$1(d, i, data));
+    select$1('#triangle_down_' + cleanDimensionName).attr('y', yPosTop);
+    const heightTopRect = yPosRect - 80;
+    const heightBottomRect = 320 - yPosBottom;
+    select$1('#rect_' + cleanDimensionName)
+        .attr('y', yPosRect)
+        .attr('height', 240 - heightTopRect - heightBottomRect);
+    if (!isNaN(parcoords.yScales[d.name].domain()[0])) {
+        setToolTipBrush(tooltipValues, d, event, parcoords, window, true);
     }
-
-    if (buffer) return output = null, buffer + "" || null;
-  }
-
-  line.x = function(_) {
-    return arguments.length ? (x$1 = typeof _ === "function" ? _ : constant(+_), line) : x$1;
-  };
-
-  line.y = function(_) {
-    return arguments.length ? (y$1 = typeof _ === "function" ? _ : constant(+_), line) : y$1;
-  };
-
-  line.defined = function(_) {
-    return arguments.length ? (defined = typeof _ === "function" ? _ : constant(!!_), line) : defined;
-  };
-
-  line.curve = function(_) {
-    return arguments.length ? (curve = _, context != null && (output = curve(context)), line) : curve;
-  };
-
-  line.context = function(_) {
-    return arguments.length ? (_ == null ? context = output = null : output = curve(context = _), line) : context;
-  };
-
-  return line;
+    updateLines(parcoords, active, d.name, cleanDimensionName);
 }
-
-function noop() {}
-
-function point$4(that, x, y) {
-  that._context.bezierCurveTo(
-    (2 * that._x0 + that._x1) / 3,
-    (2 * that._y0 + that._y1) / 3,
-    (that._x0 + 2 * that._x1) / 3,
-    (that._y0 + 2 * that._y1) / 3,
-    (that._x0 + 4 * that._x1 + x) / 6,
-    (that._y0 + 4 * that._y1 + y) / 6
-  );
-}
-
-function Basis(context) {
-  this._context = context;
-}
-
-Basis.prototype = {
-  areaStart: function() {
-    this._line = 0;
-  },
-  areaEnd: function() {
-    this._line = NaN;
-  },
-  lineStart: function() {
-    this._x0 = this._x1 =
-    this._y0 = this._y1 = NaN;
-    this._point = 0;
-  },
-  lineEnd: function() {
-    switch (this._point) {
-      case 3: point$4(this, this._x1, this._y1); // falls through
-      case 2: this._context.lineTo(this._x1, this._y1); break;
+function brushUp(cleanDimensionName, event, d, parcoords, active, tooltipValues, window) {
+    const yPosTop = Number(select$1('#triangle_down_' + cleanDimensionName).attr('y'));
+    let yPosBottom;
+    if (event.y < yPosTop + 10) {
+        yPosBottom = yPosTop + 10;
     }
-    if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
-    this._line = 1 - this._line;
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-    switch (this._point) {
-      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
-      case 1: this._point = 2; break;
-      case 2: this._point = 3; this._context.lineTo((5 * this._x0 + this._x1) / 6, (5 * this._y0 + this._y1) / 6); // falls through
-      default: point$4(this, x, y); break;
+    else if (event.y > 320) {
+        yPosBottom = 320;
     }
-    this._x0 = this._x1, this._x1 = x;
-    this._y0 = this._y1, this._y1 = y;
-  }
-};
-
-function Bundle(context, beta) {
-  this._basis = new Basis(context);
-  this._beta = beta;
-}
-
-Bundle.prototype = {
-  lineStart: function() {
-    this._x = [];
-    this._y = [];
-    this._basis.lineStart();
-  },
-  lineEnd: function() {
-    var x = this._x,
-        y = this._y,
-        j = x.length - 1;
-
-    if (j > 0) {
-      var x0 = x[0],
-          y0 = y[0],
-          dx = x[j] - x0,
-          dy = y[j] - y0,
-          i = -1,
-          t;
-
-      while (++i <= j) {
-        t = i / j;
-        this._basis.point(
-          this._beta * x[i] + (1 - this._beta) * (x0 + t * dx),
-          this._beta * y[i] + (1 - this._beta) * (y0 + t * dy)
-        );
-      }
+    else if (event.y == yPosTop + 10) {
+        yPosBottom = yPosTop;
     }
-
-    this._x = this._y = null;
-    this._basis.lineEnd();
-  },
-  point: function(x, y) {
-    this._x.push(+x);
-    this._y.push(+y);
-  }
-};
-
-((function custom(beta) {
-
-  function bundle(context) {
-    return beta === 1 ? new Basis(context) : new Bundle(context, beta);
-  }
-
-  bundle.beta = function(beta) {
-    return custom(+beta);
-  };
-
-  return bundle;
-}))(0.85);
-
-function point$3(that, x, y) {
-  that._context.bezierCurveTo(
-    that._x1 + that._k * (that._x2 - that._x0),
-    that._y1 + that._k * (that._y2 - that._y0),
-    that._x2 + that._k * (that._x1 - x),
-    that._y2 + that._k * (that._y1 - y),
-    that._x2,
-    that._y2
-  );
-}
-
-function Cardinal(context, tension) {
-  this._context = context;
-  this._k = (1 - tension) / 6;
-}
-
-Cardinal.prototype = {
-  areaStart: function() {
-    this._line = 0;
-  },
-  areaEnd: function() {
-    this._line = NaN;
-  },
-  lineStart: function() {
-    this._x0 = this._x1 = this._x2 =
-    this._y0 = this._y1 = this._y2 = NaN;
-    this._point = 0;
-  },
-  lineEnd: function() {
-    switch (this._point) {
-      case 2: this._context.lineTo(this._x2, this._y2); break;
-      case 3: point$3(this, this._x1, this._y1); break;
+    else {
+        yPosBottom = event.y;
     }
-    if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
-    this._line = 1 - this._line;
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-    switch (this._point) {
-      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
-      case 1: this._point = 2; this._x1 = x, this._y1 = y; break;
-      case 2: this._point = 3; // falls through
-      default: point$3(this, x, y); break;
+    addPosition(yPosBottom, parcoords.currentPosOfDims, d.name, 'bottom');
+    if (yPosTop == 70 && yPosBottom == 320) {
+        select$1('#rect_' + cleanDimensionName)
+            .style('cursor', 'default');
     }
-    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
-    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
-  }
-};
-
-((function custom(tension) {
-
-  function cardinal(context) {
-    return new Cardinal(context, tension);
-  }
-
-  cardinal.tension = function(tension) {
-    return custom(+tension);
-  };
-
-  return cardinal;
-}))(0);
-
-function CardinalClosed(context, tension) {
-  this._context = context;
-  this._k = (1 - tension) / 6;
-}
-
-CardinalClosed.prototype = {
-  areaStart: noop,
-  areaEnd: noop,
-  lineStart: function() {
-    this._x0 = this._x1 = this._x2 = this._x3 = this._x4 = this._x5 =
-    this._y0 = this._y1 = this._y2 = this._y3 = this._y4 = this._y5 = NaN;
-    this._point = 0;
-  },
-  lineEnd: function() {
-    switch (this._point) {
-      case 1: {
-        this._context.moveTo(this._x3, this._y3);
-        this._context.closePath();
-        break;
-      }
-      case 2: {
-        this._context.lineTo(this._x3, this._y3);
-        this._context.closePath();
-        break;
-      }
-      case 3: {
-        this.point(this._x3, this._y3);
-        this.point(this._x4, this._y4);
-        this.point(this._x5, this._y5);
-        break;
-      }
+    else {
+        select$1('#rect_' + cleanDimensionName)
+            .style('cursor', `url('data:image/svg+xml,${setSize(getArrowTopAndBottom(), 20)}') 8 8, auto`);
     }
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-    switch (this._point) {
-      case 0: this._point = 1; this._x3 = x, this._y3 = y; break;
-      case 1: this._point = 2; this._context.moveTo(this._x4 = x, this._y4 = y); break;
-      case 2: this._point = 3; this._x5 = x, this._y5 = y; break;
-      default: point$3(this, x, y); break;
+    select$1('#triangle_up_' + cleanDimensionName).attr('y', yPosBottom);
+    const heightTopRect = yPosTop - 70;
+    const heightBottomRect = 320 - yPosBottom;
+    select$1('#rect_' + cleanDimensionName)
+        .attr('height', 240 - heightTopRect - heightBottomRect);
+    if (!isNaN(parcoords.yScales[d.name].domain()[0])) {
+        setToolTipBrush(tooltipValues, d, event, parcoords, window, false);
     }
-    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
-    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
-  }
-};
-
-((function custom(tension) {
-
-  function cardinal(context) {
-    return new CardinalClosed(context, tension);
-  }
-
-  cardinal.tension = function(tension) {
-    return custom(+tension);
-  };
-
-  return cardinal;
-}))(0);
-
-function CardinalOpen(context, tension) {
-  this._context = context;
-  this._k = (1 - tension) / 6;
+    updateLines(parcoords, active, d.name, cleanDimensionName);
 }
-
-CardinalOpen.prototype = {
-  areaStart: function() {
-    this._line = 0;
-  },
-  areaEnd: function() {
-    this._line = NaN;
-  },
-  lineStart: function() {
-    this._x0 = this._x1 = this._x2 =
-    this._y0 = this._y1 = this._y2 = NaN;
-    this._point = 0;
-  },
-  lineEnd: function() {
-    if (this._line || (this._line !== 0 && this._point === 3)) this._context.closePath();
-    this._line = 1 - this._line;
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-    switch (this._point) {
-      case 0: this._point = 1; break;
-      case 1: this._point = 2; break;
-      case 2: this._point = 3; this._line ? this._context.lineTo(this._x2, this._y2) : this._context.moveTo(this._x2, this._y2); break;
-      case 3: this._point = 4; // falls through
-      default: point$3(this, x, y); break;
+function dragAndBrush(cleanDimensionName, d, svg, event, parcoords, active, delta, tooltipValuesTop, tooltipValuesDown, window) {
+    let yPosTop;
+    let yPosRect;
+    let topToAdd;
+    const yPosBottom = select$1('#triangle_up_' + cleanDimensionName).attr('y');
+    const yPosTopNew = select$1('#triangle_down_' + cleanDimensionName).attr('y');
+    const heightTopRect = yPosTopNew - 70;
+    const heightBottomRect = 320 - yPosBottom;
+    const rectHeight = 240 - heightTopRect - heightBottomRect;
+    if (event.y + delta - 10 <= 70) {
+        yPosTop = 70;
+        topToAdd = 80;
+        yPosRect = 80;
     }
-    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
-    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
-  }
-};
-
-((function custom(tension) {
-
-  function cardinal(context) {
-    return new CardinalOpen(context, tension);
-  }
-
-  cardinal.tension = function(tension) {
-    return custom(+tension);
-  };
-
-  return cardinal;
-}))(0);
-
-function point$2(that, x, y) {
-  var x1 = that._x1,
-      y1 = that._y1,
-      x2 = that._x2,
-      y2 = that._y2;
-
-  if (that._l01_a > epsilon$2) {
-    var a = 2 * that._l01_2a + 3 * that._l01_a * that._l12_a + that._l12_2a,
-        n = 3 * that._l01_a * (that._l01_a + that._l12_a);
-    x1 = (x1 * a - that._x0 * that._l12_2a + that._x2 * that._l01_2a) / n;
-    y1 = (y1 * a - that._y0 * that._l12_2a + that._y2 * that._l01_2a) / n;
-  }
-
-  if (that._l23_a > epsilon$2) {
-    var b = 2 * that._l23_2a + 3 * that._l23_a * that._l12_a + that._l12_2a,
-        m = 3 * that._l23_a * (that._l23_a + that._l12_a);
-    x2 = (x2 * b + that._x1 * that._l23_2a - x * that._l12_2a) / m;
-    y2 = (y2 * b + that._y1 * that._l23_2a - y * that._l12_2a) / m;
-  }
-
-  that._context.bezierCurveTo(x1, y1, x2, y2, that._x2, that._y2);
-}
-
-function CatmullRom(context, alpha) {
-  this._context = context;
-  this._alpha = alpha;
-}
-
-CatmullRom.prototype = {
-  areaStart: function() {
-    this._line = 0;
-  },
-  areaEnd: function() {
-    this._line = NaN;
-  },
-  lineStart: function() {
-    this._x0 = this._x1 = this._x2 =
-    this._y0 = this._y1 = this._y2 = NaN;
-    this._l01_a = this._l12_a = this._l23_a =
-    this._l01_2a = this._l12_2a = this._l23_2a =
-    this._point = 0;
-  },
-  lineEnd: function() {
-    switch (this._point) {
-      case 2: this._context.lineTo(this._x2, this._y2); break;
-      case 3: this.point(this._x2, this._y2); break;
+    else if (event.y + delta + rectHeight >= 320) {
+        yPosTop = 320 - rectHeight - 10;
+        topToAdd = 320 - rectHeight - 10;
+        yPosRect = 320 - rectHeight;
     }
-    if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
-    this._line = 1 - this._line;
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-
-    if (this._point) {
-      var x23 = this._x2 - x,
-          y23 = this._y2 - y;
-      this._l23_a = Math.sqrt(this._l23_2a = Math.pow(x23 * x23 + y23 * y23, this._alpha));
+    else {
+        yPosTop = event.y + delta - 10;
+        topToAdd = event.y + delta - 10;
+        yPosRect = yPosTop + 10;
     }
-
-    switch (this._point) {
-      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
-      case 1: this._point = 2; break;
-      case 2: this._point = 3; // falls through
-      default: point$2(this, x, y); break;
+    addPosition(topToAdd, parcoords.currentPosOfDims, d.name, 'top');
+    addPosition(yPosRect + rectHeight, parcoords.currentPosOfDims, d.name, 'bottom');
+    if (rectHeight < 240) {
+        select$1('#rect_' + cleanDimensionName)
+            .attr('y', yPosRect);
+        select$1('#triangle_down_' + cleanDimensionName)
+            .attr('y', yPosTop);
+        select$1('#triangle_up_' + cleanDimensionName)
+            .attr('y', yPosRect + rectHeight);
+        const dimensionName = d.name;
+        const invertStatus = getInvertStatus(dimensionName, parcoords.currentPosOfDims);
+        const maxValue = invertStatus == false ? parcoords.yScales[dimensionName].domain()[1] :
+            parcoords.yScales[dimensionName].domain()[0];
+        const minValue = invertStatus == false ? parcoords.yScales[dimensionName].domain()[0] :
+            parcoords.yScales[dimensionName].domain()[1];
+        const range = maxValue - minValue;
+        if (!isNaN(parcoords.yScales[d.name].domain()[0])) {
+            setToolTipDragAndBrush(tooltipValuesTop, tooltipValuesDown, d, parcoords, window, true, yPosTop, yPosRect + rectHeight);
+        }
+        active.each(function (d) {
+            const currentLine = getLineName(d);
+            let value;
+            if (invertStatus) {
+                value = isNaN(maxValue) ? parcoords.yScales[dimensionName](d[dimensionName]) :
+                    240 / range * (d[dimensionName] - minValue) + 80;
+            }
+            else {
+                value = isNaN(maxValue) ? parcoords.yScales[dimensionName](d[dimensionName]) :
+                    240 / range * (maxValue - d[dimensionName]) + 80;
+            }
+            const dimNameToCheck = select$1('.' + currentLine).text();
+            const emptyString = '';
+            if (value < yPosRect || value > yPosRect + rectHeight) {
+                makeInactive(currentLine, dimensionName);
+            }
+            else if (dimNameToCheck == dimensionName && dimNameToCheck != emptyString) {
+                let checkedLines = [];
+                parcoords.currentPosOfDims.forEach(function (item) {
+                    if (item.top != 80 && item.bottom != 320) {
+                        checkAllPositionsTop(item, dimensionName, parcoords, d, checkedLines, currentLine);
+                        checkAllPositionsBottom(item, dimensionName, parcoords, d, checkedLines, currentLine);
+                    }
+                });
+                if (!checkedLines.includes(currentLine)) {
+                    makeActive(currentLine);
+                }
+            }
+            else ;
+        });
     }
-
-    this._l01_a = this._l12_a, this._l12_a = this._l23_a;
-    this._l01_2a = this._l12_2a, this._l12_2a = this._l23_2a;
-    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
-    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
-  }
-};
-
-((function custom(alpha) {
-
-  function catmullRom(context) {
-    return alpha ? new CatmullRom(context, alpha) : new Cardinal(context, 0);
-  }
-
-  catmullRom.alpha = function(alpha) {
-    return custom(+alpha);
-  };
-
-  return catmullRom;
-}))(0.5);
-
-function CatmullRomClosed(context, alpha) {
-  this._context = context;
-  this._alpha = alpha;
 }
-
-CatmullRomClosed.prototype = {
-  areaStart: noop,
-  areaEnd: noop,
-  lineStart: function() {
-    this._x0 = this._x1 = this._x2 = this._x3 = this._x4 = this._x5 =
-    this._y0 = this._y1 = this._y2 = this._y3 = this._y4 = this._y5 = NaN;
-    this._l01_a = this._l12_a = this._l23_a =
-    this._l01_2a = this._l12_2a = this._l23_2a =
-    this._point = 0;
-  },
-  lineEnd: function() {
-    switch (this._point) {
-      case 1: {
-        this._context.moveTo(this._x3, this._y3);
-        this._context.closePath();
-        break;
-      }
-      case 2: {
-        this._context.lineTo(this._x3, this._y3);
-        this._context.closePath();
-        break;
-      }
-      case 3: {
-        this.point(this._x3, this._y3);
-        this.point(this._x4, this._y4);
-        this.point(this._x5, this._y5);
-        break;
-      }
+function filter(dimensionName, topValue, bottomValue, parcoords) {
+    const invertStatus = getInvertStatus(dimensionName, parcoords.currentPosOfDims);
+    const maxValue = invertStatus == false ? parcoords.yScales[dimensionName].domain()[1] :
+        parcoords.yScales[dimensionName].domain()[0];
+    const minValue = invertStatus == false ? parcoords.yScales[dimensionName].domain()[0] :
+        parcoords.yScales[dimensionName].domain()[1];
+    const range = maxValue - minValue;
+    let topPosition;
+    let bottomPosition;
+    if (invertStatus) {
+        topPosition = isNaN(maxValue) ? parcoords.yScales[dimensionName](topValue) :
+            240 / range * (topValue - minValue) + 80;
+        bottomPosition = isNaN(maxValue) ? parcoords.yScales[dimensionName](bottomValue) :
+            240 / range * (bottomValue - minValue) + 80;
     }
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-
-    if (this._point) {
-      var x23 = this._x2 - x,
-          y23 = this._y2 - y;
-      this._l23_a = Math.sqrt(this._l23_2a = Math.pow(x23 * x23 + y23 * y23, this._alpha));
+    else {
+        topPosition = isNaN(maxValue) ? parcoords.yScales[dimensionName](topValue) :
+            240 / range * (maxValue - topValue) + 80;
+        bottomPosition = isNaN(maxValue) ? parcoords.yScales[dimensionName](bottomValue) :
+            240 / range * (maxValue - bottomValue) + 80;
     }
-
-    switch (this._point) {
-      case 0: this._point = 1; this._x3 = x, this._y3 = y; break;
-      case 1: this._point = 2; this._context.moveTo(this._x4 = x, this._y4 = y); break;
-      case 2: this._point = 3; this._x5 = x, this._y5 = y; break;
-      default: point$2(this, x, y); break;
+    addPosition(topPosition, parcoords.currentPosOfDims, dimensionName, 'top');
+    addPosition(bottomPosition, parcoords.currentPosOfDims, dimensionName, 'bottom');
+    const cleanDimensionName = cleanString(dimensionName);
+    let rectHeight = bottomPosition - topPosition;
+    select$1('#rect_' + cleanDimensionName)
+        .attr('y', topPosition);
+    select$1('#triangle_down_' + cleanDimensionName)
+        .attr('y', topPosition - 10);
+    select$1('#triangle_up_' + cleanDimensionName)
+        .attr('y', bottomPosition);
+    select$1('#rect_' + cleanDimensionName)
+        .attr('height', rectHeight);
+    let active = select$1('g.active').selectAll('path');
+    const emptyString = '';
+    active.each(function (d) {
+        const currentLine = getLineName(d);
+        const selected = isSelected(currentLine);
+        const dimNameToCheck = select$1('.' + currentLine).text();
+        let value;
+        if (invertStatus) {
+            value = isNaN(maxValue) ? parcoords.yScales[dimensionName](d[dimensionName]) :
+                240 / range * (d[dimensionName] - minValue) + 80;
+        }
+        else {
+            value = isNaN(maxValue) ? parcoords.yScales[dimensionName](d[dimensionName]) :
+                240 / range * (maxValue - d[dimensionName]) + 80;
+        }
+        if (value < topPosition || value > bottomPosition) {
+            makeInactive(currentLine, dimensionName);
+            if (selected) {
+                setUnselected(currentLine);
+                selectionArray.push(currentLine);
+            }
+        }
+        else if (dimNameToCheck == dimensionName && dimNameToCheck != emptyString) {
+            let checkedLines = [];
+            parcoords.currentPosOfDims.forEach(function (item) {
+                checkAllPositionsTop(item, dimensionName, parcoords, d, checkedLines, currentLine);
+                checkAllPositionsBottom(item, dimensionName, parcoords, d, checkedLines, currentLine);
+            });
+            if (!checkedLines.includes(currentLine)) {
+                makeActive(currentLine);
+                const index = selectionArray.indexOf(currentLine);
+                if (index != -1) {
+                    setSelected(currentLine);
+                    selectionArray.splice(index, 1);
+                }
+            }
+        }
+    });
+}
+function filterWithCoords(topPosition, bottomPosition, currentPosOfDims, dimension) {
+    addPosition(topPosition, currentPosOfDims, dimension, 'top');
+    addPosition(bottomPosition, currentPosOfDims, dimension, 'bottom');
+    const cleanDimensionName = cleanString(dimension);
+    let rectHeight = bottomPosition - topPosition;
+    select$1('#rect_' + cleanDimensionName)
+        .attr('y', topPosition);
+    select$1('#triangle_down_' + cleanDimensionName)
+        .attr('y', topPosition - 10);
+    select$1('#triangle_up_' + cleanDimensionName)
+        .attr('y', bottomPosition);
+    select$1('#rect_' + cleanDimensionName)
+        .attr('height', rectHeight);
+    const invertStatus = getInvertStatus(dimension, parcoords.currentPosOfDims);
+    const maxValue = invertStatus == false ? parcoords.yScales[dimension].domain()[1] :
+        parcoords.yScales[dimension].domain()[0];
+    const minValue = invertStatus == false ? parcoords.yScales[dimension].domain()[0] :
+        parcoords.yScales[dimension].domain()[1];
+    const range = maxValue - minValue;
+    let active = select$1('g.active').selectAll('path');
+    const emptyString = '';
+    active.each(function (d) {
+        const currentLine = getLineName(d);
+        const dimNameToCheck = select$1('.' + currentLine).text();
+        let value;
+        if (invertStatus) {
+            value = isNaN(maxValue) ? parcoords.yScales[dimension](d[dimension]) :
+                240 / range * (d[dimension] - minValue) + 80;
+        }
+        else {
+            value = isNaN(maxValue) ? parcoords.yScales[dimension](d[dimension]) :
+                240 / range * (maxValue - d[dimension]) + 80;
+        }
+        if (value < topPosition || value > bottomPosition) {
+            makeInactive(currentLine, dimension);
+        }
+        else if (dimNameToCheck == dimension && dimNameToCheck != emptyString) {
+            let checkedLines = [];
+            parcoords.currentPosOfDims.forEach(function (item) {
+                checkAllPositionsTop(item, dimension, parcoords, d, checkedLines, currentLine);
+                checkAllPositionsBottom(item, dimension, parcoords, d, checkedLines, currentLine);
+            });
+            if (!checkedLines.includes(currentLine)) {
+                makeActive(currentLine);
+            }
+        }
+    });
+}
+function getLineName(d) {
+    const keys = Object.keys(d);
+    const key = keys[0];
+    return cleanLinePathString(d[key]);
+}
+function addPosition(yPosTop, currentPosOfDims, dimensionName, key) {
+    let newObject = {};
+    newObject[key] = yPosTop;
+    const target = currentPosOfDims.find((obj) => obj.key == dimensionName);
+    Object.assign(target, newObject);
+}
+function setToolTipBrush(tooltipValues, d, event, parcoords, window, direction) {
+    const range = parcoords.yScales[d.name].domain();
+    const invertStatus = getInvertStatus(d.name, parcoords.currentPosOfDims);
+    const maxValue = invertStatus == false ? range[1] : range[0];
+    const minValue = invertStatus == false ? range[0] : range[1];
+    const scale = maxValue - minValue;
+    let tooltipValue;
+    if (invertStatus) {
+        tooltipValue = direction == true ? ((event.y - 70) / (240 / (scale)) + minValue) :
+            ((event.y - 80) / (240 / (scale)) + minValue);
     }
-
-    this._l01_a = this._l12_a, this._l12_a = this._l23_a;
-    this._l01_2a = this._l12_2a, this._l12_2a = this._l23_2a;
-    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
-    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
-  }
-};
-
-((function custom(alpha) {
-
-  function catmullRom(context) {
-    return alpha ? new CatmullRomClosed(context, alpha) : new CardinalClosed(context, 0);
-  }
-
-  catmullRom.alpha = function(alpha) {
-    return custom(+alpha);
-  };
-
-  return catmullRom;
-}))(0.5);
-
-function CatmullRomOpen(context, alpha) {
-  this._context = context;
-  this._alpha = alpha;
-}
-
-CatmullRomOpen.prototype = {
-  areaStart: function() {
-    this._line = 0;
-  },
-  areaEnd: function() {
-    this._line = NaN;
-  },
-  lineStart: function() {
-    this._x0 = this._x1 = this._x2 =
-    this._y0 = this._y1 = this._y2 = NaN;
-    this._l01_a = this._l12_a = this._l23_a =
-    this._l01_2a = this._l12_2a = this._l23_2a =
-    this._point = 0;
-  },
-  lineEnd: function() {
-    if (this._line || (this._line !== 0 && this._point === 3)) this._context.closePath();
-    this._line = 1 - this._line;
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-
-    if (this._point) {
-      var x23 = this._x2 - x,
-          y23 = this._y2 - y;
-      this._l23_a = Math.sqrt(this._l23_2a = Math.pow(x23 * x23 + y23 * y23, this._alpha));
+    else {
+        tooltipValue = direction == true ? maxValue - ((event.y - 70) / (240 / (scale))) :
+            maxValue - ((event.y - 80) / (240 / (scale)));
     }
-
-    switch (this._point) {
-      case 0: this._point = 1; break;
-      case 1: this._point = 2; break;
-      case 2: this._point = 3; this._line ? this._context.lineTo(this._x2, this._y2) : this._context.moveTo(this._x2, this._y2); break;
-      case 3: this._point = 4; // falls through
-      default: point$2(this, x, y); break;
+    if (!invertStatus) {
+        if (tooltipValue > range[1]) {
+            tooltipValue = range[1];
+        }
+        if (tooltipValue < range[0]) {
+            tooltipValue = range[0];
+        }
     }
-
-    this._l01_a = this._l12_a, this._l12_a = this._l23_a;
-    this._l01_2a = this._l12_2a, this._l12_2a = this._l23_2a;
-    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
-    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
-  }
-};
-
-((function custom(alpha) {
-
-  function catmullRom(context) {
-    return alpha ? new CatmullRomOpen(context, alpha) : new CardinalOpen(context, 0);
-  }
-
-  catmullRom.alpha = function(alpha) {
-    return custom(+alpha);
-  };
-
-  return catmullRom;
-}))(0.5);
-
-function sign(x) {
-  return x < 0 ? -1 : 1;
-}
-
-// Calculate the slopes of the tangents (Hermite-type interpolation) based on
-// the following paper: Steffen, M. 1990. A Simple Method for Monotonic
-// Interpolation in One Dimension. Astronomy and Astrophysics, Vol. 239, NO.
-// NOV(II), P. 443, 1990.
-function slope3(that, x2, y2) {
-  var h0 = that._x1 - that._x0,
-      h1 = x2 - that._x1,
-      s0 = (that._y1 - that._y0) / (h0 || h1 < 0 && -0),
-      s1 = (y2 - that._y1) / (h1 || h0 < 0 && -0),
-      p = (s0 * h1 + s1 * h0) / (h0 + h1);
-  return (sign(s0) + sign(s1)) * Math.min(Math.abs(s0), Math.abs(s1), 0.5 * Math.abs(p)) || 0;
-}
-
-// Calculate a one-sided slope.
-function slope2(that, t) {
-  var h = that._x1 - that._x0;
-  return h ? (3 * (that._y1 - that._y0) / h - t) / 2 : t;
-}
-
-// According to https://en.wikipedia.org/wiki/Cubic_Hermite_spline#Representations
-// "you can express cubic Hermite interpolation in terms of cubic Bézier curves
-// with respect to the four values p0, p0 + m0 / 3, p1 - m1 / 3, p1".
-function point$1(that, t0, t1) {
-  var x0 = that._x0,
-      y0 = that._y0,
-      x1 = that._x1,
-      y1 = that._y1,
-      dx = (x1 - x0) / 3;
-  that._context.bezierCurveTo(x0 + dx, y0 + dx * t0, x1 - dx, y1 - dx * t1, x1, y1);
-}
-
-function MonotoneX(context) {
-  this._context = context;
-}
-
-MonotoneX.prototype = {
-  areaStart: function() {
-    this._line = 0;
-  },
-  areaEnd: function() {
-    this._line = NaN;
-  },
-  lineStart: function() {
-    this._x0 = this._x1 =
-    this._y0 = this._y1 =
-    this._t0 = NaN;
-    this._point = 0;
-  },
-  lineEnd: function() {
-    switch (this._point) {
-      case 2: this._context.lineTo(this._x1, this._y1); break;
-      case 3: point$1(this, this._t0, slope2(this, this._t0)); break;
+    else {
+        if (tooltipValue > range[0]) {
+            tooltipValue = range[0];
+        }
+        if (tooltipValue < range[1]) {
+            tooltipValue = range[1];
+        }
     }
-    if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
-    this._line = 1 - this._line;
-  },
-  point: function(x, y) {
-    var t1 = NaN;
-
-    x = +x, y = +y;
-    if (x === this._x1 && y === this._y1) return; // Ignore coincident points.
-    switch (this._point) {
-      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
-      case 1: this._point = 2; break;
-      case 2: this._point = 3; point$1(this, slope2(this, t1 = slope3(this, x, y)), t1); break;
-      default: point$1(this, this._t0, t1 = slope3(this, x, y)); break;
+    const digs = getSigDig(d.name, parcoords.currentPosOfDims);
+    tooltipValues.text(Math.round(tooltipValue.toPrecision(digs).toLocaleString('en-GB') * 10) / 10);
+    tooltipValues.style('visibility', 'visible');
+    tooltipValues.style('top', window.event.clientY / 16 + 'rem').style('left', window.event.clientX / 16 + 'rem');
+    tooltipValues.style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
+        .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
+        .style('padding', 0.12 + 'rem').style('white-space', 'pre-line')
+        .style('background-color', 'LightGray').style('margin-left', 0.5 + 'rem');
+}
+function setToolTipDragAndBrush(tooltipValuesTop, tooltipValuesDown, d, parcoords, window, direction, yPosTop, yPosBottom) {
+    const range = parcoords.yScales[d.name].domain();
+    const invertStatus = getInvertStatus(d.name, parcoords.currentPosOfDims);
+    const maxValue = invertStatus == false ? range[1] : range[0];
+    const minValue = invertStatus == false ? range[0] : range[1];
+    const scale = maxValue - minValue;
+    let tooltipValueTop;
+    let tooltipValueBottom;
+    if (invertStatus) {
+        tooltipValueTop = direction == true ? ((yPosTop - 70) / (240 / (scale)) + minValue) :
+            ((yPosTop - 80) / (240 / (scale)) + minValue);
+        tooltipValueBottom = direction == true ? ((yPosBottom - 80) / (240 / (scale)) + minValue) :
+            ((yPosBottom - 70) / (240 / (scale)) + minValue);
     }
-
-    this._x0 = this._x1, this._x1 = x;
-    this._y0 = this._y1, this._y1 = y;
-    this._t0 = t1;
-  }
-};
-
-(Object.create(MonotoneX.prototype)).point = function(x, y) {
-  MonotoneX.prototype.point.call(this, y, x);
-};
-
-function identity$2(x) {
-  return x;
-}
-
-var top = 1,
-    right = 2,
-    bottom = 3,
-    left = 4,
-    epsilon = 1e-6;
-
-function translateX(x) {
-  return "translate(" + x + ",0)";
-}
-
-function translateY(y) {
-  return "translate(0," + y + ")";
-}
-
-function number$2(scale) {
-  return d => +scale(d);
-}
-
-function center(scale, offset) {
-  offset = Math.max(0, scale.bandwidth() - offset * 2) / 2;
-  if (scale.round()) offset = Math.round(offset);
-  return d => +scale(d) + offset;
-}
-
-function entering() {
-  return !this.__axis;
-}
-
-function axis(orient, scale) {
-  var tickArguments = [],
-      tickValues = null,
-      tickFormat = null,
-      tickSizeInner = 6,
-      tickSizeOuter = 6,
-      tickPadding = 3,
-      offset = typeof window !== "undefined" && window.devicePixelRatio > 1 ? 0 : 0.5,
-      k = orient === top || orient === left ? -1 : 1,
-      x = orient === left || orient === right ? "x" : "y",
-      transform = orient === top || orient === bottom ? translateX : translateY;
-
-  function axis(context) {
-    var values = tickValues == null ? (scale.ticks ? scale.ticks.apply(scale, tickArguments) : scale.domain()) : tickValues,
-        format = tickFormat == null ? (scale.tickFormat ? scale.tickFormat.apply(scale, tickArguments) : identity$2) : tickFormat,
-        spacing = Math.max(tickSizeInner, 0) + tickPadding,
-        range = scale.range(),
-        range0 = +range[0] + offset,
-        range1 = +range[range.length - 1] + offset,
-        position = (scale.bandwidth ? center : number$2)(scale.copy(), offset),
-        selection = context.selection ? context.selection() : context,
-        path = selection.selectAll(".domain").data([null]),
-        tick = selection.selectAll(".tick").data(values, scale).order(),
-        tickExit = tick.exit(),
-        tickEnter = tick.enter().append("g").attr("class", "tick"),
-        line = tick.select("line"),
-        text = tick.select("text");
-
-    path = path.merge(path.enter().insert("path", ".tick")
-        .attr("class", "domain")
-        .attr("stroke", "currentColor"));
-
-    tick = tick.merge(tickEnter);
-
-    line = line.merge(tickEnter.append("line")
-        .attr("stroke", "currentColor")
-        .attr(x + "2", k * tickSizeInner));
-
-    text = text.merge(tickEnter.append("text")
-        .attr("fill", "currentColor")
-        .attr(x, k * spacing)
-        .attr("dy", orient === top ? "0em" : orient === bottom ? "0.71em" : "0.32em"));
-
-    if (context !== selection) {
-      path = path.transition(context);
-      tick = tick.transition(context);
-      line = line.transition(context);
-      text = text.transition(context);
-
-      tickExit = tickExit.transition(context)
-          .attr("opacity", epsilon)
-          .attr("transform", function(d) { return isFinite(d = position(d)) ? transform(d + offset) : this.getAttribute("transform"); });
-
-      tickEnter
-          .attr("opacity", epsilon)
-          .attr("transform", function(d) { var p = this.parentNode.__axis; return transform((p && isFinite(p = p(d)) ? p : position(d)) + offset); });
+    else {
+        tooltipValueTop = direction == true ? maxValue - ((yPosTop - 70) / (240 / (scale))) :
+            maxValue - ((yPosTop - 80) / (240 / (scale)));
+        tooltipValueBottom = direction == true ? maxValue - ((yPosBottom - 80) / (240 / (scale))) :
+            maxValue - ((yPosBottom - 70) / (240 / (scale)));
     }
-
-    tickExit.remove();
-
-    path
-        .attr("d", orient === left || orient === right
-            ? (tickSizeOuter ? "M" + k * tickSizeOuter + "," + range0 + "H" + offset + "V" + range1 + "H" + k * tickSizeOuter : "M" + offset + "," + range0 + "V" + range1)
-            : (tickSizeOuter ? "M" + range0 + "," + k * tickSizeOuter + "V" + offset + "H" + range1 + "V" + k * tickSizeOuter : "M" + range0 + "," + offset + "H" + range1));
-
-    tick
-        .attr("opacity", 1)
-        .attr("transform", function(d) { return transform(position(d) + offset); });
-
-    line
-        .attr(x + "2", k * tickSizeInner);
-
-    text
-        .attr(x, k * spacing)
-        .text(format);
-
-    selection.filter(entering)
-        .attr("fill", "none")
-        .attr("font-size", 10)
-        .attr("font-family", "sans-serif")
-        .attr("text-anchor", orient === right ? "start" : orient === left ? "end" : "middle");
-
-    selection
-        .each(function() { this.__axis = position; });
-  }
-
-  axis.scale = function(_) {
-    return arguments.length ? (scale = _, axis) : scale;
-  };
-
-  axis.ticks = function() {
-    return tickArguments = Array.from(arguments), axis;
-  };
-
-  axis.tickArguments = function(_) {
-    return arguments.length ? (tickArguments = _ == null ? [] : Array.from(_), axis) : tickArguments.slice();
-  };
-
-  axis.tickValues = function(_) {
-    return arguments.length ? (tickValues = _ == null ? null : Array.from(_), axis) : tickValues && tickValues.slice();
-  };
-
-  axis.tickFormat = function(_) {
-    return arguments.length ? (tickFormat = _, axis) : tickFormat;
-  };
-
-  axis.tickSize = function(_) {
-    return arguments.length ? (tickSizeInner = tickSizeOuter = +_, axis) : tickSizeInner;
-  };
-
-  axis.tickSizeInner = function(_) {
-    return arguments.length ? (tickSizeInner = +_, axis) : tickSizeInner;
-  };
-
-  axis.tickSizeOuter = function(_) {
-    return arguments.length ? (tickSizeOuter = +_, axis) : tickSizeOuter;
-  };
-
-  axis.tickPadding = function(_) {
-    return arguments.length ? (tickPadding = +_, axis) : tickPadding;
-  };
-
-  axis.offset = function(_) {
-    return arguments.length ? (offset = +_, axis) : offset;
-  };
-
-  return axis;
+    if ((!invertStatus && tooltipValueTop == maxValue) || (invertStatus && tooltipValueTop == minValue)) {
+        tooltipValuesTop.style('visibility', 'hidden');
+    }
+    else {
+        tooltipValuesTop.text(Math.round(tooltipValueTop));
+        tooltipValuesTop.style('visibility', 'visible');
+        tooltipValuesTop.style('top', (Number(yPosTop + 150) / 16) + 'rem').style('left', window.event.clientX / 16 + 'rem');
+        tooltipValuesTop.style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
+            .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
+            .style('padding', 0.12 + 'rem').style('white-space', 'pre-line')
+            .style('background-color', 'LightGray').style('margin-left', 0.5 + 'rem');
+    }
+    if ((!invertStatus && tooltipValueBottom == minValue) || (invertStatus && tooltipValueBottom == maxValue)) {
+        tooltipValuesDown.style('visibility', 'hidden');
+    }
+    else {
+        tooltipValuesDown.text(Math.round(tooltipValueBottom));
+        tooltipValuesDown.style('visibility', 'visible');
+        tooltipValuesDown.style('top', (Number(yPosBottom + 155) / 16) + 'rem').style('left', window.event.clientX / 16 + 'rem');
+        tooltipValuesDown.style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
+            .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
+            .style('padding', 0.12 + 'rem').style('white-space', 'pre-line')
+            .style('background-color', 'LightGray').style('margin-left', 0.5 + 'rem');
+    }
 }
-
-function axisLeft(scale) {
-  return axis(left, scale);
+function updateLines(parcoords, active, dimensionName, cleanDimensionName) {
+    const rangeTop = Number(select$1('#triangle_down_' + cleanDimensionName).attr('y'));
+    const rangeBottom = Number(select$1('#triangle_up_' + cleanDimensionName).attr('y'));
+    const invertStatus = getInvertStatus(dimensionName, parcoords.currentPosOfDims);
+    const maxValue = invertStatus == false ? parcoords.yScales[dimensionName].domain()[1] :
+        parcoords.yScales[dimensionName].domain()[0];
+    const minValue = invertStatus == false ? parcoords.yScales[dimensionName].domain()[0] :
+        parcoords.yScales[dimensionName].domain()[1];
+    const range = maxValue - minValue;
+    active.each(function (d) {
+        let value;
+        if (invertStatus) {
+            value = isNaN(maxValue) ? parcoords.yScales[dimensionName](d[dimensionName]) :
+                240 / range * (d[dimensionName] - minValue) + 80;
+        }
+        else {
+            value = isNaN(maxValue) ? parcoords.yScales[dimensionName](d[dimensionName]) :
+                240 / range * (maxValue - d[dimensionName]) + 80;
+        }
+        const currentLine = getLineName(d);
+        console.log(currentLine);
+        const test = cleanLinePathString(currentLine);
+        console.log(test);
+        const dimNameToCheck = select$1('.' + test).text();
+        const emptyString = '';
+        if (value < rangeTop + 10 || value > rangeBottom) {
+            if (dimNameToCheck == emptyString) {
+                makeInactive(currentLine, dimensionName);
+                if (isSelected(currentLine)) {
+                    setUnselected(currentLine);
+                    selectionArray.push(currentLine);
+                }
+            }
+        }
+        else if (value == 320 && value == rangeTop + 10 && value == rangeBottom) {
+            if (dimNameToCheck == emptyString) {
+                makeInactive(currentLine, dimensionName);
+                if (isSelected(currentLine)) {
+                    setUnselected(currentLine);
+                    selectionArray.push(currentLine);
+                }
+            }
+        }
+        else if (value == 80 && value == rangeTop + 10 && value == rangeBottom) {
+            if (dimNameToCheck == emptyString) {
+                makeInactive(currentLine, dimensionName);
+                if (isSelected(currentLine)) {
+                    setUnselected(currentLine);
+                    selectionArray.push(currentLine);
+                }
+            }
+        }
+        else if (dimNameToCheck == dimensionName && dimNameToCheck != emptyString) {
+            let checkedLines = [];
+            parcoords.currentPosOfDims.forEach(function (item) {
+                if (item.top != 80 || item.bottom != 320) {
+                    checkAllPositionsTop(item, dimensionName, parcoords, d, checkedLines, currentLine);
+                    checkAllPositionsBottom(item, dimensionName, parcoords, d, checkedLines, currentLine);
+                }
+            });
+            if (!checkedLines.includes(currentLine)) {
+                makeActive(currentLine);
+                const index = selectionArray.indexOf(currentLine);
+                if (index != -1) {
+                    setSelected(currentLine);
+                    selectionArray.splice(index, 1);
+                }
+            }
+        }
+        else ;
+    });
 }
+function checkAllPositionsTop(positionItem, dimensionName, parcoords, d, checkedLines, currentLine) {
+    if (positionItem.key != dimensionName && positionItem.top != 70) {
+        const invertStatus = getInvertStatus(positionItem.key, parcoords.currentPosOfDims);
+        const maxValue = invertStatus == false ? parcoords.yScales[positionItem.key].domain()[1] :
+            parcoords.yScales[positionItem.key].domain()[0];
+        const minValue = invertStatus == false ? parcoords.yScales[positionItem.key].domain()[0] :
+            parcoords.yScales[positionItem.key].domain()[1];
+        const scale = maxValue - minValue;
+        let value;
+        if (!isNaN(maxValue)) {
+            value = invertStatus == false ? 240 / scale * (maxValue - d[positionItem.key]) + 80 :
+                240 / scale * (d[positionItem.key] - minValue) + 80;
+        }
+        else {
+            value = parcoords.yScales[positionItem.key](d[positionItem.key]);
+        }
+        if (value < positionItem.top) {
+            checkedLines.push(currentLine);
+            select$1('.' + currentLine).text(positionItem.key);
+        }
+    }
+}
+function checkAllPositionsBottom(positionItem, dimensionName, parcoords, d, checkedLines, currentLine) {
+    if (positionItem.key != dimensionName && positionItem.bottom != 320) {
+        const invertStatus = getInvertStatus(positionItem.key, parcoords.currentPosOfDims);
+        const maxValue = invertStatus == false ? parcoords.yScales[positionItem.key].domain()[1] :
+            parcoords.yScales[positionItem.key].domain()[0];
+        const minValue = invertStatus == false ? parcoords.yScales[positionItem.key].domain()[0] :
+            parcoords.yScales[positionItem.key].domain()[1];
+        const scale = maxValue - minValue;
+        let value;
+        if (!isNaN(maxValue)) {
+            value = invertStatus == false ? 240 / scale * (maxValue - d[positionItem.key]) + 80 :
+                240 / scale * (d[positionItem.key] - minValue) + 80;
+        }
+        else {
+            value = parcoords.yScales[positionItem.key](d[positionItem.key]);
+        }
+        if (value >= positionItem.bottom) {
+            checkedLines.push(currentLine);
+            select$1('.' + currentLine).text(positionItem.key);
+        }
+    }
+}
+function makeActive(currentLineName) {
+    select$1('.' + currentLineName).style('opacity', '0.7')
+        .style('pointer-events', 'stroke')
+        .style('stroke', 'rgb(0, 129, 175)')
+        .style('stroke-width', '0.1rem')
+        .style('fill', 'none')
+        .text('');
+}
+function makeInactive(currentLineName, dimensionName) {
+    const test = cleanLinePathString(currentLineName);
+    select$1('.' + test).style('pointer-events', 'none')
+        .style('fill', 'none')
+        .style('stroke', 'lightgrey')
+        .style('stroke-opacity', '0.4')
+        .text(dimensionName);
+}
+function addSettingsForBrushing(dimensionName, parcoords) {
+    const processedDimensionName = cleanString(dimensionName);
+    const rectHeight = Number(select$1('#rect_' + processedDimensionName).node().getBoundingClientRect().height);
+    const yPosRectTop = Number(select$1('#rect_' + processedDimensionName).attr('y'));
+    const yPosRectBottom = yPosRectTop + rectHeight;
+    if (yPosRectTop > 80 && yPosRectBottom < 320) {
+        const distanceBottom = 320 - select$1('#triangle_up_' + processedDimensionName).attr('y');
+        select$1('#rect_' + processedDimensionName).attr('y', 80 + distanceBottom);
+        select$1('#triangle_down_' + processedDimensionName).attr('y', 80 + distanceBottom);
+        select$1('#triangle_up_' + processedDimensionName).attr('y', 80 + distanceBottom + rectHeight);
+        addPosition(80 + distanceBottom, parcoords.currentPosOfDims, dimensionName, 'top');
+        addPosition(80 + distanceBottom + rectHeight, parcoords.currentPosOfDims, dimensionName, 'bottom');
+    }
+    else if (yPosRectTop > 80 && yPosRectBottom >= 320) {
+        select$1('#rect_' + processedDimensionName).attr('y', 80);
+        select$1('#rect_' + processedDimensionName).attr('height', 240 - (yPosRectTop - 80));
+        select$1('#triangle_down_' + processedDimensionName).attr('y', 80);
+        select$1('#triangle_up_' + processedDimensionName).attr('y', 320 - (yPosRectTop - 80));
+        addPosition(80, parcoords.currentPosOfDims, dimensionName, 'top');
+        addPosition(320 - (yPosRectTop - 80), parcoords.currentPosOfDims, dimensionName, 'bottom');
+    }
+    else if (yPosRectTop <= 80 && yPosRectBottom < 320) {
+        select$1('#rect_' + processedDimensionName).attr('y', 320 - rectHeight);
+        select$1('#rect_' + processedDimensionName).attr('height', 240 - (320 - yPosRectBottom));
+        select$1('#triangle_down_' + processedDimensionName).attr('y', 80 + (320 - yPosRectBottom) - 10);
+        select$1('#triangle_up_' + processedDimensionName).attr('y', 320);
+        addPosition(80 + (320 - yPosRectBottom) - 10, parcoords.currentPosOfDims, dimensionName, 'top');
+        addPosition(320, parcoords.currentPosOfDims, dimensionName, 'bottom');
+    }
+}
+function getInvertStatus(key, currentPosOfDims) {
+    const item = currentPosOfDims.find((object) => object.key == key);
+    return item.isInverted;
+}
+function getSigDig(key, currentPosOfDims) {
+    const item = currentPosOfDims.find((object) => object.key == key);
+    return item.sigDig;
+}
+function addInvertStatus(status, currentPosOfDims, dimensionName, key) {
+    let newObject = {};
+    newObject[key] = status;
+    const target = currentPosOfDims.find((obj) => obj.key == dimensionName);
+    Object.assign(target, newObject);
+}
+const delay = 50;
+const throttleBrushDown = throttle(brushDown, delay);
+const throttleBrushUp = throttle(brushUp, delay);
+const throttleDragAndBrush = throttle(dragAndBrush, delay);
 
 function ascending(a, b) {
   return a == null || b == null ? NaN : a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
@@ -4492,13 +4145,13 @@ function zero() {
   return 0;
 }
 
-function number$1(x) {
+function number$2(x) {
   return x === null ? NaN : +x;
 }
 
 const ascendingBisect = bisector(ascending);
 const bisectRight = ascendingBisect.right;
-bisector(number$1).center;
+bisector(number$2).center;
 
 class InternMap extends Map {
   constructor(entries, key = keyof) {
@@ -4762,7 +4415,7 @@ function pointish(scale) {
   return scale;
 }
 
-function point() {
+function point$4() {
   return pointish(band.apply(null, arguments).paddingInner(1));
 }
 
@@ -4772,13 +4425,13 @@ function constants(x) {
   };
 }
 
-function number(x) {
+function number$1(x) {
   return +x;
 }
 
 var unit = [0, 1];
 
-function identity$1(x) {
+function identity$2(x) {
   return x;
 }
 
@@ -4842,14 +4495,14 @@ function transformer() {
       transform,
       untransform,
       unknown,
-      clamp = identity$1,
+      clamp = identity$2,
       piecewise,
       output,
       input;
 
   function rescale() {
     var n = Math.min(domain.length, range.length);
-    if (clamp !== identity$1) clamp = clamper(domain[0], domain[n - 1]);
+    if (clamp !== identity$2) clamp = clamper(domain[0], domain[n - 1]);
     piecewise = n > 2 ? polymap : bimap;
     output = input = null;
     return scale;
@@ -4864,7 +4517,7 @@ function transformer() {
   };
 
   scale.domain = function(_) {
-    return arguments.length ? (domain = Array.from(_, number), rescale()) : domain.slice();
+    return arguments.length ? (domain = Array.from(_, number$1), rescale()) : domain.slice();
   };
 
   scale.range = function(_) {
@@ -4876,7 +4529,7 @@ function transformer() {
   };
 
   scale.clamp = function(_) {
-    return arguments.length ? (clamp = _ ? true : identity$1, rescale()) : clamp !== identity$1;
+    return arguments.length ? (clamp = _ ? true : identity$2, rescale()) : clamp !== identity$2;
   };
 
   scale.interpolate = function(_) {
@@ -4894,7 +4547,7 @@ function transformer() {
 }
 
 function continuous() {
-  return transformer()(identity$1, identity$1);
+  return transformer()(identity$2, identity$2);
 }
 
 function formatDecimal(x) {
@@ -5050,7 +4703,7 @@ var formatTypes = {
   "x": (x) => Math.round(x).toString(16)
 };
 
-function identity(x) {
+function identity$1(x) {
   return x;
 }
 
@@ -5058,11 +4711,11 @@ var map = Array.prototype.map,
     prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
 
 function formatLocale$1(locale) {
-  var group = locale.grouping === undefined || locale.thousands === undefined ? identity : formatGroup(map.call(locale.grouping, Number), locale.thousands + ""),
+  var group = locale.grouping === undefined || locale.thousands === undefined ? identity$1 : formatGroup(map.call(locale.grouping, Number), locale.thousands + ""),
       currencyPrefix = locale.currency === undefined ? "" : locale.currency[0] + "",
       currencySuffix = locale.currency === undefined ? "" : locale.currency[1] + "",
       decimal = locale.decimal === undefined ? "." : locale.decimal + "",
-      numerals = locale.numerals === undefined ? identity : formatNumerals(map.call(locale.numerals, String)),
+      numerals = locale.numerals === undefined ? identity$1 : formatNumerals(map.call(locale.numerals, String)),
       percent = locale.percent === undefined ? "%" : locale.percent + "",
       minus = locale.minus === undefined ? "−" : locale.minus + "",
       nan = locale.nan === undefined ? "NaN" : locale.nan + "";
@@ -6366,638 +6019,1995 @@ function parseIsoNative(string) {
     ? parseIsoNative
     : utcParse(isoSpecifier);
 
-function getArrowBottomCursor() {
-    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 5"><path fill="white" stroke="black" stroke-width="0.5" d="M 1 0 L 7 0 L 4 5 z"/></svg>';
-}
-function getArrowBottom() {
-    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="yellow" fill-opacity="0.4" stroke="black" stroke-width="0.2" d="M 0 0 L 6 0 L 3 5 z"/></svg>';
-}
-function getArrowDown() {
-    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 10"><path d="M 0 6 L 2 6 L 2 0 L 4 0 L 4 6 L 6 6 L 3 10 z"/></svg>';
-}
-function getArrowDownCursor() {
-    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3.9687499 3.96875"><path fill="white" stroke="black" stroke-width="0.318611" d="m 1.1578161,0.21695335 c -0.061702,-0.0329161 -0.81488983,-0.0133494 -0.81488983,-0.0133494 0,0 0.54265514,0.55608717 0.93827003,0.96284295 0.4433991,0.4558857 0.4777944,0.8151048 0.4777944,0.8151048 H 0.5130859 l 1.6505985,1.7274342 1.434036,-1.7247007 c -0.534692,-0.00674 -0.7326378,0.00633 -1.0334189,0.013349 0,0 -0.1208928,-1.09485632 -1.4064854,-1.78068085 z"/></svg>';
-}
-function getArrowLeftAndRight() {
-    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 6"><path fill="white" stroke="black" stroke-width="1" d="M 0 3 L 3 0 L 3 2 L 7 2 L 7 0 L 10 3 L 7 6 L 7 4 L 3 4 L 3 6 z"/></svg>';
-}
-function getArrowLeft() {
-    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 6"><path fill="white" stroke="black" stroke-width="1" d="M 0 2 L 6 2 L 6 0 L 10 3 L 6 6 L 6 4 L 0 4 z"/></svg>';
-}
-function getArrowRight() {
-    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 6"><path fill="white" stroke="black" stroke-width="1" d="M 0 3 L 4 0 L 4 2 L 10 2 L 10 4 L 4 4 L 4 6 z"/></svg>';
-}
-function getArrowTopAndBottom() {
-    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 12"><path fill="white" stroke="black" stroke-width="0.5" d="M 0 5.5 L 3 1 L 6 5.5 z"/><path fill="white" stroke="black" stroke-width="0.5" d="M 0 6.5 L 3 11 L 6 6.5 z"/></svg>';
-}
-function getArrowTopCursor() {
-    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 5"><path fill="white" stroke="black" stroke-width="0.5" d="M 1 5 L 4 0 L 7 5 z"/></svg>';
-}
-function getArrowTop() {
-    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="yellow" fill-opacity="0.4" stroke="black" stroke-width="0.2" d="M 0 5 L 3 0 L 6 5 z"/></svg>';
-}
-function getArrowUp() {
-    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 10"><path d="M 0 4 L 3 0 L 6 4 L 4 4 L 4 10 L 2 10 L 2 4 z"/></svg>';
-}
-function getArrowUpCursor() {
-    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3.9687499 3.96875"><path fill="white" stroke="black" stroke-width="0.318611" d="m 2.7893699,3.7809852 c 0.061702,0.032916 0.8148899,0.013349 0.8148899,0.013349 0,0 -0.5426551,-0.5560871 -0.9382701,-0.9628429 C 2.2225906,2.375606 2.1881953,2.0163869 2.1881953,2.0163869 H 3.4341002 L 1.7835016,0.28895256 0.34946563,2.0136534 c 0.534692,0.00674 0.73263777,-0.00633 1.03341887,-0.013349 0,0 0.1208928,1.0948563 1.4064854,1.7806808 z"/></svg>';
+function identity(x) {
+  return x;
 }
 
-function cleanString(stringValue) {
-    let value = stringValue.replace(/ /g, '_');
-    return value.replace(/[.,*\-%&'\[{()}\]]/g, '');
-}
-function cleanLinePathString(stringValue) {
-    return stringValue.replace(/[*\- .,%&'\[{()}\]]/g, '');
-}
-function cleanLinePathArrayString(stringValue) {
-    return stringValue.replace(/[*\- 0123456789%&'\[{()}\]]/g, '');
-}
-function setSize(stringValue, size) {
-    return stringValue.replace('viewBox', `width="${size}" height="${size}" viewBox`);
-}
-function throttle(func, delay) {
-    let lastExecTime = 0;
-    return function () {
-        const context = this;
-        const args = arguments;
-        const currentTime = Date.now();
-        if (currentTime - lastExecTime >= delay) {
-            func.apply(context, args);
-            lastExecTime = currentTime;
-        }
-    };
-}
-function digits(value) {
-    return value
-        .toString()
-        .length;
-}
-function addNumberOfDigs(number, currentPosOfDims, dimensionName, key) {
-    let newObject = {};
-    newObject[key] = number;
-    const target = currentPosOfDims.find((obj) => obj.key == dimensionName);
-    Object.assign(target, newObject);
-}
-//https://stackoverflow.com/questions/123999/how-can-i-tell-if-a-dom-element-is-visible-in-the-current-viewport
-function isElementVisible(element) {
-    let rect = element.node().getBoundingClientRect(), vWidth = window.innerWidth || document.documentElement.clientWidth, vHeight = window.innerHeight || document.documentElement.clientHeight, efp = function (x, y) { return document.elementFromPoint(x, y); };
-    if (rect.right < 0 || rect.bottom < 0
-        || rect.left > vWidth || rect.top > vHeight)
-        return false;
-    return (element.node().contains(efp(rect.left, rect.top))
-        || element.node().contains(efp(rect.right, rect.top))
-        || element.node().contains(efp(rect.right, rect.bottom))
-        || element.node().contains(efp(rect.left, rect.bottom)));
+var top = 1,
+    right = 2,
+    bottom = 3,
+    left = 4,
+    epsilon$2 = 1e-6;
+
+function translateX(x) {
+  return "translate(" + x + ",0)";
 }
 
-let selectionArray = [];
-function brushDown(cleanDimensionName, event, d, parcoords, active, tooltipValues, window) {
-    const yPosBottom = Number(select$1('#triangle_up_' + cleanDimensionName).attr('y'));
-    let yPosTop;
-    let yPosRect;
-    let topToAdd;
-    if (event.y < 70) {
-        yPosTop = 70;
-        yPosRect = 80;
-        topToAdd = 80;
-    }
-    else if (event.y > yPosBottom - 10) {
-        yPosTop = yPosBottom - 10;
-        topToAdd = yPosBottom - 10;
-        yPosRect = 320;
-    }
-    else if (event.y == yPosBottom - 10) {
-        yPosTop = yPosBottom - 10;
-        topToAdd = yPosBottom - 10;
-        yPosRect = yPosTop + 10;
-    }
-    else {
-        yPosTop = event.y;
-        topToAdd = event.y;
-        yPosRect = event.y + 10;
-    }
-    addPosition(topToAdd, parcoords.currentPosOfDims, d.name, 'top');
-    if (yPosTop == 70 && yPosBottom == 320) {
-        select$1('#rect_' + cleanDimensionName)
-            .style('cursor', 'default');
-    }
-    else {
-        select$1('#rect_' + cleanDimensionName)
-            .style('cursor', `url('data:image/svg+xml,${setSize(getArrowTopAndBottom(), 20)}') 8 8, auto`);
-    }
-    select$1('#triangle_down_' + cleanDimensionName).attr('y', yPosTop);
-    const heightTopRect = yPosRect - 80;
-    const heightBottomRect = 320 - yPosBottom;
-    select$1('#rect_' + cleanDimensionName)
-        .attr('y', yPosRect)
-        .attr('height', 240 - heightTopRect - heightBottomRect);
-    if (!isNaN(parcoords.yScales[d.name].domain()[0])) {
-        setToolTipBrush(tooltipValues, d, event, parcoords, window, true);
-    }
-    updateLines(parcoords, active, d.name, cleanDimensionName);
+function translateY(y) {
+  return "translate(0," + y + ")";
 }
-function brushUp(cleanDimensionName, event, d, parcoords, active, tooltipValues, window) {
-    const yPosTop = Number(select$1('#triangle_down_' + cleanDimensionName).attr('y'));
-    let yPosBottom;
-    if (event.y < yPosTop + 10) {
-        yPosBottom = yPosTop + 10;
-    }
-    else if (event.y > 320) {
-        yPosBottom = 320;
-    }
-    else if (event.y == yPosTop + 10) {
-        yPosBottom = yPosTop;
-    }
-    else {
-        yPosBottom = event.y;
-    }
-    addPosition(yPosBottom, parcoords.currentPosOfDims, d.name, 'bottom');
-    if (yPosTop == 70 && yPosBottom == 320) {
-        select$1('#rect_' + cleanDimensionName)
-            .style('cursor', 'default');
-    }
-    else {
-        select$1('#rect_' + cleanDimensionName)
-            .style('cursor', `url('data:image/svg+xml,${setSize(getArrowTopAndBottom(), 20)}') 8 8, auto`);
-    }
-    select$1('#triangle_up_' + cleanDimensionName).attr('y', yPosBottom);
-    const heightTopRect = yPosTop - 70;
-    const heightBottomRect = 320 - yPosBottom;
-    select$1('#rect_' + cleanDimensionName)
-        .attr('height', 240 - heightTopRect - heightBottomRect);
-    if (!isNaN(parcoords.yScales[d.name].domain()[0])) {
-        setToolTipBrush(tooltipValues, d, event, parcoords, window, false);
-    }
-    updateLines(parcoords, active, d.name, cleanDimensionName);
+
+function number(scale) {
+  return d => +scale(d);
 }
-function dragAndBrush(cleanDimensionName, d, svg, event, parcoords, active, delta, tooltipValuesTop, tooltipValuesDown, window) {
-    let yPosTop;
-    let yPosRect;
-    let topToAdd;
-    const yPosBottom = select$1('#triangle_up_' + cleanDimensionName).attr('y');
-    const yPosTopNew = select$1('#triangle_down_' + cleanDimensionName).attr('y');
-    const heightTopRect = yPosTopNew - 70;
-    const heightBottomRect = 320 - yPosBottom;
-    const rectHeight = 240 - heightTopRect - heightBottomRect;
-    if (event.y + delta - 10 <= 70) {
-        yPosTop = 70;
-        topToAdd = 80;
-        yPosRect = 80;
+
+function center(scale, offset) {
+  offset = Math.max(0, scale.bandwidth() - offset * 2) / 2;
+  if (scale.round()) offset = Math.round(offset);
+  return d => +scale(d) + offset;
+}
+
+function entering() {
+  return !this.__axis;
+}
+
+function axis(orient, scale) {
+  var tickArguments = [],
+      tickValues = null,
+      tickFormat = null,
+      tickSizeInner = 6,
+      tickSizeOuter = 6,
+      tickPadding = 3,
+      offset = typeof window !== "undefined" && window.devicePixelRatio > 1 ? 0 : 0.5,
+      k = orient === top || orient === left ? -1 : 1,
+      x = orient === left || orient === right ? "x" : "y",
+      transform = orient === top || orient === bottom ? translateX : translateY;
+
+  function axis(context) {
+    var values = tickValues == null ? (scale.ticks ? scale.ticks.apply(scale, tickArguments) : scale.domain()) : tickValues,
+        format = tickFormat == null ? (scale.tickFormat ? scale.tickFormat.apply(scale, tickArguments) : identity) : tickFormat,
+        spacing = Math.max(tickSizeInner, 0) + tickPadding,
+        range = scale.range(),
+        range0 = +range[0] + offset,
+        range1 = +range[range.length - 1] + offset,
+        position = (scale.bandwidth ? center : number)(scale.copy(), offset),
+        selection = context.selection ? context.selection() : context,
+        path = selection.selectAll(".domain").data([null]),
+        tick = selection.selectAll(".tick").data(values, scale).order(),
+        tickExit = tick.exit(),
+        tickEnter = tick.enter().append("g").attr("class", "tick"),
+        line = tick.select("line"),
+        text = tick.select("text");
+
+    path = path.merge(path.enter().insert("path", ".tick")
+        .attr("class", "domain")
+        .attr("stroke", "currentColor"));
+
+    tick = tick.merge(tickEnter);
+
+    line = line.merge(tickEnter.append("line")
+        .attr("stroke", "currentColor")
+        .attr(x + "2", k * tickSizeInner));
+
+    text = text.merge(tickEnter.append("text")
+        .attr("fill", "currentColor")
+        .attr(x, k * spacing)
+        .attr("dy", orient === top ? "0em" : orient === bottom ? "0.71em" : "0.32em"));
+
+    if (context !== selection) {
+      path = path.transition(context);
+      tick = tick.transition(context);
+      line = line.transition(context);
+      text = text.transition(context);
+
+      tickExit = tickExit.transition(context)
+          .attr("opacity", epsilon$2)
+          .attr("transform", function(d) { return isFinite(d = position(d)) ? transform(d + offset) : this.getAttribute("transform"); });
+
+      tickEnter
+          .attr("opacity", epsilon$2)
+          .attr("transform", function(d) { var p = this.parentNode.__axis; return transform((p && isFinite(p = p(d)) ? p : position(d)) + offset); });
     }
-    else if (event.y + delta + rectHeight >= 320) {
-        yPosTop = 320 - rectHeight - 10;
-        topToAdd = 320 - rectHeight - 10;
-        yPosRect = 320 - rectHeight;
+
+    tickExit.remove();
+
+    path
+        .attr("d", orient === left || orient === right
+            ? (tickSizeOuter ? "M" + k * tickSizeOuter + "," + range0 + "H" + offset + "V" + range1 + "H" + k * tickSizeOuter : "M" + offset + "," + range0 + "V" + range1)
+            : (tickSizeOuter ? "M" + range0 + "," + k * tickSizeOuter + "V" + offset + "H" + range1 + "V" + k * tickSizeOuter : "M" + range0 + "," + offset + "H" + range1));
+
+    tick
+        .attr("opacity", 1)
+        .attr("transform", function(d) { return transform(position(d) + offset); });
+
+    line
+        .attr(x + "2", k * tickSizeInner);
+
+    text
+        .attr(x, k * spacing)
+        .text(format);
+
+    selection.filter(entering)
+        .attr("fill", "none")
+        .attr("font-size", 10)
+        .attr("font-family", "sans-serif")
+        .attr("text-anchor", orient === right ? "start" : orient === left ? "end" : "middle");
+
+    selection
+        .each(function() { this.__axis = position; });
+  }
+
+  axis.scale = function(_) {
+    return arguments.length ? (scale = _, axis) : scale;
+  };
+
+  axis.ticks = function() {
+    return tickArguments = Array.from(arguments), axis;
+  };
+
+  axis.tickArguments = function(_) {
+    return arguments.length ? (tickArguments = _ == null ? [] : Array.from(_), axis) : tickArguments.slice();
+  };
+
+  axis.tickValues = function(_) {
+    return arguments.length ? (tickValues = _ == null ? null : Array.from(_), axis) : tickValues && tickValues.slice();
+  };
+
+  axis.tickFormat = function(_) {
+    return arguments.length ? (tickFormat = _, axis) : tickFormat;
+  };
+
+  axis.tickSize = function(_) {
+    return arguments.length ? (tickSizeInner = tickSizeOuter = +_, axis) : tickSizeInner;
+  };
+
+  axis.tickSizeInner = function(_) {
+    return arguments.length ? (tickSizeInner = +_, axis) : tickSizeInner;
+  };
+
+  axis.tickSizeOuter = function(_) {
+    return arguments.length ? (tickSizeOuter = +_, axis) : tickSizeOuter;
+  };
+
+  axis.tickPadding = function(_) {
+    return arguments.length ? (tickPadding = +_, axis) : tickPadding;
+  };
+
+  axis.offset = function(_) {
+    return arguments.length ? (offset = +_, axis) : offset;
+  };
+
+  return axis;
+}
+
+function axisLeft(scale) {
+  return axis(left, scale);
+}
+
+function constant(x) {
+  return function constant() {
+    return x;
+  };
+}
+
+const epsilon$1 = 1e-12;
+
+const pi = Math.PI,
+    tau = 2 * pi,
+    epsilon = 1e-6,
+    tauEpsilon = tau - epsilon;
+
+function append(strings) {
+  this._ += strings[0];
+  for (let i = 1, n = strings.length; i < n; ++i) {
+    this._ += arguments[i] + strings[i];
+  }
+}
+
+function appendRound(digits) {
+  let d = Math.floor(digits);
+  if (!(d >= 0)) throw new Error(`invalid digits: ${digits}`);
+  if (d > 15) return append;
+  const k = 10 ** d;
+  return function(strings) {
+    this._ += strings[0];
+    for (let i = 1, n = strings.length; i < n; ++i) {
+      this._ += Math.round(arguments[i] * k) / k + strings[i];
     }
+  };
+}
+
+class Path {
+  constructor(digits) {
+    this._x0 = this._y0 = // start of current subpath
+    this._x1 = this._y1 = null; // end of current subpath
+    this._ = "";
+    this._append = digits == null ? append : appendRound(digits);
+  }
+  moveTo(x, y) {
+    this._append`M${this._x0 = this._x1 = +x},${this._y0 = this._y1 = +y}`;
+  }
+  closePath() {
+    if (this._x1 !== null) {
+      this._x1 = this._x0, this._y1 = this._y0;
+      this._append`Z`;
+    }
+  }
+  lineTo(x, y) {
+    this._append`L${this._x1 = +x},${this._y1 = +y}`;
+  }
+  quadraticCurveTo(x1, y1, x, y) {
+    this._append`Q${+x1},${+y1},${this._x1 = +x},${this._y1 = +y}`;
+  }
+  bezierCurveTo(x1, y1, x2, y2, x, y) {
+    this._append`C${+x1},${+y1},${+x2},${+y2},${this._x1 = +x},${this._y1 = +y}`;
+  }
+  arcTo(x1, y1, x2, y2, r) {
+    x1 = +x1, y1 = +y1, x2 = +x2, y2 = +y2, r = +r;
+
+    // Is the radius negative? Error.
+    if (r < 0) throw new Error(`negative radius: ${r}`);
+
+    let x0 = this._x1,
+        y0 = this._y1,
+        x21 = x2 - x1,
+        y21 = y2 - y1,
+        x01 = x0 - x1,
+        y01 = y0 - y1,
+        l01_2 = x01 * x01 + y01 * y01;
+
+    // Is this path empty? Move to (x1,y1).
+    if (this._x1 === null) {
+      this._append`M${this._x1 = x1},${this._y1 = y1}`;
+    }
+
+    // Or, is (x1,y1) coincident with (x0,y0)? Do nothing.
+    else if (!(l01_2 > epsilon));
+
+    // Or, are (x0,y0), (x1,y1) and (x2,y2) collinear?
+    // Equivalently, is (x1,y1) coincident with (x2,y2)?
+    // Or, is the radius zero? Line to (x1,y1).
+    else if (!(Math.abs(y01 * x21 - y21 * x01) > epsilon) || !r) {
+      this._append`L${this._x1 = x1},${this._y1 = y1}`;
+    }
+
+    // Otherwise, draw an arc!
     else {
-        yPosTop = event.y + delta - 10;
-        topToAdd = event.y + delta - 10;
-        yPosRect = yPosTop + 10;
+      let x20 = x2 - x0,
+          y20 = y2 - y0,
+          l21_2 = x21 * x21 + y21 * y21,
+          l20_2 = x20 * x20 + y20 * y20,
+          l21 = Math.sqrt(l21_2),
+          l01 = Math.sqrt(l01_2),
+          l = r * Math.tan((pi - Math.acos((l21_2 + l01_2 - l20_2) / (2 * l21 * l01))) / 2),
+          t01 = l / l01,
+          t21 = l / l21;
+
+      // If the start tangent is not coincident with (x0,y0), line to.
+      if (Math.abs(t01 - 1) > epsilon) {
+        this._append`L${x1 + t01 * x01},${y1 + t01 * y01}`;
+      }
+
+      this._append`A${r},${r},0,0,${+(y01 * x20 > x01 * y20)},${this._x1 = x1 + t21 * x21},${this._y1 = y1 + t21 * y21}`;
     }
-    addPosition(topToAdd, parcoords.currentPosOfDims, d.name, 'top');
-    addPosition(yPosRect + rectHeight, parcoords.currentPosOfDims, d.name, 'bottom');
-    if (rectHeight < 240) {
-        select$1('#rect_' + cleanDimensionName)
-            .attr('y', yPosRect);
-        select$1('#triangle_down_' + cleanDimensionName)
-            .attr('y', yPosTop);
-        select$1('#triangle_up_' + cleanDimensionName)
-            .attr('y', yPosRect + rectHeight);
-        const dimensionName = d.name;
-        const invertStatus = getInvertStatus(dimensionName, parcoords.currentPosOfDims);
-        const maxValue = invertStatus == false ? parcoords.yScales[dimensionName].domain()[1] :
-            parcoords.yScales[dimensionName].domain()[0];
-        const minValue = invertStatus == false ? parcoords.yScales[dimensionName].domain()[0] :
-            parcoords.yScales[dimensionName].domain()[1];
-        const range = maxValue - minValue;
-        if (!isNaN(parcoords.yScales[d.name].domain()[0])) {
-            setToolTipDragAndBrush(tooltipValuesTop, tooltipValuesDown, d, parcoords, window, true, yPosTop, yPosRect + rectHeight);
+  }
+  arc(x, y, r, a0, a1, ccw) {
+    x = +x, y = +y, r = +r, ccw = !!ccw;
+
+    // Is the radius negative? Error.
+    if (r < 0) throw new Error(`negative radius: ${r}`);
+
+    let dx = r * Math.cos(a0),
+        dy = r * Math.sin(a0),
+        x0 = x + dx,
+        y0 = y + dy,
+        cw = 1 ^ ccw,
+        da = ccw ? a0 - a1 : a1 - a0;
+
+    // Is this path empty? Move to (x0,y0).
+    if (this._x1 === null) {
+      this._append`M${x0},${y0}`;
+    }
+
+    // Or, is (x0,y0) not coincident with the previous point? Line to (x0,y0).
+    else if (Math.abs(this._x1 - x0) > epsilon || Math.abs(this._y1 - y0) > epsilon) {
+      this._append`L${x0},${y0}`;
+    }
+
+    // Is this arc empty? We’re done.
+    if (!r) return;
+
+    // Does the angle go the wrong way? Flip the direction.
+    if (da < 0) da = da % tau + tau;
+
+    // Is this a complete circle? Draw two arcs to complete the circle.
+    if (da > tauEpsilon) {
+      this._append`A${r},${r},0,1,${cw},${x - dx},${y - dy}A${r},${r},0,1,${cw},${this._x1 = x0},${this._y1 = y0}`;
+    }
+
+    // Is this arc non-empty? Draw an arc!
+    else if (da > epsilon) {
+      this._append`A${r},${r},0,${+(da >= pi)},${cw},${this._x1 = x + r * Math.cos(a1)},${this._y1 = y + r * Math.sin(a1)}`;
+    }
+  }
+  rect(x, y, w, h) {
+    this._append`M${this._x0 = this._x1 = +x},${this._y0 = this._y1 = +y}h${w = +w}v${+h}h${-w}Z`;
+  }
+  toString() {
+    return this._;
+  }
+}
+
+function withPath(shape) {
+  let digits = 3;
+
+  shape.digits = function(_) {
+    if (!arguments.length) return digits;
+    if (_ == null) {
+      digits = null;
+    } else {
+      const d = Math.floor(_);
+      if (!(d >= 0)) throw new RangeError(`invalid digits: ${_}`);
+      digits = d;
+    }
+    return shape;
+  };
+
+  return () => new Path(digits);
+}
+
+function array(x) {
+  return typeof x === "object" && "length" in x
+    ? x // Array, TypedArray, NodeList, array-like
+    : Array.from(x); // Map, Set, iterable, string, or anything else
+}
+
+function Linear(context) {
+  this._context = context;
+}
+
+Linear.prototype = {
+  areaStart: function() {
+    this._line = 0;
+  },
+  areaEnd: function() {
+    this._line = NaN;
+  },
+  lineStart: function() {
+    this._point = 0;
+  },
+  lineEnd: function() {
+    if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
+    this._line = 1 - this._line;
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+    switch (this._point) {
+      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
+      case 1: this._point = 2; // falls through
+      default: this._context.lineTo(x, y); break;
+    }
+  }
+};
+
+function curveLinear(context) {
+  return new Linear(context);
+}
+
+function x(p) {
+  return p[0];
+}
+
+function y(p) {
+  return p[1];
+}
+
+function line(x$1, y$1) {
+  var defined = constant(true),
+      context = null,
+      curve = curveLinear,
+      output = null,
+      path = withPath(line);
+
+  x$1 = typeof x$1 === "function" ? x$1 : (x$1 === undefined) ? x : constant(x$1);
+  y$1 = typeof y$1 === "function" ? y$1 : (y$1 === undefined) ? y : constant(y$1);
+
+  function line(data) {
+    var i,
+        n = (data = array(data)).length,
+        d,
+        defined0 = false,
+        buffer;
+
+    if (context == null) output = curve(buffer = path());
+
+    for (i = 0; i <= n; ++i) {
+      if (!(i < n && defined(d = data[i], i, data)) === defined0) {
+        if (defined0 = !defined0) output.lineStart();
+        else output.lineEnd();
+      }
+      if (defined0) output.point(+x$1(d, i, data), +y$1(d, i, data));
+    }
+
+    if (buffer) return output = null, buffer + "" || null;
+  }
+
+  line.x = function(_) {
+    return arguments.length ? (x$1 = typeof _ === "function" ? _ : constant(+_), line) : x$1;
+  };
+
+  line.y = function(_) {
+    return arguments.length ? (y$1 = typeof _ === "function" ? _ : constant(+_), line) : y$1;
+  };
+
+  line.defined = function(_) {
+    return arguments.length ? (defined = typeof _ === "function" ? _ : constant(!!_), line) : defined;
+  };
+
+  line.curve = function(_) {
+    return arguments.length ? (curve = _, context != null && (output = curve(context)), line) : curve;
+  };
+
+  line.context = function(_) {
+    return arguments.length ? (_ == null ? context = output = null : output = curve(context = _), line) : context;
+  };
+
+  return line;
+}
+
+function noop() {}
+
+function point$3(that, x, y) {
+  that._context.bezierCurveTo(
+    (2 * that._x0 + that._x1) / 3,
+    (2 * that._y0 + that._y1) / 3,
+    (that._x0 + 2 * that._x1) / 3,
+    (that._y0 + 2 * that._y1) / 3,
+    (that._x0 + 4 * that._x1 + x) / 6,
+    (that._y0 + 4 * that._y1 + y) / 6
+  );
+}
+
+function Basis(context) {
+  this._context = context;
+}
+
+Basis.prototype = {
+  areaStart: function() {
+    this._line = 0;
+  },
+  areaEnd: function() {
+    this._line = NaN;
+  },
+  lineStart: function() {
+    this._x0 = this._x1 =
+    this._y0 = this._y1 = NaN;
+    this._point = 0;
+  },
+  lineEnd: function() {
+    switch (this._point) {
+      case 3: point$3(this, this._x1, this._y1); // falls through
+      case 2: this._context.lineTo(this._x1, this._y1); break;
+    }
+    if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
+    this._line = 1 - this._line;
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+    switch (this._point) {
+      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
+      case 1: this._point = 2; break;
+      case 2: this._point = 3; this._context.lineTo((5 * this._x0 + this._x1) / 6, (5 * this._y0 + this._y1) / 6); // falls through
+      default: point$3(this, x, y); break;
+    }
+    this._x0 = this._x1, this._x1 = x;
+    this._y0 = this._y1, this._y1 = y;
+  }
+};
+
+function Bundle(context, beta) {
+  this._basis = new Basis(context);
+  this._beta = beta;
+}
+
+Bundle.prototype = {
+  lineStart: function() {
+    this._x = [];
+    this._y = [];
+    this._basis.lineStart();
+  },
+  lineEnd: function() {
+    var x = this._x,
+        y = this._y,
+        j = x.length - 1;
+
+    if (j > 0) {
+      var x0 = x[0],
+          y0 = y[0],
+          dx = x[j] - x0,
+          dy = y[j] - y0,
+          i = -1,
+          t;
+
+      while (++i <= j) {
+        t = i / j;
+        this._basis.point(
+          this._beta * x[i] + (1 - this._beta) * (x0 + t * dx),
+          this._beta * y[i] + (1 - this._beta) * (y0 + t * dy)
+        );
+      }
+    }
+
+    this._x = this._y = null;
+    this._basis.lineEnd();
+  },
+  point: function(x, y) {
+    this._x.push(+x);
+    this._y.push(+y);
+  }
+};
+
+((function custom(beta) {
+
+  function bundle(context) {
+    return beta === 1 ? new Basis(context) : new Bundle(context, beta);
+  }
+
+  bundle.beta = function(beta) {
+    return custom(+beta);
+  };
+
+  return bundle;
+}))(0.85);
+
+function point$2(that, x, y) {
+  that._context.bezierCurveTo(
+    that._x1 + that._k * (that._x2 - that._x0),
+    that._y1 + that._k * (that._y2 - that._y0),
+    that._x2 + that._k * (that._x1 - x),
+    that._y2 + that._k * (that._y1 - y),
+    that._x2,
+    that._y2
+  );
+}
+
+function Cardinal(context, tension) {
+  this._context = context;
+  this._k = (1 - tension) / 6;
+}
+
+Cardinal.prototype = {
+  areaStart: function() {
+    this._line = 0;
+  },
+  areaEnd: function() {
+    this._line = NaN;
+  },
+  lineStart: function() {
+    this._x0 = this._x1 = this._x2 =
+    this._y0 = this._y1 = this._y2 = NaN;
+    this._point = 0;
+  },
+  lineEnd: function() {
+    switch (this._point) {
+      case 2: this._context.lineTo(this._x2, this._y2); break;
+      case 3: point$2(this, this._x1, this._y1); break;
+    }
+    if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
+    this._line = 1 - this._line;
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+    switch (this._point) {
+      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
+      case 1: this._point = 2; this._x1 = x, this._y1 = y; break;
+      case 2: this._point = 3; // falls through
+      default: point$2(this, x, y); break;
+    }
+    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
+    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
+  }
+};
+
+((function custom(tension) {
+
+  function cardinal(context) {
+    return new Cardinal(context, tension);
+  }
+
+  cardinal.tension = function(tension) {
+    return custom(+tension);
+  };
+
+  return cardinal;
+}))(0);
+
+function CardinalClosed(context, tension) {
+  this._context = context;
+  this._k = (1 - tension) / 6;
+}
+
+CardinalClosed.prototype = {
+  areaStart: noop,
+  areaEnd: noop,
+  lineStart: function() {
+    this._x0 = this._x1 = this._x2 = this._x3 = this._x4 = this._x5 =
+    this._y0 = this._y1 = this._y2 = this._y3 = this._y4 = this._y5 = NaN;
+    this._point = 0;
+  },
+  lineEnd: function() {
+    switch (this._point) {
+      case 1: {
+        this._context.moveTo(this._x3, this._y3);
+        this._context.closePath();
+        break;
+      }
+      case 2: {
+        this._context.lineTo(this._x3, this._y3);
+        this._context.closePath();
+        break;
+      }
+      case 3: {
+        this.point(this._x3, this._y3);
+        this.point(this._x4, this._y4);
+        this.point(this._x5, this._y5);
+        break;
+      }
+    }
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+    switch (this._point) {
+      case 0: this._point = 1; this._x3 = x, this._y3 = y; break;
+      case 1: this._point = 2; this._context.moveTo(this._x4 = x, this._y4 = y); break;
+      case 2: this._point = 3; this._x5 = x, this._y5 = y; break;
+      default: point$2(this, x, y); break;
+    }
+    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
+    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
+  }
+};
+
+((function custom(tension) {
+
+  function cardinal(context) {
+    return new CardinalClosed(context, tension);
+  }
+
+  cardinal.tension = function(tension) {
+    return custom(+tension);
+  };
+
+  return cardinal;
+}))(0);
+
+function CardinalOpen(context, tension) {
+  this._context = context;
+  this._k = (1 - tension) / 6;
+}
+
+CardinalOpen.prototype = {
+  areaStart: function() {
+    this._line = 0;
+  },
+  areaEnd: function() {
+    this._line = NaN;
+  },
+  lineStart: function() {
+    this._x0 = this._x1 = this._x2 =
+    this._y0 = this._y1 = this._y2 = NaN;
+    this._point = 0;
+  },
+  lineEnd: function() {
+    if (this._line || (this._line !== 0 && this._point === 3)) this._context.closePath();
+    this._line = 1 - this._line;
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+    switch (this._point) {
+      case 0: this._point = 1; break;
+      case 1: this._point = 2; break;
+      case 2: this._point = 3; this._line ? this._context.lineTo(this._x2, this._y2) : this._context.moveTo(this._x2, this._y2); break;
+      case 3: this._point = 4; // falls through
+      default: point$2(this, x, y); break;
+    }
+    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
+    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
+  }
+};
+
+((function custom(tension) {
+
+  function cardinal(context) {
+    return new CardinalOpen(context, tension);
+  }
+
+  cardinal.tension = function(tension) {
+    return custom(+tension);
+  };
+
+  return cardinal;
+}))(0);
+
+function point$1(that, x, y) {
+  var x1 = that._x1,
+      y1 = that._y1,
+      x2 = that._x2,
+      y2 = that._y2;
+
+  if (that._l01_a > epsilon$1) {
+    var a = 2 * that._l01_2a + 3 * that._l01_a * that._l12_a + that._l12_2a,
+        n = 3 * that._l01_a * (that._l01_a + that._l12_a);
+    x1 = (x1 * a - that._x0 * that._l12_2a + that._x2 * that._l01_2a) / n;
+    y1 = (y1 * a - that._y0 * that._l12_2a + that._y2 * that._l01_2a) / n;
+  }
+
+  if (that._l23_a > epsilon$1) {
+    var b = 2 * that._l23_2a + 3 * that._l23_a * that._l12_a + that._l12_2a,
+        m = 3 * that._l23_a * (that._l23_a + that._l12_a);
+    x2 = (x2 * b + that._x1 * that._l23_2a - x * that._l12_2a) / m;
+    y2 = (y2 * b + that._y1 * that._l23_2a - y * that._l12_2a) / m;
+  }
+
+  that._context.bezierCurveTo(x1, y1, x2, y2, that._x2, that._y2);
+}
+
+function CatmullRom(context, alpha) {
+  this._context = context;
+  this._alpha = alpha;
+}
+
+CatmullRom.prototype = {
+  areaStart: function() {
+    this._line = 0;
+  },
+  areaEnd: function() {
+    this._line = NaN;
+  },
+  lineStart: function() {
+    this._x0 = this._x1 = this._x2 =
+    this._y0 = this._y1 = this._y2 = NaN;
+    this._l01_a = this._l12_a = this._l23_a =
+    this._l01_2a = this._l12_2a = this._l23_2a =
+    this._point = 0;
+  },
+  lineEnd: function() {
+    switch (this._point) {
+      case 2: this._context.lineTo(this._x2, this._y2); break;
+      case 3: this.point(this._x2, this._y2); break;
+    }
+    if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
+    this._line = 1 - this._line;
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+
+    if (this._point) {
+      var x23 = this._x2 - x,
+          y23 = this._y2 - y;
+      this._l23_a = Math.sqrt(this._l23_2a = Math.pow(x23 * x23 + y23 * y23, this._alpha));
+    }
+
+    switch (this._point) {
+      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
+      case 1: this._point = 2; break;
+      case 2: this._point = 3; // falls through
+      default: point$1(this, x, y); break;
+    }
+
+    this._l01_a = this._l12_a, this._l12_a = this._l23_a;
+    this._l01_2a = this._l12_2a, this._l12_2a = this._l23_2a;
+    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
+    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
+  }
+};
+
+((function custom(alpha) {
+
+  function catmullRom(context) {
+    return alpha ? new CatmullRom(context, alpha) : new Cardinal(context, 0);
+  }
+
+  catmullRom.alpha = function(alpha) {
+    return custom(+alpha);
+  };
+
+  return catmullRom;
+}))(0.5);
+
+function CatmullRomClosed(context, alpha) {
+  this._context = context;
+  this._alpha = alpha;
+}
+
+CatmullRomClosed.prototype = {
+  areaStart: noop,
+  areaEnd: noop,
+  lineStart: function() {
+    this._x0 = this._x1 = this._x2 = this._x3 = this._x4 = this._x5 =
+    this._y0 = this._y1 = this._y2 = this._y3 = this._y4 = this._y5 = NaN;
+    this._l01_a = this._l12_a = this._l23_a =
+    this._l01_2a = this._l12_2a = this._l23_2a =
+    this._point = 0;
+  },
+  lineEnd: function() {
+    switch (this._point) {
+      case 1: {
+        this._context.moveTo(this._x3, this._y3);
+        this._context.closePath();
+        break;
+      }
+      case 2: {
+        this._context.lineTo(this._x3, this._y3);
+        this._context.closePath();
+        break;
+      }
+      case 3: {
+        this.point(this._x3, this._y3);
+        this.point(this._x4, this._y4);
+        this.point(this._x5, this._y5);
+        break;
+      }
+    }
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+
+    if (this._point) {
+      var x23 = this._x2 - x,
+          y23 = this._y2 - y;
+      this._l23_a = Math.sqrt(this._l23_2a = Math.pow(x23 * x23 + y23 * y23, this._alpha));
+    }
+
+    switch (this._point) {
+      case 0: this._point = 1; this._x3 = x, this._y3 = y; break;
+      case 1: this._point = 2; this._context.moveTo(this._x4 = x, this._y4 = y); break;
+      case 2: this._point = 3; this._x5 = x, this._y5 = y; break;
+      default: point$1(this, x, y); break;
+    }
+
+    this._l01_a = this._l12_a, this._l12_a = this._l23_a;
+    this._l01_2a = this._l12_2a, this._l12_2a = this._l23_2a;
+    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
+    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
+  }
+};
+
+((function custom(alpha) {
+
+  function catmullRom(context) {
+    return alpha ? new CatmullRomClosed(context, alpha) : new CardinalClosed(context, 0);
+  }
+
+  catmullRom.alpha = function(alpha) {
+    return custom(+alpha);
+  };
+
+  return catmullRom;
+}))(0.5);
+
+function CatmullRomOpen(context, alpha) {
+  this._context = context;
+  this._alpha = alpha;
+}
+
+CatmullRomOpen.prototype = {
+  areaStart: function() {
+    this._line = 0;
+  },
+  areaEnd: function() {
+    this._line = NaN;
+  },
+  lineStart: function() {
+    this._x0 = this._x1 = this._x2 =
+    this._y0 = this._y1 = this._y2 = NaN;
+    this._l01_a = this._l12_a = this._l23_a =
+    this._l01_2a = this._l12_2a = this._l23_2a =
+    this._point = 0;
+  },
+  lineEnd: function() {
+    if (this._line || (this._line !== 0 && this._point === 3)) this._context.closePath();
+    this._line = 1 - this._line;
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+
+    if (this._point) {
+      var x23 = this._x2 - x,
+          y23 = this._y2 - y;
+      this._l23_a = Math.sqrt(this._l23_2a = Math.pow(x23 * x23 + y23 * y23, this._alpha));
+    }
+
+    switch (this._point) {
+      case 0: this._point = 1; break;
+      case 1: this._point = 2; break;
+      case 2: this._point = 3; this._line ? this._context.lineTo(this._x2, this._y2) : this._context.moveTo(this._x2, this._y2); break;
+      case 3: this._point = 4; // falls through
+      default: point$1(this, x, y); break;
+    }
+
+    this._l01_a = this._l12_a, this._l12_a = this._l23_a;
+    this._l01_2a = this._l12_2a, this._l12_2a = this._l23_2a;
+    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
+    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
+  }
+};
+
+((function custom(alpha) {
+
+  function catmullRom(context) {
+    return alpha ? new CatmullRomOpen(context, alpha) : new CardinalOpen(context, 0);
+  }
+
+  catmullRom.alpha = function(alpha) {
+    return custom(+alpha);
+  };
+
+  return catmullRom;
+}))(0.5);
+
+function sign(x) {
+  return x < 0 ? -1 : 1;
+}
+
+// Calculate the slopes of the tangents (Hermite-type interpolation) based on
+// the following paper: Steffen, M. 1990. A Simple Method for Monotonic
+// Interpolation in One Dimension. Astronomy and Astrophysics, Vol. 239, NO.
+// NOV(II), P. 443, 1990.
+function slope3(that, x2, y2) {
+  var h0 = that._x1 - that._x0,
+      h1 = x2 - that._x1,
+      s0 = (that._y1 - that._y0) / (h0 || h1 < 0 && -0),
+      s1 = (y2 - that._y1) / (h1 || h0 < 0 && -0),
+      p = (s0 * h1 + s1 * h0) / (h0 + h1);
+  return (sign(s0) + sign(s1)) * Math.min(Math.abs(s0), Math.abs(s1), 0.5 * Math.abs(p)) || 0;
+}
+
+// Calculate a one-sided slope.
+function slope2(that, t) {
+  var h = that._x1 - that._x0;
+  return h ? (3 * (that._y1 - that._y0) / h - t) / 2 : t;
+}
+
+// According to https://en.wikipedia.org/wiki/Cubic_Hermite_spline#Representations
+// "you can express cubic Hermite interpolation in terms of cubic Bézier curves
+// with respect to the four values p0, p0 + m0 / 3, p1 - m1 / 3, p1".
+function point(that, t0, t1) {
+  var x0 = that._x0,
+      y0 = that._y0,
+      x1 = that._x1,
+      y1 = that._y1,
+      dx = (x1 - x0) / 3;
+  that._context.bezierCurveTo(x0 + dx, y0 + dx * t0, x1 - dx, y1 - dx * t1, x1, y1);
+}
+
+function MonotoneX(context) {
+  this._context = context;
+}
+
+MonotoneX.prototype = {
+  areaStart: function() {
+    this._line = 0;
+  },
+  areaEnd: function() {
+    this._line = NaN;
+  },
+  lineStart: function() {
+    this._x0 = this._x1 =
+    this._y0 = this._y1 =
+    this._t0 = NaN;
+    this._point = 0;
+  },
+  lineEnd: function() {
+    switch (this._point) {
+      case 2: this._context.lineTo(this._x1, this._y1); break;
+      case 3: point(this, this._t0, slope2(this, this._t0)); break;
+    }
+    if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
+    this._line = 1 - this._line;
+  },
+  point: function(x, y) {
+    var t1 = NaN;
+
+    x = +x, y = +y;
+    if (x === this._x1 && y === this._y1) return; // Ignore coincident points.
+    switch (this._point) {
+      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
+      case 1: this._point = 2; break;
+      case 2: this._point = 3; point(this, slope2(this, t1 = slope3(this, x, y)), t1); break;
+      default: point(this, this._t0, t1 = slope3(this, x, y)); break;
+    }
+
+    this._x0 = this._x1, this._x1 = x;
+    this._y0 = this._y1, this._y1 = y;
+    this._t0 = t1;
+  }
+};
+
+(Object.create(MonotoneX.prototype)).point = function(x, y) {
+  MonotoneX.prototype.point.call(this, y, x);
+};
+
+function prepareData(data, newFeatures) {
+    let newDataset = [];
+    data.forEach(obj => {
+        let newdata = {};
+        newFeatures.forEach(feature => {
+            newdata[feature] = obj[feature];
+        });
+        newDataset.push(newdata);
+    });
+    let features = [];
+    Object.keys(newDataset[0]).forEach(element => features.push({ 'name': element }));
+    return [features, newDataset];
+}
+function setupYScales(height, padding, features, newDataset) {
+    let yScales = {};
+    features.map(x => {
+        const values = newDataset.map(o => o[x.name]);
+        let labels = [];
+        if (isNaN(values[0]) !== false) {
+            values.forEach(function (element) {
+                labels.push(element.length > 10 ? element.substr(0, 10) + '...' : element);
+            });
+            yScales[x.name] = point$4()
+                .domain(labels)
+                .range([padding, height - padding])
+                .padding(0.2);
         }
-        active.each(function (d) {
-            const currentLine = getLineName(d);
-            let value;
-            if (invertStatus) {
-                value = isNaN(maxValue) ? parcoords.yScales[dimensionName](d[dimensionName]) :
-                    240 / range * (d[dimensionName] - minValue) + 80;
+        else {
+            const max = Math.max(...newDataset.map(o => o[x.name]));
+            const min = Math.min(...newDataset.map(o => o[x.name]));
+            yScales[x.name] = linear()
+                .domain([min, max])
+                .range([height - padding, padding]);
+        }
+    });
+    return yScales;
+}
+function setupXScales(width, padding, features) {
+    return point$4()
+        .domain(features.map(x => x.name))
+        .range([width - padding, padding]);
+}
+function setupYAxis(features, yScales, newDataset) {
+    const limit = 30;
+    let counter = 0;
+    let yAxis = {};
+    Object.entries(yScales).map(key => {
+        let tempFeatures = Array.from(features.values()).map(c => c.name);
+        let tempValues = newDataset.map(o => o[tempFeatures[counter]]);
+        let labels = [];
+        tempValues.forEach(function (element) {
+            labels.push(element.length > 10 ? element.substr(0, 10) + '...' : element);
+        });
+        counter = counter + 1;
+        if (isNaN(labels[0])) {
+            let uniqueArray = labels.filter(function (item, index, self) {
+                return index === self.indexOf(item);
+            });
+            if (uniqueArray.length > limit) {
+                let filteredArray = labels.filter(function (value, index, array) {
+                    return index % 4 == 0;
+                });
+                yAxis[key[0]] = axisLeft(key[1]).tickValues(filteredArray);
             }
             else {
-                value = isNaN(maxValue) ? parcoords.yScales[dimensionName](d[dimensionName]) :
-                    240 / range * (maxValue - d[dimensionName]) + 80;
+                yAxis[key[0]] = axisLeft(key[1]).tickValues(labels);
             }
-            const dimNameToCheck = select$1('.' + currentLine).text();
-            const emptyString = '';
-            if (value < yPosRect || value > yPosRect + rectHeight) {
-                makeInactive(currentLine, dimensionName);
+        }
+        else {
+            let ranges = yScales[key[0]].ticks(5).concat(yScales[key[0]].domain());
+            let sortRanges = ranges.sort(function (a, b) { return a - b; });
+            let uniqueRanges = [...new Set(sortRanges)];
+            if (Number(uniqueRanges[1]) - 5 < Number(uniqueRanges[0])) {
+                uniqueRanges.splice(1, 1);
             }
-            else if (dimNameToCheck == dimensionName && dimNameToCheck != emptyString) {
-                let checkedLines = [];
-                parcoords.currentPosOfDims.forEach(function (item) {
-                    if (item.top != 80 && item.bottom != 320) {
-                        checkAllPositionsTop(item, dimensionName, parcoords, d, checkedLines, currentLine);
-                        checkAllPositionsBottom(item, dimensionName, parcoords, d, checkedLines, currentLine);
-                    }
-                });
-                if (!checkedLines.includes(currentLine)) {
-                    makeActive(currentLine);
-                }
+            if (Number(uniqueRanges[uniqueRanges.length - 1]) - 5 < Number(uniqueRanges[uniqueRanges.length - 2])) {
+                uniqueRanges.splice(uniqueRanges.length - 2, 1);
             }
-            else ;
+            yAxis[key[0]] = axisLeft(key[1]).tickValues(uniqueRanges);
+        }
+    });
+    return yAxis;
+}
+function linePath(d, newFeatures, parcoords) {
+    const lineGenerator = line();
+    const tempdata = Object.entries(d).filter(x => x[0]);
+    const points = [];
+    newFeatures.forEach(newFeature => {
+        const valueEntry = tempdata.find(x => x[0] === newFeature);
+        if (valueEntry) {
+            const name = newFeature;
+            const value = valueEntry[1];
+            const x = parcoords.dragging[name] !== undefined
+                ? parcoords.dragging[name]
+                : parcoords.xScales(name);
+            const y = parcoords.yScales[name](value);
+            points.push([x, y]);
+        }
+    });
+    return lineGenerator(points);
+}
+function isInverted(dimension) {
+    const invertId = '#dimension_invert_' + cleanString(dimension);
+    const element = select$1(invertId);
+    const arrowStatus = element.text();
+    return arrowStatus == 'down' ? true : false;
+}
+function getAllVisibleDimensionNames$1() {
+    let listOfDimensions = parcoords.newFeatures.slice();
+    return listOfDimensions.reverse();
+}
+function createToolTipForValues(recordData) {
+    const dimensions = getAllVisibleDimensionNames$1();
+    let counter = 0;
+    const rectLeft = select$1('#rect_' + dimensions[0])?.node()?.getBoundingClientRect().left;
+    dimensions.forEach(dimension => {
+        const cleanString$1 = cleanString(dimension);
+        if (isElementVisible(select$1('#rect_' + cleanString$1))) {
+            const tooltipValues = select$1('#parallelcoords')
+                .append('g')
+                .attr('class', 'tooltip')
+                .style('position', 'absolute')
+                .style('visibility', 'hidden');
+            const invertStatus = isInverted(dimension);
+            const scale = parcoords.yScales[dimension];
+            const maxValue = invertStatus ? scale.domain()[0] : scale.domain()[1];
+            const minValue = invertStatus ? scale.domain()[1] : scale.domain()[0];
+            const range = maxValue - minValue;
+            let value;
+            if (invertStatus) {
+                value = isNaN(maxValue) ? scale(recordData[dimension]) :
+                    240 / range * (recordData[dimension] - minValue) + 80;
+            }
+            else {
+                value = isNaN(maxValue) ? scale(recordData[dimension]) :
+                    240 / range * (maxValue - recordData[dimension]) + 80;
+            }
+            const x = (rectLeft + (counter * 95)) / 16;
+            const y = (value + 195) / 16;
+            tooltipValues.text(recordData[dimension].toString())
+                .style('visibility', 'visible')
+                .style('top', `${y}rem`)
+                .style('left', `${x}rem`)
+                .style('font-size', '0.65rem')
+                .style('margin', '0.5rem')
+                .style('color', 'red')
+                .style('background-color', '#d3d3d3ad')
+                .style('font-weight', 'bold')
+                .style('padding', '0.12rem')
+                .style('white-space', 'pre-line')
+                .style('margin-left', '0.5rem');
+            counter++;
+        }
+    });
+}
+function getAllPointerEventsData(event, hoverlabel) {
+    const selection = selectAll(document.elementsFromPoint(event.clientX, event.clientY)).filter('path');
+    const object = selection._groups;
+    const data = [];
+    for (let i = 0; i < object[0].length; i++) {
+        const items = object.map(item => item[i]);
+        const itemsdata = items[0].__data__;
+        const text = itemsdata[hoverlabel];
+        data.push(text);
+    }
+    return data;
+}
+function createTooltipForPathLine(tooltipText, tooltipPath, event) {
+    if (!tooltipText || tooltipText.length === 0)
+        return;
+    const [x, y] = getMouseCoords(event);
+    let tempText = tooltipText.toString();
+    tempText = tempText.split(',').join('\r\n');
+    tooltipPath.text(tempText)
+        .style('visibility', 'visible')
+        .style('top', y / 16 + 'rem')
+        .style('left', x / 16 + 0.5 + 'rem');
+    return tooltipPath;
+}
+function trans(g) {
+    return g.transition().duration(50);
+}
+function position(dimensionName, dragging, xScales) {
+    const value = dragging[dimensionName];
+    return value == null ? xScales(dimensionName) : value;
+}
+function cleanTooltip() {
+    selectAll(".tooltip")
+        .remove();
+}
+
+function setContextMenu(featureAxis, padding, parcoords, active, width) {
+    createContextMenu();
+    createModalToSetRange();
+    createModalToFilter();
+    let tooltipFeatures = select$1('body')
+        .append('div')
+        .attr('id', 'tooltip')
+        .style('position', 'absolute')
+        .style('pointer-events', 'none')
+        .style('visibility', 'hidden');
+    featureAxis
+        .append('text')
+        .attr('class', 'dimension')
+        .attr('text-anchor', 'middle')
+        .attr('y', (padding / 1.7).toFixed(4))
+        .text(d => d.name.length > 10 ? d.name.substr(0, 10) + '...' : d.name)
+        .style('font-size', '0.7rem')
+        .call(drag()
+        .on('start', onDragStartEventHandler(parcoords))
+        .on('drag', onDragEventHandler(parcoords, featureAxis, active, width))
+        .on('end', onDragEndEventHandler(parcoords, featureAxis, active)))
+        .on('mouseover', function () {
+        return tooltipFeatures.style('visibility', 'visible');
+    })
+        .on('mousemove', (event, d) => {
+        setCursorForDimensions(d, featureAxis, parcoords);
+        const [x, y] = getMouseCoords(event);
+        tooltipFeatures.text(d.name);
+        tooltipFeatures
+            .style("left", x / 16 + 'rem')
+            .style("top", y / 16 + 'rem')
+            .style('font-size', '0.75rem')
+            .style('border', 0.08 + 'rem solid gray')
+            .style('border-radius', 0.1 + 'rem')
+            .style('margin', 0.5 + 'rem')
+            .style('padding', 0.12 + 'rem')
+            .style('background-color', 'lightgrey')
+            .style('margin-left', 0.5 + 'rem');
+        return tooltipFeatures;
+    })
+        .on('mouseout', function () {
+        return tooltipFeatures.style('visibility', 'hidden');
+    })
+        .on('contextmenu', function (event, d) {
+        const dimension = d.name;
+        const values = parcoords.newDataset.map(o => o[dimension]);
+        styleContextMenu(event);
+        hideDimensionMenu(dimension);
+        invertDimensionMenu(dimension);
+        setRangeMenu(values, dimension);
+        resetRangeMenu(values, dimension);
+        resetRoundRangeMenu(values, dimension);
+        filterMenu(values, dimension);
+        resetFilterMenu(values, dimension);
+        showAllMenu();
+        event.preventDefault();
+    });
+}
+let scrollXPos;
+let timer;
+const paddingXaxis = 75;
+function showAllMenu() {
+    select$1('#showAllMenu')
+        .style('visibility', 'visible')
+        .style('border-top', '0.08rem lightgrey solid')
+        .on('click', (event) => {
+        const hiddenDimensions = getAllHiddenDimensionNames();
+        for (let i = 0; i < hiddenDimensions.length; i++) {
+            show(hiddenDimensions[i]);
+        }
+        event.stopPropagation();
+    });
+}
+function resetFilterMenu(values, dimension) {
+    if (!isNaN(values[0])) {
+        select$1('#resetfilterMenu')
+            .style('visibility', 'visible')
+            .style('color', 'black')
+            .on('click', (event) => {
+            const range = getDimensionRange(dimension);
+            if (isInverted(dimension)) {
+                setFilter(dimension, range[1], range[0]);
+            }
+            else {
+                setFilter(dimension, range[1], range[0]);
+            }
+            event.stopPropagation();
         });
     }
-}
-function filter(dimensionName, topValue, bottomValue, parcoords) {
-    const invertStatus = getInvertStatus(dimensionName, parcoords.currentPosOfDims);
-    const maxValue = invertStatus == false ? parcoords.yScales[dimensionName].domain()[1] :
-        parcoords.yScales[dimensionName].domain()[0];
-    const minValue = invertStatus == false ? parcoords.yScales[dimensionName].domain()[0] :
-        parcoords.yScales[dimensionName].domain()[1];
-    const range = maxValue - minValue;
-    let topPosition;
-    let bottomPosition;
-    if (invertStatus) {
-        topPosition = isNaN(maxValue) ? parcoords.yScales[dimensionName](topValue) :
-            240 / range * (topValue - minValue) + 80;
-        bottomPosition = isNaN(maxValue) ? parcoords.yScales[dimensionName](bottomValue) :
-            240 / range * (bottomValue - minValue) + 80;
-    }
     else {
-        topPosition = isNaN(maxValue) ? parcoords.yScales[dimensionName](topValue) :
-            240 / range * (maxValue - topValue) + 80;
-        bottomPosition = isNaN(maxValue) ? parcoords.yScales[dimensionName](bottomValue) :
-            240 / range * (maxValue - bottomValue) + 80;
+        select$1('#resetfilterMenu')
+            .style('display', 'false')
+            .style('color', 'lightgrey');
     }
-    addPosition(topPosition, parcoords.currentPosOfDims, dimensionName, 'top');
-    addPosition(bottomPosition, parcoords.currentPosOfDims, dimensionName, 'bottom');
-    const cleanDimensionName = cleanString(dimensionName);
-    let rectHeight = bottomPosition - topPosition;
-    select$1('#rect_' + cleanDimensionName)
-        .attr('y', topPosition);
-    select$1('#triangle_down_' + cleanDimensionName)
-        .attr('y', topPosition - 10);
-    select$1('#triangle_up_' + cleanDimensionName)
-        .attr('y', bottomPosition);
-    select$1('#rect_' + cleanDimensionName)
-        .attr('height', rectHeight);
-    let active = select$1('g.active').selectAll('path');
-    const emptyString = '';
-    active.each(function (d) {
-        const currentLine = getLineName(d);
-        const selected = isSelected(currentLine);
-        const dimNameToCheck = select$1('.' + currentLine).text();
-        let value;
-        if (invertStatus) {
-            value = isNaN(maxValue) ? parcoords.yScales[dimensionName](d[dimensionName]) :
-                240 / range * (d[dimensionName] - minValue) + 80;
-        }
-        else {
-            value = isNaN(maxValue) ? parcoords.yScales[dimensionName](d[dimensionName]) :
-                240 / range * (maxValue - d[dimensionName]) + 80;
-        }
-        if (value < topPosition || value > bottomPosition) {
-            makeInactive(currentLine, dimensionName);
-            if (selected) {
-                setUnselected(currentLine);
-                selectionArray.push(currentLine);
-            }
-        }
-        else if (dimNameToCheck == dimensionName && dimNameToCheck != emptyString) {
-            let checkedLines = [];
-            parcoords.currentPosOfDims.forEach(function (item) {
-                checkAllPositionsTop(item, dimensionName, parcoords, d, checkedLines, currentLine);
-                checkAllPositionsBottom(item, dimensionName, parcoords, d, checkedLines, currentLine);
-            });
-            if (!checkedLines.includes(currentLine)) {
-                makeActive(currentLine);
-                const index = selectionArray.indexOf(currentLine);
-                if (index != -1) {
-                    setSelected(currentLine);
-                    selectionArray.splice(index, 1);
+}
+function filterMenu(values, dimension) {
+    if (!isNaN(values[0])) {
+        let currentFilters = getFilter(dimension);
+        select$1('#maxFilterValue').property('value', currentFilters[0]);
+        select$1('#minFilterValue').property('value', currentFilters[1]);
+        select$1('#filterMenu')
+            .style('border-top', '0.08rem lightgrey solid')
+            .style('visibility', 'visible')
+            .style('color', 'black')
+            .on('click', (event) => {
+            select$1('#modalOverlayFilter').style('display', 'block');
+            select$1('#modalFilter').style('display', 'block');
+            select$1('#contextmenu').style('display', 'none');
+            const newText1 = dimension.length > 25 ? dimension.substr(0, 25) + '...' : dimension;
+            select$1('#headerDimensionFilter').text(newText1);
+            select$1('#buttonFilter').on('click', () => {
+                let min = select$1('#minFilterValue').node().value;
+                let max = select$1('#maxFilterValue').node().value;
+                const ranges = getDimensionRange(dimension);
+                const inverted = isInverted(dimension);
+                let isOk = true;
+                if (inverted) {
+                    if (min < ranges[1]) {
+                        min = ranges[1];
+                        select$1('#errorFilter').text(`Min value is smaller than 
+                                    ${getMinValue(dimension)}, filter is set to min.`)
+                            .style('display', 'block')
+                            .style('padding-left', 0.5 + 'rem')
+                            .style('padding-top', 0.5 + 'rem')
+                            .style('color', 'red')
+                            .style('font-size', 'x-small');
+                        isOk = false;
+                    }
+                    if (max > ranges[0]) {
+                        max = ranges[0];
+                        select$1('#errorFilter').text(`Max value is bigger than 
+                                    ${getMaxValue(dimension)}, filter is set to max.`)
+                            .style('display', 'block')
+                            .style('padding-left', 0.5 + 'rem')
+                            .style('padding-top', 0.5 + 'rem')
+                            .style('color', 'red')
+                            .style('font-size', 'x-small');
+                        isOk = false;
+                    }
                 }
-            }
-        }
-    });
-}
-function filterWithCoords(topPosition, bottomPosition, currentPosOfDims, dimension) {
-    addPosition(topPosition, currentPosOfDims, dimension, 'top');
-    addPosition(bottomPosition, currentPosOfDims, dimension, 'bottom');
-    const cleanDimensionName = cleanString(dimension);
-    let rectHeight = bottomPosition - topPosition;
-    select$1('#rect_' + cleanDimensionName)
-        .attr('y', topPosition);
-    select$1('#triangle_down_' + cleanDimensionName)
-        .attr('y', topPosition - 10);
-    select$1('#triangle_up_' + cleanDimensionName)
-        .attr('y', bottomPosition);
-    select$1('#rect_' + cleanDimensionName)
-        .attr('height', rectHeight);
-    const invertStatus = getInvertStatus(dimension, parcoords.currentPosOfDims);
-    const maxValue = invertStatus == false ? parcoords.yScales[dimension].domain()[1] :
-        parcoords.yScales[dimension].domain()[0];
-    const minValue = invertStatus == false ? parcoords.yScales[dimension].domain()[0] :
-        parcoords.yScales[dimension].domain()[1];
-    const range = maxValue - minValue;
-    let active = select$1('g.active').selectAll('path');
-    const emptyString = '';
-    active.each(function (d) {
-        const currentLine = getLineName(d);
-        const dimNameToCheck = select$1('.' + currentLine).text();
-        let value;
-        if (invertStatus) {
-            value = isNaN(maxValue) ? parcoords.yScales[dimension](d[dimension]) :
-                240 / range * (d[dimension] - minValue) + 80;
-        }
-        else {
-            value = isNaN(maxValue) ? parcoords.yScales[dimension](d[dimension]) :
-                240 / range * (maxValue - d[dimension]) + 80;
-        }
-        if (value < topPosition || value > bottomPosition) {
-            makeInactive(currentLine, dimension);
-        }
-        else if (dimNameToCheck == dimension && dimNameToCheck != emptyString) {
-            let checkedLines = [];
-            parcoords.currentPosOfDims.forEach(function (item) {
-                checkAllPositionsTop(item, dimension, parcoords, d, checkedLines, currentLine);
-                checkAllPositionsBottom(item, dimension, parcoords, d, checkedLines, currentLine);
-            });
-            if (!checkedLines.includes(currentLine)) {
-                makeActive(currentLine);
-            }
-        }
-    });
-}
-function getLineName(d) {
-    const keys = Object.keys(d);
-    const key = keys[0];
-    return cleanLinePathString(d[key]);
-}
-function addPosition(yPosTop, currentPosOfDims, dimensionName, key) {
-    let newObject = {};
-    newObject[key] = yPosTop;
-    const target = currentPosOfDims.find((obj) => obj.key == dimensionName);
-    Object.assign(target, newObject);
-}
-function setToolTipBrush(tooltipValues, d, event, parcoords, window, direction) {
-    const range = parcoords.yScales[d.name].domain();
-    const invertStatus = getInvertStatus(d.name, parcoords.currentPosOfDims);
-    const maxValue = invertStatus == false ? range[1] : range[0];
-    const minValue = invertStatus == false ? range[0] : range[1];
-    const scale = maxValue - minValue;
-    let tooltipValue;
-    if (invertStatus) {
-        tooltipValue = direction == true ? ((event.y - 70) / (240 / (scale)) + minValue) :
-            ((event.y - 80) / (240 / (scale)) + minValue);
-    }
-    else {
-        tooltipValue = direction == true ? maxValue - ((event.y - 70) / (240 / (scale))) :
-            maxValue - ((event.y - 80) / (240 / (scale)));
-    }
-    if (!invertStatus) {
-        if (tooltipValue > range[1]) {
-            tooltipValue = range[1];
-        }
-        if (tooltipValue < range[0]) {
-            tooltipValue = range[0];
-        }
-    }
-    else {
-        if (tooltipValue > range[0]) {
-            tooltipValue = range[0];
-        }
-        if (tooltipValue < range[1]) {
-            tooltipValue = range[1];
-        }
-    }
-    const digs = getSigDig(d.name, parcoords.currentPosOfDims);
-    tooltipValues.text(Math.round(tooltipValue.toPrecision(digs).toLocaleString('en-GB') * 10) / 10);
-    tooltipValues.style('visibility', 'visible');
-    tooltipValues.style('top', window.event.clientY / 16 + 'rem').style('left', window.event.clientX / 16 + 'rem');
-    tooltipValues.style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
-        .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
-        .style('padding', 0.12 + 'rem').style('white-space', 'pre-line')
-        .style('background-color', 'LightGray').style('margin-left', 0.5 + 'rem');
-}
-function setToolTipDragAndBrush(tooltipValuesTop, tooltipValuesDown, d, parcoords, window, direction, yPosTop, yPosBottom) {
-    const range = parcoords.yScales[d.name].domain();
-    const invertStatus = getInvertStatus(d.name, parcoords.currentPosOfDims);
-    const maxValue = invertStatus == false ? range[1] : range[0];
-    const minValue = invertStatus == false ? range[0] : range[1];
-    const scale = maxValue - minValue;
-    let tooltipValueTop;
-    let tooltipValueBottom;
-    if (invertStatus) {
-        tooltipValueTop = direction == true ? ((yPosTop - 70) / (240 / (scale)) + minValue) :
-            ((yPosTop - 80) / (240 / (scale)) + minValue);
-        tooltipValueBottom = direction == true ? ((yPosBottom - 80) / (240 / (scale)) + minValue) :
-            ((yPosBottom - 70) / (240 / (scale)) + minValue);
-    }
-    else {
-        tooltipValueTop = direction == true ? maxValue - ((yPosTop - 70) / (240 / (scale))) :
-            maxValue - ((yPosTop - 80) / (240 / (scale)));
-        tooltipValueBottom = direction == true ? maxValue - ((yPosBottom - 80) / (240 / (scale))) :
-            maxValue - ((yPosBottom - 70) / (240 / (scale)));
-    }
-    if ((!invertStatus && tooltipValueTop == maxValue) || (invertStatus && tooltipValueTop == minValue)) {
-        tooltipValuesTop.style('visibility', 'hidden');
-    }
-    else {
-        tooltipValuesTop.text(Math.round(tooltipValueTop));
-        tooltipValuesTop.style('visibility', 'visible');
-        tooltipValuesTop.style('top', (Number(yPosTop + 150) / 16) + 'rem').style('left', window.event.clientX / 16 + 'rem');
-        tooltipValuesTop.style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
-            .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
-            .style('padding', 0.12 + 'rem').style('white-space', 'pre-line')
-            .style('background-color', 'LightGray').style('margin-left', 0.5 + 'rem');
-    }
-    if ((!invertStatus && tooltipValueBottom == minValue) || (invertStatus && tooltipValueBottom == maxValue)) {
-        tooltipValuesDown.style('visibility', 'hidden');
-    }
-    else {
-        tooltipValuesDown.text(Math.round(tooltipValueBottom));
-        tooltipValuesDown.style('visibility', 'visible');
-        tooltipValuesDown.style('top', (Number(yPosBottom + 155) / 16) + 'rem').style('left', window.event.clientX / 16 + 'rem');
-        tooltipValuesDown.style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
-            .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
-            .style('padding', 0.12 + 'rem').style('white-space', 'pre-line')
-            .style('background-color', 'LightGray').style('margin-left', 0.5 + 'rem');
-    }
-}
-function updateLines(parcoords, active, dimensionName, cleanDimensionName) {
-    const rangeTop = Number(select$1('#triangle_down_' + cleanDimensionName).attr('y'));
-    const rangeBottom = Number(select$1('#triangle_up_' + cleanDimensionName).attr('y'));
-    const invertStatus = getInvertStatus(dimensionName, parcoords.currentPosOfDims);
-    const maxValue = invertStatus == false ? parcoords.yScales[dimensionName].domain()[1] :
-        parcoords.yScales[dimensionName].domain()[0];
-    const minValue = invertStatus == false ? parcoords.yScales[dimensionName].domain()[0] :
-        parcoords.yScales[dimensionName].domain()[1];
-    const range = maxValue - minValue;
-    active.each(function (d) {
-        let value;
-        if (invertStatus) {
-            value = isNaN(maxValue) ? parcoords.yScales[dimensionName](d[dimensionName]) :
-                240 / range * (d[dimensionName] - minValue) + 80;
-        }
-        else {
-            value = isNaN(maxValue) ? parcoords.yScales[dimensionName](d[dimensionName]) :
-                240 / range * (maxValue - d[dimensionName]) + 80;
-        }
-        const currentLine = getLineName(d);
-        const dimNameToCheck = select$1('.' + currentLine).text();
-        const emptyString = '';
-        if (value < rangeTop + 10 || value > rangeBottom) {
-            if (dimNameToCheck == emptyString) {
-                makeInactive(currentLine, dimensionName);
-                if (isSelected(currentLine)) {
-                    setUnselected(currentLine);
-                    selectionArray.push(currentLine);
+                else {
+                    if (min < ranges[0]) {
+                        min = ranges[0];
+                        select$1('#errorFilter').text(`Min value is smaller than 
+                                    ${getMinValue(dimension)}, filter is set to min.`)
+                            .style('display', 'block')
+                            .style('padding-left', 0.5 + 'rem')
+                            .style('padding-top', 0.5 + 'rem')
+                            .style('color', 'red')
+                            .style('font-size', 'x-small');
+                        isOk = false;
+                    }
+                    if (max > ranges[1]) {
+                        max = ranges[1];
+                        select$1('#errorFilter').text(`Max value is bigger than 
+                                    ${getMaxValue(dimension)}, filter is set to max.`)
+                            .style('display', 'block')
+                            .style('padding-left', 0.5 + 'rem')
+                            .style('padding-top', 0.5 + 'rem')
+                            .style('color', 'red')
+                            .style('font-size', 'x-small');
+                        isOk = false;
+                    }
                 }
-            }
-        }
-        else if (value == 320 && value == rangeTop + 10 && value == rangeBottom) {
-            if (dimNameToCheck == emptyString) {
-                makeInactive(currentLine, dimensionName);
-                if (isSelected(currentLine)) {
-                    setUnselected(currentLine);
-                    selectionArray.push(currentLine);
+                if (inverted) {
+                    setFilter(dimension, min, max);
                 }
-            }
-        }
-        else if (value == 80 && value == rangeTop + 10 && value == rangeBottom) {
-            if (dimNameToCheck == emptyString) {
-                makeInactive(currentLine, dimensionName);
-                if (isSelected(currentLine)) {
-                    setUnselected(currentLine);
-                    selectionArray.push(currentLine);
+                else {
+                    setFilter(dimension, max, min);
                 }
-            }
-        }
-        else if (dimNameToCheck == dimensionName && dimNameToCheck != emptyString) {
-            let checkedLines = [];
-            parcoords.currentPosOfDims.forEach(function (item) {
-                if (item.top != 80 || item.bottom != 320) {
-                    checkAllPositionsTop(item, dimensionName, parcoords, d, checkedLines, currentLine);
-                    checkAllPositionsBottom(item, dimensionName, parcoords, d, checkedLines, currentLine);
+                if (isOk) {
+                    select$1('#errorFilter').style('display', 'none');
+                    select$1('#modalFilter').style('display', 'none');
+                    select$1('#modalOverlayFilter').style('display', 'none');
                 }
             });
-            if (!checkedLines.includes(currentLine)) {
-                makeActive(currentLine);
-                const index = selectionArray.indexOf(currentLine);
-                if (index != -1) {
-                    setSelected(currentLine);
-                    selectionArray.splice(index, 1);
+            select$1('#maxFilterValue').on('keypress', (event) => {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    document.getElementById("buttonFilter").click();
                 }
+            });
+            select$1('#minFilterValue').on('keypress', (event) => {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    document.getElementById("buttonFilter").click();
+                }
+            });
+            select$1('#closeButtonFilter').on('click', () => {
+                select$1('#errorFilter').style('display', 'none');
+                select$1('#modalFilter').style('display', 'none');
+                select$1('#modalOverlayFilter').style('display', 'none');
+            });
+            event.stopPropagation();
+        });
+    }
+    else {
+        select$1('#filterMenu').style('display', 'false')
+            .style('color', 'lightgrey')
+            .style('border-top', '0.08rem lightgrey solid');
+    }
+}
+function resetRoundRangeMenu(values, dimension) {
+    if (!isNaN(values[0])) {
+        select$1('#resetRoundRangeMenu')
+            .style('visibility', 'visible')
+            .style('color', 'black')
+            .on('click', (event) => {
+            setDimensionRangeRounded(dimension, getMinValue(dimension), getMaxValue(dimension));
+            event.stopPropagation();
+        });
+    }
+    else {
+        select$1('#resetRoundRangeMenu')
+            .style('display', 'false')
+            .style('color', 'lightgrey');
+    }
+}
+function resetRangeMenu(values, dimension) {
+    if (!isNaN(values[0])) {
+        select$1('#resetRangeMenu')
+            .style('visibility', 'visible')
+            .style('color', 'black')
+            .on('click', (event) => {
+            setDimensionRange(dimension, getMinValue(dimension), getMaxValue(dimension));
+            event.stopPropagation();
+        });
+    }
+    else {
+        select$1('#resetRangeMenu').style('display', 'false')
+            .style('color', 'lightgrey');
+    }
+}
+function setRangeMenu(values, dimension) {
+    if (!isNaN(values[0])) {
+        select$1('#rangeMenu')
+            .style('border-top', '0.08rem lightgrey solid')
+            .style('visibility', 'visible')
+            .style('color', 'black')
+            .on('click', (event) => {
+            let minRange = getCurrentMinRange(dimension);
+            let maxRange = getCurrentMaxRange(dimension);
+            var resultMin = (minRange - Math.floor(minRange)) !== 0;
+            var resultMax = (maxRange - Math.floor(maxRange)) !== 0;
+            let minValue = String(minRange);
+            let maxValue = String(maxRange);
+            if (resultMin && !resultMax) {
+                const count = minValue.split('.')[1].length;
+                maxValue = maxRange.toFixed(count);
             }
-        }
-        else ;
+            else if (!resultMin && resultMax) {
+                const count = maxValue.split('.')[1].length;
+                minValue = minRange.toFixed(count);
+            }
+            select$1('#minRangeValue').property('value', minValue);
+            select$1('#maxRangeValue').property('value', maxValue);
+            select$1('#contextmenu').style('display', 'none');
+            select$1('#modalOverlaySetRange').style('display', 'block');
+            select$1('#modalSetRange').style('display', 'block');
+            const newText = dimension.length > 25 ? dimension.substr(0, 25) + '...' : dimension;
+            select$1('#headerDimensionRange').text(newText);
+            select$1('#infoRange').text('The current range of ' + dimension + ' is between ' +
+                minValue + ' and ' +
+                maxValue + '.');
+            select$1('#infoRange2').text('The original range of ' + dimension + ' is between ' +
+                getMinValue(dimension) + ' and ' +
+                getMaxValue(dimension) + '.');
+            select$1('#buttonRange').on('click', () => {
+                let min = select$1('#minRangeValue').node().value;
+                let max = select$1('#maxRangeValue').node().value;
+                const inverted = isInverted(dimension);
+                let isOk = true;
+                if (inverted) {
+                    if (max < getMinValue(dimension) ||
+                        min > getMaxValue(dimension)) {
+                        select$1('#errorRange').text(`The range has to be bigger than 
+                                ${minValue} and 
+                                ${maxValue}.`)
+                            .style('display', 'block')
+                            .style('padding-left', 0.5 + 'rem')
+                            .style('padding-top', 0.5 + 'rem')
+                            .style('color', 'red')
+                            .style('font-size', 'x-small');
+                        isOk = false;
+                    }
+                }
+                else {
+                    if (min > getMinValue(dimension) ||
+                        max < getMaxValue(dimension)) {
+                        select$1('#errorRange').text(`The range has to be bigger than 
+                                ${minValue} and 
+                                ${maxValue}.`)
+                            .style('display', 'block')
+                            .style('padding-left', 0.5 + 'rem')
+                            .style('padding-top', 0.5 + 'rem')
+                            .style('color', 'red')
+                            .style('font-size', 'x-small');
+                        isOk = false;
+                    }
+                }
+                if (isOk) {
+                    select$1('#errorRange').style('display', 'none');
+                    setDimensionRange(dimension, min, max);
+                    select$1('#modalSetRange').style('display', 'none');
+                    select$1('#modalOverlaySetRange').style('display', 'none');
+                }
+            });
+            select$1('#maxRangeValue').on('keypress', (event) => {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    document.getElementById("buttonRange").click();
+                }
+            });
+            select$1('#minRangeValue').on('keypress', (event) => {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    document.getElementById("buttonRange").click();
+                }
+            });
+            select$1('#closeButtonRange').on('click', () => {
+                select$1('#modalSetRange').style('display', 'none');
+                select$1('#modalOverlaySetRange').style('display', 'none');
+            });
+            event.stopPropagation();
+        });
+    }
+    else {
+        select$1('#rangeMenu').style('display', 'false')
+            .style('color', 'lightgrey')
+            .style('border-top', '0.08rem lightgrey solid');
+    }
+}
+function invertDimensionMenu(dimension) {
+    select$1('#invertMenu')
+        .on('click', (event) => {
+        invert(dimension);
+        event.stopPropagation();
     });
 }
-function checkAllPositionsTop(positionItem, dimensionName, parcoords, d, checkedLines, currentLine) {
-    if (positionItem.key != dimensionName && positionItem.top != 70) {
-        const invertStatus = getInvertStatus(positionItem.key, parcoords.currentPosOfDims);
-        const maxValue = invertStatus == false ? parcoords.yScales[positionItem.key].domain()[1] :
-            parcoords.yScales[positionItem.key].domain()[0];
-        const minValue = invertStatus == false ? parcoords.yScales[positionItem.key].domain()[0] :
-            parcoords.yScales[positionItem.key].domain()[1];
-        const scale = maxValue - minValue;
-        let value;
-        if (!isNaN(maxValue)) {
-            value = invertStatus == false ? 240 / scale * (maxValue - d[positionItem.key]) + 80 :
-                240 / scale * (d[positionItem.key] - minValue) + 80;
-        }
-        else {
-            value = parcoords.yScales[positionItem.key](d[positionItem.key]);
-        }
-        if (value < positionItem.top) {
-            checkedLines.push(currentLine);
-            select$1('.' + currentLine).text(positionItem.key);
-        }
+function hideDimensionMenu(dimension) {
+    select$1('#hideMenu')
+        .on('click', (event) => {
+        hide(dimension);
+        event.stopPropagation();
+    });
+}
+function styleContextMenu(event) {
+    select$1('#contextmenu')
+        .style('left', event.clientX / 16 + 'rem')
+        .style('top', 13.6 + 'rem')
+        .style('display', 'block')
+        .style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
+        .style('border-radius', 0.3 + 'rem').style('margin', 0.5 + 'rem')
+        .style('padding', 0.35 + 'rem')
+        .style('background-color', 'white').style('margin-left', 0.5 + 'rem')
+        .style('cursor', 'pointer').style('minWidth', 15 + 'rem')
+        .on('click', (event) => {
+        event.stopPropagation();
+    });
+    selectAll('.contextmenu').style('padding', 0.35 + 'rem');
+}
+function setCursorForDimensions(d, featureAxis, parcoords, event) {
+    if (getDimensionPosition(d.name) == 0) {
+        featureAxis
+            .select('.dimension')
+            .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowRight()), 12)}') 8 8, auto`);
+    }
+    else if (getDimensionPosition(d.name) == parcoords.newFeatures.length - 1) {
+        featureAxis
+            .select('.dimension')
+            .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowLeft()), 12)}') 8 8, auto`);
+    }
+    else {
+        featureAxis
+            .select('.dimension')
+            .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowLeftAndRight()), 12)}') 8 8, auto`);
     }
 }
-function checkAllPositionsBottom(positionItem, dimensionName, parcoords, d, checkedLines, currentLine) {
-    if (positionItem.key != dimensionName && positionItem.bottom != 320) {
-        const invertStatus = getInvertStatus(positionItem.key, parcoords.currentPosOfDims);
-        const maxValue = invertStatus == false ? parcoords.yScales[positionItem.key].domain()[1] :
-            parcoords.yScales[positionItem.key].domain()[0];
-        const minValue = invertStatus == false ? parcoords.yScales[positionItem.key].domain()[0] :
-            parcoords.yScales[positionItem.key].domain()[1];
-        const scale = maxValue - minValue;
-        let value;
-        if (!isNaN(maxValue)) {
-            value = invertStatus == false ? 240 / scale * (maxValue - d[positionItem.key]) + 80 :
-                240 / scale * (d[positionItem.key] - minValue) + 80;
-        }
-        else {
-            value = parcoords.yScales[positionItem.key](d[positionItem.key]);
-        }
-        if (value >= positionItem.bottom) {
-            checkedLines.push(currentLine);
-            select$1('.' + currentLine).text(positionItem.key);
-        }
+function onDragStartEventHandler(parcoords) {
+    {
+        return function onDragStart(d) {
+            this.__origin__ = parcoords.xScales((d.subject).name);
+            parcoords.dragging[(d.subject).name] = this.__origin__;
+            parcoords.dragPosStart[(d.subject).name] = this.__origin__;
+            const element = document.getElementById("parallelcoords");
+            scrollXPos = element.scrollLeft;
+        };
     }
 }
-function makeActive(currentLineName) {
-    select$1('.' + currentLineName).style('opacity', '0.7')
-        .style('pointer-events', 'stroke')
+function onDragEventHandler(parcoords, featureAxis, active, width) {
+    {
+        return function onDrag(d) {
+            if (timer !== null) {
+                clearInterval(timer);
+                timer = null;
+            }
+            timer = setInterval(() => { scroll(parcoords, d); });
+            parcoords.dragging[(d.subject).name] = Math.min(width - paddingXaxis, Math.max(paddingXaxis, this.__origin__ += d.x));
+            active.each(function (d) {
+                select$1(this)
+                    .attr('d', linePath(d, parcoords.newFeatures, parcoords));
+            });
+            parcoords.newFeatures.sort((a, b) => {
+                return position(b, parcoords.dragging, parcoords.xScales)
+                    - position(a, parcoords.dragging, parcoords.xScales) - 1;
+            });
+            parcoords.xScales.domain(parcoords.newFeatures);
+            featureAxis.attr('transform', (d) => {
+                return 'translate(' + position(d.name, parcoords.dragging, parcoords.xScales) + ')';
+            });
+        };
+    }
+}
+function onDragEndEventHandler(parcoords, featureAxis, active) {
+    {
+        return function onDragEnd(d) {
+            const width = parcoords.width;
+            const distance = (width - 80) / parcoords.newFeatures.length;
+            const init = parcoords.dragPosStart[(d.subject).name];
+            if (parcoords.dragPosStart[(d.subject).name] > parcoords.dragging[(d.subject).name]) {
+                featureAxis.attr('transform', (d) => {
+                    return 'translate(' + position(d.name, init - distance, parcoords.xScales) + ')';
+                });
+            }
+            else {
+                featureAxis.attr('transform', (d) => {
+                    return 'translate(' + position(d.name, init + distance, parcoords.xScales) + ')';
+                });
+            }
+            delete this.__origin__;
+            delete parcoords.dragging[(d.subject).name];
+            delete parcoords.dragPosStart[(d.subject).name];
+            trans(active).each(function (d) {
+                select$1(this)
+                    .attr('d', linePath(d, parcoords.newFeatures, parcoords));
+            });
+        };
+    }
+}
+function scroll(parcoords, d) {
+    const element = document.getElementById("parallelcoords");
+    if (parcoords.dragPosStart[(d.subject).name] < parcoords.dragging[(d.subject).name]) {
+        element.scrollLeft += 5;
+    }
+    else if (scrollXPos + 20 > parcoords.dragging[(d.subject).name]) {
+        element.scrollLeft -= 5;
+    }
+}
+function createContextMenu() {
+    let contextMenu = select$1('#parallelcoords')
+        .append('g')
+        .attr('id', 'contextmenu')
+        .style('position', 'absolute')
+        .style('display', 'none');
+    contextMenu.append('div')
+        .attr('id', 'hideMenu')
+        .attr('class', 'contextmenu')
+        .text('Hide');
+    contextMenu.append('div')
+        .attr('id', 'invertMenu')
+        .attr('class', 'contextmenu')
+        .text('Invert');
+    contextMenu.append('div')
+        .attr('id', 'rangeMenu')
+        .attr('class', 'contextmenu')
+        .text('Set Range...');
+    contextMenu.append('div')
+        .attr('id', 'resetRangeMenu')
+        .attr('class', 'contextmenu')
+        .text('Set Range from Data');
+    contextMenu.append('div')
+        .attr('id', 'resetRoundRangeMenu')
+        .attr('class', 'contextmenu')
+        .text('Set Rounded Range from Data');
+    contextMenu.append('div')
+        .attr('id', 'filterMenu')
+        .attr('class', 'contextmenu')
+        .text('Set Filter...');
+    contextMenu.append('div')
+        .attr('id', 'resetfilterMenu')
+        .attr('class', 'contextmenu')
+        .text('Reset Filter');
+    contextMenu.append('div')
+        .attr('id', 'showAllMenu')
+        .attr('class', 'contextmenu')
+        .text('Show All');
+}
+function createModalToSetRange() {
+    select$1('#parallelcoords')
+        .append('div')
+        .attr('id', 'modalOverlaySetRange')
+        .style('position', 'fixed')
+        .style('top', '0')
+        .style('left', '0')
+        .style('width', '100vw')
+        .style('height', '100vh')
+        .style('background-color', 'rgba(0, 0, 0, 0.5)')
+        .style('display', 'none')
+        .style('z-index', '999');
+    select$1('#modalOverlaySetRange').on('click', () => {
+        select$1('#modalSetRange').style('display', 'none');
+        select$1('#modalOverlaySetRange').style('display', 'none');
+    });
+    const modalSetRange = select$1('#parallelcoords')
+        .append('div')
+        .attr('id', 'modalSetRange')
+        .style('position', 'fixed')
+        .style('top', '50%')
+        .style('left', '50%')
+        .style('transform', 'translate(-50%, -50%)')
+        .style('z-index', '1000')
+        .style('background-color', 'white')
+        .style('padding', '1rem')
+        .style('border-radius', '0.5rem')
+        .style('box-shadow', '0 0.25rem 0.625rem rgba(0,0,0,0.2)')
+        .style('display', 'none');
+    createModalTitle(modalSetRange, 'Set Range for ');
+    createCloseButton(modalSetRange, 'closeButtonRange');
+    createHeader(modalSetRange, 'headerDimensionRange');
+    createInfoMessage(modalSetRange, 'infoRange');
+    createInfoMessage(modalSetRange, 'infoRange2');
+    createInputFieldWithLabel(modalSetRange, 'Min', 'minRangeValue');
+    createInputFieldWithLabel(modalSetRange, 'Max', 'maxRangeValue');
+    createButton(modalSetRange, 'buttonRange');
+    createErrorMessage(modalSetRange, 'errorRange');
+}
+function createModalToFilter() {
+    select$1('#parallelcoords')
+        .append('div')
+        .attr('id', 'modalOverlayFilter')
+        .style('position', 'fixed')
+        .style('top', '0')
+        .style('left', '0')
+        .style('width', '100vw')
+        .style('height', '100vh')
+        .style('background-color', 'rgba(0, 0, 0, 0.5)')
+        .style('display', 'none')
+        .style('z-index', '999');
+    select$1('#modalOverlayFilter').on('click', () => {
+        select$1('#modalFilter').style('display', 'none');
+        select$1('#modalOverlayFilter').style('display', 'none');
+    });
+    const modalFilter = select$1('#parallelcoords')
+        .append('div')
+        .attr('id', 'modalFilter')
+        .style('position', 'fixed')
+        .style('top', '50%')
+        .style('left', '50%')
+        .style('transform', 'translate(-50%, -50%)')
+        .style('z-index', '1000')
+        .style('background-color', 'white')
+        .style('padding', '1rem')
+        .style('border-radius', '0.5rem')
+        .style('box-shadow', '0 0.25rem 0.625rem rgba(0,0,0,0.2)')
+        .style('display', 'none');
+    createModalTitle(modalFilter, 'Set Filter for ');
+    createCloseButton(modalFilter, 'closeButtonFilter');
+    createHeader(modalFilter, 'headerDimensionFilter');
+    createInputFieldWithLabel(modalFilter, 'Min', 'minFilterValue');
+    createInputFieldWithLabel(modalFilter, 'Max', 'maxFilterValue');
+    createButton(modalFilter, 'buttonFilter');
+    createErrorMessage(modalFilter, 'errorFilter');
+}
+function createModalTitle(modal, modalTitel) {
+    const title = document.createElement('div');
+    title.textContent = modalTitel;
+    title.style.paddingLeft = '0.5rem';
+    title.style.fontSize = 'large';
+    modal.append(() => title);
+}
+function createHeader(modal, id) {
+    const header = document.createElement('div');
+    header.id = id;
+    header.style.paddingLeft = '0.5rem';
+    header.style.fontSize = 'large';
+    modal.append(() => header);
+}
+function createInfoMessage(modal, id) {
+    const infoMessage = document.createElement('div');
+    infoMessage.id = id;
+    infoMessage.style.color = 'grey';
+    infoMessage.style.fontSize = 'smaller';
+    infoMessage.style.paddingLeft = '0.5rem';
+    infoMessage.style.paddingBottom = '0.5rem';
+    infoMessage.style.paddingTop = '1rem';
+    modal.append(() => infoMessage);
+}
+function createInputFieldWithLabel(modal, text, inputId) {
+    const label = document.createElement('label');
+    label.textContent = text;
+    label.style.padding = '0.5rem';
+    modal.append(() => label);
+    const input = document.createElement('input');
+    input.id = inputId;
+    input.style.width = '2.5rem';
+    modal.append(() => input);
+}
+function createButton(modal, id) {
+    const button = document.createElement('button');
+    button.id = id;
+    button.textContent = 'Save';
+    button.style.marginLeft = '0.5rem';
+    button.style.marginTop = '1rem';
+    button.style.width = '6.2rem';
+    modal.append(() => button);
+}
+function createCloseButton(modal, id) {
+    const closeButton = document.createElement('span');
+    closeButton.id = id;
+    closeButton.innerHTML = '&times;';
+    closeButton.style.position = 'absolute';
+    closeButton.style.top = '0.625rem';
+    closeButton.style.right = '0.938rem';
+    closeButton.style.cursor = 'pointer';
+    closeButton.style.fontWeight = 'bold';
+    closeButton.style.fontSize = '1.25rem';
+    modal.append(() => closeButton);
+}
+function createErrorMessage(modal, id) {
+    const errorMessage = document.createElement('div');
+    errorMessage.id = id;
+    errorMessage.style.position = 'absolute';
+    errorMessage.style.display = 'none';
+    modal.append(() => errorMessage);
+}
+
+format(".4f");
+function setActivePathLinesToDownload(svg, parcoords, key) {
+    svg.append('g')
+        .attr('class', 'active')
+        .style('opacity', '0.5')
         .style('stroke', 'rgb(0, 129, 175)')
         .style('stroke-width', '0.1rem')
         .style('fill', 'none')
-        .text('');
+        .selectAll('path')
+        .data(parcoords.data)
+        .enter()
+        .append('path')
+        .attr('id', (d) => {
+        return d[key];
+    })
+        .each(function (d) {
+        let element = d[key].length > 10 ? d[key].substr(0, 10) + '...' : d[key];
+        d[key] = element;
+        select$1(this)
+            .attr('d', linePath(d, parcoords.newFeatures, parcoords));
+    });
+    const records = getAllRecords();
+    records.forEach(element => {
+        const isSelected$1 = isSelected(element);
+        if (isSelected$1) {
+            svg.select('#' + element)
+                .style('stroke', 'rgb(255, 165, 0)')
+                .style('opacity', '1');
+        }
+        const dimNameToCheck = select$1('.' + element).text();
+        if (dimNameToCheck != '') {
+            svg.select('#' + element)
+                .style('stroke', 'lightgrey')
+                .style('stroke-opacity', '0.4');
+        }
+    });
 }
-function makeInactive(currentLineName, dimensionName) {
-    select$1('.' + currentLineName).style('pointer-events', 'none')
-        .style('fill', 'none')
-        .style('stroke', 'lightgrey')
-        .style('stroke-opacity', '0.4')
-        .text(dimensionName);
+function setFeatureAxisToDownload(svg, yAxis, yScales, parcoords, padding) {
+    let featureAxis = svg.selectAll('g.feature')
+        .data(parcoords.features)
+        .enter()
+        .append('g')
+        .attr('transform', d => ('translate(' + parcoords.xScales(d.name)) + ')');
+    featureAxis
+        .append('g')
+        .each(function (d) {
+        const processedDimensionName = cleanString(d.name);
+        const ranges = getDimensionRange(processedDimensionName);
+        if (!isDimensionCategorical(processedDimensionName)) {
+            const status = getInversionStatus(processedDimensionName);
+            if (status == 'ascending') {
+                yScales[processedDimensionName].domain([ranges[0], ranges[1]]);
+                yAxis = setupYAxis(parcoords.features, yScales, parcoords.newDataset);
+                select$1(this)
+                    .attr('id', 'dimension_axis_' + processedDimensionName)
+                    .call(yAxis[processedDimensionName]
+                    .scale(yScales[processedDimensionName]
+                    .domain(yScales[processedDimensionName]
+                    .domain())));
+            }
+            else {
+                yScales[processedDimensionName].domain([ranges[1], ranges[0]]);
+                yAxis = setupYAxis(parcoords.features, yScales, parcoords.newDataset);
+                select$1(this)
+                    .attr('id', 'dimension_axis_' + processedDimensionName)
+                    .call(yAxis[processedDimensionName]
+                    .scale(yScales[processedDimensionName]
+                    .domain(yScales[processedDimensionName]
+                    .domain().reverse())));
+            }
+        }
+        else {
+            select$1(this)
+                .attr('id', 'dimension_axis_' + processedDimensionName)
+                .call(yAxis[processedDimensionName]);
+        }
+    });
+    featureAxis
+        .append('text')
+        .attr('text-anchor', 'middle')
+        .attr('y', (padding / 1.7).toFixed(4))
+        .text(d => d.name.length > 10 ? d.name.substr(0, 10) + '...' : d.name)
+        .style('font-size', '0.7rem');
+    setBrushDownToDownload(featureAxis, parcoords);
+    setBrushUpToDownload(featureAxis, parcoords);
+    setRectToDragToDownload(featureAxis, parcoords);
+    setInvertIconToDownload(featureAxis, padding);
 }
-function addSettingsForBrushing(dimensionName, parcoords) {
-    const processedDimensionName = cleanString(dimensionName);
-    const rectHeight = Number(select$1('#rect_' + processedDimensionName).node().getBoundingClientRect().height);
-    const yPosRectTop = Number(select$1('#rect_' + processedDimensionName).attr('y'));
-    const yPosRectBottom = yPosRectTop + rectHeight;
-    if (yPosRectTop > 80 && yPosRectBottom < 320) {
-        const distanceBottom = 320 - select$1('#triangle_up_' + processedDimensionName).attr('y');
-        select$1('#rect_' + processedDimensionName).attr('y', 80 + distanceBottom);
-        select$1('#triangle_down_' + processedDimensionName).attr('y', 80 + distanceBottom);
-        select$1('#triangle_up_' + processedDimensionName).attr('y', 80 + distanceBottom + rectHeight);
-        addPosition(80 + distanceBottom, parcoords.currentPosOfDims, dimensionName, 'top');
-        addPosition(80 + distanceBottom + rectHeight, parcoords.currentPosOfDims, dimensionName, 'bottom');
-    }
-    else if (yPosRectTop > 80 && yPosRectBottom >= 320) {
-        select$1('#rect_' + processedDimensionName).attr('y', 80);
-        select$1('#rect_' + processedDimensionName).attr('height', 240 - (yPosRectTop - 80));
-        select$1('#triangle_down_' + processedDimensionName).attr('y', 80);
-        select$1('#triangle_up_' + processedDimensionName).attr('y', 320 - (yPosRectTop - 80));
-        addPosition(80, parcoords.currentPosOfDims, dimensionName, 'top');
-        addPosition(320 - (yPosRectTop - 80), parcoords.currentPosOfDims, dimensionName, 'bottom');
-    }
-    else if (yPosRectTop <= 80 && yPosRectBottom < 320) {
-        select$1('#rect_' + processedDimensionName).attr('y', 320 - rectHeight);
-        select$1('#rect_' + processedDimensionName).attr('height', 240 - (320 - yPosRectBottom));
-        select$1('#triangle_down_' + processedDimensionName).attr('y', 80 + (320 - yPosRectBottom) - 10);
-        select$1('#triangle_up_' + processedDimensionName).attr('y', 320);
-        addPosition(80 + (320 - yPosRectBottom) - 10, parcoords.currentPosOfDims, dimensionName, 'top');
-        addPosition(320, parcoords.currentPosOfDims, dimensionName, 'bottom');
-    }
+function setBrushDownToDownload(featureAxis, parcoords) {
+    featureAxis
+        .each(function (d) {
+        const processedDimensionName = cleanString(d.name);
+        const item = parcoords.currentPosOfDims.find((object) => object.key == processedDimensionName);
+        select$1(this)
+            .append('g')
+            .append('use')
+            .attr('id', 'triangle_down_' + processedDimensionName)
+            .attr('y', item.top == 80 ? 70 : item.top)
+            .attr('x', -6)
+            .attr('width', 14)
+            .attr('height', 10)
+            .attr('href', '#brush_image_bottom');
+    });
 }
-function getInvertStatus(key, currentPosOfDims) {
-    const item = currentPosOfDims.find((object) => object.key == key);
-    return item.isInverted;
+function setBrushUpToDownload(featureAxis, parcoords) {
+    featureAxis
+        .each(function (d) {
+        const processedDimensionName = cleanString(d.name);
+        const item = parcoords.currentPosOfDims.find((object) => object.key == processedDimensionName);
+        select$1(this)
+            .append('g')
+            .append('use')
+            .attr('id', 'triangle_up_' + processedDimensionName)
+            .attr('y', item.top != 80 && item.bottom != 320 ? item.bottom + 10 : item.bottom)
+            .attr('x', -6)
+            .attr('width', 14)
+            .attr('height', 10)
+            .attr('href', '#brush_image_top');
+    });
 }
-function getSigDig(key, currentPosOfDims) {
-    const item = currentPosOfDims.find((object) => object.key == key);
-    return item.sigDig;
+function setRectToDragToDownload(featureAxis, parcoords) {
+    featureAxis
+        .each(function (d) {
+        const processedDimensionName = cleanString(d.name);
+        const item = parcoords.currentPosOfDims.find((object) => object.key == processedDimensionName);
+        let height = item.bottom - item.top;
+        if (item.top != 80 && item.bottom == 320)
+            height = height - 10;
+        select$1(this)
+            .append('g')
+            .append('rect')
+            .attr('id', 'rect_' + processedDimensionName)
+            .attr('width', 12)
+            .attr('height', height)
+            .attr('x', -6)
+            .attr('y', item.top != 80 && item.bottom != 320 || item.top != 80 ? item.top + 10 : item.top)
+            .attr('fill', 'rgb(255, 255, 0)')
+            .attr('opacity', '0.4');
+    });
 }
-function addInvertStatus(status, currentPosOfDims, dimensionName, key) {
-    let newObject = {};
-    newObject[key] = status;
-    const target = currentPosOfDims.find((obj) => obj.key == dimensionName);
-    Object.assign(target, newObject);
+function setInvertIconToDownload(featureAxis, padding) {
+    let value = (padding / 1.5).toFixed(4);
+    featureAxis
+        .append('svg')
+        .attr('y', value)
+        .attr('x', -6)
+        .append('use')
+        .attr('width', 12)
+        .attr('height', 12)
+        .attr('y', 0)
+        .attr('x', 0)
+        .each(function (d) {
+        const processedDimensionName = cleanString(d.name);
+        if (getInversionStatus(processedDimensionName) == 'descending') {
+            select$1(this)
+                .attr('href', '#arrow_image_down');
+        }
+        else {
+            select$1(this)
+                .attr('href', '#arrow_image_up');
+        }
+    });
 }
-const delay$1 = 50;
-const throttleBrushDown = throttle(brushDown, delay$1);
-const throttleBrushUp = throttle(brushUp, delay$1);
-const throttleDragAndBrush = throttle(dragAndBrush, delay$1);
 
 //******** API ********//
 //---------- Show and Hide Functions ----------
@@ -7015,7 +8025,6 @@ function show(dimension) {
         window.parcoords.currentPosOfDims.forEach(function (item) {
             if (getHiddenStatus(item.key) != 'hidden') {
                 if (item.isInverted) {
-                    console.log(item.key);
                     invertWoTransition(item.key);
                 }
                 if (item.top != 80 || item.bottom != 320) {
@@ -7195,12 +8204,6 @@ function setInversionStatus(dimension, status) {
     else {
         addInvertStatus(false, parcoords.currentPosOfDims, dimension, "isInverted");
     }
-}
-function isInverted(dimension) {
-    const invertId = '#dimension_invert_' + cleanString(dimension);
-    const element = select$1(invertId);
-    const arrowStatus = element.text();
-    return arrowStatus == 'down' ? true : false;
 }
 //---------- Move Functions ----------
 function moveByOne(dimension, direction) {
@@ -7539,26 +8542,20 @@ function setUnselectedWithId(recordId) {
 //---------- IO Functions ----------
 function drawChart(content) {
     let ids = [];
+    window.refreshData = structuredClone(content);
     deleteChart();
     let newFeatures = content['columns'].reverse();
     setUpParcoordData(content, newFeatures);
     const height = 360;
-    /*window.svg = d3.select('#parallelcoords')
-        .append('button')
-        .text("Refresh")
-
-    window.svg = d3.select('#parallelcoords')
-        .append('button')
-        .text('Selection Tool');*/
     window.svg = select$1('#parallelcoords')
         .append('svg')
         .attr('id', 'pc_svg')
         .attr('viewBox', [-10, 0, window.width, height])
-        .attr('font-family', 'Verdana, sans-serif');
+        .attr('font-family', 'Verdana, sans-serif')
+        .attr('user-select', 'none');
     setDefsForIcons();
     window.active = setActivePathLines(svg, content, ids, window.parcoords);
     setFeatureAxis(svg, yAxis, window.active, window.parcoords, width, window.padding);
-    selectionWithRectangle();
     window.svg
         .on('click', (event) => {
         if (!(event.shiftKey) && !(event.ctrlKey) && !(event.metaKey)) {
@@ -7589,32 +8586,207 @@ function drawChart(content) {
     window.onclick = (event) => {
         select$1('#contextmenu').style('display', 'none');
         select$1('#contextmenuRecords').style('display', 'none');
-        if (!event.target.id.includes('Filter')) {
-            select$1('#popupFilter').style('display', 'none');
-        }
-        if (!event.target.id.includes('Range')) {
-            select$1('#popupRange').style('display', 'none');
-        }
     };
+    const toolbar = document.createElement('div');
+    toolbar.id = 'toolbar';
+    toolbar.style.display = 'flex';
+    toolbar.style.gap = '0.3rem';
+    toolbar.style.marginTop = '1rem';
+    toolbar.style.marginLeft = '2rem';
+    toolbar.style.alignItems = 'center';
+    const selectionToolButton = document.createElement('button');
+    selectionToolButton.id = 'selectionTool';
+    selectionToolButton.innerHTML = getSelectionIcon();
+    selectionToolButton.addEventListener('click', function () {
+        isSelectionMode = !isSelectionMode;
+        selectionWithRectangle(isSelectionMode);
+        this.innerHTML = isSelectionMode ? getSelectionActiveIcon() : getSelectionIcon();
+    });
+    const showDataButton = document.createElement('button');
+    showDataButton.id = 'showData';
+    showDataButton.innerHTML = getTableIcon();
+    showDataButton.addEventListener('click', showModalWithData);
+    const refreshButton = document.createElement('button');
+    refreshButton.id = 'refreshButton';
+    refreshButton.innerHTML = getRefreshIcon();
+    refreshButton.addEventListener('click', refresh);
+    toolbar.appendChild(selectionToolButton);
+    toolbar.appendChild(showDataButton);
+    toolbar.appendChild(refreshButton);
+    const parent = select$1('#parallelcoords').node().parentNode;
+    parent.insertBefore(toolbar, document.getElementById('parallelcoords'));
+}
+function showModalWithData() {
+    const overlay = select$1('#parallelcoords')
+        .append('div')
+        .attr('id', 'modalOverlay')
+        .style('position', 'fixed')
+        .style('top', 0)
+        .style('left', 0)
+        .style('width', '100vw')
+        .style('height', '100vh')
+        .style('background-color', 'rgba(0, 0, 0, 0.5)')
+        .style('z-index', '999')
+        .style('display', 'block');
+    overlay.on('click', () => {
+        overlay.style('display', 'none');
+        modal.style('display', 'none');
+    });
+    const modal = select$1('#parallelcoords')
+        .append('div')
+        .attr('id', 'dataModal')
+        .style('top', '50%')
+        .style('left', '50%')
+        .style('transform', 'translate(-50%, -50%)')
+        .style('position', 'fixed')
+        .style('background', 'white')
+        .style('padding', '1rem')
+        .style('box-shadow', '0 0 0.625rem rgba(0, 0, 0, 0.3)')
+        .style('border', '0.08rem solid gray')
+        .style('border-radius', '0.5rem')
+        .style('max-height', '80vh')
+        .style('max-width', '90vw')
+        .style('overflow', 'auto')
+        .style('z-index', '1000')
+        .style('display', 'block');
+    const saveAsCSV = document.createElement('button');
+    saveAsCSV.id = 'saveAsCsv';
+    saveAsCSV.textContent = 'Save as CSV';
+    saveAsCSV.style.marginBottom = '3rem';
+    modal.append(() => saveAsCSV);
+    saveAsCSV.addEventListener('click', () => {
+        const reservedArray = window.parcoords.newDataset.map(entry => {
+            const entries = Object.entries(entry).reverse();
+            return Object.fromEntries(entries);
+        });
+        downloadCSV(reservedArray);
+    });
+    const closeButton = document.createElement('span');
+    closeButton.innerHTML = '&times;';
+    closeButton.style.position = 'absolute';
+    closeButton.style.top = '0.625rem';
+    closeButton.style.right = '0.938rem';
+    closeButton.style.cursor = 'pointer';
+    closeButton.style.fontWeight = 'bold';
+    closeButton.style.fontSize = '1.25rem';
+    closeButton.style.marginBottom = '3rem';
+    modal.append(() => closeButton);
+    const scrollWrapper = document.createElement('div');
+    scrollWrapper.style.width = '100%';
+    scrollWrapper.style.overflowX = 'auto';
+    scrollWrapper.style.whiteSpace = 'nowrap';
+    scrollWrapper.style.maxHeight = '79vh';
+    const tableContainer = document.createElement('table');
+    tableContainer.style.width = '100%';
+    tableContainer.style.borderCollapse = 'collapse';
+    scrollWrapper.appendChild(tableContainer);
+    modal.append(() => scrollWrapper);
+    generateTable(window.parcoords.newDataset, tableContainer);
+    closeButton.addEventListener('click', () => {
+        modal.style('display', 'none');
+        overlay.style('display', 'none');
+    });
+}
+function generateTable(dataArray, table) {
+    table.innerHTML = '';
+    table.style.borderCollapse = 'collapse';
+    table.style.width = '100%';
+    const reservedArray = dataArray.map(entry => {
+        const entries = Object.entries(entry).reverse();
+        return Object.fromEntries(entries);
+    });
+    const headers = Object.keys(reservedArray[0]);
+    const thead = document.createElement('thead');
+    const headRow = document.createElement('tr');
+    headers.forEach(header => {
+        const th = document.createElement('th');
+        th.innerText = header.charAt(0).toUpperCase() + header.slice(1);
+        th.style.border = '0.063rem solid #ddd';
+        th.style.padding = '0.5rem';
+        th.style.backgroundColor = 'rgb(232, 232, 158)';
+        th.style.position = 'sticky';
+        th.style.top = '0';
+        th.style.zIndex = '1';
+        th.style.textAlign = 'left';
+        headRow.appendChild(th);
+    });
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+    const tbody = document.createElement('tbody');
+    reservedArray.forEach(obj => {
+        const row = document.createElement('tr');
+        headers.forEach(key => {
+            const td = document.createElement('td');
+            const value = obj[key];
+            td.innerText = value;
+            td.style.border = '0.063rem solid #ddd';
+            td.style.padding = '0.5rem';
+            if (!isNaN(parseFloat(value)) && isFinite(value)) {
+                td.style.textAlign = 'right';
+            }
+            else {
+                td.style.textAlign = 'left';
+            }
+            row.appendChild(td);
+        });
+        tbody.appendChild(row);
+    });
+    table.appendChild(tbody);
+}
+function downloadCSV(dataArray, filename = 'data.csv') {
+    if (!dataArray || !dataArray.length)
+        return;
+    const keys = Object.keys(dataArray[0]);
+    const csvRows = [];
+    csvRows.push(keys.join(','));
+    dataArray.forEach(row => {
+        const values = keys.map(k => {
+            const value = row[k];
+            return typeof value === 'string' && value.includes(',')
+                ? `"${value}"`
+                : value;
+        });
+        csvRows.push(values.join(','));
+    });
+    const csvContent = csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+function refresh() {
+    drawChart(window.refreshData);
 }
 function deleteChart() {
     select$1('#pc_svg').remove();
     select$1('#contextmenu').remove();
     select$1('#contextmenuRecords').remove();
-    select$1('#popupFilter').remove();
-    select$1('#popupRange').remove();
+    select$1('#modalFilter').remove();
+    select$1('#modalRange').remove();
+    select$1('#refreshButton').remove();
+    select$1('#showData').remove();
+    select$1('#toolbar').remove();
 }
-function selectionWithRectangle() {
+let isSelectionMode = false;
+function selectionWithRectangle(enable) {
     const svg = window.svg;
+    svg.on('.selection', null);
+    if (!enable)
+        return;
     let selectionRect = svg.append('rect')
         .style('fill', 'none')
         .style('stroke', 'black')
         .style('stroke-dasharray', '3')
-        .style('visibility', 'hidden');
+        .style('visibility', 'hidden')
+        .style('pointer-events', 'none');
     let isSelecting = false;
     let startX;
     let startY;
-    svg.on('mousedown', function (event) {
+    svg.on('mousedown.selection', function (event) {
+        event.preventDefault();
         isSelecting = true;
         const [x, y] = pointer(event);
         startX = x;
@@ -7626,7 +8798,7 @@ function selectionWithRectangle() {
             .attr('height', 0)
             .style('visibility', 'visible');
     });
-    svg.on('mousemove', function (event) {
+    svg.on('mousemove.selection', function (event) {
         if (!isSelecting)
             return;
         const [x, y] = pointer(event);
@@ -7638,7 +8810,7 @@ function selectionWithRectangle() {
             .attr('width', width)
             .attr('height', height);
     });
-    svg.on('mouseup', function () {
+    svg.on('mouseup.selection', function () {
         if (!isSelecting)
             return;
         isSelecting = false;
@@ -7754,8 +8926,10 @@ function setUpParcoordData(data, newFeatures) {
         const max = Math.max(...window.parcoords.newDataset.map(o => o[newFeatures[i]]));
         const min = Math.min(...window.parcoords.newDataset.map(o => o[newFeatures[i]]));
         const ranges = getDimensionRange(newFeatures[i]);
-        window.parcoords.currentPosOfDims.push({ key: newFeatures[i], top: 80, bottom: 320, isInverted: false, index: i,
-            min: min, max: max, sigDig: 0, currentRangeTop: ranges[1], currentRangeBottom: ranges[0] });
+        window.parcoords.currentPosOfDims.push({
+            key: newFeatures[i], top: 80, bottom: 320, isInverted: false, index: i,
+            min: min, max: max, sigDig: 0, currentRangeTop: ranges[1], currentRangeBottom: ranges[0]
+        });
     }
     window.yAxis = {};
     window.yAxis = setupYAxis(parcoords.features, parcoords.yScales, parcoords.newDataset);
@@ -7779,91 +8953,6 @@ function setUpParcoordData(data, newFeatures) {
         counter = counter + 1;
     });
     window.hoverlabel = getAllVisibleDimensionNames()[0];
-}
-function prepareData(data, newFeatures) {
-    let newDataset = [];
-    data.forEach(obj => {
-        let newdata = {};
-        newFeatures.forEach(feature => {
-            newdata[feature] = obj[feature];
-        });
-        newDataset.push(newdata);
-    });
-    let features = [];
-    Object.keys(newDataset[0]).forEach(element => features.push({ 'name': element }));
-    return [features, newDataset];
-}
-function setupYScales(height, padding, features, newDataset) {
-    let yScales = {};
-    features.map(x => {
-        const values = newDataset.map(o => o[x.name]);
-        let labels = [];
-        if (isNaN(values[0]) !== false) {
-            values.forEach(function (element) {
-                labels.push(element.length > 10 ? element.substr(0, 10) + '...' : element);
-            });
-            yScales[x.name] = point()
-                .domain(labels)
-                .range([padding, height - padding])
-                .padding(0.2);
-        }
-        else {
-            const max = Math.max(...newDataset.map(o => o[x.name]));
-            const min = Math.min(...newDataset.map(o => o[x.name]));
-            window.max = max;
-            window.min = min;
-            yScales[x.name] = linear()
-                .domain([min, max])
-                .range([height - padding, padding]);
-        }
-    });
-    return yScales;
-}
-function setupXScales(width, padding, features) {
-    return point()
-        .domain(features.map(x => x.name))
-        .range([width - padding, padding]);
-}
-function setupYAxis(features, yScales, newDataset) {
-    const limit = 30;
-    let counter = 0;
-    let yAxis = {};
-    Object.entries(yScales).map(key => {
-        let tempFeatures = Array.from(features.values()).map(c => c.name);
-        let tempValues = newDataset.map(o => o[tempFeatures[counter]]);
-        let labels = [];
-        tempValues.forEach(function (element) {
-            labels.push(element.length > 10 ? element.substr(0, 10) + '...' : element);
-        });
-        counter = counter + 1;
-        if (isNaN(labels[0])) {
-            let uniqueArray = labels.filter(function (item, index, self) {
-                return index === self.indexOf(item);
-            });
-            if (uniqueArray.length > limit) {
-                let filteredArray = labels.filter(function (value, index, array) {
-                    return index % 4 == 0;
-                });
-                yAxis[key[0]] = axisLeft(key[1]).tickValues(filteredArray);
-            }
-            else {
-                yAxis[key[0]] = axisLeft(key[1]).tickValues(labels);
-            }
-        }
-        else {
-            let ranges = yScales[key[0]].ticks(5).concat(yScales[key[0]].domain());
-            let sortRanges = ranges.sort(function (a, b) { return a - b; });
-            let uniqueRanges = [...new Set(sortRanges)];
-            if (Number(uniqueRanges[1]) - 5 < Number(uniqueRanges[0])) {
-                uniqueRanges.splice(1, 1);
-            }
-            if (Number(uniqueRanges[uniqueRanges.length - 1]) - 5 < Number(uniqueRanges[uniqueRanges.length - 2])) {
-                uniqueRanges.splice(uniqueRanges.length - 2, 1);
-            }
-            yAxis[key[0]] = axisLeft(key[1]).tickValues(uniqueRanges);
-        }
-    });
-    return yAxis;
 }
 function redrawChart(content, newFeatures) {
     let ids = [];
@@ -7890,6 +8979,7 @@ function redrawChart(content, newFeatures) {
         .on("contextmenu", function (event) {
         event.preventDefault();
     });
+    setDefsForIcons();
     window.onclick = (event) => {
         select$1('#contextmenu').style('display', 'none');
         select$1('#contextmenuRecords').style('display', 'none');
@@ -7897,52 +8987,111 @@ function redrawChart(content, newFeatures) {
     window.active = setActivePathLines(svg, content, ids, window.parcoords);
     setFeatureAxis(svg, yAxis, window.active, window.parcoords, width, window.padding);
 }
-function cleanTooltip() {
-    selectAll(".tooltip")
-        .remove();
+function createSvgString() {
+    let height = 360;
+    let width = window.parcoords.newFeatures.length * 100;
+    let yScalesForDownload = setupYScales(400, window.padding, window.parcoords.features, window.parcoords.newDataset);
+    let yAxisForDownload = setupYAxis(window.parcoords.features, yScalesForDownload, window.parcoords.newDataset);
+    let svg = create$1('svg')
+        .attr("xmlns", "http://www.w3.org/2000/svg")
+        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
+        .attr('viewBox', [0, 0, width, height])
+        .attr('font-family', 'Verdana, sans-serif');
+    let defs = svg.append('defs');
+    defs.append('image')
+        .attr('id', 'arrow_image_up')
+        .attr('width', 12)
+        .attr('height', 12)
+        .attr('href', 'data:image/svg+xml;,' + getArrowUp());
+    defs.append('image')
+        .attr('id', 'arrow_image_down')
+        .attr('width', 12)
+        .attr('height', 12)
+        .attr('href', 'data:image/svg+xml;,' + getArrowDown());
+    defs.append('image')
+        .attr('id', 'brush_image_top')
+        .attr('width', 14)
+        .attr('height', 10)
+        .attr('href', 'data:image/svg+xml;,' + getArrowTop());
+    defs.append('image')
+        .attr('id', 'brush_image_bottom')
+        .attr('width', 14)
+        .attr('height', 10)
+        .attr('href', 'data:image/svg+xml;,' + getArrowBottom());
+    setActivePathLinesToDownload(svg, window.parcoords, window.key);
+    setFeatureAxisToDownload(svg, yAxisForDownload, yScalesForDownload, window.parcoords, window.padding);
+    return svg.node().outerHTML;
 }
-let delay = null;
-let selectedPath = null;
-let tooltipPath;
-const clearExistingDelay = () => {
-    if (delay) {
-        clearTimeout(delay);
-        delay = null;
-    }
-};
+const tooltipPath = select$1('#parallelcoords')
+    .append('div')
+    .style('position', 'absolute')
+    .style('visibility', 'hidden')
+    .style('pointer-events', 'none')
+    .style('background', 'rgba(0,0,0,0.8)')
+    .style('color', '#fff')
+    .style('padding', '0.5rem')
+    .style('border-radius', '0.25rem')
+    .style('font-size', '0.75rem')
+    .style('z-index', '1000');
+const tooltipTest = select$1('#parallelcoords')
+    .append('div')
+    .attr('id', 'tooltipTest')
+    .style('position', 'absolute')
+    .style('visibility', 'hidden')
+    .style('pointer-events', 'none')
+    .style('background', 'lightgrey')
+    .style('padding', '0.2rem')
+    .style('border', '1px solid gray')
+    .style('border-radius', '0.2rem')
+    .style('white-space', 'pre-line')
+    .style('font-size', '0.75rem')
+    .style('z-index', '1000');
+let cleanupTimeout = null;
 const handlePointerEnter = (event, d) => {
-    const data = getAllPointerEventsData(event);
+    if (isSelectionMode)
+        return;
+    doNotHighlight();
+    const data = getAllPointerEventsData(event, window.hoverlabel);
     window.hoverdata = [...data];
-    selectedPath = highlight(data);
-    createTooltipForPathLine(data, tooltipPath, event);
-    clearExistingDelay();
+    highlight(data);
+    createTooltipForPathLine(data, tooltipTest, event);
     const datasetMap = new Map();
     parcoords.newDataset.forEach((record) => {
-        const recordData = record[window.hoverlabel];
-        datasetMap.set(recordData, record);
+        datasetMap.set(record[window.hoverlabel], record);
     });
     data.forEach((item) => {
         const matchingRecord = datasetMap.get(item);
         if (matchingRecord) {
-            delay = setTimeout(() => {
-                createToolTipForValues(matchingRecord);
-            }, 150);
+            createToolTipForValues(matchingRecord);
         }
     });
 };
 const handlePointerLeaveOrOut = () => {
-    doNotHighlight(selectedPath);
-    clearExistingDelay();
-    if (tooltipPath) {
-        tooltipPath.style('visibility', 'hidden');
-    }
+    doNotHighlight();
+    tooltipPath.style('visibility', 'hidden');
+    select$1('#tooltipTest').style('visibility', 'hidden');
     cleanTooltip();
 };
+select$1('#parallelcoords').on('mouseleave', () => {
+    if (cleanupTimeout)
+        clearTimeout(cleanupTimeout);
+    cleanupTimeout = setTimeout(() => {
+        doNotHighlight();
+        tooltipPath.style('visibility', 'hidden');
+        select$1('#tooltipTest').style('visibility', 'hidden');
+        cleanTooltip();
+    }, 100);
+});
+document.addEventListener('mousemove', (e) => {
+    const chartBounds = document.querySelector('#parallelcoords').getBoundingClientRect();
+    if (e.clientX < chartBounds.left ||
+        e.clientX > chartBounds.right ||
+        e.clientY < chartBounds.top ||
+        e.clientY > chartBounds.bottom) {
+        handlePointerLeaveOrOut();
+    }
+});
 function setActivePathLines(svg, content, ids, parcoords) {
-    tooltipPath = select$1('#parallelcoords')
-        .append('g')
-        .style('position', 'absolute')
-        .style('visibility', 'hidden');
     let contextMenu = select$1('#parallelcoords')
         .append('g')
         .attr('id', 'contextmenuRecords')
@@ -7998,153 +9147,68 @@ function setActivePathLines(svg, content, ids, parcoords) {
         .on('pointerenter', handlePointerEnter)
         .on('pointerleave', handlePointerLeaveOrOut)
         .on('pointerout', handlePointerLeaveOrOut)
+        .on('mouseenter', handlePointerEnter)
+        .on('mouseout', handlePointerLeaveOrOut)
+        .on('mouseleave', handlePointerLeaveOrOut)
         .on('click', () => {
         select(window.hoverdata);
     })
         .on('contextmenu', function (event, d) {
-        contextMenu.style('left', event.clientX / 16 + 'rem')
-            .style('top', event.clientY / 16 + 'rem')
-            .style('display', 'block')
-            .style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
-            .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
-            .style('padding', 0.35 + 'rem')
-            .style('background-color', 'white').style('margin-left', 0.5 + 'rem')
-            .style('cursor', 'pointer')
-            .on('click', (event) => {
-            event.stopPropagation();
-        });
-        select$1('#selectRecord')
-            .on('click', (event) => {
-            setSelected(d[window.hoverlabel]);
-            event.stopPropagation();
-            select$1('#contextmenuRecords').style('display', 'none');
-        });
-        select$1('#unSelectRecord')
-            .on('click', (event) => {
-            setUnselected(d[window.hoverlabel]);
-            event.stopPropagation();
-            select$1('#contextmenuRecords').style('display', 'none');
-        });
-        select$1('#toggleRecord')
-            .style('border-top', '0.08rem lightgrey solid')
-            .on('click', (event) => {
-            toggleSelection(d[window.hoverlabel]);
-            event.stopPropagation();
-            select$1('#contextmenuRecords').style('display', 'none');
-        });
-        select$1('#addSelection')
-            .style('border-top', '0.08rem lightgrey solid')
-            .on('click', (event) => {
-            let selectedRecords = [];
-            selectedRecords = getSelected();
-            selectedRecords.push(d[window.hoverlabel]);
-            setSelection(selectedRecords);
-            event.stopPropagation();
-            select$1('#contextmenuRecords').style('display', 'none');
-        });
-        select$1('#removeSelection')
-            .on('click', (event) => {
-            setUnselected(d[window.hoverlabel]);
-            event.stopPropagation();
-            select$1('#contextmenuRecords').style('display', 'none');
-        });
-        selectAll('.contextmenu').style('padding', 0.35 + 'rem');
-        event.preventDefault();
+        setContextMenuForActiceRecords(contextMenu, event, d);
     });
     return active;
 }
 const delay1 = 50;
 const throttleShowValues = throttle(createToolTipForValues, delay1);
-function trans(g) {
-    return g.transition().duration(50);
-}
-function position(dimensionName, dragging, xScales) {
-    const value = dragging[dimensionName];
-    return value == null ? xScales(dimensionName) : value;
-}
-function linePath(d, newFeatures, parcoords) {
-    let lineGenerator = line();
-    const tempdata = Object.entries(d).filter(x => x[0]);
-    let points = [];
-    newFeatures.map(newfeature => {
-        tempdata.map(x => {
-            if (newfeature === x[0]) {
-                points.push([parcoords.xScales(newfeature), parcoords.yScales[newfeature](x[1])]);
-            }
-        });
+function setContextMenuForActiceRecords(contextMenu, event, d) {
+    contextMenu.style('left', event.clientX / 16 + 'rem')
+        .style('top', event.clientY / 16 + 'rem')
+        .style('display', 'block')
+        .style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
+        .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
+        .style('padding', 0.35 + 'rem')
+        .style('background-color', 'white').style('margin-left', 0.5 + 'rem')
+        .style('cursor', 'pointer')
+        .on('click', (event) => {
+        event.stopPropagation();
     });
-    return (lineGenerator(points));
-}
-function createTooltipForPathLine(tooltipText, tooltipPath, event) {
-    if (tooltipText.length !== 0) {
-        let tempText = tooltipText.toString();
-        tempText = tempText.split(',').join('\r\n');
-        tooltipPath.text(tempText);
-        tooltipPath.style('visibility', 'visible');
-        tooltipPath.style('top', event.clientY / 16 + 'rem').style('left', event.clientX / 16 + 'rem');
-        tooltipPath.style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
-            .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
-            .style('padding', 0.12 + 'rem').style('white-space', 'pre-line')
-            .style('background-color', 'lightgrey').style('margin-left', 0.5 + 'rem');
-        return tooltipPath;
-    }
-}
-function createToolTipForValues(recordData) {
-    const dimensions = getAllVisibleDimensionNames();
-    let counter = 0;
-    const rectLeft = select$1('#rect_' + dimensions[0])?.node()?.getBoundingClientRect().left;
-    dimensions.forEach(dimension => {
-        const cleanString$1 = cleanString(dimension);
-        if (isElementVisible(select$1('#rect_' + cleanString$1))) {
-            const tooltipValues = select$1('#parallelcoords')
-                .append('g')
-                .attr('class', 'tooltip')
-                .style('position', 'absolute')
-                .style('visibility', 'hidden');
-            const invertStatus = isInverted(dimension);
-            const scale = parcoords.yScales[dimension];
-            const maxValue = invertStatus ? scale.domain()[0] : scale.domain()[1];
-            const minValue = invertStatus ? scale.domain()[1] : scale.domain()[0];
-            const range = maxValue - minValue;
-            let value;
-            if (invertStatus) {
-                value = isNaN(maxValue) ? scale(recordData[dimension]) :
-                    240 / range * (recordData[dimension] - minValue) + 80;
-            }
-            else {
-                value = isNaN(maxValue) ? scale(recordData[dimension]) :
-                    240 / range * (maxValue - recordData[dimension]) + 80;
-            }
-            const x = (rectLeft + (counter * 95)) / 16;
-            const y = (value + 140) / 16;
-            tooltipValues.text(recordData[dimension].toString())
-                .style('visibility', 'visible')
-                .style('top', `${y}rem`)
-                .style('left', `${x}rem`)
-                .style('font-size', '0.65rem')
-                .style('margin', '0.5rem')
-                .style('color', 'red')
-                .style('background-color', '#d3d3d3ad')
-                .style('font-weight', 'bold')
-                .style('padding', '0.12rem')
-                .style('white-space', 'pre-line')
-                .style('margin-left', '0.5rem');
-            counter++;
-        }
+    select$1('#selectRecord')
+        .on('click', (event) => {
+        setSelected(d[window.hoverlabel]);
+        event.stopPropagation();
+        select$1('#contextmenuRecords').style('display', 'none');
     });
-}
-function getAllPointerEventsData(event) {
-    const selection = selectAll(document.elementsFromPoint(event.clientX, event.clientY)).filter('path');
-    const object = selection._groups;
-    const data = [];
-    for (let i = 0; i < object[0].length; i++) {
-        const items = object.map(item => item[i]);
-        const itemsdata = items[0].__data__;
-        const label = window.hoverlabel;
-        const text = itemsdata[label];
-        data.push(text);
-    }
-    return data;
+    select$1('#unSelectRecord')
+        .on('click', (event) => {
+        setUnselected(d[window.hoverlabel]);
+        event.stopPropagation();
+        select$1('#contextmenuRecords').style('display', 'none');
+    });
+    select$1('#toggleRecord')
+        .style('border-top', '0.08rem lightgrey solid')
+        .on('click', (event) => {
+        toggleSelection(d[window.hoverlabel]);
+        event.stopPropagation();
+        select$1('#contextmenuRecords').style('display', 'none');
+    });
+    select$1('#addSelection')
+        .style('border-top', '0.08rem lightgrey solid')
+        .on('click', (event) => {
+        let selectedRecords = [];
+        selectedRecords = getSelected();
+        selectedRecords.push(d[window.hoverlabel]);
+        setSelection(selectedRecords);
+        event.stopPropagation();
+        select$1('#contextmenuRecords').style('display', 'none');
+    });
+    select$1('#removeSelection')
+        .on('click', (event) => {
+        setUnselected(d[window.hoverlabel]);
+        event.stopPropagation();
+        select$1('#contextmenuRecords').style('display', 'none');
+    });
+    selectAll('.contextmenu').style('padding', 0.35 + 'rem');
+    event.preventDefault();
 }
 function setFeatureAxis(svg, yAxis, active, parcoords, width, padding) {
     let featureAxis = svg.selectAll('g.feature')
@@ -8178,7 +9242,6 @@ function setFeatureAxis(svg, yAxis, active, parcoords, width, padding) {
         });
     });
     let tickElements = document.querySelectorAll('g.tick');
-    console.log(tickElements);
     tickElements.forEach((gElement) => {
         let transformValue = gElement.getAttribute('transform');
         let yValue = transformValue.match(/translate\(0,([^\)]+)\)/);
@@ -8232,52 +9295,44 @@ function setDefsForIcons() {
         .attr('href', 'data:image/svg+xml;,' + getArrowBottom());
 }
 // Hovering
+let currentlyHighlightedItems = [];
 function highlight(data) {
-    let selectedPath = '';
-    const dataWoSpecialC = data.map(item => item.replace(/[.,]/g, ''));
-    if (dataWoSpecialC.length !== 0) {
-        let tempText = dataWoSpecialC.join(',').replace(/,/g, ',.');
-        tempText = cleanLinePathArrayString(tempText);
-        selectedPath = tempText;
-        const newTempText = dataWoSpecialC.map((item) => {
-            let cleanedItem = item.replace(/,./g, '');
-            if (isSelected(item)) {
-                setUnselected(item);
-                window.hoverSelected = window.hoverSelected || [];
-                window.hoverSelected.push(item);
-            }
-            return cleanedItem;
-        });
-        selectedPath = newTempText.join(',.');
-        if (selectedPath) {
-            selectAll('.' + selectedPath)
-                .transition().duration(5)
-                .style('opacity', '0.7')
-                .style('stroke', 'rgb(200, 28, 38)');
+    if (isSelectionMode)
+        return;
+    currentlyHighlightedItems = [];
+    const cleanedItems = data.map(item => cleanLinePathArrayString(item).replace(/[.,]/g, ''));
+    currentlyHighlightedItems = [...cleanedItems];
+    cleanedItems.forEach(item => {
+        if (isSelected(item)) {
+            setUnselected(item);
+            window.hoverSelected = window.hoverSelected || [];
+            window.hoverSelected.push(item);
         }
-    }
-    return selectedPath;
+        let selectedPath = cleanedItems.join(',.');
+        selectAll('.' + selectedPath)
+            .transition()
+            .duration(5)
+            .style('opacity', '0.7')
+            .style('stroke', 'rgb(200, 28, 38)');
+    });
+    return cleanedItems;
 }
-function doNotHighlight(selectedPath) {
-    if (selectedPath !== '') {
-        const tempText = selectedPath.split(',.');
-        const newTempText = [];
-        tempText.forEach(item => {
-            newTempText.push(item);
-            if (window.hoverSelected && window.hoverSelected.includes(item)) {
-                setSelected(item);
-                const index = window.hoverSelected.indexOf(item);
+function doNotHighlight() {
+    if (!currentlyHighlightedItems.length)
+        return;
+    currentlyHighlightedItems.forEach(item => {
+        selectAll('.' + item)
+            .transition()
+            .style('opacity', '0.7')
+            .style('stroke', 'rgb(0, 129, 175)');
+        if (window.hoverSelected?.includes(item)) {
+            setSelected(item);
+            const index = window.hoverSelected.indexOf(item);
+            if (index > -1)
                 window.hoverSelected.splice(index, 1);
-            }
-        });
-        selectedPath = newTempText.join(',.');
-        if (selectedPath) {
-            selectAll('.' + selectedPath)
-                .transition()
-                .style('opacity', '0.7')
-                .style('stroke', 'rgb(0, 129, 175)');
         }
-    }
+    });
+    currentlyHighlightedItems = [];
 }
 // Selecting
 function select(linePaths) {
@@ -8314,440 +9369,6 @@ function setInvertIcon(featureAxis, padding) {
             .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowDownCursor()), 12)}') 8 8, auto`);
     })
         .on('click', onInvert());
-}
-// Context Menu
-function setContextMenu(featureAxis, padding, parcoords, active, width) {
-    let tooltipFeatures = select$1('#parallelcoords')
-        .append('g')
-        .style('position', 'absolute')
-        .style('visibility', 'hidden');
-    let contextMenu = select$1('#parallelcoords')
-        .append('g')
-        .attr('id', 'contextmenu')
-        .style('position', 'absolute')
-        .style('display', 'none');
-    let popupWindowRange = select$1('#parallelcoords')
-        .append('div')
-        .attr('id', 'popupRange')
-        .style('position', 'absolute')
-        .style('display', 'none');
-    popupWindowRange.append('div').text('Set Range for ').style('padding-left', 0.5 + 'rem').style('font-size', 'large');
-    let closeButtonRange = popupWindowRange.append('a').text('x').style('position', 'absolute').style('right', -1 + 'rem')
-        .style('top', 0.5 + 'rem').style('width', 2.5 + 'rem').style('height', 2.5 + 'rem')
-        .style('opacity', 0.3).style('background-color', 'transparent').style('cursor', 'pointer').attr('id', 'closeButtonRange');
-    let headerDimensionRange = popupWindowRange.append('div').style('padding-left', 0.5 + 'rem').style('font-size', 'large')
-        .attr('id', 'headerDimensionRange');
-    let infoRange = popupWindowRange.append('div').style('color', 'grey').style('font-size', 'smaller')
-        .style('padding-left', 0.5 + 'rem').style('padding-bottom', 0.5 + 'rem').style('padding-top', 1 + 'rem').attr('id', 'infoRange');
-    let infoRange2 = popupWindowRange.append('div').style('color', 'grey').style('font-size', 'smaller')
-        .style('padding-left', 0.5 + 'rem').style('padding-bottom', 0.5 + 'rem').style('padding-top', 1 + 'rem').attr('id', 'infoRange2');
-    popupWindowRange.append('label').text('Min').style('padding', 0.5 + 'rem');
-    let inputMinRange = popupWindowRange.append('input').attr('id', 'minRangeValue').style('width', 2.5 + 'rem');
-    popupWindowRange.append('label').text('Max').style('padding', 0.5 + 'rem');
-    let inputMaxRange = popupWindowRange.append('input').attr('id', 'maxRangeValue').style('width', 2.5 + 'rem');
-    let rangeButton = popupWindowRange.append('button').text('Save').style('margin-left', 0.5 + 'rem')
-        .style('width', 6.2 + 'rem').style('margin-top', 1 + 'rem').attr('id', 'buttonRange');
-    let popupWindowRangeError = popupWindowRange
-        .append('div')
-        .attr('id', 'errorRange')
-        .style('position', 'absolute')
-        .style('display', 'none');
-    let popupWindowFilter = select$1('#parallelcoords')
-        .append('div')
-        .attr('id', 'popupFilter')
-        .style('position', 'absolute')
-        .style('display', 'none');
-    popupWindowFilter.append('div').text('Set Filter for ').style('padding-left', 0.5 + 'rem').style('font-size', 'large');
-    let headerDimensionFilter = popupWindowFilter.append('div').style('padding-left', 0.5 + 'rem').style('font-size', 'large')
-        .attr('id', 'headerDimensionFilter');
-    let closeButtonFilter = popupWindowFilter.append('a').text('x').style('position', 'absolute').style('right', -1 + 'rem')
-        .style('top', 0.5 + 'rem').style('width', 2.5 + 'rem').style('height', 2.5 + 'rem')
-        .style('opacity', 0.3).style('background-color', 'transparent').style('cursor', 'pointer').attr('id', 'closeButtonFilter');
-    popupWindowFilter.append('label').text('Min').style('padding', 0.5 + 'rem');
-    let inputMinFilter = popupWindowFilter.append('input').attr('id', 'minFilterValue').style('width', 2 + 'rem');
-    popupWindowFilter.append('label').text('Max').style('padding', 0.5 + 'rem');
-    let inputMaxFilter = popupWindowFilter.append('input').attr('id', 'maxFilterValue').style('width', 2 + 'rem');
-    let filterButton = popupWindowFilter.append('button').text('Save').style('margin-left', 0.5 + 'rem')
-        .style('width', 6.2 + 'rem').style('margin-top', 1 + 'rem').attr('id', 'buttonFilter');
-    let popupWindowFilterError = popupWindowFilter
-        .append('div')
-        .attr('id', 'errorFilter')
-        .style('position', 'absolute')
-        .style('display', 'none');
-    contextMenu.append('div')
-        .attr('id', 'hideMenu')
-        .attr('class', 'contextmenu')
-        .text('Hide');
-    contextMenu.append('div')
-        .attr('id', 'invertMenu')
-        .attr('class', 'contextmenu')
-        .text('Invert');
-    contextMenu.append('div')
-        .attr('id', 'rangeMenu')
-        .attr('class', 'contextmenu')
-        .text('Set Range...');
-    contextMenu.append('div')
-        .attr('id', 'resetRangeMenu')
-        .attr('class', 'contextmenu')
-        .text('Set Range from Data');
-    contextMenu.append('div')
-        .attr('id', 'resetRoundRangeMenu')
-        .attr('class', 'contextmenu')
-        .text('Set Rounded Range from Data');
-    contextMenu.append('div')
-        .attr('id', 'filterMenu')
-        .attr('class', 'contextmenu')
-        .text('Set Filter...');
-    contextMenu.append('div')
-        .attr('id', 'resetfilterMenu')
-        .attr('class', 'contextmenu')
-        .text('Reset Filter');
-    contextMenu.append('div')
-        .attr('id', 'showAllMenu')
-        .attr('class', 'contextmenu')
-        .text('Show All');
-    let y_value = (padding / 1.7).toFixed(4);
-    featureAxis
-        .append('text')
-        .attr('class', 'dimension')
-        .attr('text-anchor', 'middle')
-        .attr('y', y_value)
-        .text(d => d.name.length > 10 ? d.name.substr(0, 10) + '...' : d.name)
-        .style('font-size', '0.7rem')
-        .call(drag()
-        .on('start', onDragStartEventHandler(parcoords))
-        .on('drag', onDragEventHandler(parcoords, active, featureAxis, width))
-        .on('end', onDragEndEventHandler(parcoords, featureAxis, active)))
-        .on('mouseover', function () {
-        return tooltipFeatures.style('visibility', 'visible');
-    })
-        .on('mousemove', (event, d) => {
-        if (getDimensionPosition(d.name) == 0) {
-            featureAxis
-                .select('.dimension')
-                .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowRight()), 12)}') 8 8, auto`);
-        }
-        else if (getDimensionPosition(d.name) == parcoords.newFeatures.length - 1) {
-            featureAxis
-                .select('.dimension')
-                .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowLeft()), 12)}') 8 8, auto`);
-        }
-        else {
-            featureAxis
-                .select('.dimension')
-                .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowLeftAndRight()), 12)}') 8 8, auto`);
-        }
-        tooltipFeatures.text(d.name);
-        tooltipFeatures.style('top', 12.8 + 'rem').style('left', event.clientX / 16 + 'rem');
-        tooltipFeatures.style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
-            .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
-            .style('padding', 0.12 + 'rem')
-            .style('background-color', 'lightgrey').style('margin-left', 0.5 + 'rem');
-        return tooltipFeatures;
-    })
-        .on('mouseout', function () {
-        return tooltipFeatures.style('visibility', 'hidden');
-    })
-        .on('contextmenu', function (event, d) {
-        const dimension = d.name;
-        const values = parcoords.newDataset.map(o => o[dimension]);
-        contextMenu.style('left', event.clientX / 16 + 'rem')
-            .style('top', 13.6 + 'rem')
-            .style('display', 'block')
-            .style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
-            .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
-            .style('padding', 0.35 + 'rem')
-            .style('background-color', 'white').style('margin-left', 0.5 + 'rem')
-            .style('cursor', 'pointer')
-            .on('click', (event) => {
-            event.stopPropagation();
-        });
-        select$1('#hideMenu')
-            .on('click', (event) => {
-            hide(dimension);
-            event.stopPropagation();
-        });
-        select$1('#invertMenu')
-            .on('click', (event) => {
-            invert(dimension);
-            event.stopPropagation();
-        });
-        if (!isNaN(values[0])) {
-            select$1('#rangeMenu')
-                .style('border-top', '0.08rem lightgrey solid')
-                .style('visibility', 'visible')
-                .style('color', 'black')
-                .on('click', (event) => {
-                let minRange = getCurrentMinRange(dimension);
-                let maxRange = getCurrentMaxRange(dimension);
-                var resultMin = (minRange - Math.floor(minRange)) !== 0;
-                var resultMax = (maxRange - Math.floor(maxRange)) !== 0;
-                let minValue = String(minRange);
-                let maxValue = String(maxRange);
-                if (resultMin && !resultMax) {
-                    const count = minValue.split('.')[1].length;
-                    maxValue = maxRange.toFixed(count);
-                }
-                else if (!resultMin && resultMax) {
-                    const count = maxValue.split('.')[1].length;
-                    minValue = minRange.toFixed(count);
-                }
-                inputMinRange.attr('value', minValue);
-                inputMaxRange.attr('value', maxValue);
-                popupWindowRange.style('display', 'block')
-                    .style('width', 17 + 'rem')
-                    .style('height', 13 + 'rem')
-                    .style('background', 'white')
-                    .style('border', '0.0625rem solid black')
-                    .style('border-radius', 0.25 + 'rem')
-                    .style('padding', 1 + 'rem')
-                    .style('margin', 'auto')
-                    .style('top', 0)
-                    .style('right', 0)
-                    .style('bottom', 0)
-                    .style('left', 0)
-                    .style('z-index', 10);
-                const newText = dimension.length > 25 ? dimension.substr(0, 25) + '...' : dimension;
-                headerDimensionRange.text(newText);
-                infoRange.text('The current range of ' + dimension + ' is between ' +
-                    minValue + ' and ' +
-                    maxValue + '.');
-                infoRange2.text('The original range of ' + dimension + ' is between ' +
-                    getMinValue(dimension) + ' and ' +
-                    getMaxValue(dimension) + '.');
-                rangeButton.on('click', () => {
-                    let min = select$1('#minRangeValue').node().value;
-                    let max = select$1('#maxRangeValue').node().value;
-                    const inverted = isInverted(dimension);
-                    let isOk = true;
-                    if (inverted) {
-                        if (max < getMinValue(dimension) ||
-                            min > getMaxValue(dimension)) {
-                            popupWindowRangeError.text(`The range has to be bigger than 
-                                ${minValue} and 
-                                ${maxValue}.`)
-                                .style('display', 'block')
-                                .style('padding-left', 0.5 + 'rem')
-                                .style('padding-top', 0.5 + 'rem')
-                                .style('color', 'red')
-                                .style('font-size', 'x-small');
-                            isOk = false;
-                        }
-                    }
-                    else {
-                        if (min > getMinValue(dimension) ||
-                            max < getMaxValue(dimension)) {
-                            popupWindowRangeError.text(`The range has to be bigger than 
-                                ${minValue} and 
-                                ${maxValue}.`)
-                                .style('display', 'block')
-                                .style('padding-left', 0.5 + 'rem')
-                                .style('padding-top', 0.5 + 'rem')
-                                .style('color', 'red')
-                                .style('font-size', 'x-small');
-                            isOk = false;
-                        }
-                    }
-                    if (isOk) {
-                        popupWindowRangeError.style('display', 'none');
-                        setDimensionRange(dimension, min, max);
-                        popupWindowRange.style('display', 'none');
-                    }
-                });
-                inputMaxRange.on('keypress', (event) => {
-                    if (event.key === "Enter") {
-                        event.preventDefault();
-                        document.getElementById("buttonRange").click();
-                    }
-                });
-                inputMinRange.on('keypress', (event) => {
-                    if (event.key === "Enter") {
-                        event.preventDefault();
-                        document.getElementById("buttonRange").click();
-                    }
-                });
-                closeButtonRange.on('click', () => {
-                    popupWindowRange.style('display', 'none');
-                });
-                event.stopPropagation();
-            });
-        }
-        else {
-            select$1('#rangeMenu').style('display', 'false')
-                .style('color', 'lightgrey')
-                .style('border-top', '0.08rem lightgrey solid');
-        }
-        if (!isNaN(values[0])) {
-            select$1('#resetRangeMenu')
-                .style('visibility', 'visible')
-                .style('color', 'black')
-                .on('click', (event) => {
-                setDimensionRange(dimension, getMinValue(dimension), getMaxValue(dimension));
-                event.stopPropagation();
-            });
-        }
-        else {
-            select$1('#resetRangeMenu').style('display', 'false')
-                .style('color', 'lightgrey');
-        }
-        if (!isNaN(values[0])) {
-            select$1('#resetRoundRangeMenu')
-                .style('visibility', 'visible')
-                .style('color', 'black')
-                .on('click', (event) => {
-                setDimensionRangeRounded(dimension, getMinValue(dimension), getMaxValue(dimension));
-                event.stopPropagation();
-            });
-        }
-        else {
-            select$1('#resetRoundRangeMenu').style('display', 'false')
-                .style('color', 'lightgrey');
-        }
-        if (!isNaN(values[0])) {
-            let currentFilters = getFilter(dimension);
-            inputMaxFilter.attr('value', currentFilters[0]);
-            inputMinFilter.attr('value', currentFilters[1]);
-            select$1('#filterMenu')
-                .style('border-top', '0.08rem lightgrey solid')
-                .style('visibility', 'visible')
-                .style('color', 'black')
-                .on('click', (event) => {
-                popupWindowFilter.style('display', 'block')
-                    .style('width', 17 + 'rem')
-                    .style('height', 8 + 'rem')
-                    .style('background', 'white')
-                    .style('border', '0.0625rem solid black')
-                    .style('border-radius', 0.25 + 'rem')
-                    .style('padding', 1 + 'rem')
-                    .style('margin', 'auto')
-                    .style('top', 0)
-                    .style('right', 0)
-                    .style('bottom', 0)
-                    .style('left', 0)
-                    .style('z-index', 10);
-                const newText1 = dimension.length > 25 ? dimension.substr(0, 25) + '...' : dimension;
-                headerDimensionFilter.text(newText1);
-                filterButton.on('click', () => {
-                    let min = select$1('#minFilterValue').node().value;
-                    let max = select$1('#maxFilterValue').node().value;
-                    const ranges = getDimensionRange(dimension);
-                    const inverted = isInverted(dimension);
-                    let isOk = true;
-                    if (inverted) {
-                        if (min < ranges[1]) {
-                            min = ranges[1];
-                            popupWindowFilterError.text(`Min value is smaller than 
-                                    ${getMinValue(dimension)}, filter is set to min.`)
-                                .style('display', 'block')
-                                .style('padding-left', 0.5 + 'rem')
-                                .style('padding-top', 0.5 + 'rem')
-                                .style('color', 'red')
-                                .style('font-size', 'x-small');
-                            isOk = false;
-                        }
-                        if (max > ranges[0]) {
-                            max = ranges[0];
-                            popupWindowFilterError.text(`Max value is bigger than 
-                                    ${getMaxValue(dimension)}, filter is set to max.`)
-                                .style('display', 'block')
-                                .style('padding-left', 0.5 + 'rem')
-                                .style('padding-top', 0.5 + 'rem')
-                                .style('color', 'red')
-                                .style('font-size', 'x-small');
-                            isOk = false;
-                        }
-                    }
-                    else {
-                        if (min < ranges[0]) {
-                            min = ranges[0];
-                            popupWindowFilterError.text(`Min value is smaller than 
-                                    ${getMinValue(dimension)}, filter is set to min.`)
-                                .style('display', 'block')
-                                .style('padding-left', 0.5 + 'rem')
-                                .style('padding-top', 0.5 + 'rem')
-                                .style('color', 'red')
-                                .style('font-size', 'x-small');
-                            isOk = false;
-                        }
-                        if (max > ranges[1]) {
-                            max = ranges[1];
-                            popupWindowFilterError.text(`Max value is bigger than 
-                                    ${getMaxValue(dimension)}, filter is set to max.`)
-                                .style('display', 'block')
-                                .style('padding-left', 0.5 + 'rem')
-                                .style('padding-top', 0.5 + 'rem')
-                                .style('color', 'red')
-                                .style('font-size', 'x-small');
-                            isOk = false;
-                        }
-                    }
-                    if (inverted) {
-                        setFilter(dimension, min, max);
-                    }
-                    else {
-                        setFilter(dimension, max, min);
-                    }
-                    if (isOk) {
-                        popupWindowFilterError.style('display', 'none');
-                        popupWindowFilter.style('display', 'none');
-                    }
-                });
-                inputMaxFilter.on('keypress', (event) => {
-                    if (event.key === "Enter") {
-                        event.preventDefault();
-                        document.getElementById("buttonFilter").click();
-                    }
-                });
-                inputMinFilter.on('keypress', (event) => {
-                    if (event.key === "Enter") {
-                        event.preventDefault();
-                        document.getElementById("buttonFilter").click();
-                    }
-                });
-                closeButtonFilter.on('click', () => {
-                    popupWindowFilter.remove();
-                    popupWindowFilterError.style('display', 'none');
-                });
-                event.stopPropagation();
-            });
-        }
-        else {
-            select$1('#filterMenu').style('display', 'false')
-                .style('color', 'lightgrey')
-                .style('border-top', '0.08rem lightgrey solid');
-        }
-        if (!isNaN(values[0])) {
-            select$1('#resetfilterMenu')
-                .style('visibility', 'visible')
-                .style('color', 'black')
-                .on('click', (event) => {
-                const range = getDimensionRange(dimension);
-                if (isInverted(dimension)) {
-                    setFilter(dimension, range[1], range[0]);
-                }
-                else {
-                    setFilter(dimension, range[1], range[0]);
-                }
-                event.stopPropagation();
-            });
-        }
-        else {
-            select$1('#resetfilterMenu').style('display', 'false')
-                .style('color', 'lightgrey');
-        }
-        select$1('#showAllMenu')
-            .style('visibility', 'visible')
-            .style('border-top', '0.08rem lightgrey solid')
-            .on('click', (event) => {
-            const hiddenDimensions = getAllHiddenDimensionNames();
-            for (let i = 0; i < hiddenDimensions.length; i++) {
-                show(hiddenDimensions[i]);
-            }
-            event.stopPropagation();
-        });
-        selectAll('.contextmenu').style('padding', 0.35 + 'rem');
-        event.preventDefault();
-    });
 }
 // Brushing
 function setRectToDrag(featureAxis, svg, parcoords, active, tooltipValuesTop, tooltipValuesDown) {
@@ -8813,8 +9434,8 @@ function setBrushUp(featureAxis, parcoords, active, tooltipValues) {
         }));
     });
 }
-function setBrushDown(featureAxisG, parcoords, active, tooltipValues) {
-    featureAxisG
+function setBrushDown(featureAxis, parcoords, active, tooltipValues) {
+    featureAxis
         .each(function (d) {
         const processedDimensionName = cleanString(d.name);
         select$1(this)
@@ -8842,252 +9463,6 @@ function setBrushDown(featureAxisG, parcoords, active, tooltipValues) {
         }));
     });
 }
-// Dragging
-function onDragStartEventHandler(parcoords) {
-    {
-        return function onDragStart(d) {
-            this.__origin__ = parcoords.xScales((d.subject).name);
-            parcoords.dragging[(d.subject).name] = this.__origin__;
-            parcoords.dragPosStart[(d.subject).name] = this.__origin__;
-            const element = document.getElementById("parallelcoords");
-            window.scrollXPos = element.scrollLeft;
-        };
-    }
-}
-function scroll(parcoords, d) {
-    const element = document.getElementById("parallelcoords");
-    if (parcoords.dragPosStart[(d.subject).name] < parcoords.dragging[(d.subject).name] &&
-        parcoords.dragging[(d.subject).name] > window.innerWidth - 20) {
-        element.scrollLeft += 5;
-    }
-    else if (window.scrollXPos + 20 > parcoords.dragging[(d.subject).name]) {
-        element.scrollLeft -= 5;
-    }
-}
-function onDragEventHandler(parcoords, active, featureAxis, width) {
-    {
-        return function onDrag(d) {
-            if (window.timer !== null) {
-                clearInterval(window.timer);
-                window.timer = null;
-            }
-            window.timer = setInterval(() => { scroll(parcoords, d); });
-            parcoords.dragging[(d.subject).name] = Math.min(width - window.paddingXaxis, Math.max(window.paddingXaxis, this.__origin__ += d.x));
-            active.each(function (d) {
-                select$1(this)
-                    .attr('d', linePath(d, parcoords.newFeatures, parcoords));
-            });
-            parcoords.newFeatures.sort((a, b) => {
-                return position(b, parcoords.dragging, parcoords.xScales)
-                    - position(a, parcoords.dragging, parcoords.xScales) - 1;
-            });
-            parcoords.xScales.domain(parcoords.newFeatures);
-            featureAxis.attr('transform', (d) => {
-                return 'translate(' + position(d.name, parcoords.dragging, parcoords.xScales) + ')';
-            });
-        };
-    }
-}
-function onDragEndEventHandler(parcoords, featureAxis, active) {
-    {
-        return function onDragEnd(d) {
-            const width = window.width;
-            const distance = (width - 80) / parcoords.newFeatures.length;
-            const init = parcoords.dragPosStart[(d.subject).name];
-            if (parcoords.dragPosStart[(d.subject).name] > parcoords.dragging[(d.subject).name]) {
-                featureAxis.attr('transform', (d) => {
-                    return 'translate(' + position(d.name, init - distance, parcoords.xScales) + ')';
-                });
-            }
-            else {
-                featureAxis.attr('transform', (d) => {
-                    return 'translate(' + position(d.name, init + distance, parcoords.xScales) + ')';
-                });
-            }
-            delete this.__origin__;
-            delete parcoords.dragging[(d.subject).name];
-            delete parcoords.dragPosStart[(d.subject).name];
-            trans(active).each(function (d) {
-                select$1(this)
-                    .attr('d', linePath(d, parcoords.newFeatures, parcoords));
-            });
-        };
-    }
-}
-
-var EOL = {},
-    EOF = {},
-    QUOTE = 34,
-    NEWLINE = 10,
-    RETURN = 13;
-
-function objectConverter(columns) {
-  return new Function("d", "return {" + columns.map(function(name, i) {
-    return JSON.stringify(name) + ": d[" + i + "] || \"\"";
-  }).join(",") + "}");
-}
-
-function customConverter(columns, f) {
-  var object = objectConverter(columns);
-  return function(row, i) {
-    return f(object(row), i, columns);
-  };
-}
-
-// Compute unique columns in order of discovery.
-function inferColumns(rows) {
-  var columnSet = Object.create(null),
-      columns = [];
-
-  rows.forEach(function(row) {
-    for (var column in row) {
-      if (!(column in columnSet)) {
-        columns.push(columnSet[column] = column);
-      }
-    }
-  });
-
-  return columns;
-}
-
-function pad(value, width) {
-  var s = value + "", length = s.length;
-  return length < width ? new Array(width - length + 1).join(0) + s : s;
-}
-
-function formatYear(year) {
-  return year < 0 ? "-" + pad(-year, 6)
-    : year > 9999 ? "+" + pad(year, 6)
-    : pad(year, 4);
-}
-
-function formatDate(date) {
-  var hours = date.getUTCHours(),
-      minutes = date.getUTCMinutes(),
-      seconds = date.getUTCSeconds(),
-      milliseconds = date.getUTCMilliseconds();
-  return isNaN(date) ? "Invalid Date"
-      : formatYear(date.getUTCFullYear()) + "-" + pad(date.getUTCMonth() + 1, 2) + "-" + pad(date.getUTCDate(), 2)
-      + (milliseconds ? "T" + pad(hours, 2) + ":" + pad(minutes, 2) + ":" + pad(seconds, 2) + "." + pad(milliseconds, 3) + "Z"
-      : seconds ? "T" + pad(hours, 2) + ":" + pad(minutes, 2) + ":" + pad(seconds, 2) + "Z"
-      : minutes || hours ? "T" + pad(hours, 2) + ":" + pad(minutes, 2) + "Z"
-      : "");
-}
-
-function dsv(delimiter) {
-  var reFormat = new RegExp("[\"" + delimiter + "\n\r]"),
-      DELIMITER = delimiter.charCodeAt(0);
-
-  function parse(text, f) {
-    var convert, columns, rows = parseRows(text, function(row, i) {
-      if (convert) return convert(row, i - 1);
-      columns = row, convert = f ? customConverter(row, f) : objectConverter(row);
-    });
-    rows.columns = columns || [];
-    return rows;
-  }
-
-  function parseRows(text, f) {
-    var rows = [], // output rows
-        N = text.length,
-        I = 0, // current character index
-        n = 0, // current line number
-        t, // current token
-        eof = N <= 0, // current token followed by EOF?
-        eol = false; // current token followed by EOL?
-
-    // Strip the trailing newline.
-    if (text.charCodeAt(N - 1) === NEWLINE) --N;
-    if (text.charCodeAt(N - 1) === RETURN) --N;
-
-    function token() {
-      if (eof) return EOF;
-      if (eol) return eol = false, EOL;
-
-      // Unescape quotes.
-      var i, j = I, c;
-      if (text.charCodeAt(j) === QUOTE) {
-        while (I++ < N && text.charCodeAt(I) !== QUOTE || text.charCodeAt(++I) === QUOTE);
-        if ((i = I) >= N) eof = true;
-        else if ((c = text.charCodeAt(I++)) === NEWLINE) eol = true;
-        else if (c === RETURN) { eol = true; if (text.charCodeAt(I) === NEWLINE) ++I; }
-        return text.slice(j + 1, i - 1).replace(/""/g, "\"");
-      }
-
-      // Find next delimiter or newline.
-      while (I < N) {
-        if ((c = text.charCodeAt(i = I++)) === NEWLINE) eol = true;
-        else if (c === RETURN) { eol = true; if (text.charCodeAt(I) === NEWLINE) ++I; }
-        else if (c !== DELIMITER) continue;
-        return text.slice(j, i);
-      }
-
-      // Return last token before EOF.
-      return eof = true, text.slice(j, N);
-    }
-
-    while ((t = token()) !== EOF) {
-      var row = [];
-      while (t !== EOL && t !== EOF) row.push(t), t = token();
-      if (f && (row = f(row, n++)) == null) continue;
-      rows.push(row);
-    }
-
-    return rows;
-  }
-
-  function preformatBody(rows, columns) {
-    return rows.map(function(row) {
-      return columns.map(function(column) {
-        return formatValue(row[column]);
-      }).join(delimiter);
-    });
-  }
-
-  function format(rows, columns) {
-    if (columns == null) columns = inferColumns(rows);
-    return [columns.map(formatValue).join(delimiter)].concat(preformatBody(rows, columns)).join("\n");
-  }
-
-  function formatBody(rows, columns) {
-    if (columns == null) columns = inferColumns(rows);
-    return preformatBody(rows, columns).join("\n");
-  }
-
-  function formatRows(rows) {
-    return rows.map(formatRow).join("\n");
-  }
-
-  function formatRow(row) {
-    return row.map(formatValue).join(delimiter);
-  }
-
-  function formatValue(value) {
-    return value == null ? ""
-        : value instanceof Date ? formatDate(value)
-        : reFormat.test(value += "") ? "\"" + value.replace(/"/g, "\"\"") + "\""
-        : value;
-  }
-
-  return {
-    parse: parse,
-    parseRows: parseRows,
-    format: format,
-    formatBody: formatBody,
-    formatRows: formatRows,
-    formatRow: formatRow,
-    formatValue: formatValue
-  };
-}
-
-var csv = dsv(",");
-
-var csvParse = csv.parse;
-
-dsv("\t");
-
-// https://github.com/d3/d3-dsv/issues/45
-new Date("2019-01-01T00:00").getHours() || new Date("2019-07-01T00:00").getHours();
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -9119,7 +9494,7 @@ var cjs = {
 	exports.ParsingError = ParsingError;
 	let parsingState;
 	function nextChild() {
-	    return element(false) || text() || comment() || cdata();
+	    return element(false) || text() || comment() || cdata() || processingInstruction(false);
 	}
 	function nextRootChild() {
 	    match(/\s*/);
@@ -9430,7 +9805,7 @@ var cjs = {
 	        const nodeChildren = node.children;
 	        appendContent(state, '>');
 	        state.level++;
-	        let nodePreserveSpace = node.attributes['xml:space'] === 'preserve';
+	        let nodePreserveSpace = node.attributes['xml:space'] === 'preserve' || preserveSpace;
 	        let ignoredPath = false;
 	        if (!nodePreserveSpace && state.options.ignoredPaths) {
 	            ignoredPath = isPathMatchingIgnoredPaths(state.path, state.options.ignoredPaths);
@@ -9540,6 +9915,310 @@ var cjs = {
 
 var xmlFormat = /*@__PURE__*/getDefaultExportFromCjs(cjsExports$1);
 
+function saveAsSvg() {
+    let svgString = createSvgString();
+    let svgArrowUp = encodeURIComponent(getArrowUp());
+    let svgArrowDown = encodeURIComponent(getArrowDown());
+    let svgArrowBottom = encodeURIComponent(getArrowBottom());
+    let svgArrowTop = encodeURIComponent(getArrowTop());
+    let regexUp = /<image id="arrow_image_up"[^>]*href="data:image\/svg\+xml[^"]*">/g;
+    let regexDown = /<image id="arrow_image_down"[^>]*href="data:image\/svg\+xml[^"]*">/g;
+    let regexTop = /<image id="brush_image_top"[^>]*href="data:image\/svg\+xml[^"]*">/g;
+    let regexBottom = /<image id="brush_image_bottom"[^>]*href="data:image\/svg\+xml[^"]*">/g;
+    svgString = svgString.replaceAll(regexUp, getImageTag("arrow_image_up", svgArrowUp));
+    svgString = svgString.replaceAll(regexDown, getImageTag("arrow_image_down", svgArrowDown));
+    svgString = svgString.replaceAll(regexBottom, getImageTag("brush_image_bottom", svgArrowBottom));
+    svgString = svgString.replaceAll(regexTop, getImageTag("brush_image_top", svgArrowTop));
+    setOptionsAndDownload(svgString);
+}
+function setOptionsAndDownload(svgString) {
+    let name = 'parcoords.svg';
+    const modalOverlay = document.createElement('div');
+    modalOverlay.style.position = 'fixed';
+    modalOverlay.style.top = '0';
+    modalOverlay.style.left = '0';
+    modalOverlay.style.width = '100vw';
+    modalOverlay.style.height = '100vh';
+    modalOverlay.style.backgroundColor = 'rgba(0,0,0,0.5)';
+    modalOverlay.style.display = 'flex';
+    modalOverlay.style.justifyContent = 'center';
+    modalOverlay.style.alignItems = 'center';
+    modalOverlay.style.zIndex = '9999';
+    const modal = document.createElement('div');
+    modal.style.backgroundColor = 'white';
+    modal.style.padding = '0.35rem';
+    modal.style.border = '0.08rem solid gray';
+    modal.style.borderRadius = '0.5rem';
+    modal.style.boxShadow = '0 0 0.625rem rgba(0,0,0,0.3)';
+    modal.style.textAlign = 'center';
+    modal.style.minWidth = '18rem';
+    const form = document.createElement('div');
+    form.style.display = 'flex';
+    form.style.flexDirection = 'column';
+    form.style.gap = '1rem';
+    const rowDecimals = document.createElement('div');
+    rowDecimals.style.display = 'flex';
+    rowDecimals.style.alignItems = 'center';
+    rowDecimals.style.justifyContent = 'space-between';
+    const label = document.createElement('label');
+    label.textContent = 'Set decimals (0-10): ';
+    label.style.textAlign = 'left';
+    label.style.flex = '1';
+    label.htmlFor = 'decimalsInput';
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.min = '0';
+    input.max = '10';
+    input.value = '2';
+    input.id = 'decimalsInput';
+    input.style.width = '3.125rem';
+    rowDecimals.appendChild(label);
+    rowDecimals.appendChild(input);
+    const rowKeepClasses = document.createElement('div');
+    rowKeepClasses.style.display = 'flex';
+    rowKeepClasses.style.alignItems = 'center';
+    rowKeepClasses.style.justifyContent = 'space-between';
+    const labelKeepClasses = document.createElement('label');
+    labelKeepClasses.textContent = 'Keep classes: ';
+    labelKeepClasses.style.flex = '1';
+    labelKeepClasses.style.textAlign = 'left';
+    labelKeepClasses.style.marginRight = '0.5rem';
+    const inputKeepClasses = document.createElement('input');
+    inputKeepClasses.type = 'checkbox';
+    inputKeepClasses.id = 'keepClassesInput';
+    inputKeepClasses.checked = true;
+    rowKeepClasses.appendChild(labelKeepClasses);
+    rowKeepClasses.appendChild(inputKeepClasses);
+    const button = document.createElement('button');
+    button.textContent = 'Download';
+    button.style.cursor = 'pointer';
+    button.style.marginLeft = '0.5rem';
+    button.style.marginTop = '0.4rem';
+    button.style.marginBottom = '0.5rem';
+    button.style.marginRight = '0.5rem';
+    button.style.display = 'block';
+    form.appendChild(rowDecimals);
+    form.appendChild(rowKeepClasses);
+    form.appendChild(button);
+    modal.appendChild(form);
+    modalOverlay.appendChild(modal);
+    document.body.appendChild(modalOverlay);
+    input.focus();
+    button.addEventListener('click', () => {
+        const decimals = parseInt(input.value);
+        if (isNaN(decimals) || decimals < 0 || decimals > 10) {
+            alert('Please enter a number between 2 and 10.');
+            input.focus();
+            return;
+        }
+        let updatedSVG = roundDecimals(svgString, decimals);
+        if (!inputKeepClasses.checked) {
+            updatedSVG = removeClasses(updatedSVG);
+        }
+        let processedData = xmlFormat(updatedSVG, { indentation: '  ', collapseContent: true });
+        let preface = '<?xml version="1.0" standalone="no"?>\r\n';
+        let svgBlob = new Blob([preface, processedData], { type: 'image/svg+xml;charset=utf-8' });
+        let svgUrl = URL.createObjectURL(svgBlob);
+        let downloadLink = document.createElement('a');
+        downloadLink.href = svgUrl;
+        downloadLink.download = name;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        document.body.removeChild(modalOverlay);
+    });
+    modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) {
+            document.body.removeChild(modalOverlay);
+        }
+    });
+}
+function getImageTag(key, svg) {
+    return `<image id="${key}" width="12" height="12" href="data:image/svg+xml,${svg}">`;
+}
+function roundDecimals(svgString, decimals) {
+    return svgString.replace(/(\d*\.\d+)/g, (match) => {
+        return parseFloat(match).toFixed(decimals);
+    });
+}
+function removeClasses(svgString) {
+    return svgString.replace(/\sclass="[^"]*"/g, '');
+}
+
+var EOL = {},
+    EOF = {},
+    QUOTE = 34,
+    NEWLINE = 10,
+    RETURN = 13;
+
+function objectConverter(columns) {
+  return new Function("d", "return {" + columns.map(function(name, i) {
+    return JSON.stringify(name) + ": d[" + i + "] || \"\"";
+  }).join(",") + "}");
+}
+
+function customConverter(columns, f) {
+  var object = objectConverter(columns);
+  return function(row, i) {
+    return f(object(row), i, columns);
+  };
+}
+
+// Compute unique columns in order of discovery.
+function inferColumns(rows) {
+  var columnSet = Object.create(null),
+      columns = [];
+
+  rows.forEach(function(row) {
+    for (var column in row) {
+      if (!(column in columnSet)) {
+        columns.push(columnSet[column] = column);
+      }
+    }
+  });
+
+  return columns;
+}
+
+function pad(value, width) {
+  var s = value + "", length = s.length;
+  return length < width ? new Array(width - length + 1).join(0) + s : s;
+}
+
+function formatYear(year) {
+  return year < 0 ? "-" + pad(-year, 6)
+    : year > 9999 ? "+" + pad(year, 6)
+    : pad(year, 4);
+}
+
+function formatDate(date) {
+  var hours = date.getUTCHours(),
+      minutes = date.getUTCMinutes(),
+      seconds = date.getUTCSeconds(),
+      milliseconds = date.getUTCMilliseconds();
+  return isNaN(date) ? "Invalid Date"
+      : formatYear(date.getUTCFullYear()) + "-" + pad(date.getUTCMonth() + 1, 2) + "-" + pad(date.getUTCDate(), 2)
+      + (milliseconds ? "T" + pad(hours, 2) + ":" + pad(minutes, 2) + ":" + pad(seconds, 2) + "." + pad(milliseconds, 3) + "Z"
+      : seconds ? "T" + pad(hours, 2) + ":" + pad(minutes, 2) + ":" + pad(seconds, 2) + "Z"
+      : minutes || hours ? "T" + pad(hours, 2) + ":" + pad(minutes, 2) + "Z"
+      : "");
+}
+
+function dsv(delimiter) {
+  var reFormat = new RegExp("[\"" + delimiter + "\n\r]"),
+      DELIMITER = delimiter.charCodeAt(0);
+
+  function parse(text, f) {
+    var convert, columns, rows = parseRows(text, function(row, i) {
+      if (convert) return convert(row, i - 1);
+      columns = row, convert = f ? customConverter(row, f) : objectConverter(row);
+    });
+    rows.columns = columns || [];
+    return rows;
+  }
+
+  function parseRows(text, f) {
+    var rows = [], // output rows
+        N = text.length,
+        I = 0, // current character index
+        n = 0, // current line number
+        t, // current token
+        eof = N <= 0, // current token followed by EOF?
+        eol = false; // current token followed by EOL?
+
+    // Strip the trailing newline.
+    if (text.charCodeAt(N - 1) === NEWLINE) --N;
+    if (text.charCodeAt(N - 1) === RETURN) --N;
+
+    function token() {
+      if (eof) return EOF;
+      if (eol) return eol = false, EOL;
+
+      // Unescape quotes.
+      var i, j = I, c;
+      if (text.charCodeAt(j) === QUOTE) {
+        while (I++ < N && text.charCodeAt(I) !== QUOTE || text.charCodeAt(++I) === QUOTE);
+        if ((i = I) >= N) eof = true;
+        else if ((c = text.charCodeAt(I++)) === NEWLINE) eol = true;
+        else if (c === RETURN) { eol = true; if (text.charCodeAt(I) === NEWLINE) ++I; }
+        return text.slice(j + 1, i - 1).replace(/""/g, "\"");
+      }
+
+      // Find next delimiter or newline.
+      while (I < N) {
+        if ((c = text.charCodeAt(i = I++)) === NEWLINE) eol = true;
+        else if (c === RETURN) { eol = true; if (text.charCodeAt(I) === NEWLINE) ++I; }
+        else if (c !== DELIMITER) continue;
+        return text.slice(j, i);
+      }
+
+      // Return last token before EOF.
+      return eof = true, text.slice(j, N);
+    }
+
+    while ((t = token()) !== EOF) {
+      var row = [];
+      while (t !== EOL && t !== EOF) row.push(t), t = token();
+      if (f && (row = f(row, n++)) == null) continue;
+      rows.push(row);
+    }
+
+    return rows;
+  }
+
+  function preformatBody(rows, columns) {
+    return rows.map(function(row) {
+      return columns.map(function(column) {
+        return formatValue(row[column]);
+      }).join(delimiter);
+    });
+  }
+
+  function format(rows, columns) {
+    if (columns == null) columns = inferColumns(rows);
+    return [columns.map(formatValue).join(delimiter)].concat(preformatBody(rows, columns)).join("\n");
+  }
+
+  function formatBody(rows, columns) {
+    if (columns == null) columns = inferColumns(rows);
+    return preformatBody(rows, columns).join("\n");
+  }
+
+  function formatRows(rows) {
+    return rows.map(formatRow).join("\n");
+  }
+
+  function formatRow(row) {
+    return row.map(formatValue).join(delimiter);
+  }
+
+  function formatValue(value) {
+    return value == null ? ""
+        : value instanceof Date ? formatDate(value)
+        : reFormat.test(value += "") ? "\"" + value.replace(/"/g, "\"\"") + "\""
+        : value;
+  }
+
+  return {
+    parse: parse,
+    parseRows: parseRows,
+    format: format,
+    formatBody: formatBody,
+    formatRows: formatRows,
+    formatRow: formatRow,
+    formatValue: formatValue
+  };
+}
+
+var csv = dsv(",");
+
+var csvParse = csv.parse;
+
+dsv("\t");
+
+// https://github.com/d3/d3-dsv/issues/45
+new Date("2019-01-01T00:00").getHours() || new Date("2019-07-01T00:00").getHours();
+
 function loadCSV(csv) {
     let completeArray = csv.split(/\r?\n/);
     if (checkIfDuplicatesExists(completeArray[0])) {
@@ -9559,80 +10238,6 @@ function removeDuplicateColumnNames(value) {
 function checkIfDuplicatesExists(value) {
     return new Set(value).size !== value.length;
 }
-function saveAsSvg() {
-    let svg = document.getElementById('pc_svg');
-    saveSvg(svg, 'parcoords.svg');
-}
-function saveSvg(data, name) {
-    data.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-    data.querySelectorAll(".domain").forEach(el => {
-        el.removeAttribute("class");
-    });
-    let svgData = data.outerHTML;
-    svgData = svgData.replaceAll(/cursor: url\([^)]*\) 8 8, auto;/g, '');
-    svgData = svgData.replaceAll(/style="cursor:[^"]*"/g, '');
-    svgData = svgData.replaceAll(/<rect style=[^>]*><\/rect>/g, '');
-    svgData = svgData.replaceAll(/id="pc_svg"/g, '');
-    let svgArrowUp = encodeURIComponent(getArrowUp());
-    let svgArrowDown = encodeURIComponent(getArrowDown());
-    let svgArrowBottom = encodeURIComponent(getArrowBottom());
-    let svgArrowTop = encodeURIComponent(getArrowTop());
-    let regexUp = /<image id="arrow_image_up"[^>]*href="data:image\/svg\+xml[^"]*">/g;
-    let regexDown = /<image id="arrow_image_down"[^>]*href="data:image\/svg\+xml[^"]*">/g;
-    let regexTop = /<image id="brush_image_top"[^>]*href="data:image\/svg\+xml[^"]*">/g;
-    let regexBottom = /<image id="brush_image_bottom"[^>]*href="data:image\/svg\+xml[^"]*">/g;
-    svgData = svgData.replaceAll(regexUp, getImageTag("arrow_image_up", svgArrowUp));
-    svgData = svgData.replaceAll(regexDown, getImageTag("arrow_image_down", svgArrowDown));
-    svgData = svgData.replaceAll(regexBottom, getImageTag("brush_image_bottom", svgArrowBottom));
-    svgData = svgData.replaceAll(regexTop, getImageTag("brush_image_top", svgArrowTop));
-    let processedData = xmlFormat(svgData);
-    processedData = flattenTextTags(processedData);
-    processedData = cleanUseElements(processedData);
-    processedData = cleanPathElements(processedData);
-    processedData = removeEmptyOrHiddenRects(processedData);
-    processedData = processedData.replace(/pointer-events\s*:\s*[^;"]*;?/g, '');
-    processedData = processedData.replace(/    /g, '  ');
-    processedData = processedData.replace('<svg', '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
-    let preface = '<?xml version="1.0" standalone="no"?>\r\n';
-    let svgBlob = new Blob([preface, processedData], { type: 'image/svg+xml;charset=utf-8' });
-    let svgUrl = URL.createObjectURL(svgBlob);
-    let downloadLink = document.createElement('a');
-    downloadLink.href = svgUrl;
-    downloadLink.download = name;
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
-}
-function getImageTag(key, svg) {
-    return `<image id="${key}" width="12" height="12" href="data:image/svg+xml,${svg}">`;
-}
-function flattenTextTags(svgString) {
-    return svgString.replace(/<text([^>]*)>\s*([\s\S]*?)\s*<\/text>/g, (_, attrs, content) => {
-        const flattened = content.replace(/\s+/g, ' ').trim();
-        return `<text${attrs}>${flattened}</text>`;
-    });
-}
-function cleanUseElements(svgString) {
-    return svgString.replace(/<use([^>]*)>([\s\S]*?)<\/use>/g, (_, attrs) => {
-        return `<use${attrs}/>`;
-    });
-}
-function cleanPathElements(svgString) {
-    return svgString.replace(/<path([^>]*)>([\s\S]*?)<\/path>/g, (_, attrs) => {
-        return `<path${attrs}/>`;
-    });
-}
-function removeEmptyOrHiddenRects(svgString) {
-    return svgString.replace(/<rect([^>]*?)\s*\/?>/g, (match, attrs) => {
-        const hasZeroSize = /(?:\s|")width\s*=\s*["']?0(?:\.0*)?["']?/i.test(attrs) &&
-            /(?:\s|")height\s*=\s*["']?0(?:\.0*)?["']?/i.test(attrs);
-        const hasHiddenStyle = /visibility\s*:\s*hidden|display\s*:\s*none/i.test(attrs);
-        if (hasZeroSize || hasHiddenStyle) {
-            return '';
-        }
-        return match;
-    });
-}
 
-export { addInvertStatus, addNumberOfDigs, addPosition, addSettingsForBrushing, brushDown, brushUp, checkIfDuplicatesExists, cleanLinePathArrayString, cleanLinePathString, cleanString, deleteChart, digits, dragAndBrush, drawChart, filter, filterWithCoords, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getArrowBottom, getArrowBottomCursor, getArrowDown, getArrowDownCursor, getArrowLeft, getArrowLeftAndRight, getArrowRight, getArrowTop, getArrowTopAndBottom, getArrowTopCursor, getArrowUp, getArrowUpCursor, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelected, hide, invert, invertWoTransition, isDimensionCategorical, isElementVisible, isInverted, isSelected, isSelectedWithRecordId, loadCSV, move, moveByOne, removeDuplicateColumnNames, saveAsSvg, saveSvg, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setFilter, setInversionStatus, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setSize, setUnselected, setUnselectedWithId, show, swap, throttle, throttleBrushDown, throttleBrushUp, throttleDragAndBrush, throttleShowValues, toggleSelection, toggleSelectionWithId };
+export { createSvgString, deleteChart, drawChart, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelected, hide, invert, invertWoTransition, isDimensionCategorical, isSelected, isSelectedWithRecordId, loadCSV, move, moveByOne, saveAsSvg, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setFilter, setInversionStatus, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setUnselected, setUnselectedWithId, show, swap, throttleShowValues, toggleSelection, toggleSelectionWithId };
 //# sourceMappingURL=spcd3.js.map
