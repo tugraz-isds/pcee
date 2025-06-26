@@ -3844,10 +3844,11 @@ function setToolTipBrush(tooltipValues, d, event, parcoords, window, direction) 
             tooltipValue = range[1];
         }
     }
+    let coord = (window.event.clientY - 160) / 16;
     const digs = getSigDig(d.name, parcoords.currentPosOfDims);
     tooltipValues.text(Math.round(tooltipValue.toPrecision(digs).toLocaleString('en-GB') * 10) / 10);
     tooltipValues.style('visibility', 'visible');
-    tooltipValues.style('top', window.event.clientY / 16 + 'rem').style('left', window.event.clientX / 16 + 'rem');
+    tooltipValues.style('top', coord + 'rem').style('left', (window.event.clientX - 10) / 16 + 'rem');
     tooltipValues.style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
         .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
         .style('padding', 0.12 + 'rem').style('white-space', 'pre-line')
@@ -3879,7 +3880,7 @@ function setToolTipDragAndBrush(tooltipValuesTop, tooltipValuesDown, d, parcoord
     else {
         tooltipValuesTop.text(Math.round(tooltipValueTop));
         tooltipValuesTop.style('visibility', 'visible');
-        tooltipValuesTop.style('top', (Number(yPosTop + 150) / 16) + 'rem').style('left', window.event.clientX / 16 + 'rem');
+        tooltipValuesTop.style('top', (Number(yPosTop + 130) / 16) + 'rem').style('left', window.event.clientX / 16 + 'rem');
         tooltipValuesTop.style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
             .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
             .style('padding', 0.12 + 'rem').style('white-space', 'pre-line')
@@ -3918,53 +3919,34 @@ function updateLines(parcoords, active, dimensionName, cleanDimensionName) {
                 240 / range * (maxValue - d[dimensionName]) + 80;
         }
         const currentLine = getLineName(d);
-        console.log(currentLine);
-        const test = cleanLinePathString(currentLine);
-        console.log(test);
-        const dimNameToCheck = select$1('.' + test).text();
+        const cleanLine = cleanLinePathString(currentLine);
+        const dimNameToCheck = select$1('.' + currentLine).text();
         const emptyString = '';
         if (value < rangeTop + 10 || value > rangeBottom) {
             if (dimNameToCheck == emptyString) {
-                makeInactive(currentLine, dimensionName);
-                if (isSelected(currentLine)) {
-                    setUnselected(currentLine);
-                    selectionArray.push(currentLine);
-                }
+                makeInactive(cleanLine, dimensionName);
             }
         }
         else if (value == 320 && value == rangeTop + 10 && value == rangeBottom) {
             if (dimNameToCheck == emptyString) {
-                makeInactive(currentLine, dimensionName);
-                if (isSelected(currentLine)) {
-                    setUnselected(currentLine);
-                    selectionArray.push(currentLine);
-                }
+                makeInactive(cleanLine, dimensionName);
             }
         }
         else if (value == 80 && value == rangeTop + 10 && value == rangeBottom) {
             if (dimNameToCheck == emptyString) {
-                makeInactive(currentLine, dimensionName);
-                if (isSelected(currentLine)) {
-                    setUnselected(currentLine);
-                    selectionArray.push(currentLine);
-                }
+                makeInactive(cleanLine, dimensionName);
             }
         }
         else if (dimNameToCheck == dimensionName && dimNameToCheck != emptyString) {
             let checkedLines = [];
             parcoords.currentPosOfDims.forEach(function (item) {
                 if (item.top != 80 || item.bottom != 320) {
-                    checkAllPositionsTop(item, dimensionName, parcoords, d, checkedLines, currentLine);
-                    checkAllPositionsBottom(item, dimensionName, parcoords, d, checkedLines, currentLine);
+                    checkAllPositionsTop(item, dimensionName, parcoords, d, checkedLines, cleanLine);
+                    checkAllPositionsBottom(item, dimensionName, parcoords, d, checkedLines, cleanLine);
                 }
             });
-            if (!checkedLines.includes(currentLine)) {
-                makeActive(currentLine);
-                const index = selectionArray.indexOf(currentLine);
-                if (index != -1) {
-                    setSelected(currentLine);
-                    selectionArray.splice(index, 1);
-                }
+            if (!checkedLines.includes(cleanLine)) {
+                makeActive(cleanLine);
             }
         }
         else ;
@@ -4015,19 +3997,26 @@ function checkAllPositionsBottom(positionItem, dimensionName, parcoords, d, chec
     }
 }
 function makeActive(currentLineName) {
-    select$1('.' + currentLineName).style('opacity', '0.7')
-        .style('pointer-events', 'stroke')
-        .style('stroke', 'rgb(0, 129, 175)')
-        .style('stroke-width', '0.1rem')
-        .style('fill', 'none')
-        .text('');
+    if (select$1('.' + currentLineName).classed('selected')) {
+        select$1('.' + currentLineName)
+            .style('pointer-events', 'stroke')
+            .style('stroke', 'rgb(255, 165, 0)')
+            .style('opacity', '1')
+            .text('');
+    }
+    else {
+        select$1('.' + currentLineName)
+            .style('pointer-events', 'stroke')
+            .style('stroke', 'rgb(0, 129, 175)')
+            .style('opacity', '0.5')
+            .text('');
+    }
 }
 function makeInactive(currentLineName, dimensionName) {
-    const test = cleanLinePathString(currentLineName);
-    select$1('.' + test).style('pointer-events', 'none')
-        .style('fill', 'none')
+    select$1('.' + currentLineName)
+        .style('pointer-events', 'none')
         .style('stroke', 'lightgrey')
-        .style('stroke-opacity', '0.4')
+        .style('opacity', '0.4')
         .text(dimensionName);
 }
 function addSettingsForBrushing(dimensionName, parcoords) {
@@ -7166,7 +7155,7 @@ function createToolTipForValues(recordData) {
                     240 / range * (maxValue - recordData[dimension]) + 80;
             }
             const x = (rectLeft + (counter * 95)) / 16;
-            const y = (value + 195) / 16;
+            const y = (value + 105) / 16;
             tooltipValues.text(recordData[dimension].toString())
                 .style('visibility', 'visible')
                 .style('top', `${y}rem`)
@@ -8102,15 +8091,6 @@ function invert(dimension) {
         })
             .ease(cubicInOut);
     });
-    trans(window.selectable).each(function (d) {
-        select$1(this)
-            .transition()
-            .duration(1000)
-            .attr('d', (d) => {
-            return linePath(d, parcoords.newFeatures, parcoords);
-        })
-            .ease(cubicInOut);
-    });
     addSettingsForBrushing(dimension, parcoords);
     if (isInverted(dimension)) {
         addInvertStatus(true, parcoords.currentPosOfDims, dimension, "isInverted");
@@ -8136,12 +8116,6 @@ function invertWoTransition(dimension) {
         .domain(parcoords.yScales[dimension]
         .domain().reverse())));
     trans(window.active).each(function (d) {
-        select$1(this)
-            .attr('d', (d) => {
-            return linePath(d, parcoords.newFeatures, parcoords);
-        });
-    });
-    trans(window.selectable).each(function (d) {
         select$1(this)
             .attr('d', (d) => {
             return linePath(d, parcoords.newFeatures, parcoords);
@@ -8180,15 +8154,6 @@ function setInversionStatus(dimension, status) {
         .domain().reverse())))
         .ease(cubicInOut);
     trans(window.active).each(function (d) {
-        select$1(this)
-            .transition()
-            .duration(1000)
-            .attr('d', (d) => {
-            return linePath(d, parcoords.newFeatures, parcoords);
-        })
-            .ease(cubicInOut);
-    });
-    trans(window.selectable).each(function (d) {
         select$1(this)
             .transition()
             .duration(1000)
@@ -8317,12 +8282,10 @@ function setDimensionRange(dimension, min, max) {
     if (inverted) {
         window.parcoords.yScales[dimension].domain([max, min]);
         window.yAxis = setupYAxis(window.parcoords.features, window.parcoords.yScales, window.parcoords.newDataset);
-        //setFilter(dimension, getCurrentMinRange(dimension), getCurrentMaxRange(dimension));
     }
     else {
         window.parcoords.yScales[dimension].domain([min, max]);
         window.yAxis = setupYAxis(window.parcoords.features, window.parcoords.yScales, window.parcoords.newDataset);
-        //setFilter(dimension, getCurrentMaxRange(dimension), getCurrentMinRange(dimension));
     }
     addRange(min, window.parcoords.currentPosOfDims, dimension, 'currentRangeBottom');
     addRange(max, window.parcoords.currentPosOfDims, dimension, 'currentRangeTop');
@@ -8353,12 +8316,10 @@ function setDimensionRangeRounded(dimension, min, max) {
     if (inverted) {
         window.parcoords.yScales[dimension].domain([max, min]).nice();
         window.yAxis = setupYAxis(window.parcoords.features, window.parcoords.yScales, window.parcoords.newDataset);
-        //setFilter(dimension, getCurrentMinRange(dimension), getCurrentMaxRange(dimension));
     }
     else {
         window.parcoords.yScales[dimension].domain([min, max]).nice();
         window.yAxis = setupYAxis(window.parcoords.features, window.parcoords.yScales, window.parcoords.newDataset);
-        //setFilter(dimension, getCurrentMaxRange(dimension), getCurrentMinRange(dimension));
     }
     addRange(min, window.parcoords.currentPosOfDims, dimension, 'currentRangeBottom');
     addRange(max, window.parcoords.currentPosOfDims, dimension, 'currentRangeTop');
@@ -8438,54 +8399,18 @@ function getSelected() {
     return selected;
 }
 function setSelection(records) {
-    let selectableLines = [];
-    let editRecord;
     for (let i = 0; i < records.length; i++) {
-        window.active.each(function (d) {
-            editRecord = records[i].length > 10 ? records[i].substr(0, 10) + '...' : records[i];
-            if (cleanLinePathString(d[window.hoverlabel]) == cleanLinePathString(editRecord)) {
-                selectableLines.push(d);
-            }
-        });
+        let editRecord = records[i].length > 10 ? records[i].substr(0, 10) + '...' : records[i];
         select$1('.' + cleanLinePathString(editRecord))
+            .classed('selected', true)
             .transition()
-            .style('visibility', 'hidden');
+            .style('stroke', 'rgb(255, 165, 0)')
+            .style('opacity', '1');
     }
-    window.selectable = svg.append('g')
-        .attr('class', 'selectable')
-        .selectAll('path')
-        .data(selectableLines)
-        .enter()
-        .append('path')
-        .attr('id', (d) => {
-        const keys = Object.keys(d);
-        window.key = keys[0];
-        const selected_value = cleanLinePathString(d[window.key]);
-        return 'select_' + selected_value;
-    })
-        .style('pointer-events', 'none')
-        .style('fill', 'none')
-        .style('stroke', 'rgb(255, 165, 0)')
-        .style('opacity', '1')
-        .style('visibility', 'visible')
-        .each(function (d) {
-        select$1(this)
-            .attr('d', linePath(d, parcoords.newFeatures, parcoords));
-    })
-        .on("contextmenu", function (event) {
-        event.preventDefault();
-    });
 }
 function isSelected(record) {
     let editRecord = record.length > 10 ? record.substr(0, 10) + '...' : record;
-    let cleanedRecord = cleanLinePathString(editRecord);
-    const path = select$1('#select_' + cleanedRecord);
-    if (path.size() != 0) {
-        return true;
-    }
-    else {
-        return false;
-    }
+    return select$1('.' + cleanLinePathString(editRecord)).classed('selected');
 }
 function toggleSelection(record) {
     const selected = isSelected(record);
@@ -8503,12 +8428,11 @@ function setSelected(record) {
 }
 function setUnselected(record) {
     let editRecord = record.length > 10 ? record.substr(0, 10) + '...' : record;
-    const path = cleanLinePathString(editRecord);
-    select$1('#select_' + path)
-        .remove();
-    select$1('.' + path)
+    selectAll('.' + cleanLinePathString(editRecord))
+        .classed('selected', false)
         .transition()
-        .style('visibility', 'visible');
+        .style('opacity', '0.5')
+        .style('stroke', 'rgb(0, 129, 175)');
 }
 //---------- Selection Functions With IDs ----------
 function setSelectionWithId(recordIds) {
@@ -8557,31 +8481,15 @@ function drawChart(content) {
     window.active = setActivePathLines(svg, content, ids, window.parcoords);
     setFeatureAxis(svg, yAxis, window.active, window.parcoords, width, window.padding);
     window.svg
-        .on('click', (event) => {
-        if (!(event.shiftKey) && !(event.ctrlKey) && !(event.metaKey)) {
-            if (!(event.target.id.includes('dimension_invert_'))) {
-                for (let i = 0; i < ids.length; i++) {
-                    if (select$1('.' + ids[i]).style('visibility') !== 'visible') {
-                        setUnselected(ids[i]);
-                    }
-                }
-            }
-        }
-        if (event.ctrlKey || event.metaKey) {
-            let selectedRecords = getSelected();
-            for (let i = 0; i < selectedRecords.length; i++) {
-                if (selectedRecords[i] == event.target.id) {
-                    toggleSelection(event.target.id);
-                }
-            }
-        }
-    })
         .on("contextmenu", function (event) {
         event.stopPropagation();
         event.preventDefault();
     })
         .on("mouseenter", function () {
         cleanTooltip();
+    })
+        .on("click", function () {
+        clearSelection();
     });
     window.onclick = (event) => {
         select$1('#contextmenu').style('display', 'none');
@@ -8613,13 +8521,13 @@ function drawChart(content) {
     toolbar.appendChild(selectionToolButton);
     toolbar.appendChild(showDataButton);
     toolbar.appendChild(refreshButton);
-    const parent = select$1('#parallelcoords').node().parentNode;
-    parent.insertBefore(toolbar, document.getElementById('parallelcoords'));
+    const parent = select$1('#pc_svg').node().parentNode;
+    parent.insertBefore(toolbar, document.getElementById('pc_svg'));
 }
 function showModalWithData() {
     const overlay = select$1('#parallelcoords')
         .append('div')
-        .attr('id', 'modalOverlay')
+        .attr('id', 'modalTableOverlay')
         .style('position', 'fixed')
         .style('top', 0)
         .style('left', 0)
@@ -8965,19 +8873,15 @@ function redrawChart(content, newFeatures) {
         .attr('id', 'pc_svg')
         .attr('viewBox', [0, 0, width, height])
         .attr('font-family', 'Verdana, sans-serif')
-        .on('click', (event) => {
-        if (!(event.shiftKey || event.metaKey)) {
-            if (!(event.target.id.includes('dimension_invert_'))) {
-                for (let i = 0; i < ids.length; i++) {
-                    if (select$1('.' + ids[i]).style('visibility') !== 'visible') {
-                        setUnselected(ids[i]);
-                    }
-                }
-            }
-        }
-    })
         .on("contextmenu", function (event) {
+        event.stopPropagation();
         event.preventDefault();
+    })
+        .on("mouseenter", function () {
+        cleanTooltip();
+    })
+        .on("click", function () {
+        clearSelection();
     });
     setDefsForIcons();
     window.onclick = (event) => {
@@ -9052,7 +8956,6 @@ const handlePointerEnter = (event, d) => {
         return;
     doNotHighlight();
     const data = getAllPointerEventsData(event, window.hoverlabel);
-    window.hoverdata = [...data];
     highlight(data);
     createTooltipForPathLine(data, tooltipTest, event);
     const datasetMap = new Map();
@@ -9072,7 +8975,7 @@ const handlePointerLeaveOrOut = () => {
     select$1('#tooltipTest').style('visibility', 'hidden');
     cleanTooltip();
 };
-select$1('#parallelcoords').on('mouseleave', () => {
+select$1('#pc_svg').on('mouseleave', () => {
     if (cleanupTimeout)
         clearTimeout(cleanupTimeout);
     cleanupTimeout = setTimeout(() => {
@@ -9083,7 +8986,7 @@ select$1('#parallelcoords').on('mouseleave', () => {
     }, 100);
 });
 document.addEventListener('mousemove', (e) => {
-    const chartBounds = document.querySelector('#parallelcoords').getBoundingClientRect();
+    const chartBounds = document.querySelector('#pc_svg').getBoundingClientRect();
     if (e.clientX < chartBounds.left ||
         e.clientX > chartBounds.right ||
         e.clientY < chartBounds.top ||
@@ -9150,8 +9053,24 @@ function setActivePathLines(svg, content, ids, parcoords) {
         .on('mouseenter', handlePointerEnter)
         .on('mouseout', handlePointerLeaveOrOut)
         .on('mouseleave', handlePointerLeaveOrOut)
-        .on('click', () => {
-        select(window.hoverdata);
+        .on('click', function (event, d) {
+        const data = getAllPointerEventsData(event, window.hoverlabel);
+        const selectedRecords = getSelected();
+        if (event.ctrlKey || event.metaKey) {
+            data.forEach(record => {
+                if (selectedRecords.includes(record)) {
+                    setUnselected(record);
+                }
+                else {
+                    select([record]);
+                }
+            });
+        }
+        else {
+            clearSelection();
+            select(data);
+        }
+        event.stopPropagation();
     })
         .on('contextmenu', function (event, d) {
         setContextMenuForActiceRecords(contextMenu, event, d);
@@ -9299,37 +9218,30 @@ let currentlyHighlightedItems = [];
 function highlight(data) {
     if (isSelectionMode)
         return;
-    currentlyHighlightedItems = [];
     const cleanedItems = data.map(item => cleanLinePathArrayString(item).replace(/[.,]/g, ''));
     currentlyHighlightedItems = [...cleanedItems];
     cleanedItems.forEach(item => {
-        if (isSelected(item)) {
-            setUnselected(item);
-            window.hoverSelected = window.hoverSelected || [];
-            window.hoverSelected.push(item);
-        }
-        let selectedPath = cleanedItems.join(',.');
-        selectAll('.' + selectedPath)
+        select$1('.' + item)
             .transition()
             .duration(5)
             .style('opacity', '0.7')
             .style('stroke', 'rgb(200, 28, 38)');
     });
-    return cleanedItems;
 }
 function doNotHighlight() {
     if (!currentlyHighlightedItems.length)
         return;
     currentlyHighlightedItems.forEach(item => {
-        selectAll('.' + item)
-            .transition()
-            .style('opacity', '0.7')
-            .style('stroke', 'rgb(0, 129, 175)');
-        if (window.hoverSelected?.includes(item)) {
-            setSelected(item);
-            const index = window.hoverSelected.indexOf(item);
-            if (index > -1)
-                window.hoverSelected.splice(index, 1);
+        const line = select$1('.' + item);
+        if (line.classed('selected')) {
+            line.transition()
+                .style('stroke', 'rgb(255, 165, 0)')
+                .style('opacity', '1');
+        }
+        else {
+            line.transition()
+                .style('stroke', 'rgb(0, 129, 175)')
+                .style('opacity', '0.5');
         }
     });
     currentlyHighlightedItems = [];
@@ -9340,6 +9252,16 @@ function select(linePaths) {
         let selectedLine = cleanLinePathString(linePaths[i]);
         setSelected(selectedLine);
     }
+}
+function clearSelection() {
+    const selectedRecords = getSelected();
+    selectedRecords.forEach(element => {
+        select$1('.' + cleanLinePathString(element))
+            .classed('selected', false)
+            .transition()
+            .style('stroke', 'rgb(0, 129, 175)')
+            .style('opacity', '0.5');
+    });
 }
 // Inverting
 function onInvert() {

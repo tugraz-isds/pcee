@@ -102,20 +102,18 @@
     }
     else {
       spcd3.setSelected('Patient F');
-      document.getElementById('outlier-button').textContent = 'Unselect Outlier';
+      document.getElementById('outlier-button').textContent = 'Hide Outlier';
     }
   };
 
   const showPositiveCorrelation = () => {
-    if (spcd3.isInverted('Age'))
+    if (spcd3.getInversionStatus('Age') == 'descending')
     {
       spcd3.setInversionStatus('Age', 'ascending');
-      document.getElementById('correlation-button').textContent = 'Show negative correlation';
     }
     else
     {
       spcd3.setInversionStatus('Age', 'descending');
-      document.getElementById('correlation-button').textContent = 'Show positive correlation';
     }
   }
 
@@ -455,6 +453,7 @@ p {
   transition: border-color 0.3s ease;
   padding-right: 0.5rem;
   padding-left: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 p:hover {
@@ -506,6 +505,7 @@ ul {
   border-left: 1rem solid transparent;
   transition: border-color 0.3s ease;
   padding-left: 1.5rem;
+  margin-top: 0;
 }
 
 ul ul {
@@ -538,10 +538,12 @@ button {
 }
 
 #outlier-button {
+  margin-top: 0;
   margin-left: 1.5rem;
 }
 
 #correlation-button {
+  margin-top: 0;
   margin-left: 1.5rem;
 }
 
