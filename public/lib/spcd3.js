@@ -3844,11 +3844,10 @@ function setToolTipBrush(tooltipValues, d, event, parcoords, window, direction) 
             tooltipValue = range[1];
         }
     }
-    let coord = (window.event.clientY - 160) / 16;
     const digs = getSigDig(d.name, parcoords.currentPosOfDims);
     tooltipValues.text(Math.round(tooltipValue.toPrecision(digs).toLocaleString('en-GB') * 10) / 10);
     tooltipValues.style('visibility', 'visible');
-    tooltipValues.style('top', coord + 'rem').style('left', (window.event.clientX - 10) / 16 + 'rem');
+    tooltipValues.style('top', (window.event.clientY - 160) / 16 + 'rem').style('left', (window.event.clientX - 10) / 16 + 'rem');
     tooltipValues.style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
         .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
         .style('padding', 0.12 + 'rem').style('white-space', 'pre-line')
@@ -9185,8 +9184,15 @@ function setFeatureAxis(svg, yAxis, active, parcoords, width, padding) {
     setBrushDown(featureAxis, parcoords, active, tooltipValues);
     setBrushUp(featureAxis, parcoords, active, tooltipValues);
     setRectToDrag(featureAxis, svg, parcoords, active, tooltipValuesTop, tooltipValuesDown);
+    setMarker(featureAxis);
     setContextMenu(featureAxis, padding, parcoords, active, width);
     setInvertIcon(featureAxis, padding);
+}
+function showMarker(dimension) {
+    select$1('#marker_' + dimension).attr('opacity', 1);
+}
+function hideMarker(dimension) {
+    select$1('#marker_' + dimension).attr('opacity', 0);
 }
 function setDefsForIcons() {
     const svgContainer = window.svg;
@@ -9291,6 +9297,25 @@ function setInvertIcon(featureAxis, padding) {
             .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowDownCursor()), 12)}') 8 8, auto`);
     })
         .on('click', onInvert());
+}
+function setMarker(featureAxis) {
+    featureAxis
+        .each(function (d) {
+        const processedDimensionName = cleanString(d.name);
+        console.log(processedDimensionName);
+        select$1(this)
+            .append('g')
+            .attr('class', 'marker')
+            .append('rect')
+            .attr('id', 'marker_' + processedDimensionName)
+            .attr('width', 24)
+            .attr('height', 240)
+            .attr('x', -12)
+            .attr('y', 80)
+            .attr('fill', 'none')
+            .attr('stroke', 'red')
+            .attr('opacity', '0');
+    });
 }
 // Brushing
 function setRectToDrag(featureAxis, svg, parcoords, active, tooltipValuesTop, tooltipValuesDown) {
@@ -10161,5 +10186,5 @@ function checkIfDuplicatesExists(value) {
     return new Set(value).size !== value.length;
 }
 
-export { createSvgString, deleteChart, drawChart, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelected, hide, invert, invertWoTransition, isDimensionCategorical, isSelected, isSelectedWithRecordId, loadCSV, move, moveByOne, saveAsSvg, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setFilter, setInversionStatus, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setUnselected, setUnselectedWithId, show, swap, throttleShowValues, toggleSelection, toggleSelectionWithId };
+export { createSvgString, deleteChart, drawChart, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelected, hide, hideMarker, invert, invertWoTransition, isDimensionCategorical, isSelected, isSelectedWithRecordId, loadCSV, move, moveByOne, saveAsSvg, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setFilter, setInversionStatus, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setUnselected, setUnselectedWithId, show, showMarker, swap, throttleShowValues, toggleSelection, toggleSelectionWithId };
 //# sourceMappingURL=spcd3.js.map

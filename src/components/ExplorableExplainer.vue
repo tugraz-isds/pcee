@@ -1,5 +1,5 @@
 <template>
-  <div id="sticky-header">
+  <div class="sticky-header">
     <div>Parallel Coordinates - An Explorable Explainer</div> 
   </div>
 
@@ -29,14 +29,14 @@
         <input v-model="row[column.key]" type="text"/>
         </td>
         <td>
-        <button id="delete-button" @click="deleteRow(rowIndex)">Delete</button>
+        <button class="delete-button" @click="deleteRow(rowIndex)">Delete</button>
         </td>
         </tr>
         </tbody>
         <tfoot>
         <tr>
         <td v-for="column in columns" :key="column.key">
-        <button id="delete-button" @click="deleteColumn(column.key)">Delete {{ column.label }}
+        <button class="delete-button" @click="deleteColumn(column.key)">Delete {{ column.label }}
         </button>
         </td>
         <td></td>
@@ -52,8 +52,8 @@
         <div>Add new column name:</div>
         <input v-model="newColumn" type="text"
         placeholder="Enter column name..." />
-        <button id="add-button" @click="addColumn">Add</button>
-        <button id="add-button" @click="closeModal">Cancel</button>
+        <button class="add-button" @click="addColumn">Add</button>
+        <button class="add-button" @click="closeModal">Cancel</button>
         </div>
         </div>      
       </div>
@@ -85,13 +85,13 @@
 
   // Click events button in usage section
   const addClickEvent = () => {
-    const button = document.getElementById('outlier-button');
-    if (button) {
-      button.addEventListener('click', selectOutlier);
+    const outlierButton = document.getElementById('outlier-button');
+    if (outlierButton) {
+      outlierButton.addEventListener('click', selectOutlier);
     }
-    const buttonPosCorr = document.getElementById('correlation-button');
-    if (buttonPosCorr) {
-      buttonPosCorr.addEventListener('click', showPositiveCorrelation);
+    const correlationButton = document.getElementById('correlation-button');
+    if (correlationButton) {
+      correlationButton.addEventListener('click', showPositiveCorrelation);
     }
   }
 
@@ -146,7 +146,7 @@
     const trimmed = newColumn.value.trim();
     let newCol = '';
     if (trimmed) {
-      newCol = { key: trimmed,label: trimmed };
+      newCol = { key: trimmed, label: trimmed };
     }
     
     columns.value.push(newCol);
@@ -285,11 +285,11 @@
   };
 
   // Load files from public/content/
-  const loadContent = async (htmlContent, filePath) => {
+  const loadContent = async (content, filePath) => {
     try {
       const response = await fetch(filePath);
       const data = await response.text();
-      htmlContent.value = data;
+      content.value = data;
 
       nextTick(() => {
         setupIntersectionObserver();
@@ -333,7 +333,7 @@
   box-sizing: border-box;
 }
 
-#sticky-header {
+.sticky-header {
   position: fixed;
   top: 0;
   left: 0;
@@ -510,12 +510,7 @@ ul {
 
 ul ul {
   padding-left: 0.5rem;
-  border-left: 1rem solid transparent;
-  transition: border-color 0.3s ease;
-}
-
-ul ul:hover {
-  border-color: rgba(237, 237, 231, 0.972);
+  border-left: 0;
 }
 
 ol {
@@ -537,23 +532,18 @@ button {
   margin-right: 0.5rem;
 }
 
-#outlier-button {
+.usage-button {
   margin-top: 0;
   margin-left: 1.5rem;
 }
 
-#correlation-button {
-  margin-top: 0;
-  margin-left: 1.5rem;
-}
-
-#delete-button {
+.delete-button {
   padding: 0.3rem;
   margin-top: 0;
   margin-right: 0;
 }
 
-#add-button {
+.add-button {
   padding: 0.3rem;
   margin-top: 0.3rem;
   margin-right: 0.3rem;
