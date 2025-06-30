@@ -9055,7 +9055,7 @@ function setActivePathLines(svg, content, ids, parcoords) {
         .on('click', function (event, d) {
         const data = getAllPointerEventsData(event, window.hoverlabel);
         const selectedRecords = getSelected();
-        if (event.ctrlKey || event.metaKey) {
+        if (event.metaKey || event.shiftKey) {
             data.forEach(record => {
                 if (selectedRecords.includes(record)) {
                     setUnselected(record);
@@ -9063,6 +9063,11 @@ function setActivePathLines(svg, content, ids, parcoords) {
                 else {
                     select([record]);
                 }
+            });
+        }
+        else if (event.ctrlKey) {
+            data.forEach(record => {
+                toggleSelection(record);
             });
         }
         else {
@@ -9302,18 +9307,18 @@ function setMarker(featureAxis) {
     featureAxis
         .each(function (d) {
         const processedDimensionName = cleanString(d.name);
-        console.log(processedDimensionName);
         select$1(this)
             .append('g')
             .attr('class', 'marker')
             .append('rect')
             .attr('id', 'marker_' + processedDimensionName)
-            .attr('width', 24)
-            .attr('height', 240)
-            .attr('x', -12)
-            .attr('y', 80)
+            .attr('width', 44)
+            .attr('height', 305)
+            .attr('x', -22)
+            .attr('y', 30)
             .attr('fill', 'none')
             .attr('stroke', 'red')
+            .attr('stroke-width', '0.15rem')
             .attr('opacity', '0');
     });
 }

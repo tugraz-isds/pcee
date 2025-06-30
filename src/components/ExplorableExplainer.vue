@@ -110,10 +110,12 @@
     if (spcd3.getInversionStatus('Age') == 'descending')
     {
       spcd3.setInversionStatus('Age', 'ascending');
+      spcd3.hideMarker('Age');
     }
     else
     {
       spcd3.setInversionStatus('Age', 'descending');
+      spcd3.showMarker('Age');
     }
   }
 
