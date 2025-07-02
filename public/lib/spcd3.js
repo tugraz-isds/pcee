@@ -3471,14 +3471,16 @@ function getSelectionActiveIcon() {
 }
 
 function cleanString(stringValue) {
-    let value = stringValue.replace(/ /g, '_');
-    return value.replace(/[.,*\-%&'\[{()}\]]/g, '');
-}
-function cleanLinePathString(stringValue) {
-    return stringValue.replace(/[*\- .,%&'\[{()}\]]/g, '');
-}
-function cleanLinePathArrayString(stringValue) {
-    return stringValue.replace(/[*\- 0123456789%&'\[{()}\]]/g, '');
+    let value = stringValue
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+    if (/^[0-9]/.test(value)) {
+        value = "x-" + value;
+    }
+    return value;
 }
 function setSize(stringValue, size) {
     return stringValue.replace('viewBox', `width="${size}" height="${size}" viewBox`);
@@ -3526,6 +3528,14 @@ function getMouseCoords(event, targetContainer = document.body) {
         return [event.clientX - rect.left, event.clientY - rect.top];
     }
 }
+/*export function getMouseCoords(event, targetContainer = document.body) {
+    if (targetContainer === document.body) {
+        return [event.clientX + window.scrollX, event.clientY + window.scrollY];
+    } else {
+        const rect = targetContainer.getBoundingClientRect();
+        return [event.clientX - rect.left, event.clientY - rect.top];
+    }
+}*/
 
 let selectionArray = [];
 function brushDown(cleanDimensionName, event, d, parcoords, active, tooltipValues, window) {
@@ -3805,7 +3815,7 @@ function filterWithCoords(topPosition, bottomPosition, currentPosOfDims, dimensi
 function getLineName(d) {
     const keys = Object.keys(d);
     const key = keys[0];
-    return cleanLinePathString(d[key]);
+    return cleanString(d[key]);
 }
 function addPosition(yPosTop, currentPosOfDims, dimensionName, key) {
     let newObject = {};
@@ -3918,34 +3928,33 @@ function updateLines(parcoords, active, dimensionName, cleanDimensionName) {
                 240 / range * (maxValue - d[dimensionName]) + 80;
         }
         const currentLine = getLineName(d);
-        const cleanLine = cleanLinePathString(currentLine);
         const dimNameToCheck = select$1('.' + currentLine).text();
         const emptyString = '';
         if (value < rangeTop + 10 || value > rangeBottom) {
             if (dimNameToCheck == emptyString) {
-                makeInactive(cleanLine, dimensionName);
+                makeInactive(currentLine, dimensionName);
             }
         }
         else if (value == 320 && value == rangeTop + 10 && value == rangeBottom) {
             if (dimNameToCheck == emptyString) {
-                makeInactive(cleanLine, dimensionName);
+                makeInactive(currentLine, dimensionName);
             }
         }
         else if (value == 80 && value == rangeTop + 10 && value == rangeBottom) {
             if (dimNameToCheck == emptyString) {
-                makeInactive(cleanLine, dimensionName);
+                makeInactive(currentLine, dimensionName);
             }
         }
         else if (dimNameToCheck == dimensionName && dimNameToCheck != emptyString) {
             let checkedLines = [];
             parcoords.currentPosOfDims.forEach(function (item) {
                 if (item.top != 80 || item.bottom != 320) {
-                    checkAllPositionsTop(item, dimensionName, parcoords, d, checkedLines, cleanLine);
-                    checkAllPositionsBottom(item, dimensionName, parcoords, d, checkedLines, cleanLine);
+                    checkAllPositionsTop(item, dimensionName, parcoords, d, checkedLines, currentLine);
+                    checkAllPositionsBottom(item, dimensionName, parcoords, d, checkedLines, currentLine);
                 }
             });
-            if (!checkedLines.includes(cleanLine)) {
-                makeActive(cleanLine);
+            if (!checkedLines.includes(currentLine)) {
+                makeActive(currentLine);
             }
         }
         else ;
@@ -7130,7 +7139,7 @@ function getAllVisibleDimensionNames$1() {
 function createToolTipForValues(recordData) {
     const dimensions = getAllVisibleDimensionNames$1();
     let counter = 0;
-    const rectLeft = select$1('#rect_' + dimensions[0])?.node()?.getBoundingClientRect().left;
+    const rectLeft = select$1('#rect_' + cleanString(dimensions[0]))?.node()?.getBoundingClientRect().left;
     dimensions.forEach(dimension => {
         const cleanString$1 = cleanString(dimension);
         if (isElementVisible(select$1('#rect_' + cleanString$1))) {
@@ -7153,8 +7162,8 @@ function createToolTipForValues(recordData) {
                 value = isNaN(maxValue) ? scale(recordData[dimension]) :
                     240 / range * (maxValue - recordData[dimension]) + 80;
             }
-            const x = (rectLeft + (counter * 95)) / 16;
-            const y = (value + 105) / 16;
+            const x = (rectLeft + (counter * 95) -15) / 16;
+            const y = (value + 100) / 16;
             tooltipValues.text(recordData[dimension].toString())
                 .style('visibility', 'visible')
                 .style('top', `${y}rem`)
@@ -7695,7 +7704,7 @@ function createContextMenu() {
         .text('Show All');
 }
 function createModalToSetRange() {
-    select$1('#parallelcoords')
+    select$1('body')
         .append('div')
         .attr('id', 'modalOverlaySetRange')
         .style('position', 'fixed')
@@ -7710,7 +7719,7 @@ function createModalToSetRange() {
         select$1('#modalSetRange').style('display', 'none');
         select$1('#modalOverlaySetRange').style('display', 'none');
     });
-    const modalSetRange = select$1('#parallelcoords')
+    const modalSetRange = select$1('body')
         .append('div')
         .attr('id', 'modalSetRange')
         .style('position', 'fixed')
@@ -7734,7 +7743,7 @@ function createModalToSetRange() {
     createErrorMessage(modalSetRange, 'errorRange');
 }
 function createModalToFilter() {
-    select$1('#parallelcoords')
+    select$1('body')
         .append('div')
         .attr('id', 'modalOverlayFilter')
         .style('position', 'fixed')
@@ -7749,7 +7758,7 @@ function createModalToFilter() {
         select$1('#modalFilter').style('display', 'none');
         select$1('#modalOverlayFilter').style('display', 'none');
     });
-    const modalFilter = select$1('#parallelcoords')
+    const modalFilter = select$1('body')
         .append('div')
         .attr('id', 'modalFilter')
         .style('position', 'fixed')
@@ -7846,25 +7855,24 @@ function setActivePathLinesToDownload(svg, parcoords, key) {
         .enter()
         .append('path')
         .attr('id', (d) => {
-        return d[key];
+        return cleanString(d[key]);
     })
         .each(function (d) {
-        let element = d[key].length > 10 ? d[key].substr(0, 10) + '...' : d[key];
-        d[key] = element;
         select$1(this)
             .attr('d', linePath(d, parcoords.newFeatures, parcoords));
     });
     const records = getAllRecords();
     records.forEach(element => {
-        const isSelected$1 = isSelected(element);
+        const cleanRecord = cleanString(element);
+        const isSelected$1 = isSelected(cleanRecord);
         if (isSelected$1) {
-            svg.select('#' + element)
+            svg.select('#' + cleanRecord)
                 .style('stroke', 'rgb(255, 165, 0)')
                 .style('opacity', '1');
         }
-        const dimNameToCheck = select$1('.' + element).text();
+        const dimNameToCheck = select$1('#' + cleanRecord).text();
         if (dimNameToCheck != '') {
-            svg.select('#' + element)
+            svg.select('#' + cleanRecord)
                 .style('stroke', 'lightgrey')
                 .style('stroke-opacity', '0.4');
         }
@@ -7880,34 +7888,34 @@ function setFeatureAxisToDownload(svg, yAxis, yScales, parcoords, padding) {
         .append('g')
         .each(function (d) {
         const processedDimensionName = cleanString(d.name);
-        const ranges = getDimensionRange(processedDimensionName);
-        if (!isDimensionCategorical(processedDimensionName)) {
-            const status = getInversionStatus(processedDimensionName);
+        const ranges = getDimensionRange(d.name);
+        if (!isDimensionCategorical(d.name)) {
+            const status = getInversionStatus(d.name);
             if (status == 'ascending') {
-                yScales[processedDimensionName].domain([ranges[0], ranges[1]]);
+                yScales[d.name].domain([ranges[0], ranges[1]]);
                 yAxis = setupYAxis(parcoords.features, yScales, parcoords.newDataset);
                 select$1(this)
                     .attr('id', 'dimension_axis_' + processedDimensionName)
-                    .call(yAxis[processedDimensionName]
-                    .scale(yScales[processedDimensionName]
-                    .domain(yScales[processedDimensionName]
+                    .call(yAxis[d.name]
+                    .scale(yScales[d.name]
+                    .domain(yScales[d.name]
                     .domain())));
             }
             else {
-                yScales[processedDimensionName].domain([ranges[1], ranges[0]]);
+                yScales[d.name].domain([ranges[1], ranges[0]]);
                 yAxis = setupYAxis(parcoords.features, yScales, parcoords.newDataset);
                 select$1(this)
                     .attr('id', 'dimension_axis_' + processedDimensionName)
-                    .call(yAxis[processedDimensionName]
-                    .scale(yScales[processedDimensionName]
-                    .domain(yScales[processedDimensionName]
+                    .call(yAxis[d.name]
+                    .scale(yScales[d.name]
+                    .domain(yScales[d.name]
                     .domain().reverse())));
             }
         }
         else {
             select$1(this)
                 .attr('id', 'dimension_axis_' + processedDimensionName)
-                .call(yAxis[processedDimensionName]);
+                .call(yAxis[d.name]);
         }
     });
     featureAxis
@@ -7925,7 +7933,7 @@ function setBrushDownToDownload(featureAxis, parcoords) {
     featureAxis
         .each(function (d) {
         const processedDimensionName = cleanString(d.name);
-        const item = parcoords.currentPosOfDims.find((object) => object.key == processedDimensionName);
+        const item = parcoords.currentPosOfDims.find((object) => object.key == d.name);
         select$1(this)
             .append('g')
             .append('use')
@@ -7941,7 +7949,7 @@ function setBrushUpToDownload(featureAxis, parcoords) {
     featureAxis
         .each(function (d) {
         const processedDimensionName = cleanString(d.name);
-        const item = parcoords.currentPosOfDims.find((object) => object.key == processedDimensionName);
+        const item = parcoords.currentPosOfDims.find((object) => object.key == d.name);
         select$1(this)
             .append('g')
             .append('use')
@@ -7957,7 +7965,7 @@ function setRectToDragToDownload(featureAxis, parcoords) {
     featureAxis
         .each(function (d) {
         const processedDimensionName = cleanString(d.name);
-        const item = parcoords.currentPosOfDims.find((object) => object.key == processedDimensionName);
+        const item = parcoords.currentPosOfDims.find((object) => object.key == d.name);
         let height = item.bottom - item.top;
         if (item.top != 80 && item.bottom == 320)
             height = height - 10;
@@ -8063,9 +8071,9 @@ function getHiddenStatus(dimension) {
 }
 //---------- Invert Functions ----------
 function invert(dimension) {
-    const processedDimensionName = cleanString(dimension);
-    const invertId = '#dimension_invert_' + processedDimensionName;
-    const dimensionId = '#dimension_axis_' + processedDimensionName;
+    const cleanDimensionName = cleanString(dimension);
+    const invertId = '#dimension_invert_' + cleanDimensionName;
+    const dimensionId = '#dimension_axis_' + cleanDimensionName;
     const textElement = select$1(invertId);
     const currentArrowStatus = textElement.text();
     const arrow = currentArrowStatus === 'down' ? '#arrow_image_up' : '#arrow_image_down';
@@ -8099,9 +8107,9 @@ function invert(dimension) {
     }
 }
 function invertWoTransition(dimension) {
-    const processedDimensionName = cleanString(dimension);
-    const invertId = '#dimension_invert_' + processedDimensionName;
-    const dimensionId = '#dimension_axis_' + processedDimensionName;
+    const cleanDimensionName = cleanString(dimension);
+    const invertId = '#dimension_invert_' + cleanDimensionName;
+    const dimensionId = '#dimension_axis_' + cleanDimensionName;
     const textElement = select$1(invertId);
     const currentArrowStatus = textElement.text();
     const arrow = currentArrowStatus === 'down' ? '#arrow_image_up' : '#arrow_image_down';
@@ -8135,9 +8143,9 @@ function getInversionStatus(dimension) {
     return arrowStatus == 'up' ? 'ascending' : 'descending';
 }
 function setInversionStatus(dimension, status) {
-    const processedDimensionName = cleanString(dimension);
-    const invertId = '#dimension_invert_' + processedDimensionName;
-    const dimensionId = '#dimension_axis_' + processedDimensionName;
+    const cleanDimensionName = cleanString(dimension);
+    const invertId = '#dimension_invert_' + cleanDimensionName;
+    const dimensionId = '#dimension_axis_' + cleanDimensionName;
     const textElement = select$1(invertId);
     const arrow = status === 'ascending' ? '#arrow_image_up' : '#arrow_image_down';
     const arrowStyle = status === 'ascending' ? setSize(getArrowDownCursor(), 12) : setSize(getArrowUpCursor(), 12);
@@ -8388,9 +8396,7 @@ function getSelected() {
     let selected = [];
     const records = getAllRecords();
     for (let i = 0; i < records.length; i++) {
-        let editRecord = records[i].length > 10 ? records[i].substr(0, 10) + '...' : records[i];
-        let selectedLine = cleanLinePathString(editRecord);
-        let isselected = isSelected(selectedLine);
+        let isselected = isSelected(records[i]);
         if (isselected) {
             selected.push(records[i]);
         }
@@ -8399,8 +8405,7 @@ function getSelected() {
 }
 function setSelection(records) {
     for (let i = 0; i < records.length; i++) {
-        let editRecord = records[i].length > 10 ? records[i].substr(0, 10) + '...' : records[i];
-        select$1('.' + cleanLinePathString(editRecord))
+        select$1('#' + cleanString(records[i]))
             .classed('selected', true)
             .transition()
             .style('stroke', 'rgb(255, 165, 0)')
@@ -8408,8 +8413,7 @@ function setSelection(records) {
     }
 }
 function isSelected(record) {
-    let editRecord = record.length > 10 ? record.substr(0, 10) + '...' : record;
-    return select$1('.' + cleanLinePathString(editRecord)).classed('selected');
+    return select$1('#' + cleanString(record)).classed('selected');
 }
 function toggleSelection(record) {
     const selected = isSelected(record);
@@ -8426,8 +8430,7 @@ function setSelected(record) {
     setSelection(selectableLines);
 }
 function setUnselected(record) {
-    let editRecord = record.length > 10 ? record.substr(0, 10) + '...' : record;
-    selectAll('.' + cleanLinePathString(editRecord))
+    selectAll('#' + cleanString(record))
         .classed('selected', false)
         .transition()
         .style('opacity', '0.5')
@@ -8464,7 +8467,6 @@ function setUnselectedWithId(recordId) {
 }
 //---------- IO Functions ----------
 function drawChart(content) {
-    let ids = [];
     window.refreshData = structuredClone(content);
     deleteChart();
     let newFeatures = content['columns'].reverse();
@@ -8477,7 +8479,7 @@ function drawChart(content) {
         .attr('font-family', 'Verdana, sans-serif')
         .attr('user-select', 'none');
     setDefsForIcons();
-    window.active = setActivePathLines(svg, content, ids, window.parcoords);
+    window.active = setActivePathLines(svg, content, window.parcoords);
     setFeatureAxis(svg, yAxis, window.active, window.parcoords, width, window.padding);
     window.svg
         .on("contextmenu", function (event) {
@@ -8524,7 +8526,7 @@ function drawChart(content) {
     parent.insertBefore(toolbar, document.getElementById('pc_svg'));
 }
 function showModalWithData() {
-    const overlay = select$1('#parallelcoords')
+    const overlay = select$1('body')
         .append('div')
         .attr('id', 'modalTableOverlay')
         .style('position', 'fixed')
@@ -8539,7 +8541,7 @@ function showModalWithData() {
         overlay.style('display', 'none');
         modal.style('display', 'none');
     });
-    const modal = select$1('#parallelcoords')
+    const modal = select$1('body')
         .append('div')
         .attr('id', 'dataModal')
         .style('top', '50%')
@@ -8862,7 +8864,6 @@ function setUpParcoordData(data, newFeatures) {
     window.hoverlabel = getAllVisibleDimensionNames()[0];
 }
 function redrawChart(content, newFeatures) {
-    let ids = [];
     deleteChart();
     setUpParcoordData(content, newFeatures);
     let height = 360;
@@ -8887,7 +8888,7 @@ function redrawChart(content, newFeatures) {
         select$1('#contextmenu').style('display', 'none');
         select$1('#contextmenuRecords').style('display', 'none');
     };
-    window.active = setActivePathLines(svg, content, ids, window.parcoords);
+    window.active = setActivePathLines(svg, content, window.parcoords);
     setFeatureAxis(svg, yAxis, window.active, window.parcoords, width, window.padding);
 }
 function createSvgString() {
@@ -8925,7 +8926,7 @@ function createSvgString() {
     setFeatureAxisToDownload(svg, yAxisForDownload, yScalesForDownload, window.parcoords, window.padding);
     return svg.node().outerHTML;
 }
-const tooltipPath = select$1('#parallelcoords')
+const tooltipPath = select$1('body')
     .append('div')
     .style('position', 'absolute')
     .style('visibility', 'hidden')
@@ -8936,9 +8937,10 @@ const tooltipPath = select$1('#parallelcoords')
     .style('border-radius', '0.25rem')
     .style('font-size', '0.75rem')
     .style('z-index', '1000');
-const tooltipTest = select$1('#parallelcoords')
+const tooltipTest = select$1('body')
     .append('div')
     .attr('id', 'tooltipTest')
+    .attr('font-family', 'Verdana, sans-serif')
     .style('position', 'absolute')
     .style('visibility', 'hidden')
     .style('pointer-events', 'none')
@@ -8993,7 +8995,7 @@ document.addEventListener('mousemove', (e) => {
         handlePointerLeaveOrOut();
     }
 });
-function setActivePathLines(svg, content, ids, parcoords) {
+function setActivePathLines(svg, content, parcoords) {
     let contextMenu = select$1('#parallelcoords')
         .append('g')
         .attr('id', 'contextmenuRecords')
@@ -9028,16 +9030,13 @@ function setActivePathLines(svg, content, ids, parcoords) {
         .attr('class', (d) => {
         const keys = Object.keys(d);
         window.key = keys[0];
-        const selected_value = cleanLinePathString(d[window.key]);
-        ids.push(selected_value);
+        const selected_value = cleanString(d[window.key]);
         return 'line ' + selected_value;
     })
         .attr('id', (d) => {
-        return d[window.key];
+        return cleanString(d[window.key]);
     })
         .each(function (d) {
-        let element = d[window.key].length > 10 ? d[window.key].substr(0, 10) + '...' : d[window.key];
-        d[window.key] = element;
         select$1(this)
             .attr('d', linePath(d, parcoords.newFeatures, parcoords));
     })
@@ -9140,7 +9139,7 @@ function setFeatureAxis(svg, yAxis, active, parcoords, width, padding) {
         .append('g')
         .attr('class', 'dimensions')
         .attr('transform', d => ('translate(' + parcoords.xScales(d.name) + ')'));
-    let tooltipValuesLabel = select$1('#parallelcoords')
+    let tooltipValuesLabel = select$1('body')
         .append('g')
         .style('position', 'absolute')
         .style('visibility', 'hidden');
@@ -9174,15 +9173,15 @@ function setFeatureAxis(svg, yAxis, active, parcoords, width, padding) {
             gElement.setAttribute('transform', `translate(0,${shortenedValue})`);
         }
     });
-    let tooltipValues = select$1('#parallelcoords')
+    let tooltipValues = select$1('body')
         .append('g')
         .style('position', 'absolute')
         .style('visibility', 'hidden');
-    let tooltipValuesTop = select$1('#parallelcoords')
+    let tooltipValuesTop = select$1('body')
         .append('g')
         .style('position', 'absolute')
         .style('visibility', 'hidden');
-    let tooltipValuesDown = select$1('#parallelcoords')
+    let tooltipValuesDown = select$1('body')
         .append('g')
         .style('position', 'absolute')
         .style('visibility', 'hidden');
@@ -9194,10 +9193,12 @@ function setFeatureAxis(svg, yAxis, active, parcoords, width, padding) {
     setInvertIcon(featureAxis, padding);
 }
 function showMarker(dimension) {
-    select$1('#marker_' + dimension).attr('opacity', 1);
+    const cleanDimensionName = cleanString(dimension);
+    select$1('#marker_' + cleanDimensionName).attr('opacity', 1);
 }
 function hideMarker(dimension) {
-    select$1('#marker_' + dimension).attr('opacity', 0);
+    const cleanDimensionName = cleanString(dimension);
+    select$1('#marker_' + cleanDimensionName).attr('opacity', 0);
 }
 function setDefsForIcons() {
     const svgContainer = window.svg;
@@ -9229,10 +9230,10 @@ let currentlyHighlightedItems = [];
 function highlight(data) {
     if (isSelectionMode)
         return;
-    const cleanedItems = data.map(item => cleanLinePathArrayString(item).replace(/[.,]/g, ''));
+    const cleanedItems = data.map(item => cleanString(item).replace(/[.,]/g, ''));
     currentlyHighlightedItems = [...cleanedItems];
     cleanedItems.forEach(item => {
-        select$1('.' + item)
+        select$1('#' + item)
             .transition()
             .duration(5)
             .style('opacity', '0.7')
@@ -9243,7 +9244,7 @@ function doNotHighlight() {
     if (!currentlyHighlightedItems.length)
         return;
     currentlyHighlightedItems.forEach(item => {
-        const line = select$1('.' + item);
+        const line = select$1('#' + item);
         if (line.classed('selected')) {
             line.transition()
                 .style('stroke', 'rgb(255, 165, 0)')
@@ -9260,14 +9261,13 @@ function doNotHighlight() {
 // Selecting
 function select(linePaths) {
     for (let i = 0; i < linePaths.length; i++) {
-        let selectedLine = cleanLinePathString(linePaths[i]);
-        setSelected(selectedLine);
+        setSelected(linePaths[i]);
     }
 }
 function clearSelection() {
     const selectedRecords = getSelected();
     selectedRecords.forEach(element => {
-        select$1('.' + cleanLinePathString(element))
+        select$1('#' + cleanString(element))
             .classed('selected', false)
             .transition()
             .style('stroke', 'rgb(0, 129, 175)')

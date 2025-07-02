@@ -93,6 +93,10 @@
     if (correlationButton) {
       correlationButton.addEventListener('click', showPositiveCorrelation);
     }
+    const negCorrelationButton = document.getElementById('correlation-neg-button');
+    if (negCorrelationButton) {
+      negCorrelationButton.addEventListener('click', showNegativeCorrelation);
+    }
   }
 
   const selectOutlier = () => {
@@ -117,6 +121,10 @@
       spcd3.setInversionStatus('Age', 'descending');
       spcd3.showMarker('Age');
     }
+  }
+
+  const showNegativeCorrelation = () => {
+      spcd3.swap('Fitness Score', 'Blood Pressure');
   }
 
 // Functions related to table
@@ -196,16 +204,17 @@
     {key: 'BloodPressure', label: 'Blood Pressure'},
     {key: 'HeartRate', label: 'Heart Rate'},
     {key: 'BMI', label: 'BMI'},
-    {key: 'Cholesterol', label: 'Cholesterol'}
+    {key: 'Cholesterol', label: 'Cholesterol'},
+    {key: 'FitnessScore', label: 'Fitness Score'}
   ]);
 
   const rows = ref([
-  { Patient: 'Patient A', Age: 45, BloodPressure: 120, HeartRate: 72, BMI: 25, Cholesterol: 200 },
-  { Patient: 'Patient B', Age: 48, BloodPressure: 125, HeartRate: 75, BMI: 26, Cholesterol: 210 },
-  { Patient: 'Patient C', Age: 51, BloodPressure: 130, HeartRate: 78, BMI: 27, Cholesterol: 220 },
-  { Patient: 'Patient D', Age: 54, BloodPressure: 135, HeartRate: 81, BMI: 28, Cholesterol: 230 },
-  { Patient: 'Patient E', Age: 57, BloodPressure: 140, HeartRate: 84, BMI: 29, Cholesterol: 240 },
-  { Patient: 'Patient F', Age: 70, BloodPressure: 180, HeartRate: 60, BMI: 35, Cholesterol: 800 }
+  { Patient: 'Patient A', Age: 45, BloodPressure: 120, HeartRate: 72, BMI: 25, Cholesterol: 200, FitnessScore: 90 },
+  { Patient: 'Patient B', Age: 48, BloodPressure: 125, HeartRate: 75, BMI: 26, Cholesterol: 210, FitnessScore: 85 },
+  { Patient: 'Patient C', Age: 51, BloodPressure: 130, HeartRate: 78, BMI: 27, Cholesterol: 220, FitnessScore: 80 },
+  { Patient: 'Patient D', Age: 54, BloodPressure: 135, HeartRate: 81, BMI: 28, Cholesterol: 230, FitnessScore: 75 },
+  { Patient: 'Patient E', Age: 57, BloodPressure: 140, HeartRate: 84, BMI: 29, Cholesterol: 240, FitnessScore: 70 },
+  { Patient: 'Patient F', Age: 70, BloodPressure: 180, HeartRate: 60, BMI: 35, Cholesterol: 800, FitnessScore: 50 }
   ]);
 
   // Functions regarding scrollable storytelling
@@ -235,10 +244,12 @@
         }
         document.getElementById('outlier-button').disabled = false;
         document.getElementById('correlation-button').disabled = false;
+        document.getElementById('correlation-neg-button').disabled = false;
         break;
       case 1:
         document.getElementById('outlier-button').disabled = true;
         document.getElementById('correlation-button').disabled = true;
+        document.getElementById('correlation-neg-button').disabled = true;
         drawChart(studentDataset.value);
         break;
       case 2:
