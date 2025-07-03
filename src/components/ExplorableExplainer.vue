@@ -196,12 +196,24 @@
   const setRange = () => {
     const currentRange = spcd3.getDimensionRange('PE');
     if (currentRange[0] == 51) {
-      spcd3.setDimensionRange('PE', 0, 100);
-      document.getElementById('range-button').textContent = 'Set Range for PE';
+      const dimensions = spcd3.getAllDimensionNames();
+      dimensions.forEach(function(dimension) {
+        if (!isNaN(spcd3.getMinValue(dimension))) {
+          spcd3.setDimensionRange(dimension, 0, 100);
+        }
+      });
+      document.getElementById('range-button').textContent = 'Reset Dimension Ranges';
     }
     else {
-      spcd3.setDimensionRange('PE', 51, 100);
-      document.getElementById('range-button').textContent = 'Reset Range of PE';
+      const dimensions = spcd3.getAllDimensionNames();
+      dimensions.forEach(function(dimension) {
+        if (!isNaN(spcd3.getMinValue(dimension))) {
+            let min = spcd3.getMinValue(dimension);
+            let max = spcd3.getMaxValue(dimension);
+            spcd3.setDimensionRange(dimension, min, max);
+        }
+      });
+      document.getElementById('range-button').textContent = 'Set Dimension Ranges';
     }
   }
 

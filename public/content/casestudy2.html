@@ -1,7 +1,9 @@
 <section>
 <h2>Case Study: Student Marks</h2>
 
-<p>By using the iteractions described above, several interesting observations can be made within the student marks dataset.</p>
+<p>
+By using the iteractions described above, several interesting observations can be made within the student marks dataset.
+</p>
 
 <h3>Adjusting dimension range</h3>
 
@@ -17,7 +19,7 @@ show the range of each subject dimension from 0 to 100 since that would be more
 consistent and better represent the original data domain.
 </p>
 
-<button class="usage-button" id="range-button">Set Range for PE</button>
+<button class="usage-button" id="range-button">Set Dimension Ranges</button>
 
 <h3>Select record</h3>
 
@@ -35,26 +37,20 @@ be student Sylvia.
 
 <p> 
 Another technique to explore a dataset is to filter out records in one 
-dimension, say by moving the upper or lower filter control up and down, and 
-seeing how those changes are reflected in other dimensions. For example, 
-records with scores lower than 50 in the dimension English have been filtered 
-out, and it is noticeable that records with scores lower than 50 in the 
-dimension German are analogously filtered out.
+dimension, and seeing how those changes are reflected in other dimensions. 
 </p>
 
 <button class="usage-button" id="filter-button">Filter</button>
 
+<p>
+For example, records with scores lower than 50 in the dimension English have been filtered out, and it is noticeable that records with scores lower than 50 in the dimension German are analogously filtered out.
+</p>
 
 <h3>Move dimension</h3>
 
 <p>
 Often, analysts want to directly compare dimensions and look for correlations. 
-In order to compare two dimensions, they must be placed next to each other. The 
-dimension German has been moved next to English to test the theory that 
-students who are good in one language also tend to be good in other languages 
-(positive correlation). Straight, almost parallel lines between two dimensions 
-are an indication of a positive correlation. There are not many line crossings 
-between English and German.
+In order to compare two dimensions, they must be placed next to each other. To test the theory that students who are good in one language also tend to be good in other languages (positive correlation) move German next to English. Straight, almost parallel lines between two dimensions are an indication of a positive correlation. There are not many line crossings between English and German.
 </p>
 
 <button class="usage-button" id="move-button">Move German</button>
@@ -63,9 +59,13 @@ between English and German.
 <h3>Invert dimension</h3>
 
 <p>
-For confirmation, one of the two dimensions can be inverted. In Figure 3.8, the dimension English has been inverted. A classic cross pattern can be seen, indicating a (now) negative correlation. This is a good visual confirmation that the two dimensions are, in fact, positively correlated.
+For confirmation, one of the two dimensions can be inverted. A classic cross pattern can be seen, indicating a (now) negative correlation, when English is inverted.
 </p>
 
 <button class="usage-button" id="invert-button">Invert English</button>
+
+<p>
+This is a good visual confirmation that the two dimensions are, in fact, positively correlated.
+</p>
 
 </section>
