@@ -60,7 +60,51 @@
       
       <div class="trigger" v-html="interactivityText" ref="trigger"></div>
       <div class="trigger" v-html="usageText" ref="trigger"></div>
-      <div class="trigger" v-html="caseStudyText" ref="trigger"></div>
+      <div class="trigger" v-html="caseStudy1Text" ref="trigger"></div>
+      <div class="table-container">
+        <table border="1">
+        <thead>
+        <tr>
+        <th v-for="column in columnsStudent" :key="column.key">{{ column.label }}
+        </th>
+        <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="(row, rowIndex) in rowsStudent" :key="rowIndex">
+        <td v-for="column in columnsStudent" :key="column.key">
+        <input v-model="row[column.key]" type="text"/>
+        </td>
+        <td>
+        <button class="delete-button" @click="deleteRow(rowIndex)">Delete</button>
+        </td>
+        </tr>
+        </tbody>
+        <tfoot>
+        <tr>
+        <td v-for="column in columnsStudent" :key="column.key">
+        <button class="delete-button" @click="deleteColumn(column.key)">Delete {{ column.label }}
+        </button>
+        </td>
+        <td></td>
+        </tr>
+        </tfoot>
+        </table>
+        <button @click="addRow">Add Row</button>
+        <button @click="openModal">Add Column</button>
+        <button @click="redrawChart" :disabled="!isFormValid">Redraw Chart
+        </button>
+        <div v-if="isModalOpen" class="modal">
+        <div class="modal-content">
+        <div>Add new column name:</div>
+        <input v-model="newColumn" type="text"
+        placeholder="Enter column name..." />
+        <button class="add-button" @click="addColumn">Add</button>
+        <button class="add-button" @click="closeModal">Cancel</button>
+        </div>
+        </div>      
+      </div>
+      <div class="trigger" v-html="caseStudy2Text" ref="trigger"></div>
     </div>
   </div>
 </template>
@@ -68,12 +112,14 @@
 <script setup>
   import { ref, onMounted, computed, nextTick, watch } from 'vue';
   import * as spcd3 from '../../public/lib/spcd3';
+  import { columns, rows, columnsStudent, rowsStudent } from '../data.js';
 
   const introText = ref('');
   const dataText = ref('');
   const interactivityText = ref('');
   const usageText = ref('');
-  const caseStudyText = ref('');
+  const caseStudy1Text = ref('');
+  const caseStudy2Text = ref('');
   const healthDatasetText = ref('');
   const studentDatasetText = ref('');
   const textArea = ref(null);
@@ -96,6 +142,26 @@
     const negCorrelationButton = document.getElementById('correlation-neg-button');
     if (negCorrelationButton) {
       negCorrelationButton.addEventListener('click', showNegativeCorrelation);
+    }
+    const rangeButton = document.getElementById('range-button');
+    if (rangeButton) {
+      rangeButton.addEventListener('click', setRange);
+    }
+    const selectButton = document.getElementById('select-button');
+    if (selectButton) {
+      selectButton.addEventListener('click', selectRecord);
+    }
+    const filterButton = document.getElementById('filter-button');
+    if (filterButton) {
+      filterButton.addEventListener('click', filterRecords);
+    }
+    const moveButton = document.getElementById('move-button');
+    if (moveButton) {
+      moveButton.addEventListener('click', moveDimension);
+    }
+    const invertButton = document.getElementById('invert-button');
+    if (invertButton) {
+      invertButton.addEventListener('click', invertDimension);
     }
   }
 
@@ -124,7 +190,58 @@
   }
 
   const showNegativeCorrelation = () => {
-      spcd3.swap('Fitness Score', 'Blood Pressure');
+    spcd3.swap('Fitness Score', 'Blood Pressure');
+  }
+
+  const setRange = () => {
+    const currentRange = spcd3.getDimensionRange('PE');
+    if (currentRange[0] == 51) {
+      spcd3.setDimensionRange('PE', 0, 100);
+      document.getElementById('range-button').textContent = 'Set Range for PE';
+    }
+    else {
+      spcd3.setDimensionRange('PE', 51, 100);
+      document.getElementById('range-button').textContent = 'Reset Range of PE';
+    }
+  }
+
+  const selectRecord = () => {
+    if (spcd3.isSelected('Sylvia')) {
+      spcd3.setUnselected('Sylvia');
+      document.getElementById('select-button').textContent = 'Select Record: Sylvia';
+    }
+    else {
+      spcd3.setSelected('Sylvia');
+      document.getElementById('select-button').textContent = 'Unselect Record: Sylvia';
+    }
+  }
+
+  const filterRecords = () => {
+    if (spcd3.getFilter('English')[0] == 99) {
+      spcd3.setFilter('English', 99, 50);
+      document.getElementById('filter-button').textContent = 'Reset Filter';
+    }
+    else {
+      spcd3.setFilter('English', 99, 1);
+      document.getElementById('filter-button').textContent = 'Filter';
+    }
+  }
+
+  const moveDimension = () => {
+    spcd3.swap('PE', 'German');
+  }
+
+  const invertDimension = () => {
+    if (spcd3.getInversionStatus('English') == 'descending')
+    {
+      spcd3.setInversionStatus('English', 'ascending');
+      spcd3.hideMarker('English');
+    }
+    else
+    {
+      spcd3.setInversionStatus('English', 'descending');
+      spcd3.showMarker('English');
+    }
   }
 
 // Functions related to table
@@ -198,25 +315,7 @@
     );
   });
 
-  const columns = ref([
-    {key: 'Patient', label: 'Patient'},
-    {key: 'Age', label: 'Age'}, 
-    {key: 'BloodPressure', label: 'Blood Pressure'},
-    {key: 'HeartRate', label: 'Heart Rate'},
-    {key: 'BMI', label: 'BMI'},
-    {key: 'Cholesterol', label: 'Cholesterol'},
-    {key: 'FitnessScore', label: 'Fitness Score'}
-  ]);
-
-  const rows = ref([
-  { Patient: 'Patient A', Age: 45, BloodPressure: 120, HeartRate: 72, BMI: 25, Cholesterol: 200, FitnessScore: 90 },
-  { Patient: 'Patient B', Age: 48, BloodPressure: 125, HeartRate: 75, BMI: 26, Cholesterol: 210, FitnessScore: 85 },
-  { Patient: 'Patient C', Age: 51, BloodPressure: 130, HeartRate: 78, BMI: 27, Cholesterol: 220, FitnessScore: 80 },
-  { Patient: 'Patient D', Age: 54, BloodPressure: 135, HeartRate: 81, BMI: 28, Cholesterol: 230, FitnessScore: 75 },
-  { Patient: 'Patient E', Age: 57, BloodPressure: 140, HeartRate: 84, BMI: 29, Cholesterol: 240, FitnessScore: 70 },
-  { Patient: 'Patient F', Age: 70, BloodPressure: 180, HeartRate: 60, BMI: 35, Cholesterol: 800, FitnessScore: 50 }
-  ]);
-
+  
   // Functions regarding scrollable storytelling
   const setupIntersectionObserver = () => {
     const paragraphs = document.querySelectorAll('.trigger p');
@@ -233,7 +332,7 @@
 
   const updateChart = (index) => {
     switch (parseInt(index)) {
-      case 0:
+      case 1:
         redrawChart();
         if (document.getElementById('outlier-button').textContent === 'Unselect Outlier') {
           spcd3.setSelected('Patient F');
@@ -245,33 +344,22 @@
         document.getElementById('outlier-button').disabled = false;
         document.getElementById('correlation-button').disabled = false;
         document.getElementById('correlation-neg-button').disabled = false;
+        document.getElementById('range-button').disabled = true;
+        document.getElementById('select-button').disabled = true;
+        document.getElementById('filter-button').disabled = true;
+        document.getElementById('move-button').disabled = true;
+        document.getElementById('invert-button').disabled = true;
         break;
-      case 1:
+      case 2:
         document.getElementById('outlier-button').disabled = true;
         document.getElementById('correlation-button').disabled = true;
         document.getElementById('correlation-neg-button').disabled = true;
+        document.getElementById('range-button').disabled = false;
+        document.getElementById('select-button').disabled = false;
+        document.getElementById('filter-button').disabled = false;
+        document.getElementById('move-button').disabled = false;
+        document.getElementById('invert-button').disabled = false;
         drawChart(studentDataset.value);
-        break;
-      case 2:
-        const dimensions1 = spcd3.getAllDimensionNames();
-        dimensions1.forEach(function(dimension) {
-          if (!isNaN(spcd3.getMinValue(dimension))) {
-            let min = 0;
-            let max = spcd3.getMaxValue(dimension);
-            spcd3.setDimensionRangeRounded(dimension, min, max);
-          }
-        });
-        break;
-      case 3:
-        spcd3.setSelected('Sylvia');
-        break;
-      case 4:
-        break;
-      case 5:
-        drawChart(studentDataset.value);
-        spcd3.move('German', true, 'English');
-        break;
-      case 6:
         break;
     }
   };
@@ -333,7 +421,8 @@
     loadContent(dataText, 'content/data.html');
     loadContent(interactivityText, 'content/interactivity.html');
     loadContent(usageText, 'content/usage.html');
-    loadContent(caseStudyText, 'content/casestudy.html');
+    loadContent(caseStudy1Text, 'content/casestudy1.html');
+    loadContent(caseStudy2Text, 'content/casestudy2.html');
     loadContent(healthDatasetText, 'content/healthdata.html');
     loadContent(studentDatasetText, 'content/studentmarksdata.html');
   });
@@ -455,18 +544,20 @@ h2 {
 
 h3 {
   padding-left: 1.5rem;
+  margin-bottom: 0;
 }
 
 h4 {
   padding-left: 1.5rem;
+  margin-bottom: 0;
 }
 
 p {
   border-left: 1rem solid transparent;
   transition: border-color 0.3s ease;
-  padding-right: 0.5rem;
   padding-left: 0.5rem;
   margin-bottom: 0.5rem;
+  margin-top: 0.5rem;
 }
 
 p:hover {
@@ -474,6 +565,8 @@ p:hover {
 }
 
 .table-container {
+  max-height: 30rem;
+  overflow-y: auto;
   padding-right: 2rem;
   padding-top: 2rem;
 }
