@@ -3537,7 +3537,6 @@ function getMouseCoords(event, targetContainer = document.body) {
     }
 }*/
 
-let selectionArray = [];
 function brushDown(cleanDimensionName, event, d, parcoords, active, tooltipValues, window) {
     const yPosBottom = Number(select$1('#triangle_up_' + cleanDimensionName).attr('y'));
     let yPosTop;
@@ -3726,11 +3725,9 @@ function filter(dimensionName, topValue, bottomValue, parcoords) {
     select$1('#rect_' + cleanDimensionName)
         .attr('height', rectHeight);
     let active = select$1('g.active').selectAll('path');
-    const emptyString = '';
+    const rangeTop = Number(select$1('#triangle_down_' + cleanDimensionName).attr('y'));
+    const rangeBottom = Number(select$1('#triangle_up_' + cleanDimensionName).attr('y'));
     active.each(function (d) {
-        const currentLine = getLineName(d);
-        const selected = isSelected(currentLine);
-        const dimNameToCheck = select$1('.' + currentLine).text();
         let value;
         if (invertStatus) {
             value = isNaN(maxValue) ? parcoords.yScales[dimensionName](d[dimensionName]) :
@@ -3740,28 +3737,37 @@ function filter(dimensionName, topValue, bottomValue, parcoords) {
             value = isNaN(maxValue) ? parcoords.yScales[dimensionName](d[dimensionName]) :
                 240 / range * (maxValue - d[dimensionName]) + 80;
         }
-        if (value < topPosition || value > bottomPosition) {
-            makeInactive(currentLine, dimensionName);
-            if (selected) {
-                setUnselected(currentLine);
-                selectionArray.push(currentLine);
+        const currentLine = getLineName(d);
+        const dimNameToCheck = select$1('.' + currentLine).text();
+        const emptyString = '';
+        if (value < rangeTop + 10 || value > rangeBottom) {
+            if (dimNameToCheck == emptyString) {
+                makeInactive(currentLine, dimensionName);
+            }
+        }
+        else if (value == 320 && value == rangeTop + 10 && value == rangeBottom) {
+            if (dimNameToCheck == emptyString) {
+                makeInactive(currentLine, dimensionName);
+            }
+        }
+        else if (value == 80 && value == rangeTop + 10 && value == rangeBottom) {
+            if (dimNameToCheck == emptyString) {
+                makeInactive(currentLine, dimensionName);
             }
         }
         else if (dimNameToCheck == dimensionName && dimNameToCheck != emptyString) {
             let checkedLines = [];
             parcoords.currentPosOfDims.forEach(function (item) {
-                checkAllPositionsTop(item, dimensionName, parcoords, d, checkedLines, currentLine);
-                checkAllPositionsBottom(item, dimensionName, parcoords, d, checkedLines, currentLine);
+                if (item.top != 80 || item.bottom != 320) {
+                    checkAllPositionsTop(item, dimensionName, parcoords, d, checkedLines, currentLine);
+                    checkAllPositionsBottom(item, dimensionName, parcoords, d, checkedLines, currentLine);
+                }
             });
             if (!checkedLines.includes(currentLine)) {
                 makeActive(currentLine);
-                const index = selectionArray.indexOf(currentLine);
-                if (index != -1) {
-                    setSelected(currentLine);
-                    selectionArray.splice(index, 1);
-                }
             }
         }
+        else ;
     });
 }
 function filterWithCoords(topPosition, bottomPosition, currentPosOfDims, dimension) {
@@ -3901,7 +3907,7 @@ function setToolTipDragAndBrush(tooltipValuesTop, tooltipValuesDown, d, parcoord
     else {
         tooltipValuesDown.text(Math.round(tooltipValueBottom));
         tooltipValuesDown.style('visibility', 'visible');
-        tooltipValuesDown.style('top', (Number(yPosBottom + 155) / 16) + 'rem').style('left', window.event.clientX / 16 + 'rem');
+        tooltipValuesDown.style('top', (Number(yPosBottom + 130) / 16) + 'rem').style('left', window.event.clientX / 16 + 'rem');
         tooltipValuesDown.style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
             .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
             .style('padding', 0.12 + 'rem').style('white-space', 'pre-line')
@@ -7162,8 +7168,8 @@ function createToolTipForValues(recordData) {
                 value = isNaN(maxValue) ? scale(recordData[dimension]) :
                     240 / range * (maxValue - recordData[dimension]) + 80;
             }
-            const x = (rectLeft + (counter * 95) -15) / 16;
-            const y = (value + 100) / 16;
+            const x = (rectLeft + (counter * 95)) / 16;
+            const y = (value + 105) / 16;
             tooltipValues.text(recordData[dimension].toString())
                 .style('visibility', 'visible')
                 .style('top', `${y}rem`)
@@ -8940,7 +8946,6 @@ const tooltipPath = select$1('body')
 const tooltipTest = select$1('body')
     .append('div')
     .attr('id', 'tooltipTest')
-    .attr('font-family', 'Verdana, sans-serif')
     .style('position', 'absolute')
     .style('visibility', 'hidden')
     .style('pointer-events', 'none')

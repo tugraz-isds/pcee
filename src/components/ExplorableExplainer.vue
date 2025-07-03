@@ -217,7 +217,8 @@
   }
 
   const filterRecords = () => {
-    if (spcd3.getFilter('English')[0] == 99) {
+    console.log(spcd3.getFilter('English'))
+    if (spcd3.getFilter('English')[1] == 1) {
       spcd3.setFilter('English', 99, 50);
       document.getElementById('filter-button').textContent = 'Reset Filter';
     }
