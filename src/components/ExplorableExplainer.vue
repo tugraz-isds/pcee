@@ -127,6 +127,7 @@
 <script setup>
   import { ref, onMounted, computed, nextTick, watch } from 'vue';
   import * as spcd3 from '../../public/lib/spcd3';
+  import scrollama from 'scrollama';
   import { originalColumns, originalRows, columnsStudent, rowsStudent } from '../data.js';
 
   const introText = ref('');
@@ -145,8 +146,10 @@
   const newColumn = ref('');
   const showTable = ref(false);
   const showStudentData = ref(false);
-  const columns = ref(structuredClone(originalColumns))
+  const columns = ref(structuredClone(originalColumns));
   const rows = ref(structuredClone(originalRows));
+  const scroller = scrollama();
+  let lastStep = -1;
 
   function toggleTable() {
     showTable.value = !showTable.value
@@ -378,64 +381,6 @@
     );
   });
 
-  
-  // Functions regarding scrollable storytelling
-  const setupIntersectionObserver = () => {
-    const paragraphs = document.querySelectorAll('.trigger p');
-    const observer = new IntersectionObserver((entries, observer) => {
-      handleIntersection(entries);
-    }, {
-      root: null,
-      threshold: 0.5
-    });
-    paragraphs.forEach(paragraph => {
-      observer.observe(paragraph);
-    });
-  };
-
-  const updateChart = (index) => {
-    switch (parseInt(index)) {
-      case 1:
-        redrawChart();
-        if (document.getElementById('outlier-button').textContent === 'Unselect Outlier') {
-          spcd3.setSelected('Patient F');
-        }
-        if (document.getElementById('correlation-button').textContent === 'Show positive correlation')
-        {
-          spcd3.setInversionStatus('Age', 'descending');
-        }
-        document.getElementById('outlier-button').disabled = false;
-        document.getElementById('correlation-button').disabled = false;
-        document.getElementById('correlation-neg-button').disabled = false;
-        document.getElementById('range-button').disabled = true;
-        document.getElementById('select-button').disabled = true;
-        document.getElementById('filter-button').disabled = true;
-        document.getElementById('move-button').disabled = true;
-        document.getElementById('invert-button').disabled = true;
-        break;
-      case 2:
-        document.getElementById('outlier-button').disabled = true;
-        document.getElementById('correlation-button').disabled = true;
-        document.getElementById('correlation-neg-button').disabled = true;
-        document.getElementById('range-button').disabled = false;
-        document.getElementById('select-button').disabled = false;
-        document.getElementById('filter-button').disabled = false;
-        document.getElementById('move-button').disabled = false;
-        document.getElementById('invert-button').disabled = false;
-        drawChart(studentDataset.value);
-        break;
-    }
-  };
-
-  const handleIntersection = (entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const index = entry.target.id.split('-')[1];
-        updateChart(index);
-      }
-    });
-  };
-
   // draw parallel coordinates with spcd3
   const drawChart = async (dataset) => {
     try {
@@ -455,8 +400,7 @@
       const data = await response.text();
       content.value = data;
 
-      nextTick(() => {
-        setupIntersectionObserver();
+      await nextTick(() => {
         addClickEvent();
       });
     } catch (error) {
@@ -476,18 +420,88 @@
     }
   };
 
+  const handleStepEnter = (element) => {
+  if (element == 1) {
+    document.getElementById('outlier-button').disabled = true;
+    document.getElementById('correlation-button').disabled = true;
+    document.getElementById('correlation-neg-button').disabled = true;
+    document.getElementById('range-button').disabled = false;
+    document.getElementById('select-button').disabled = false;
+    document.getElementById('filter-button').disabled = false;
+    document.getElementById('move-button').disabled = false;
+    document.getElementById('invert-button').disabled = false;
+    drawChart(studentDataset.value);
+  } else if (element == 0) {
+    redrawChart();
+    if (document.getElementById('outlier-button').textContent === 'Unselect Outlier') {
+      spcd3.setSelected('Patient F');
+    }
+    if (document.getElementById('correlation-button').textContent === 'Show positive correlation')
+    {
+      spcd3.setInversionStatus('Age', 'descending');
+    }
+    document.getElementById('outlier-button').disabled = false;
+    document.getElementById('correlation-button').disabled = false;
+    document.getElementById('correlation-neg-button').disabled = false;
+    document.getElementById('range-button').disabled = true;
+    document.getElementById('select-button').disabled = true;
+    document.getElementById('filter-button').disabled = true;
+    document.getElementById('move-button').disabled = true;
+    document.getElementById('invert-button').disabled = true;
+  }
+}
+
+const getCurrentStepIndex = () => {
+  const steps = document.querySelectorAll('.step');
+  let currentIndex = 0;
+  let maxVisibleTop = null;
+
+  steps.forEach((step, i) => {
+    const rect = step.getBoundingClientRect();
+    if ((rect.top <= window.innerHeight * 0.5) && (maxVisibleTop === null || rect.top > maxVisibleTop)) {
+      maxVisibleTop = rect.top;
+      currentIndex = i;
+    }
+  });
+  return currentIndex;
+}
+
+const getDatasetForStep = (step) => {
+  if (step == 0) return healthDataset.value;
+  if (step == 1) return studentDataset.value;
+}
+
+window.addEventListener('scroll', () => {
+  const currentStep = getCurrentStepIndex();
+
+  if(currentStep !== lastStep) {
+    lastStep = currentStep;
+    const dataset = getDatasetForStep(currentStep);
+    drawChart(dataset);
+  }
+});
+
   onMounted(async () => {
     healthDataset.value = await loadDataset('/data/healthdata.csv');
-    drawChart(healthDataset.value);
+    await drawChart(healthDataset.value);
     studentDataset.value = await loadDataset('/data/student-marks.csv');
-    loadContent(introText, '/content/introduction.html');
-    loadContent(dataText, 'content/data.html');
-    loadContent(interactivityText, 'content/interactivity.html');
-    loadContent(usageText, 'content/usage.html');
-    loadContent(caseStudy1Text, 'content/casestudy1.html');
-    loadContent(caseStudy2Text, 'content/casestudy2.html');
-    loadContent(healthDatasetText, 'content/healthdata.html');
-    loadContent(studentDatasetText, 'content/studentmarksdata.html');
+    await loadContent(introText, '/content/introduction.html');
+    await loadContent(dataText, 'content/data.html');
+    await loadContent(interactivityText, 'content/interactivity.html');
+    await loadContent(usageText, 'content/usage.html');
+    await loadContent(caseStudy1Text, 'content/casestudy1.html');
+    await loadContent(caseStudy2Text, 'content/casestudy2.html');
+    await loadContent(healthDatasetText, 'content/healthdata.html');
+    await loadContent(studentDatasetText, 'content/studentmarksdata.html');
+
+    await nextTick();
+
+    scroller.setup({
+      step: ".step",
+      offset: 0.5,
+    }).onStepEnter(response => {
+      handleStepEnter(response.index);
+    })
   });
 
 </script>
