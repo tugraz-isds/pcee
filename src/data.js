@@ -1,6 +1,6 @@
 import { ref } from 'vue';
 
-export const columns = ref([
+export const originalColumns = [
     {key: 'Patient', label: 'Patient'},
     {key: 'Age', label: 'Age'}, 
     {key: 'BloodPressure', label: 'Blood Pressure'},
@@ -8,16 +8,16 @@ export const columns = ref([
     {key: 'BMI', label: 'BMI'},
     {key: 'Cholesterol', label: 'Cholesterol'},
     {key: 'FitnessScore', label: 'Fitness Score'}
-  ]);
+  ];
 
-  export const rows = ref([
+  export const originalRows = [
   { Patient: 'Patient A', Age: 45, BloodPressure: 120, HeartRate: 72, BMI: 25, Cholesterol: 200, FitnessScore: 90 },
   { Patient: 'Patient B', Age: 48, BloodPressure: 125, HeartRate: 75, BMI: 26, Cholesterol: 210, FitnessScore: 85 },
   { Patient: 'Patient C', Age: 51, BloodPressure: 130, HeartRate: 78, BMI: 27, Cholesterol: 220, FitnessScore: 80 },
   { Patient: 'Patient D', Age: 54, BloodPressure: 135, HeartRate: 81, BMI: 28, Cholesterol: 230, FitnessScore: 75 },
   { Patient: 'Patient E', Age: 57, BloodPressure: 140, HeartRate: 84, BMI: 29, Cholesterol: 240, FitnessScore: 70 },
   { Patient: 'Patient F', Age: 70, BloodPressure: 180, HeartRate: 60, BMI: 35, Cholesterol: 800, FitnessScore: 50 }
-  ]);
+  ];
 
   export const columnsStudent = ref([
     {key: 'Name', label: 'Name'},

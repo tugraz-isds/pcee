@@ -15,6 +15,12 @@
       <div v-html="healthDatasetText"></div>
       
       <div class="table-container">
+        <p>
+          <button @click="toggleTable">
+            {{ showTable ? 'Hide Heart Health Data' : 'Show Heart Health Data' }}
+          </button>
+        </p>
+        <div v-if="showTable">
         <table border="1">
         <thead>
         <tr>
@@ -47,6 +53,7 @@
         <button @click="openModal">Add Column</button>
         <button @click="redrawChart" :disabled="!isFormValid">Redraw Chart
         </button>
+        <button @click="resetTable">Reset Table</button>
         <div v-if="isModalOpen" class="modal">
         <div class="modal-content">
         <div>Add new column name:</div>
@@ -55,13 +62,20 @@
         <button class="add-button" @click="addColumn">Add</button>
         <button class="add-button" @click="closeModal">Cancel</button>
         </div>
-        </div>      
+        </div>
+      </div>
       </div>
       
       <div class="trigger" v-html="interactivityText" ref="trigger"></div>
       <div class="trigger" v-html="usageText" ref="trigger"></div>
       <div class="trigger" v-html="caseStudy1Text" ref="trigger"></div>
       <div class="table-container">
+        <p>
+          <button @click="toggleStudentDataTable">
+            {{ showStudentData ? 'Hide Student Marks Data' : 'Show Student Marks Data' }}
+          </button>
+        </p>
+        <div v-if="showStudentData">
         <table border="1">
         <thead>
         <tr>
@@ -102,7 +116,8 @@
         <button class="add-button" @click="addColumn">Add</button>
         <button class="add-button" @click="closeModal">Cancel</button>
         </div>
-        </div>      
+        </div>     
+      </div>
       </div>
       <div class="trigger" v-html="caseStudy2Text" ref="trigger"></div>
     </div>
@@ -112,7 +127,7 @@
 <script setup>
   import { ref, onMounted, computed, nextTick, watch } from 'vue';
   import * as spcd3 from '../../public/lib/spcd3';
-  import { columns, rows, columnsStudent, rowsStudent } from '../data.js';
+  import { originalColumns, originalRows, columnsStudent, rowsStudent } from '../data.js';
 
   const introText = ref('');
   const dataText = ref('');
@@ -128,6 +143,18 @@
   const studentDataset = ref('');
   const isModalOpen = ref(false);
   const newColumn = ref('');
+  const showTable = ref(false);
+  const showStudentData = ref(false);
+  const columns = ref(structuredClone(originalColumns))
+  const rows = ref(structuredClone(originalRows));
+
+  function toggleTable() {
+    showTable.value = !showTable.value
+  }
+
+  function toggleStudentDataTable() {
+    showStudentData.value = !showStudentData.value;
+  }
 
   // Click events button in usage section
   const addClickEvent = () => {
@@ -190,6 +217,15 @@
   }
 
   const showNegativeCorrelation = () => {
+    const posFitness = spcd3.getDimensionPosition('Fitness Score');
+    const posAge = spcd3.getDimensionPosition('Age');
+    const diff = posAge - posFitness;
+    if (diff == 1) {
+      document.getElementById('correlation-neg-button').textContent = 'Move Fitness Score next to Age';
+    }
+    else {
+      document.getElementById('correlation-neg-button').textContent = 'Fitness Score: Reset Position';    
+    }
     spcd3.swap('Fitness Score', 'Blood Pressure');
   }
 
@@ -202,7 +238,7 @@
           spcd3.setDimensionRange(dimension, 0, 100);
         }
       });
-      document.getElementById('range-button').textContent = 'Reset Dimension Ranges';
+      document.getElementById('range-button').textContent = 'Set Dimension Ranges From Data';
     }
     else {
       const dimensions = spcd3.getAllDimensionNames();
@@ -213,7 +249,7 @@
             spcd3.setDimensionRange(dimension, min, max);
         }
       });
-      document.getElementById('range-button').textContent = 'Set Dimension Ranges';
+      document.getElementById('range-button').textContent = 'Set Dimension Ranges 0 - 100';
     }
   }
 
@@ -229,18 +265,26 @@
   }
 
   const filterRecords = () => {
-    console.log(spcd3.getFilter('English'))
-    if (spcd3.getFilter('English')[1] == 1) {
+    if (spcd3.getFilter('English')[1] == 1 || spcd3.getFilter('English')[1] == 0) {
       spcd3.setFilter('English', 99, 50);
-      document.getElementById('filter-button').textContent = 'Reset Filter';
+      document.getElementById('filter-button').textContent = 'English: Reset Filter';
     }
     else {
       spcd3.setFilter('English', 99, 1);
-      document.getElementById('filter-button').textContent = 'Filter';
+      document.getElementById('filter-button').textContent = 'English: Filter 50–100';
     }
   }
 
   const moveDimension = () => {
+    const posGerman = spcd3.getDimensionPosition('German');
+    const posEnglish = spcd3.getDimensionPosition('English');
+    const diff = posEnglish - posGerman;
+    if (diff == 1) {
+      document.getElementById('move-button').textContent = 'Move German next to English';
+    }
+    else {
+      document.getElementById('move-button').textContent = 'German: Reset Position';
+    }
     spcd3.swap('PE', 'German');
   }
 
@@ -318,6 +362,12 @@
     let newData = spcd3.loadCSV(csvData);
     spcd3.drawChart(newData);
   };
+
+  const resetTable = () => {
+    columns.value = structuredClone(originalColumns);
+    rows.value = structuredClone(originalRows);
+    redrawChart();
+  }
 
   const isFormValid = computed(() => {
     return rows.value.every(row =>
@@ -573,9 +623,6 @@ p {
   margin-top: 0.5rem;
 }
 
-p:hover {
-  border-color: rgba(0, 129, 175, 0.5);
-}
 
 .table-container {
   max-height: 30rem;
@@ -635,14 +682,6 @@ ul ul {
 ol {
   border-left: 1rem solid transparent;
   transition: border-color 0.3s ease;
-}
-
-ol:hover {
-  border-color: rgba(0, 129, 175, 0.5);
-}
-
-ul:hover {
-  border-color: rgba(0, 129, 175, 0.5);
 }
 
 button {
