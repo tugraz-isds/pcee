@@ -564,7 +564,8 @@ window.addEventListener('scroll', () => {
 }
 
 .chart-container {
-  flex: 1;
+  flex: 1 1 30rem;
+  min-width: 20rem;
   position: relative;
 }
 
@@ -577,8 +578,8 @@ window.addEventListener('scroll', () => {
 }
 
 .text-container {
-  flex: 1;
-  display: flex;
+  flex: 1 1 15rem;
+  min-width: 15rem;
   flex-direction: column;
   width: calc(100% - 2rem);
   max-width: 100%;
