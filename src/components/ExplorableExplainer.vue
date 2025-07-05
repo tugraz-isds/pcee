@@ -303,7 +303,6 @@
     }
   }
 
-// Functions related to table
   const addRow = () => {
     const newRow = {};
     columns.value.forEach((column) => {
