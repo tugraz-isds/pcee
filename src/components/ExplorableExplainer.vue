@@ -159,7 +159,6 @@
     showStudentData.value = !showStudentData.value;
   }
 
-  // Click events button in usage section
   const addClickEvent = () => {
     const outlierButton = document.getElementById('outlier-button');
     if (outlierButton) {
