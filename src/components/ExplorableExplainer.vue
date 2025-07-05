@@ -126,7 +126,7 @@
 
 <script setup>
   import { ref, onMounted, computed, nextTick, watch } from 'vue';
-  import * as spcd3 from '../../public/lib/spcd3';
+  import * as spcd3 from '../spcd3.js';
   import scrollama from 'scrollama';
   import { originalColumns, originalRows, columnsStudent, rowsStudent } from '../data.js';
 
@@ -480,10 +480,10 @@ window.addEventListener('scroll', () => {
 });
 
   onMounted(async () => {
-    healthDataset.value = await loadDataset('/data/healthdata.csv');
+    healthDataset.value = await loadDataset('data/healthdata.csv');
     await drawChart(healthDataset.value);
-    studentDataset.value = await loadDataset('/data/student-marks.csv');
-    await loadContent(introText, '/content/introduction.html');
+    studentDataset.value = await loadDataset('data/student-marks.csv');
+    await loadContent(introText, 'content/introduction.html');
     await loadContent(dataText, 'content/data.html');
     await loadContent(interactivityText, 'content/interactivity.html');
     await loadContent(usageText, 'content/usage.html');
