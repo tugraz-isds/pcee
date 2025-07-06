@@ -556,7 +556,7 @@ window.addEventListener('scroll', () => {
 
     scroller.setup({
       step: ".step",
-      offset: 0.8,
+      offset: 0.5,
     }).onStepEnter(response => {
       handleStepEnter(response.index);
     })
