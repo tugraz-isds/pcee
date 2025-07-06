@@ -4,6 +4,8 @@ An explorable explainer which guides a reader through an interactive tutorial ab
 This is a single page web application (SPA) built using [Vue3](https://vuejs.org/). 
 The project focuses on delivering a smooth and dynamic user experience without page reloads.
 
+A live version of the latest deployment can be found at
+[https://tugraz-isds.github.io/pcee](https://tugraz-isds.github.io/pcee).
 
 ## Dependencies
 
