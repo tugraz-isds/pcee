@@ -16,9 +16,9 @@
       
       <div class="table-container">
         <p>
-          <button @click="toggleTable">
+          <!--<button @click="toggleTable">
             {{ showTable ? 'Hide Heart Health Data' : 'Show Heart Health Data' }}
-          </button>
+          </button>-->
         </p>
         <div v-if="showTable">
         <table border="1">
@@ -69,7 +69,7 @@
       <div class="trigger" v-html="interactivityText" ref="trigger"></div>
       <div class="trigger" v-html="usageText" ref="trigger"></div>
       <div class="trigger" v-html="caseStudy1Text" ref="trigger"></div>
-      <div class="table-container">
+      <!--<div class="table-container">
         <p>
           <button @click="toggleStudentDataTable">
             {{ showStudentData ? 'Hide Student Marks Data' : 'Show Student Marks Data' }}
@@ -118,7 +118,7 @@
         </div>
         </div>     
       </div>
-      </div>
+      </div>-->
       <div class="trigger" v-html="caseStudy2Text" ref="trigger"></div>
     </div>
   </div>
@@ -144,7 +144,7 @@
   const studentDataset = ref('');
   const isModalOpen = ref(false);
   const newColumn = ref('');
-  const showTable = ref(false);
+  const showTable = ref(true);
   const showStudentData = ref(false);
   const columns = ref(structuredClone(originalColumns));
   const rows = ref(structuredClone(originalRows));
@@ -197,11 +197,11 @@
   const selectOutlier = () => {
     if (spcd3.isSelected('Patient F')) {
       spcd3.setUnselected('Patient F')
-      document.getElementById('outlier-button').textContent = 'Show Outlier';
+      document.getElementById('outlier-button').textContent = 'Show outlier';
     }
     else {
       spcd3.setSelected('Patient F');
-      document.getElementById('outlier-button').textContent = 'Hide Outlier';
+      document.getElementById('outlier-button').textContent = 'Hide outlier';
     }
   };
 
@@ -226,7 +226,7 @@
       document.getElementById('correlation-neg-button').textContent = 'Move Fitness Score next to Age';
     }
     else {
-      document.getElementById('correlation-neg-button').textContent = 'Fitness Score: Reset Position';    
+      document.getElementById('correlation-neg-button').textContent = 'Fitness Score: Reset position';    
     }
     spcd3.swap('Fitness Score', 'Blood Pressure');
   }
@@ -240,7 +240,7 @@
           spcd3.setDimensionRange(dimension, 0, 100);
         }
       });
-      document.getElementById('range-button').textContent = 'Set Dimension Ranges From Data';
+      document.getElementById('range-button').textContent = 'Set dimension ranges from data';
     }
     else {
       const dimensions = spcd3.getAllDimensionNames();
@@ -251,30 +251,59 @@
             spcd3.setDimensionRange(dimension, min, max);
         }
       });
-      document.getElementById('range-button').textContent = 'Set Dimension Ranges 0 - 100';
+      document.getElementById('range-button').textContent = 'Set dimension ranges 0 - 100';
     }
   }
 
   const selectRecord = () => {
     if (spcd3.isSelected('Sylvia')) {
       spcd3.setUnselected('Sylvia');
-      document.getElementById('select-button').textContent = 'Select Record: Sylvia';
+      document.getElementById('select-button').textContent = 'Select record: Sylvia';
     }
     else {
       spcd3.setSelected('Sylvia');
-      document.getElementById('select-button').textContent = 'Unselect Record: Sylvia';
+      document.getElementById('select-button').textContent = 'Unselect record: Sylvia';
     }
   }
 
   const filterRecords = () => {
-    if (spcd3.getFilter('English')[1] == 1 || spcd3.getFilter('English')[1] == 0) {
+    let isInverted = spcd3.getInversionStatus('English');
+    if (isInverted == 'ascending') {
+    if (spcd3.getFilter('English')[1] == 1) {
       spcd3.setFilter('English', 99, 50);
-      document.getElementById('filter-button').textContent = 'English: Reset Filter';
+      document.getElementById('filter-button').textContent = 'English: Reset filter';
+    }
+    else if (spcd3.getFilter('English')[1] == 0) {
+      spcd3.setFilter('English', 100, 50);
+      document.getElementById('filter-button').textContent = 'English: Reset filter';
+    }
+    else if (spcd3.getFilter('English')[1] == 50 && spcd3.getFilter('English')[0] ==  100) {
+      spcd3.setFilter('English', 100, 0);
+      document.getElementById('filter-button').textContent = 'English: Filter 50 - 100';
     }
     else {
-      spcd3.setFilter('English', 99, 1);
-      document.getElementById('filter-button').textContent = 'English: Filter 50–100';
+      spcd3.setFilter('English', 100, 0);
+      document.getElementById('filter-button').textContent = 'English: Filter 50 - 100';
     }
+  }
+  else {
+    if (spcd3.getFilter('English')[0] == 1) {
+      spcd3.setFilter('English', 50, 99);
+      document.getElementById('filter-button').textContent = 'English: Reset filter';
+    }
+    else if (spcd3.getFilter('English')[0] == 0) {
+      spcd3.setFilter('English', 50, 100);
+      document.getElementById('filter-button').textContent = 'English: Reset filter';
+    }
+    else if (spcd3.getFilter('English')[0] == 50 && spcd3.getFilter('English')[1] ==  100) {
+      spcd3.setFilter('English', 0, 100);
+      document.getElementById('filter-button').textContent = 'English: Filter 50 - 100';
+    }
+    else {
+      spcd3.setFilter('English', 0, 100);
+      document.getElementById('filter-button').textContent = 'English: Filter 50 - 100';
+    }
+  }
   }
 
   const moveDimension = () => {
@@ -285,7 +314,7 @@
       document.getElementById('move-button').textContent = 'Move German next to English';
     }
     else {
-      document.getElementById('move-button').textContent = 'German: Reset Position';
+      document.getElementById('move-button').textContent = 'German: Reset position';
     }
     spcd3.swap('PE', 'German');
   }
@@ -294,13 +323,18 @@
     if (spcd3.getInversionStatus('English') == 'descending')
     {
       spcd3.setInversionStatus('English', 'ascending');
-      spcd3.hideMarker('English');
+      filterRecordsForInvert()
     }
     else
     {
       spcd3.setInversionStatus('English', 'descending');
-      spcd3.showMarker('English');
+      filterRecordsForInvert();
     }
+  }
+
+  const filterRecordsForInvert = () => {
+    console.log(spcd3.getFilter('English'));
+    spcd3.setFilter('English', spcd3.getFilter('English')[0], spcd3.getFilter('English')[1]);
   }
 
   const addRow = () => {
@@ -418,6 +452,22 @@
     }
   };
 
+  let lastScrollY = window.scrollY;
+  let scrollDirection = null;
+
+  window.addEventListener('scroll', () => {
+    const currentScrollY = window.scrollY;
+
+    if (currentScrollY > lastScrollY) {
+      scrollDirection = 'down';
+    } else if (currentScrollY < lastScrollY) {
+      scrollDirection = 'up';
+    } else {
+      scrollDirection = null;
+    }
+    lastScrollY = currentScrollY;
+  });
+
   const handleStepEnter = (element) => {
   if (element == 1) {
     document.getElementById('outlier-button').disabled = true;
@@ -446,7 +496,17 @@
     document.getElementById('filter-button').disabled = true;
     document.getElementById('move-button').disabled = true;
     document.getElementById('invert-button').disabled = true;
-  }
+  } /*else if (element == 2 && scrollDirection == 'down') {
+    setRange();
+  } else if (element == 3 && scrollDirection == 'down') {
+    selectRecord();
+  } else if (element == 4 && scrollDirection == 'down') {
+    filterRecords();
+  } else if (element == 5 && scrollDirection == 'down') {
+    spcd3.swap('PE', 'German');
+  } else if (element == 6 && scrollDirection == 'down') {
+    invertDimension();
+  }*/
 }
 
 const getCurrentStepIndex = () => {
@@ -496,7 +556,7 @@ window.addEventListener('scroll', () => {
 
     scroller.setup({
       step: ".step",
-      offset: 0.5,
+      offset: 0.8,
     }).onStepEnter(response => {
       handleStepEnter(response.index);
     })
