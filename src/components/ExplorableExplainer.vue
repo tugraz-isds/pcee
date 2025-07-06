@@ -636,8 +636,8 @@ window.addEventListener('scroll', () => {
 }
 
 .text-container {
-  flex: 1 1 15rem;
-  min-width: 15rem;
+  flex: 1 1 23rem;
+  min-width: 23rem;
   flex-direction: column;
   width: calc(100% - 2rem);
   max-width: 100%;

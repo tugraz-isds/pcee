@@ -3899,7 +3899,7 @@ function setToolTipDragAndBrush(tooltipValuesTop, tooltipValuesDown, d, parcoord
     else {
         tooltipValuesTop.text(Math.round(tooltipValueTop));
         tooltipValuesTop.style('visibility', 'visible');
-        tooltipValuesTop.style('top', Number(yPosTop+130)/16 + 'rem').style('left', window.event.clientX/16 + 'rem');
+        tooltipValuesTop.style('top', Number(yPosTop+90)/16 + 'rem').style('left', window.event.clientX/16 + 'rem');
         tooltipValuesTop.style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
             .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
             .style('padding', 0.12 + 'rem').style('white-space', 'pre-line')
@@ -3911,7 +3911,7 @@ function setToolTipDragAndBrush(tooltipValuesTop, tooltipValuesDown, d, parcoord
     else {
         tooltipValuesDown.text(Math.round(tooltipValueBottom));
         tooltipValuesDown.style('visibility', 'visible');
-        tooltipValuesDown.style('top', Number(yPosBottom+130)/16 + 'rem').style('left', window.event.clientX/16 + 'rem');
+        tooltipValuesDown.style('top', Number(yPosBottom+90)/16 + 'rem').style('left', window.event.clientX/16 + 'rem');
         tooltipValuesDown.style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
             .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
             .style('padding', 0.12 + 'rem').style('white-space', 'pre-line')
@@ -7148,8 +7148,8 @@ function getAllVisibleDimensionNames$1() {
 }
 function createToolTipForValues(recordData) {
     const dimensions = getAllVisibleDimensionNames$1();
-    const multi = dimensions.length > 8 ? 80 : 100;
-    const sum = dimensions.length > 8 ? 70 : 105;
+    const multi = dimensions.length > 8 ? 70 : 90;
+    const sum = dimensions.length > 8 ? 65 : 105;
     let counter = 0;
     const rectLeft = select$1('#rect_' + cleanString(dimensions[0]))?.node()?.getBoundingClientRect().left;
     dimensions.forEach(dimension => {
