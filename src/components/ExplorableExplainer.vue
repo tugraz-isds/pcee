@@ -1,8 +1,11 @@
 <template>
   <div class="sticky-header">
-    <div>
+    <div class="multi-line">
       Parallel Coordinates:<br>
       An Explorable Explainer</div>
+    <div class="single-line">
+      Parallel Coordinates:
+      An Explorable Explainer</div> 
   </div>
 
   <div class="header-spacer"></div>
@@ -518,10 +521,46 @@ onMounted(async () => {
     height: 11vh;
     width: 100%;
     font-size: 2rem;
-    justify-content: left;
-    text-align: left;
     padding-left: 1rem;
   }
+}
+
+.multi-line,
+.single-line {
+  position: absolute;
+  text-align: center;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.multi-line {
+  white-space: pre-line;
+  animation: multiTextOut linear forwards;
+  animation-timeline: scroll();
+  animation-range: 0vh 80vh;
+  opacity: 1;
+}
+
+.single-line {
+  white-space: nowrap;
+  animation: singleTextIn linear forwards;
+  animation-timeline: scroll();
+  animation-range: 80vh 90vh;
+}
+
+@keyframes multiTextOut {
+  from { opacity: 1; visibility: visible; }
+  to { opacity: 0; visibility: hidden;}
+}
+
+@keyframes singleTextIn {
+  from { opacity: 0; visibility: hidden; }
+  to { opacity: 1; visibility: visible;}
 }
 
 .header-spacer {
