@@ -698,6 +698,7 @@ p {
 
 
 .table-container {
+  flex: 1 1 20rem;
   max-height: 30rem;
   overflow-y: auto;
   padding-right: 2rem;
@@ -705,7 +706,6 @@ p {
 }
 
 table {
-  width: 100%;
   text-align: justify;
   border-collapse: collapse;
 }
@@ -778,6 +778,31 @@ button {
   padding: 0.3rem;
   margin-top: 0.3rem;
   margin-right: 0.3rem;
+}
+
+.figure-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  padding: 1rem 1.5rem;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+figure {
+  flex: 1 1 8rem;
+  text-align: center;
+  margin: 0;
+}
+
+img {
+  width: 100%;
+  max-width: 8rem;
+  height: auto;
+}
+
+figcaption {
+  margin-top: 0.5rem;
 }
 
 @media (max-width: 40rem) {
