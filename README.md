@@ -1,4 +1,4 @@
-# pcee
+# Parallel Coordinates Explorable Explainer (PCEE)
 
 An explorable explainer which guides a reader through an interactive tutorial about parallel coordinates.
 This is a single page web application (SPA) built using [Vue3](https://vuejs.org/). 
