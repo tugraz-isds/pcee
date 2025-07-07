@@ -1,6 +1,8 @@
 <template>
   <div class="sticky-header">
-    <div>Parallel Coordinates - An Explorable Explainer</div> 
+    <div>
+      Parallel Coordinates:<br>
+      An Explorable Explainer</div> 
   </div>
 
   <div class="header-spacer"></div>
@@ -580,6 +582,7 @@ window.addEventListener('scroll', () => {
   display: flex;
   justify-content: center;
   align-items: center;
+  text-align: center;
 
   color: black;
   background: linear-gradient(to bottom, rgba(0, 129, 175, 0.5), rgba(255, 255, 0, 0.3));
