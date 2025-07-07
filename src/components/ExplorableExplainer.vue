@@ -586,7 +586,7 @@ section {
 }
 
 h2 {
-  color: rgba(62, 61, 55, 0.5);
+  color: black;
   padding-top: 1rem;
   padding-left: 1rem;
 }

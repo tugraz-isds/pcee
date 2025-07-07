@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build --mode production",
+    "local-build": "vite build --mode dev",
     "tauri": "tauri build",
     "tauri-dev": "tauri dev",
     "preview": "vite preview",
