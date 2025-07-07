@@ -3574,7 +3574,7 @@ function brushDown(cleanDimensionName, event, d, parcoords, active, tooltipValue
             .style('cursor', 'default');
     }
     else {
-        select$1('#rect_' + cleanDimensionName).style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopAndBottom()), 12)}') 8 8, auto`);
+        select$1('#rect_' + cleanDimensionName).style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopAndBottom()), 15)}') 8 8, auto`);
     }
     select$1('#triangle_down_' + cleanDimensionName).attr('y', yPosTop);
     const heightTopRect = yPosRect - 80;
@@ -3608,7 +3608,7 @@ function brushUp(cleanDimensionName, event, d, parcoords, active, tooltipValues,
             .style('cursor', 'default');
     }
     else {
-        select$1('#rect_' + cleanDimensionName).style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopAndBottom()), 12)}') 8 8, auto`);
+        select$1('#rect_' + cleanDimensionName).style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopAndBottom()), 15)}') 8 8, auto`);
     }
     select$1('#triangle_up_' + cleanDimensionName).attr('y', yPosBottom);
     const heightTopRect = yPosTop - 70;
@@ -3660,9 +3660,9 @@ function dragAndBrush(cleanDimensionName, d, svg, event, parcoords, active, delt
         const minValue = invertStatus == false ? parcoords.yScales[dimensionName].domain()[0] :
             parcoords.yScales[dimensionName].domain()[1];
         const range = maxValue - minValue;
-        if (!isNaN(parcoords.yScales[d.name].domain()[0])) {
+        /*if (!isNaN(parcoords.yScales[d.name].domain()[0])) {
             setToolTipDragAndBrush(tooltipValuesTop, tooltipValuesDown, d, parcoords, window, true, yPosTop, yPosRect + rectHeight);
-        }
+        }*/
         active.each(function (d) {
             const currentLine = getLineName(d);
             let value;
@@ -3722,8 +3722,8 @@ function filter(dimensionName, topValue, bottomValue, parcoords) {
     let rectHeight = bottomPosition - topPosition;
     select$1('#rect_' + cleanDimensionName)
         .attr('y', topPosition);
-    select$1('#triangle_down_' + cleanDimensionName)
-        .attr('y', topPosition - 10);
+    select$1('#triangle_down_' + cleanDimensionName).attr('y', topPosition - 10);
+    //triangle_down.transition().duration(500).attr('y', topPosition - 10);
     select$1('#triangle_up_' + cleanDimensionName)
         .attr('y', bottomPosition);
     select$1('#rect_' + cleanDimensionName)
@@ -3867,7 +3867,7 @@ function setToolTipBrush(tooltipValues, d, event, parcoords, window, direction) 
     const digs = getSigDig(d.name, parcoords.currentPosOfDims);
     tooltipValues.text(Math.round(tooltipValue.toPrecision(digs).toLocaleString('en-GB') * 10) / 10);
     tooltipValues.style('visibility', 'visible');
-    tooltipValues.style('top', (window.event.clientY-160)/16 + 'rem').style('left', (window.event.clientX-10)/16 + 'rem');
+    tooltipValues.style('top', window.event.clientY + 'px').style('left', window.event.clientX + 'px');
     tooltipValues.style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
         .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
         .style('padding', 0.12 + 'rem').style('white-space', 'pre-line')
@@ -3899,7 +3899,7 @@ function setToolTipDragAndBrush(tooltipValuesTop, tooltipValuesDown, d, parcoord
     else {
         tooltipValuesTop.text(Math.round(tooltipValueTop));
         tooltipValuesTop.style('visibility', 'visible');
-        tooltipValuesTop.style('top', Number(yPosTop+90)/16 + 'rem').style('left', window.event.clientX/16 + 'rem');
+        tooltipValuesTop.style('top', Number(yPosTop) + 'px').style('left', window.event.clientX + 'px');
         tooltipValuesTop.style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
             .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
             .style('padding', 0.12 + 'rem').style('white-space', 'pre-line')
@@ -3911,7 +3911,7 @@ function setToolTipDragAndBrush(tooltipValuesTop, tooltipValuesDown, d, parcoord
     else {
         tooltipValuesDown.text(Math.round(tooltipValueBottom));
         tooltipValuesDown.style('visibility', 'visible');
-        tooltipValuesDown.style('top', Number(yPosBottom+90)/16 + 'rem').style('left', window.event.clientX/16 + 'rem');
+        tooltipValuesDown.style('top', Number(yPosBottom) + 'px').style('left', window.event.clientX + 'px');
         tooltipValuesDown.style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
             .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
             .style('padding', 0.12 + 'rem').style('white-space', 'pre-line')
@@ -7148,8 +7148,6 @@ function getAllVisibleDimensionNames$1() {
 }
 function createToolTipForValues(recordData) {
     const dimensions = getAllVisibleDimensionNames$1();
-    const multi = dimensions.length > 8 ? 70 : 90;
-    const sum = dimensions.length > 8 ? 65 : 105;
     let counter = 0;
     const rectLeft = select$1('#rect_' + cleanString(dimensions[0]))?.node()?.getBoundingClientRect().left;
     dimensions.forEach(dimension => {
@@ -7174,8 +7172,8 @@ function createToolTipForValues(recordData) {
                 value = isNaN(maxValue) ? scale(recordData[dimension]) :
                     240 / range * (maxValue - recordData[dimension]) + 80;
             }
-            const x = (rectLeft + (counter * multi)) / 16;
-            const y = (value + sum) / 16;
+            const x = (rectLeft + (counter * 95)) / 16;
+            const y = (value + 195) / 16;
             tooltipValues.text(recordData[dimension].toString())
                 .style('visibility', 'visible')
                 .style('top', `${y}rem`)
@@ -8527,7 +8525,7 @@ function setOptionsAndDownload(svgString) {
     rowDecimals.style.alignItems = 'center';
     rowDecimals.style.justifyContent = 'space-between';
     const label = document.createElement('label');
-    label.textContent = 'Decimal places (0-10): ';
+    label.textContent = 'Decimals places (0-10): ';
     label.style.padding = '0.35rem';
     label.style.textAlign = 'left';
     label.style.flex = '1';
@@ -8616,122 +8614,71 @@ function removeClasses(svgString) {
 }
 
 function createToolbar(dataset) {
-    const toolbarRow = document.createElement('div');
-    toolbarRow.id = 'toolbarRow';
-    toolbarRow.style.display = 'flex';
-    toolbarRow.style.alignItems = 'center';
-    toolbarRow.style.marginTop = '1.5rem';
-    toolbarRow.style.marginLeft = '1rem';
-    const toggleButton = document.createElement('button');
-    toggleButton.innerHTML = getExpandToolbarIcon();
-    toggleButton.style.margin = '0';
-    toggleButton.style.border = 'none';
-    toggleButton.style.borderRadius = '0';
-    toggleButton.style.padding = '0';
-    toggleButton.style.width = '2rem';
-    toggleButton.style.height = '2rem';
-    toolbarRow.appendChild(toggleButton);
-    const toolbar = document.createElement('div');
-    toolbar.style.display = 'flex';
-    toolbar.style.overflow = 'hidden';
-    toolbar.style.maxWidth = '0';
-    toolbar.style.opacity = '0';
-    toolbar.style.transition = 'max-width 0.3s ease, opacity 0.3s ease';
-    toolbar.style.pointerEvents = 'none';
-    /*const selectionToolButton = document.createElement('button');
-    selectionToolButton.id = 'selectionTool';
-    selectionToolButton.innerHTML = icon.getSelectionIcon();
-    selectionToolButton.addEventListener('click', function () {
-        isSelectionMode = !isSelectionMode;
-
-        selectionWithRectangle(isSelectionMode);
-
-        this.innerHTML = isSelectionMode ? icon.getSelectionActiveIcon() : icon.getSelectionIcon();
-    });*/
-    const showDataButton = document.createElement('button');
-    showDataButton.id = 'showData';
-    showDataButton.innerHTML = getTableIcon();
-    showDataButton.style.margin = '0rem';
-    showDataButton.style.border = 'none';
-    showDataButton.style.borderRadius = '0';
-    showDataButton.style.padding = '0';
-    showDataButton.style.width = '2rem';
-    showDataButton.style.height = '2rem';
-    showDataButton.addEventListener('click', function () {
-        showModalWithData(dataset);
-    });
-    const tooltip = document.createElement("div");
-    tooltip.innerText = "Show Table with Data";
-    tooltip.style.position = "absolute";
-    tooltip.style.backgroundColor = "black";
-    tooltip.style.color = "white";
-    tooltip.style.padding = "4px 8px";
-    tooltip.style.borderRadius = "4px";
-    tooltip.style.fontSize = "14px";
-    tooltip.style.whiteSpace = "nowrap";
-    tooltip.style.visibility = "hidden";
-    tooltip.style.zIndex = "1000";
-    document.body.appendChild(tooltip);
-    showDataButton.addEventListener("mouseenter", (e) => {
-        tooltip.style.visibility = "visible";
-    });
-    showDataButton.addEventListener("mouseleave", () => {
-        tooltip.style.visibility = "hidden";
-    });
-    const downloadButton = document.createElement('button');
-    downloadButton.id = 'downloadButton';
-    downloadButton.innerHTML = getDownloadButton();
-    downloadButton.style.margin = '0';
-    downloadButton.style.border = 'none';
-    downloadButton.style.borderRadius = '0';
-    downloadButton.style.padding = '0';
-    downloadButton.style.width = '2rem';
-    downloadButton.style.height = '2rem';
-    downloadButton.addEventListener('click', saveAsSvg);
-    const refreshButton = document.createElement('button');
-    refreshButton.id = 'refreshButton';
-    refreshButton.innerHTML = getRefreshIcon();
-    refreshButton.style.margin = '0';
-    refreshButton.style.border = 'none';
-    refreshButton.style.borderRadius = '0';
-    refreshButton.style.padding = '0';
-    refreshButton.style.width = '2rem';
-    refreshButton.style.height = '2rem';
-    refreshButton.addEventListener('click', refresh);
-    const resetButton = document.createElement('button');
-    resetButton.id = 'resetButton';
-    resetButton.innerHTML = getResetIcon();
-    resetButton.style.margin = '0';
-    resetButton.style.border = 'none';
-    resetButton.style.borderRadius = '0';
-    resetButton.style.padding = '0';
-    resetButton.style.width = '2rem';
-    resetButton.style.height = '2rem';
-    resetButton.addEventListener('click', reset);
-    //toolbar.appendChild(selectionToolButton);
-    toolbar.appendChild(showDataButton);
-    toolbar.appendChild(downloadButton);
-    toolbar.appendChild(refreshButton);
-    toolbar.appendChild(resetButton);
-    toolbarRow.appendChild(toolbar);
+    const toolbarRow = select$1('#toolbarRow');
+    const toggleButton = toolbarRow.append('button')
+        .html(getExpandToolbarIcon())
+        .style('margin', '0')
+        .style('border', 'none')
+        .style('border-radius', '0')
+        .style('padding', '0')
+        .style('width', '2rem')
+        .style('height', '2rem');
+    const toolbar = toolbarRow.append('div')
+        .style('display', 'flex')
+        .style('overflow', 'hidden')
+        .style('max-width', '0')
+        .style('opacity', '0')
+        .style('transition', 'max-width 0.3s ease, opacity 0.3s ease')
+        .style('pointer-events', 'none');
+    toolbar.append('button')
+        .attr('id', 'showData')
+        .html(getTableIcon())
+        .style('margin', '0rem')
+        .style('border', 'none')
+        .style('border-radius', '0')
+        .style('padding', '0')
+        .style('width', '2rem')
+        .style('height', '2rem')
+        .on('click', () => showModalWithData(dataset));
+    toolbar.append('button')
+        .attr('id', 'downloadButton')
+        .html(getDownloadButton())
+        .style('margin', '0')
+        .style('border', 'none')
+        .style('border-radius', '0')
+        .style('padding', '0')
+        .style('width', '2rem')
+        .style('height', '2rem')
+        .on('click', saveAsSvg);
+    toolbar.append('button')
+        .attr('id', 'refreshButton')
+        .html(getRefreshIcon())
+        .style('margin', '0')
+        .style('border', 'none')
+        .style('border-radius', '0')
+        .style('padding', '0')
+        .style('width', '2rem')
+        .style('height', '2rem')
+        .on('click', refresh);
+    toolbar.append('button')
+        .attr('id', 'resetButton')
+        .html(getResetIcon())
+        .style('margin', '0')
+        .style('border', 'none')
+        .style('border-radius', '0')
+        .style('padding', '0')
+        .style('width', '2rem')
+        .style('height', '2rem')
+        .on('click', reset);
     let expanded = false;
-    toggleButton.addEventListener('click', () => {
+    toggleButton.on('click', () => {
         expanded = !expanded;
-        if (!expanded) {
-            toolbar.style.maxWidth = '0';
-            toolbar.style.opacity = '0';
-            toolbar.style.pointerEvents = 'none';
-            toggleButton.innerHTML = getExpandToolbarIcon();
-        }
-        else {
-            toolbar.style.maxWidth = '12.5rem';
-            toolbar.style.opacity = '1';
-            toolbar.style.pointerEvents = 'auto';
-            toggleButton.innerHTML = getCollapseToolbarIcon();
-        }
+        toolbar
+            .style('max-width', expanded ? '12.5rem' : '0')
+            .style('opacity', expanded ? '1' : '0')
+            .style('pointer-events', expanded ? 'auto' : 'none');
+        toggleButton.html(expanded ? getCollapseToolbarIcon() : getExpandToolbarIcon());
     });
-    const parent = select$1('#pc_svg').node().parentNode;
-    parent.insertBefore(toolbarRow, document.getElementById('pc_svg'));
 }
 function showModalWithData(dataset) {
     const overlay = select$1('body')
@@ -9345,12 +9292,22 @@ function drawChart(content) {
     let newFeatures = content['columns'].reverse();
     setUpParcoordData(content, newFeatures);
     const height = 360;
-    window.svg = select$1('#parallelcoords')
+    const wrapper = select$1('#parallelcoords');
+    wrapper.append('div')
+        .attr('id', 'toolbarRow')
+        .style('display', 'flex')
+        .style('align-items', 'center')
+        .style('margin-top', '1.5rem')
+        .style('margin-left', '1rem')
+        .style('margin-bottom', 0);
+    createToolbar(window.parcoords.newDataset);
+    window.svg = wrapper
         .append('svg')
         .attr('id', 'pc_svg')
-        .attr('viewBox', [-10, 0, window.width, height])
+        .attr('viewBox', [-10, 20, window.width, height])
         .attr('font-family', 'Verdana, sans-serif')
-        .attr('user-select', 'none');
+        .attr('user-select', 'none')
+        .style('margin-top', 0);
     setDefsForIcons();
     window.active = setActivePathLines(svg, content, window.parcoords);
     setFeatureAxis(svg, yAxis, window.active, window.parcoords, width, window.padding);
@@ -9369,7 +9326,6 @@ function drawChart(content) {
         select$1('#contextmenu').style('display', 'none');
         select$1('#contextmenuRecords').style('display', 'none');
     };
-    createToolbar(window.parcoords.newDataset);
 }
 function reset() {
     drawChart(window.refreshData);
@@ -9597,12 +9553,12 @@ const handlePointerEnter = (event, d) => {
     parcoords.newDataset.forEach((record) => {
         datasetMap.set(record[window.hoverlabel], record);
     });
-    data.forEach((item) => {
+    /*data.forEach((item) => {
         const matchingRecord = datasetMap.get(item);
         if (matchingRecord) {
             createToolTipForValues(matchingRecord);
         }
-    });
+    });*/
 };
 const handlePointerLeaveOrOut = () => {
     doNotHighlight();
@@ -9715,7 +9671,7 @@ function setActivePathLines(svg, content, parcoords) {
     return active;
 }
 const delay1 = 50;
-const throttleShowValues = throttle(createToolTipForValues, delay1);
+//const throttleShowValues = throttle(createToolTipForValues, delay1);
 function setContextMenuForActiceRecords(contextMenu, event, d) {
     contextMenu.style('left', event.clientX / 16 + 'rem')
         .style('top', event.clientY / 16 + 'rem')
@@ -10231,5 +10187,5 @@ function checkIfDuplicatesExists(value) {
     return new Set(value).size !== value.length;
 }
 
-export { createSvgString, deleteChart, drawChart, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelected, hide, hideMarker, invert, invertWoTransition, isDimensionCategorical, isSelected, isSelectedWithRecordId, loadCSV, move, moveByOne, refresh, reset, saveAsSvg, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setFilter, setInversionStatus, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setUnselected, setUnselectedWithId, show, showMarker, swap, throttleShowValues, toggleSelection, toggleSelectionWithId };
+export { createSvgString, deleteChart, drawChart, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelected, hide, hideMarker, invert, invertWoTransition, isDimensionCategorical, isSelected, isSelectedWithRecordId, loadCSV, move, moveByOne, refresh, reset, saveAsSvg, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setFilter, setInversionStatus, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setUnselected, setUnselectedWithId, show, showMarker, swap, /*throttleShowValues,*/ toggleSelection, toggleSelectionWithId };
 //# sourceMappingURL=spcd3.js.map
