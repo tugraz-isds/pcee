@@ -5,7 +5,7 @@
       An Explorable Explainer</div>
     <div class="single-line">
       Parallel Coordinates:
-      An Explorable Explainer</div> 
+      An Explorable Explainer</div>
   </div>
 
   <div class="header-spacer"></div>
@@ -446,6 +446,25 @@ window.addEventListener('scroll', () => {
   if (currentStep !== lastStep) {
     lastStep = currentStep;
     const dataset = getDatasetForStep(currentStep);
+    if (currentStep === 0) {
+      document.getElementById('outlier-button').disabled = false;
+      document.getElementById('correlation-button').disabled = false;
+      document.getElementById('correlation-neg-button').disabled = false;
+      document.getElementById('range-button').disabled = true;
+      document.getElementById('select-button').disabled = true;
+      document.getElementById('filter-button').disabled = true;
+      document.getElementById('move-button').disabled = true;
+      document.getElementById('invert-button').disabled = true;
+    } else {
+      document.getElementById('outlier-button').disabled = true;
+      document.getElementById('correlation-button').disabled = true;
+      document.getElementById('correlation-neg-button').disabled = true;
+      document.getElementById('range-button').disabled = false;
+      document.getElementById('select-button').disabled = false;
+      document.getElementById('filter-button').disabled = false;
+      document.getElementById('move-button').disabled = false;
+      document.getElementById('invert-button').disabled = false;
+    }
     drawChart(dataset);
   }
 });
@@ -554,20 +573,34 @@ onMounted(async () => {
 
 .single-line {
   white-space: nowrap;
-  font-size: clamp(1rem, 4vw, 2.5rem); 
+  font-size: clamp(1rem, 4vw, 2.5rem);
   animation: singleTextIn linear forwards;
   animation-timeline: scroll();
   animation-range: 80vh 90vh;
 }
 
 @keyframes multiTextOut {
-  from { opacity: 1; visibility: visible; }
-  to { opacity: 0; visibility: hidden;}
+  from {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
 }
 
 @keyframes singleTextIn {
-  from { opacity: 0; visibility: hidden; }
-  to { opacity: 1; visibility: visible;}
+  from {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  to {
+    opacity: 1;
+    visibility: visible;
+  }
 }
 
 .header-spacer {
