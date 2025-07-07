@@ -609,9 +609,12 @@ window.addEventListener('scroll', () => {
 	to {
 		background-position: 50% 100%;
 		background-color: rgba(0, 129, 175, 0.5);
-		height: 10vh;
+		height: 11vh;
     width: 100%;
 		font-size: 2rem;
+    justify-content: left;
+    text-align: left;
+    padding-left: 1rem;
 	}
 }
 
