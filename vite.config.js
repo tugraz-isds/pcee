@@ -5,7 +5,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/pcee/',
+  base: process.env.NODE_ENV === 'production' ? '/pcee/' : '/',
   plugins: [
     vue(),
     vueDevTools(),
