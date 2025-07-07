@@ -499,6 +499,9 @@ onMounted(async () => {
 
   z-index: 1000;
 
+  font-size: clamp(1.5rem, 4vw, 3rem);
+  padding: 0 5vw;
+
   will-change: transform, height, font-size;
   contain: layout style;
 
@@ -536,6 +539,9 @@ onMounted(async () => {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
+  width: 100%;
+  max-width: 90vw;
+  word-wrap: break-word;
 }
 
 .multi-line {
@@ -548,6 +554,7 @@ onMounted(async () => {
 
 .single-line {
   white-space: nowrap;
+  font-size: clamp(1rem, 4vw, 2.5rem); 
   animation: singleTextIn linear forwards;
   animation-timeline: scroll();
   animation-range: 80vh 90vh;
