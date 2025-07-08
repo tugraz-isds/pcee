@@ -540,7 +540,7 @@ onMounted(async () => {
   to {
     background-position: 50% 100%;
     background-color: rgba(0, 129, 175, 0.5);
-    height: 11vh;
+    height: 6.5vh;
     width: 100%;
     font-size: 2rem;
     padding-left: 1rem;
@@ -573,7 +573,6 @@ onMounted(async () => {
 
 .single-line {
   white-space: nowrap;
-  font-size: clamp(1rem, 4vw, 2.5rem);
   animation: singleTextIn linear forwards;
   animation-timeline: scroll();
   animation-range: 80vh 90vh;
