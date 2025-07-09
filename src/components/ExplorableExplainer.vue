@@ -1,13 +1,15 @@
 <template>
-  <div class="sticky-header">
-    <div class="multi-line">
-      Parallel Coordinates:<br>
-      An Explorable Explainer</div>
-    <div class="single-line">
-      Parallel Coordinates:
-      An Explorable Explainer</div>
+  <div>
+    <div :class="['sticky-header', { 'use-native': supportsScrollDrivenAnimations }]" ref="header">
+      <div ref="multiLine" class="multi-line">
+        Parallel Coordinates:<br />
+        An Explorable Explainer
+      </div>
+      <div ref="singleLine" class="single-line">
+        Parallel Coordinates: An Explorable Explainer
+      </div>
+    </div>
   </div>
-
   <div class="header-spacer"></div>
 
   <div class="explorable-explainer">
@@ -82,6 +84,10 @@ import { ref, onMounted, computed, nextTick } from 'vue';
 import * as spcd3 from '../spcd3.js';
 import scrollama from 'scrollama';
 import { originalColumns, originalRows, columnsStudent, rowsStudent } from '../data.js';
+import gsap from 'gsap'
+import ScrollTrigger from 'gsap/ScrollTrigger'
+
+gsap.registerPlugin(ScrollTrigger);
 
 const introText = ref('');
 const dataText = ref('');
@@ -100,6 +106,10 @@ const showTable = ref(true);
 const columns = ref(structuredClone(originalColumns));
 const rows = ref(structuredClone(originalRows));
 const scroller = scrollama();
+const header = ref(null);
+const multiLine = ref(null);
+const singleLine = ref(null);
+const supportsScrollDrivenAnimations = CSS.supports('animation-timeline: scroll()');
 let lastStep = -1;
 
 const addClickEvent = () => {
@@ -484,8 +494,53 @@ onMounted(async () => {
 
   await nextTick();
 
+  if (!supportsScrollDrivenAnimations) {
+    gsap.to(header.value, {
+      height: '6.5vh',
+      fontSize: '2rem',
+      backgroundPosition: '50% 100%',
+      paddingLeft: '1rem',
+      scrollTrigger: {
+        trigger: document.body,
+        start: 'top top',
+        end: '+=90vh',
+        scrub: 0.2,
+        invalidateOnRefresh: true,
+      },
+      ease: 'none',
+    });
+
+    gsap.to(multiLine.value, {
+      opacity: 0,
+      scrollTrigger: {
+        trigger: document.body,
+        start: 'top top',
+        end: '+=80vh',
+        scrub: 0.2,
+        onUpdate: self => {
+          multiLine.value.style.visibility = self.progress < 1 ? 'visible' : 'hidden'
+        }
+      },
+      ease: 'none'
+    });
+
+    gsap.to(singleLine.value, {
+      opacity: 1,
+      scrollTrigger: {
+        trigger: document.body,
+        start: '+=80vh',
+        end: '+=90vh',
+        scrub: 0.2,
+        onUpdate: self => {
+          singleLine.value.style.visibility = self.progress > 0 ? 'visible' : 'hidden'
+        }
+      },
+      ease: 'none'
+    });
+  }
+
   scroller.setup({
-    step: ".step",
+    step: '.step',
     offset: 0.5,
   }).onStepEnter(response => {
     handleStepEnter(response.index);
@@ -518,33 +573,11 @@ onMounted(async () => {
 
   z-index: 1000;
 
-  font-size: clamp(1.5rem, 4vw, 3rem);
+  font-size: calc(3vw + 1rem);
   padding: 0 5vw;
 
   will-change: transform, height, font-size;
   contain: layout style;
-
-  animation: sticky-header-move-and-size linear forwards;
-  animation-timeline: scroll();
-  animation-range: 0vh 90vh;
-}
-
-@keyframes sticky-header-move-and-size {
-  from {
-    background-position: 50% 0;
-    height: 100vh;
-    width: 100%;
-    font-size: calc(3vw + 1rem);
-  }
-
-  to {
-    background-position: 50% 100%;
-    background-color: rgba(0, 129, 175, 0.5);
-    height: 6.5vh;
-    width: 100%;
-    font-size: 2rem;
-    padding-left: 1rem;
-  }
 }
 
 .multi-line,
@@ -564,18 +597,50 @@ onMounted(async () => {
 }
 
 .multi-line {
-  white-space: pre-line;
-  animation: multiTextOut linear forwards;
-  animation-timeline: scroll();
-  animation-range: 0vh 80vh;
   opacity: 1;
+  visibility: visible;
+  transition: opacity 0.2s ease;
 }
 
 .single-line {
-  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease;
+}
+
+.use-native {
+  animation: sticky-header-move-and-size linear forwards;
+  animation-timeline: scroll();
+  animation-range: 0vh 90vh;
+}
+
+.use-native .multi-line {
+  animation: multiTextOut linear forwards;
+  animation-timeline: scroll();
+  animation-range: 0vh 80vh;
+}
+
+.use-native .single-line {
   animation: singleTextIn linear forwards;
   animation-timeline: scroll();
   animation-range: 80vh 90vh;
+}
+
+@keyframes sticky-header-move-and-size {
+  from {
+    background-position: 50% 0%;
+    height: 100vh;
+    width: 100%;
+    font-size: calc(3vw + 1rem);
+  }
+
+  to {
+    background-position: 50% 100%;
+    height: 6.5vh;
+    width: 100%;
+    font-size: 2rem;
+    padding-left: 1rem;
+  }
 }
 
 @keyframes multiTextOut {
