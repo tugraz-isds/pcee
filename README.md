@@ -40,13 +40,13 @@ yarn dev
 yarn build
 ```
 
+**Important:** To run the build, a live web server must be started.
+
 ### Build a native desktop app with Tauri 2.0
 
 ```
 yarn tauri
 ```
-
-**Important:** To run the build, a live web server must be started.
 
 ## Licence
 
