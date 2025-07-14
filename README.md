@@ -1,8 +1,7 @@
 # Parallel Coordinates Explorable Explainer (PCEE)
 
 An explorable explainer which guides a reader through an interactive tutorial about parallel coordinates.
-This is a single page web application (SPA) built using [Vue3](https://vuejs.org/). 
-The project focuses on delivering a smooth and dynamic user experience without page reloads.
+This is a single page web application (SPA) built using [Vue3](https://vuejs.org/).
 
 A live version of the latest deployment can be found at
 [https://tugraz-isds.github.io/pcee](https://tugraz-isds.github.io/pcee).
@@ -11,6 +10,13 @@ A live version of the latest deployment can be found at
 
 The explorable explainer uses [SPCD3](https://github.com/tugraz-isds/spcd3) to generate and
 visualise parallel coordinates.
+
+Scroll-based interactions are powered by [Scrollama](https://github.com/russellsamora/scrollama),
+a lightweight JavaScript library for scrollytelling using the Intersection Observer API.
+
+Scroll-driven animations are implemented using native CSS.
+For browsers and platforms that don't yet support it, a fallback is provided
+using [GSAP](https://github.com/greensock/GSAP) as a polyfill.
 
 ## Project Setup
 
@@ -34,14 +40,15 @@ yarn dev
 yarn build
 ```
 
-### Lint with [ESLint](https://eslint.org/)
+### Build a native desktop app with Tauri 2.0
 
 ```
-yarn lint
+yarn tauri
 ```
 
 **Important:** To run the build, a live web server must be started.
 
 ## Licence
 
-pcee is distributed under the MIT Licence.
+PCEE is distributed under the MIT Licence. See [LICENSE](LICENSE) for
+more information.

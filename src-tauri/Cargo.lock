@@ -996,7 +996,7 @@ dependencies = [
 
 [[package]]
 name = "gdk"
-version = "0.20.0"
+version = "0.18.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d9f245958c627ac99d8e529166f9823fb3b838d1d41fd2b297af3075093c2691"
 dependencies = [
@@ -1145,7 +1145,7 @@ checksum = "07e28edb80900c19c28f1072f2e8aeca7fa06b23cd4169cefe1af5aa3260783f"
 
 [[package]]
 name = "gio"
-version = "0.20.0"
+version = "0.18.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d4fc8f532f87b79cbc51a79748f16a6828fb784be93145a322fa14d06d354c73"
 dependencies = [
@@ -1177,7 +1177,7 @@ dependencies = [
 
 [[package]]
 name = "glib"
-version = "0.20.0"
+version = "0.18.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "233daaf6e83ae6a12a52055f568f9d7cf4671dabb78ff9560ab6da230ce00ee5"
 dependencies = [
