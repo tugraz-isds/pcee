@@ -7,7 +7,9 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 export default defineConfig(({ mode }) => {
   const base = mode === 'production' ? '/pcee/' : '/';
   return {
-    base,
+    //base,
+    root: './',
+    base: './',
     plugins: [
       vue(),
       vueDevTools(),
