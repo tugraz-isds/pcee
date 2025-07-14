@@ -8616,6 +8616,7 @@ function removeClasses(svgString) {
 function createToolbar(dataset) {
     const toolbarRow = select$1('#toolbarRow');
     const toggleButton = toolbarRow.append('button')
+        .attr('title', 'Expand toolbar')
         .html(getExpandToolbarIcon())
         .style('margin', '0')
         .style('border', 'none')
@@ -8624,6 +8625,7 @@ function createToolbar(dataset) {
         .style('width', '2rem')
         .style('height', '2rem');
     const toolbar = toolbarRow.append('div')
+        .attr('id', 'toolbar')
         .style('display', 'flex')
         .style('overflow', 'hidden')
         .style('max-width', '0')
@@ -8632,6 +8634,7 @@ function createToolbar(dataset) {
         .style('pointer-events', 'none');
     toolbar.append('button')
         .attr('id', 'showData')
+        .attr('title', 'Show table')
         .html(getTableIcon())
         .style('margin', '0rem')
         .style('border', 'none')
@@ -8642,6 +8645,7 @@ function createToolbar(dataset) {
         .on('click', () => showModalWithData(dataset));
     toolbar.append('button')
         .attr('id', 'downloadButton')
+        .attr('title', 'Download SVG')
         .html(getDownloadButton())
         .style('margin', '0')
         .style('border', 'none')
@@ -8652,6 +8656,7 @@ function createToolbar(dataset) {
         .on('click', saveAsSvg);
     toolbar.append('button')
         .attr('id', 'refreshButton')
+        .attr('title', 'Refresh')
         .html(getRefreshIcon())
         .style('margin', '0')
         .style('border', 'none')
@@ -8662,6 +8667,7 @@ function createToolbar(dataset) {
         .on('click', refresh);
     toolbar.append('button')
         .attr('id', 'resetButton')
+        .attr('title', 'Reset')
         .html(getResetIcon())
         .style('margin', '0')
         .style('border', 'none')
@@ -8673,10 +8679,10 @@ function createToolbar(dataset) {
     let expanded = false;
     toggleButton.on('click', () => {
         expanded = !expanded;
-        toolbar
-            .style('max-width', expanded ? '12.5rem' : '0')
+        toolbar.style('max-width', expanded ? '12.5rem' : '0')
             .style('opacity', expanded ? '1' : '0')
             .style('pointer-events', expanded ? 'auto' : 'none');
+        toggleButton.attr('title', expanded ? 'Collapse toolbar' : 'Expand toolbar');
         toggleButton.html(expanded ? getCollapseToolbarIcon() : getExpandToolbarIcon());
     });
 }
@@ -9296,6 +9302,7 @@ function drawChart(content) {
     wrapper.append('div')
         .attr('id', 'toolbarRow')
         .style('display', 'flex')
+        .style('flex-wrap', 'wrap')
         .style('align-items', 'center')
         .style('margin-top', '1.5rem')
         .style('margin-left', '1rem')
@@ -9329,6 +9336,10 @@ function drawChart(content) {
 }
 function reset() {
     drawChart(window.refreshData);
+    let toolbar = select$1('#toolbar');
+    toolbar.style('max-width', '12.5rem')
+        .style('opacity', '1')
+        .style('pointer-events', 'auto');
 }
 function refresh() {
     const dimensions = getAllVisibleDimensionNames();
@@ -10187,5 +10198,5 @@ function checkIfDuplicatesExists(value) {
     return new Set(value).size !== value.length;
 }
 
-export { createSvgString, deleteChart, drawChart, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelected, hide, hideMarker, invert, invertWoTransition, isDimensionCategorical, isSelected, isSelectedWithRecordId, loadCSV, move, moveByOne, refresh, reset, saveAsSvg, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setFilter, setInversionStatus, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setUnselected, setUnselectedWithId, show, showMarker, swap, /*throttleShowValues,*/ toggleSelection, toggleSelectionWithId };
+export { createSvgString, deleteChart, drawChart, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelected, hide, hideMarker, invert, invertWoTransition, isDimensionCategorical, isSelected, isSelectedWithRecordId, loadCSV, move, moveByOne, refresh, reset, saveAsSvg, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setFilter, setInversionStatus, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setUnselected, setUnselectedWithId, show, showMarker, swap, toggleSelection, toggleSelectionWithId };
 //# sourceMappingURL=spcd3.js.map
