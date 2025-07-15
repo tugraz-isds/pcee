@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "tauri": "tauri build",
+    "tauri": "vite build && tauri build",
     "tauri-dev": "tauri dev",
     "preview": "vite preview",
     "clean": "rimraf dist .vite",

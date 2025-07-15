@@ -1,10 +1,10 @@
 [package]
-name = "app"
+name = "pcee"
 version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
-license = ""
-repository = ""
+description = "Parallel Coordinates Explorable Explainer (PCEE)"
+authors = ["Romana Gruber"]
+license = "MIT"
+repository = "https://github.com/tugraz-isds/pcee"
 edition = "2021"
 rust-version = "1.77.2"
 
