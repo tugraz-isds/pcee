@@ -48,6 +48,18 @@ yarn build
 yarn tauri
 ```
 
+### Clean rebuild of the project
+
+```
+yarn clean
+```
+
+### Restore project folder by deleting dist/, node_modules/ and yarn.lock
+
+```
+yarn clean-all
+```
+
 ## Licence
 
 PCEE is distributed under the MIT Licence. See [LICENSE](LICENSE) for
