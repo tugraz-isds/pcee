@@ -7150,6 +7150,11 @@ function createToolTipForValues(recordData) {
     const dimensions = getAllVisibleDimensionNames$1();
     let counter = 0;
     const rectLeft = select$1('#rect_' + cleanString(dimensions[0]))?.node()?.getBoundingClientRect().left;
+    const rectTop = select$1('#rect_' + cleanString(dimensions[0]))?.node()?.getBoundingClientRect().top;
+    select$1('#rect_' + cleanString(dimensions[0]))?.node()?.getBoundingClientRect().bottom;
+    const xScale1 = parcoords.xScales(dimensions[0]);
+    const xScale2 = parcoords.xScales(dimensions[1]);
+    const range = xScale2 - xScale1;
     dimensions.forEach(dimension => {
         const cleanString$1 = cleanString(dimension);
         if (isElementVisible(select$1('#rect_' + cleanString$1))) {
@@ -7158,26 +7163,14 @@ function createToolTipForValues(recordData) {
                 .attr('class', 'tooltip')
                 .style('position', 'absolute')
                 .style('visibility', 'hidden');
-            const invertStatus = isInverted(dimension);
             const scale = parcoords.yScales[dimension];
-            const maxValue = invertStatus ? scale.domain()[0] : scale.domain()[1];
-            const minValue = invertStatus ? scale.domain()[1] : scale.domain()[0];
-            const range = maxValue - minValue;
-            let value;
-            if (invertStatus) {
-                value = isNaN(maxValue) ? scale(recordData[dimension]) :
-                    240 / range * (recordData[dimension] - minValue) + 80;
-            }
-            else {
-                value = isNaN(maxValue) ? scale(recordData[dimension]) :
-                    240 / range * (maxValue - recordData[dimension]) + 80;
-            }
-            const x = (rectLeft + (counter * 95)) / 16;
-            const y = (value + 195) / 16;
+            let value = scale(recordData[dimension]);
+            const x = rectLeft + counter * range;
+            const y = rectTop + value - 100;
             tooltipValues.text(recordData[dimension].toString())
                 .style('visibility', 'visible')
-                .style('top', `${y}rem`)
-                .style('left', `${x}rem`)
+                .style('top', `${y}px`)
+                .style('left', `${x}px`)
                 .style('font-size', '0.65rem')
                 .style('margin', '0.5rem')
                 .style('color', 'red')
@@ -8716,7 +8709,6 @@ function showModalWithData(dataset) {
         .style('border-radius', '0.5rem')
         .style('max-height', '80vh')
         .style('max-width', '90vw')
-        .style('overflow', 'auto')
         .style('z-index', '1000')
         .style('display', 'block');
     const saveAsCSV = document.createElement('button');
@@ -8743,9 +8735,9 @@ function showModalWithData(dataset) {
     modal.append(() => closeButton);
     const scrollWrapper = document.createElement('div');
     scrollWrapper.style.width = '100%';
-    scrollWrapper.style.overflowX = 'auto';
+    scrollWrapper.style.overflowY = 'auto';
     scrollWrapper.style.whiteSpace = 'nowrap';
-    scrollWrapper.style.maxHeight = '79vh';
+    scrollWrapper.style.maxHeight = '70vh';
     const tableContainer = document.createElement('table');
     tableContainer.style.width = '100%';
     tableContainer.style.borderCollapse = 'collapse';
@@ -9471,6 +9463,16 @@ function redrawChart(content, newFeatures) {
     setUpParcoordData(content, newFeatures);
     let height = 360;
     let width = newFeatures.length * 100;
+    const wrapper = select$1('#parallelcoords');
+    wrapper.append('div')
+        .attr('id', 'toolbarRow')
+        .style('display', 'flex')
+        .style('flex-wrap', 'wrap')
+        .style('align-items', 'center')
+        .style('margin-top', '1.5rem')
+        .style('margin-left', '1rem')
+        .style('margin-bottom', 0);
+    createToolbar(window.parcoords.newDataset);
     window.svg = select$1('#parallelcoords')
         .append('svg')
         .attr('id', 'pc_svg')
@@ -9493,7 +9495,6 @@ function redrawChart(content, newFeatures) {
     };
     window.active = setActivePathLines(svg, content, window.parcoords);
     setFeatureAxis(svg, yAxis, window.active, window.parcoords, width, window.padding);
-    createToolbar(window.parcoords.newDataset);
 }
 function createSvgString() {
     let height = 360;

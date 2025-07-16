@@ -685,7 +685,6 @@ onMounted(async () => {
 .main-chart {
   position: sticky;
   top: calc(10vh + 2rem);
-  height: 80vh;
   width: 100%;
   padding-top: 2.5rem;
 }
