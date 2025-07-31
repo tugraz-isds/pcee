@@ -3478,10 +3478,9 @@ function getDownloadButton() {
 
 function cleanString(stringValue) {
     let value = stringValue
-        .toLowerCase()
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/[^a-zA-Z0-9]+/g, "-")
         .replace(/^-+|-+$/g, "");
     if (/^[0-9]/.test(value)) {
         value = "x-" + value;
@@ -3547,28 +3546,24 @@ function brushDown(cleanDimensionName, event, d, parcoords, active, tooltipValue
     const yPosBottom = Number(select$1('#triangle_up_' + cleanDimensionName).attr('y'));
     let yPosTop;
     let yPosRect;
-    let topToAdd;
     if (event.y < 70) {
         yPosTop = 70;
         yPosRect = 80;
-        topToAdd = 80;
     }
     else if (event.y > yPosBottom - 10) {
         yPosTop = yPosBottom - 10;
-        topToAdd = yPosBottom - 10;
         yPosRect = 320;
     }
     else if (event.y == yPosBottom - 10) {
         yPosTop = yPosBottom - 10;
-        topToAdd = yPosBottom - 10;
         yPosRect = yPosTop + 10;
     }
     else {
         yPosTop = event.y;
-        topToAdd = event.y;
+        event.y;
         yPosRect = event.y + 10;
     }
-    addPosition(topToAdd, parcoords.currentPosOfDims, d.name, 'top');
+    addPosition(yPosRect, parcoords.currentPosOfDims, d.name, 'top');
     if (yPosTop == 70 && yPosBottom == 320) {
         select$1('#rect_' + cleanDimensionName)
             .style('cursor', 'default');
@@ -3623,7 +3618,6 @@ function brushUp(cleanDimensionName, event, d, parcoords, active, tooltipValues,
 function dragAndBrush(cleanDimensionName, d, svg, event, parcoords, active, delta, tooltipValuesTop, tooltipValuesDown, window) {
     let yPosTop;
     let yPosRect;
-    let topToAdd;
     const yPosBottom = select$1('#triangle_up_' + cleanDimensionName).attr('y');
     const yPosTopNew = select$1('#triangle_down_' + cleanDimensionName).attr('y');
     const heightTopRect = yPosTopNew - 70;
@@ -3631,20 +3625,18 @@ function dragAndBrush(cleanDimensionName, d, svg, event, parcoords, active, delt
     const rectHeight = 240 - heightTopRect - heightBottomRect;
     if (event.y + delta - 10 <= 70) {
         yPosTop = 70;
-        topToAdd = 80;
         yPosRect = 80;
     }
     else if (event.y + delta + rectHeight >= 320) {
         yPosTop = 320 - rectHeight - 10;
-        topToAdd = 320 - rectHeight - 10;
         yPosRect = 320 - rectHeight;
     }
     else {
         yPosTop = event.y + delta - 10;
-        topToAdd = event.y + delta - 10;
+        event.y + delta - 10;
         yPosRect = yPosTop + 10;
     }
-    addPosition(topToAdd, parcoords.currentPosOfDims, d.name, 'top');
+    addPosition(yPosRect, parcoords.currentPosOfDims, d.name, 'top');
     addPosition(yPosRect + rectHeight, parcoords.currentPosOfDims, d.name, 'bottom');
     if (rectHeight < 240) {
         select$1('#rect_' + cleanDimensionName)
@@ -3660,9 +3652,9 @@ function dragAndBrush(cleanDimensionName, d, svg, event, parcoords, active, delt
         const minValue = invertStatus == false ? parcoords.yScales[dimensionName].domain()[0] :
             parcoords.yScales[dimensionName].domain()[1];
         const range = maxValue - minValue;
-        /*if (!isNaN(parcoords.yScales[d.name].domain()[0])) {
+        if (!isNaN(parcoords.yScales[d.name].domain()[0])) {
             setToolTipDragAndBrush(tooltipValuesTop, tooltipValuesDown, d, parcoords, window, true, yPosTop, yPosRect + rectHeight);
-        }*/
+        }
         active.each(function (d) {
             const currentLine = getLineName(d);
             let value;
@@ -3696,41 +3688,41 @@ function dragAndBrush(cleanDimensionName, d, svg, event, parcoords, active, delt
     }
 }
 function filter(dimensionName, topValue, bottomValue, parcoords) {
+    const cleanDimensionName = cleanString(dimensionName);
     const invertStatus = getInvertStatus(dimensionName, parcoords.currentPosOfDims);
-    const maxValue = invertStatus == false ? parcoords.yScales[dimensionName].domain()[1] :
-        parcoords.yScales[dimensionName].domain()[0];
-    const minValue = invertStatus == false ? parcoords.yScales[dimensionName].domain()[0] :
-        parcoords.yScales[dimensionName].domain()[1];
-    const range = maxValue - minValue;
-    let topPosition;
-    let bottomPosition;
-    if (invertStatus) {
-        topPosition = isNaN(maxValue) ? parcoords.yScales[dimensionName](topValue) :
-            240 / range * (topValue - minValue) + 80;
-        bottomPosition = isNaN(maxValue) ? parcoords.yScales[dimensionName](bottomValue) :
-            240 / range * (bottomValue - minValue) + 80;
-    }
-    else {
-        topPosition = isNaN(maxValue) ? parcoords.yScales[dimensionName](topValue) :
-            240 / range * (maxValue - topValue) + 80;
-        bottomPosition = isNaN(maxValue) ? parcoords.yScales[dimensionName](bottomValue) :
-            240 / range * (maxValue - bottomValue) + 80;
-    }
+    const yScale = parcoords.yScales[dimensionName];
+    const [minValue, maxValue] = invertStatus ? yScale.domain().slice().reverse() : yScale.domain();
+    const scaleValue = (value) => {
+        if (isNaN(value)) {
+            return yScale(value);
+        }
+        const range = maxValue - minValue;
+        return invertStatus ? 240 / range * (value - minValue) + 80 :
+            240 / range * (maxValue - value) + 80;
+    };
+    let topPosition = scaleValue(topValue);
+    let bottomPosition = scaleValue(bottomValue);
+    let rectHeight = bottomPosition - topPosition;
     addPosition(topPosition, parcoords.currentPosOfDims, dimensionName, 'top');
     addPosition(bottomPosition, parcoords.currentPosOfDims, dimensionName, 'bottom');
-    const cleanDimensionName = cleanString(dimensionName);
-    let rectHeight = bottomPosition - topPosition;
     select$1('#rect_' + cleanDimensionName)
-        .attr('y', topPosition);
-    select$1('#triangle_down_' + cleanDimensionName).attr('y', topPosition - 10);
-    //triangle_down.transition().duration(500).attr('y', topPosition - 10);
+        .transition()
+        .duration(500)
+        .attr('y', topPosition)
+        .attr('height', rectHeight)
+        .style('opacity', 0.3);
+    select$1('#triangle_down_' + cleanDimensionName)
+        .transition()
+        .duration(600)
+        .attr('y', topPosition - 10);
     select$1('#triangle_up_' + cleanDimensionName)
+        .transition()
+        .duration(600)
         .attr('y', bottomPosition);
-    select$1('#rect_' + cleanDimensionName)
-        .attr('height', rectHeight);
     let active = select$1('g.active').selectAll('path');
-    const rangeTop = Number(select$1('#triangle_down_' + cleanDimensionName).attr('y'));
-    const rangeBottom = Number(select$1('#triangle_up_' + cleanDimensionName).attr('y'));
+    const rangeTop = topPosition - 10;
+    const rangeBottom = bottomPosition;
+    const range = maxValue - minValue;
     active.each(function (d) {
         let value;
         if (invertStatus) {
@@ -3772,54 +3764,6 @@ function filter(dimensionName, topValue, bottomValue, parcoords) {
             }
         }
         else ;
-    });
-}
-function filterWithCoords(topPosition, bottomPosition, currentPosOfDims, dimension) {
-    addPosition(topPosition, currentPosOfDims, dimension, 'top');
-    addPosition(bottomPosition, currentPosOfDims, dimension, 'bottom');
-    const cleanDimensionName = cleanString(dimension);
-    let rectHeight = bottomPosition - topPosition;
-    select$1('#rect_' + cleanDimensionName)
-        .attr('y', topPosition);
-    select$1('#triangle_down_' + cleanDimensionName)
-        .attr('y', topPosition - 10);
-    select$1('#triangle_up_' + cleanDimensionName)
-        .attr('y', bottomPosition);
-    select$1('#rect_' + cleanDimensionName)
-        .attr('height', rectHeight);
-    const invertStatus = getInvertStatus(dimension, parcoords.currentPosOfDims);
-    const maxValue = invertStatus == false ? parcoords.yScales[dimension].domain()[1] :
-        parcoords.yScales[dimension].domain()[0];
-    const minValue = invertStatus == false ? parcoords.yScales[dimension].domain()[0] :
-        parcoords.yScales[dimension].domain()[1];
-    const range = maxValue - minValue;
-    let active = select$1('g.active').selectAll('path');
-    const emptyString = '';
-    active.each(function (d) {
-        const currentLine = getLineName(d);
-        const dimNameToCheck = select$1('.' + currentLine).text();
-        let value;
-        if (invertStatus) {
-            value = isNaN(maxValue) ? parcoords.yScales[dimension](d[dimension]) :
-                240 / range * (d[dimension] - minValue) + 80;
-        }
-        else {
-            value = isNaN(maxValue) ? parcoords.yScales[dimension](d[dimension]) :
-                240 / range * (maxValue - d[dimension]) + 80;
-        }
-        if (value < topPosition || value > bottomPosition) {
-            makeInactive(currentLine, dimension);
-        }
-        else if (dimNameToCheck == dimension && dimNameToCheck != emptyString) {
-            let checkedLines = [];
-            parcoords.currentPosOfDims.forEach(function (item) {
-                checkAllPositionsTop(item, dimension, parcoords, d, checkedLines, currentLine);
-                checkAllPositionsBottom(item, dimension, parcoords, d, checkedLines, currentLine);
-            });
-            if (!checkedLines.includes(currentLine)) {
-                makeActive(currentLine);
-            }
-        }
     });
 }
 function getLineName(d) {
@@ -3899,7 +3843,7 @@ function setToolTipDragAndBrush(tooltipValuesTop, tooltipValuesDown, d, parcoord
     else {
         tooltipValuesTop.text(Math.round(tooltipValueTop));
         tooltipValuesTop.style('visibility', 'visible');
-        tooltipValuesTop.style('top', Number(yPosTop) + 'px').style('left', window.event.clientX + 'px');
+        tooltipValuesTop.style('top', Number(yPosTop + 180) + 'px').style('left', window.event.clientX + 'px');
         tooltipValuesTop.style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
             .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
             .style('padding', 0.12 + 'rem').style('white-space', 'pre-line')
@@ -3911,7 +3855,7 @@ function setToolTipDragAndBrush(tooltipValuesTop, tooltipValuesDown, d, parcoord
     else {
         tooltipValuesDown.text(Math.round(tooltipValueBottom));
         tooltipValuesDown.style('visibility', 'visible');
-        tooltipValuesDown.style('top', Number(yPosBottom) + 'px').style('left', window.event.clientX + 'px');
+        tooltipValuesDown.style('top', Number(yPosBottom + 180) + 'px').style('left', window.event.clientX + 'px');
         tooltipValuesDown.style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
             .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
             .style('padding', 0.12 + 'rem').style('white-space', 'pre-line')
@@ -4017,6 +3961,8 @@ function checkAllPositionsBottom(positionItem, dimensionName, parcoords, d, chec
 function makeActive(currentLineName) {
     if (select$1('.' + currentLineName).classed('selected')) {
         select$1('.' + currentLineName)
+            .transition()
+            .duration(300)
             .style('pointer-events', 'stroke')
             .style('stroke', 'rgb(255, 165, 0)')
             .style('opacity', '1')
@@ -4024,6 +3970,8 @@ function makeActive(currentLineName) {
     }
     else {
         select$1('.' + currentLineName)
+            .transition()
+            .duration(300)
             .style('pointer-events', 'stroke')
             .style('stroke', 'rgb(0, 129, 175)')
             .style('opacity', '0.5')
@@ -4032,39 +3980,50 @@ function makeActive(currentLineName) {
 }
 function makeInactive(currentLineName, dimensionName) {
     select$1('.' + currentLineName)
+        .transition()
+        .duration(300)
         .style('pointer-events', 'none')
         .style('stroke', 'lightgrey')
         .style('opacity', '0.4')
         .text(dimensionName);
 }
 function addSettingsForBrushing(dimensionName, parcoords) {
-    const processedDimensionName = cleanString(dimensionName);
-    const rectHeight = Number(select$1('#rect_' + processedDimensionName).node().getBoundingClientRect().height);
-    const yPosRectTop = Number(select$1('#rect_' + processedDimensionName).attr('y'));
-    const yPosRectBottom = yPosRectTop + rectHeight;
-    if (yPosRectTop > 80 && yPosRectBottom < 320) {
-        const distanceBottom = 320 - select$1('#triangle_up_' + processedDimensionName).attr('y');
-        select$1('#rect_' + processedDimensionName).attr('y', 80 + distanceBottom);
-        select$1('#triangle_down_' + processedDimensionName).attr('y', 80 + distanceBottom);
-        select$1('#triangle_up_' + processedDimensionName).attr('y', 80 + distanceBottom + rectHeight);
-        addPosition(80 + distanceBottom, parcoords.currentPosOfDims, dimensionName, 'top');
-        addPosition(80 + distanceBottom + rectHeight, parcoords.currentPosOfDims, dimensionName, 'bottom');
+    const processedName = cleanString(dimensionName);
+    const rect = select$1('#rect_' + processedName);
+    const triDown = select$1('#triangle_down_' + processedName);
+    const triUp = select$1('#triangle_up_' + processedName);
+    const rectNode = rect.node();
+    if (!rectNode)
+        return;
+    const rectHeight = Number(rectNode.getBoundingClientRect().height);
+    const yTop = Number(rect.attr('y'));
+    const yBottom = yTop + rectHeight;
+    const bounds = { top: 80, bottom: 320, height: 240 };
+    if (yTop > bounds.top && yBottom < bounds.bottom) {
+        const distBottom = bounds.bottom - Number(triUp.attr('y'));
+        const newY = bounds.top + distBottom;
+        rect.attr('y', newY);
+        triDown.attr('y', newY);
+        triUp.attr('y', newY + rectHeight);
+        //addPosition(newY, parcoords.currentPosOfDims, dimensionName, 'top');
+        //addPosition(newY + rectHeight, parcoords.currentPosOfDims, dimensionName, 'bottom');
     }
-    else if (yPosRectTop > 80 && yPosRectBottom >= 320) {
-        select$1('#rect_' + processedDimensionName).attr('y', 80);
-        select$1('#rect_' + processedDimensionName).attr('height', 240 - (yPosRectTop - 80));
-        select$1('#triangle_down_' + processedDimensionName).attr('y', 80);
-        select$1('#triangle_up_' + processedDimensionName).attr('y', 320 - (yPosRectTop - 80));
-        addPosition(80, parcoords.currentPosOfDims, dimensionName, 'top');
-        addPosition(320 - (yPosRectTop - 80), parcoords.currentPosOfDims, dimensionName, 'bottom');
+    else if (yTop > bounds.top && yBottom >= bounds.bottom) {
+        const newHeight = bounds.height - (yTop - bounds.top);
+        rect.attr('y', bounds.top).attr('height', newHeight);
+        triDown.attr('y', bounds.top);
+        triUp.attr('y', bounds.bottom - (yTop - bounds.top));
+        //addPosition(bounds.top, parcoords.currentPosOfDims, dimensionName, 'top');
+        //addPosition(bounds.bottom - (yTop - bounds.top), parcoords.currentPosOfDims, dimensionName, 'bottom');
     }
-    else if (yPosRectTop <= 80 && yPosRectBottom < 320) {
-        select$1('#rect_' + processedDimensionName).attr('y', 320 - rectHeight);
-        select$1('#rect_' + processedDimensionName).attr('height', 240 - (320 - yPosRectBottom));
-        select$1('#triangle_down_' + processedDimensionName).attr('y', 80 + (320 - yPosRectBottom) - 10);
-        select$1('#triangle_up_' + processedDimensionName).attr('y', 320);
-        addPosition(80 + (320 - yPosRectBottom) - 10, parcoords.currentPosOfDims, dimensionName, 'top');
-        addPosition(320, parcoords.currentPosOfDims, dimensionName, 'bottom');
+    else if (yTop <= bounds.top && yBottom < bounds.bottom) {
+        const newY = bounds.bottom - rectHeight;
+        const newHeight = bounds.height - (bounds.bottom - yBottom);
+        rect.attr('y', newY).attr('height', newHeight);
+        triDown.attr('y', bounds.top + (bounds.bottom - yBottom) - 10);
+        triUp.attr('y', bounds.bottom);
+        //addPosition(bounds.top + (bounds.bottom - yBottom), parcoords.currentPosOfDims, dimensionName, 'top');
+        //addPosition(bounds.bottom, parcoords.currentPosOfDims, dimensionName, 'bottom');
     }
 }
 function getInvertStatus(key, currentPosOfDims) {
@@ -7077,43 +7036,43 @@ function setupXScales(width, padding, features) {
         .domain(features.map(x => x.name))
         .range([width - padding, padding]);
 }
-function setupYAxis(features, yScales, newDataset) {
+function isLinearScale(scale) {
+    return typeof scale.ticks === 'function';
+}
+function setupYAxis(yScales, newDataset, hiddenDims) {
     const limit = 30;
-    let counter = 0;
-    let yAxis = {};
-    Object.entries(yScales).map(key => {
-        let tempFeatures = Array.from(features.values()).map(c => c.name);
-        let tempValues = newDataset.map(o => o[tempFeatures[counter]]);
-        let labels = [];
-        tempValues.forEach(function (element) {
-            labels.push(element.length > 10 ? element.substr(0, 10) + '...' : element);
-        });
-        counter = counter + 1;
-        if (isNaN(labels[0])) {
-            let uniqueArray = labels.filter(function (item, index, self) {
-                return index === self.indexOf(item);
-            });
-            if (uniqueArray.length > limit) {
-                let filteredArray = labels.filter(function (value, index, array) {
-                    return index % 4 == 0;
-                });
-                yAxis[key[0]] = axisLeft(key[1]).tickValues(filteredArray);
-            }
-            else {
-                yAxis[key[0]] = axisLeft(key[1]).tickValues(labels);
-            }
+    const yAxis = {};
+    Object.entries(yScales).forEach(([key, scale]) => {
+        if (hiddenDims.includes(key))
+            return;
+        const sample = newDataset[0][key];
+        const isNumeric = !isNaN(+sample);
+        if (!isNumeric) {
+            const rawLabels = newDataset.map(d => d[key]);
+            const shortenedLabels = rawLabels.map(val => typeof val === 'string' && val.length > 10 ? val.substr(0, 10) + '...' : val);
+            const uniqueLabels = Array.from(new Set(shortenedLabels));
+            const ticks = uniqueLabels.length > limit
+                ? uniqueLabels.filter((_, i) => i % 4 === 0)
+                : uniqueLabels;
+            yAxis[key] = axisLeft(scale).tickValues(ticks);
         }
-        else {
-            let ranges = yScales[key[0]].ticks(5).concat(yScales[key[0]].domain());
-            let sortRanges = ranges.sort(function (a, b) { return a - b; });
-            let uniqueRanges = [...new Set(sortRanges)];
-            if (Number(uniqueRanges[1]) - 5 < Number(uniqueRanges[0])) {
-                uniqueRanges.splice(1, 1);
+        else if (isLinearScale(scale)) {
+            const ticks = scale.ticks(5).concat(scale.domain());
+            const sorted = Array.from(new Set(ticks)).sort((a, b) => a - b);
+            if (sorted.length >= 2) {
+                const diffStart = sorted[1] - sorted[0];
+                if (diffStart < 5) {
+                    sorted.splice(1, 1);
+                }
+                const len = sorted.length;
+                const last = sorted[len - 1];
+                const secondLast = sorted[len - 2];
+                const diffEnd = last - secondLast;
+                if (diffEnd < 5) {
+                    sorted.splice(len - 2, 1);
+                }
             }
-            if (Number(uniqueRanges[uniqueRanges.length - 1]) - 5 < Number(uniqueRanges[uniqueRanges.length - 2])) {
-                uniqueRanges.splice(uniqueRanges.length - 2, 1);
-            }
-            yAxis[key[0]] = axisLeft(key[1]).tickValues(uniqueRanges);
+            yAxis[key] = axisLeft(scale).tickValues(sorted);
         }
     });
     return yAxis;
@@ -7288,6 +7247,7 @@ function showAllMenu() {
         const hiddenDimensions = getAllHiddenDimensionNames();
         for (let i = 0; i < hiddenDimensions.length; i++) {
             show(hiddenDimensions[i]);
+            select$1('#contextmenu').style('display', 'none');
         }
         event.stopPropagation();
     });
@@ -7299,12 +7259,8 @@ function resetFilterMenu(values, dimension) {
             .style('color', 'black')
             .on('click', (event) => {
             const range = getDimensionRange(dimension);
-            if (isInverted(dimension)) {
-                setFilter(dimension, range[1], range[0]);
-            }
-            else {
-                setFilter(dimension, range[1], range[0]);
-            }
+            setFilter(dimension, range[1], range[0]);
+            select$1('#contextmenu').style('display', 'none');
             event.stopPropagation();
         });
     }
@@ -7317,8 +7273,9 @@ function resetFilterMenu(values, dimension) {
 function filterMenu(values, dimension) {
     if (!isNaN(values[0])) {
         let currentFilters = getFilter(dimension);
-        select$1('#maxFilterValue').property('value', currentFilters[0]);
-        select$1('#minFilterValue').property('value', currentFilters[1]);
+        const inverted = isInverted(dimension);
+        select$1('#minFilterValue').property('value', currentFilters[0]);
+        select$1('#maxFilterValue').property('value', currentFilters[1]);
         select$1('#filterMenu')
             .style('border-top', '0.08rem lightgrey solid')
             .style('visibility', 'visible')
@@ -7327,13 +7284,12 @@ function filterMenu(values, dimension) {
             select$1('#modalOverlayFilter').style('display', 'block');
             select$1('#modalFilter').style('display', 'block');
             select$1('#contextmenu').style('display', 'none');
-            const newText1 = dimension.length > 25 ? dimension.substr(0, 25) + '...' : dimension;
-            select$1('#headerDimensionFilter').text(newText1);
+            const header = dimension.length > 25 ? dimension.substr(0, 25) + '...' : dimension;
+            select$1('#headerDimensionFilter').text(header);
             select$1('#buttonFilter').on('click', () => {
                 let min = select$1('#minFilterValue').node().value;
                 let max = select$1('#maxFilterValue').node().value;
                 const ranges = getDimensionRange(dimension);
-                const inverted = isInverted(dimension);
                 let isOk = true;
                 if (inverted) {
                     if (min < ranges[1]) {
@@ -7383,12 +7339,8 @@ function filterMenu(values, dimension) {
                         isOk = false;
                     }
                 }
-                if (inverted) {
-                    setFilter(dimension, min, max);
-                }
-                else {
+                inverted ? setFilter(dimension, min, max) :
                     setFilter(dimension, max, min);
-                }
                 if (isOk) {
                     select$1('#errorFilter').style('display', 'none');
                     select$1('#modalFilter').style('display', 'none');
@@ -7428,6 +7380,7 @@ function resetRoundRangeMenu(values, dimension) {
             .style('color', 'black')
             .on('click', (event) => {
             setDimensionRangeRounded(dimension, getMinValue(dimension), getMaxValue(dimension));
+            select$1('#contextmenu').style('display', 'none');
             event.stopPropagation();
         });
     }
@@ -7444,6 +7397,7 @@ function resetRangeMenu(values, dimension) {
             .style('color', 'black')
             .on('click', (event) => {
             setDimensionRange(dimension, getMinValue(dimension), getMaxValue(dimension));
+            select$1('#contextmenu').style('display', 'none');
             event.stopPropagation();
         });
     }
@@ -7562,6 +7516,7 @@ function hideDimensionMenu(dimension) {
     select$1('#hideMenu')
         .on('click', (event) => {
         hide(dimension);
+        select$1('#contextmenu').style('display', 'none');
         event.stopPropagation();
     });
 }
@@ -7840,12 +7795,11 @@ function createCloseButton(modal, id) {
 function createErrorMessage(modal, id) {
     const errorMessage = document.createElement('div');
     errorMessage.id = id;
-    errorMessage.style.position = 'absolute';
+    errorMessage.style.position = 'relative';
     errorMessage.style.display = 'none';
     modal.append(() => errorMessage);
 }
 
-format(".4f");
 function setActivePathLinesToDownload(svg, parcoords, key) {
     svg.append('g')
         .attr('class', 'active')
@@ -7881,22 +7835,25 @@ function setActivePathLinesToDownload(svg, parcoords, key) {
         }
     });
 }
-function setFeatureAxisToDownload(svg, yAxis, yScales, parcoords, padding) {
+function setFeatureAxisToDownload(svg, yAxis, yScales, parcoords, padding, xScales) {
+    const orderedFeatures = parcoords.newFeatures.map(name => ({ name }));
+    const hiddenDims = getAllHiddenDimensionNames();
     let featureAxis = svg.selectAll('g.feature')
-        .data(parcoords.features)
+        .data(orderedFeatures)
         .enter()
         .append('g')
-        .attr('transform', d => ('translate(' + parcoords.xScales(d.name)) + ')');
+        .attr('transform', d => ('translate(' + xScales(d.name)) + ')');
     featureAxis
         .append('g')
         .each(function (d) {
         const processedDimensionName = cleanString(d.name);
-        const ranges = getDimensionRange(d.name);
+        const max = getCurrentMaxRange(d.name);
+        const min = getCurrentMinRange(d.name);
         if (!isDimensionCategorical(d.name)) {
             const status = getInversionStatus(d.name);
             if (status == 'ascending') {
-                yScales[d.name].domain([ranges[0], ranges[1]]);
-                yAxis = setupYAxis(parcoords.features, yScales, parcoords.newDataset);
+                yScales[d.name].domain([min, max]);
+                yAxis = setupYAxis(yScales, parcoords.newDataset, hiddenDims);
                 select$1(this)
                     .attr('id', 'dimension_axis_' + processedDimensionName)
                     .call(yAxis[d.name]
@@ -7905,8 +7862,8 @@ function setFeatureAxisToDownload(svg, yAxis, yScales, parcoords, padding) {
                     .domain())));
             }
             else {
-                yScales[d.name].domain([ranges[1], ranges[0]]);
-                yAxis = setupYAxis(parcoords.features, yScales, parcoords.newDataset);
+                yScales[d.name].domain([max, min]);
+                yAxis = setupYAxis(yScales, parcoords.newDataset, hiddenDims);
                 select$1(this)
                     .attr('id', 'dimension_axis_' + processedDimensionName)
                     .call(yAxis[d.name]
@@ -7941,7 +7898,7 @@ function setBrushDownToDownload(featureAxis, parcoords) {
             .append('g')
             .append('use')
             .attr('id', 'triangle_down_' + processedDimensionName)
-            .attr('y', item.top == 80 ? 70 : item.top)
+            .attr('y', item.top == 80 ? 70 : item.top - 10)
             .attr('x', -6)
             .attr('width', 14)
             .attr('height', 10)
@@ -7957,7 +7914,7 @@ function setBrushUpToDownload(featureAxis, parcoords) {
             .append('g')
             .append('use')
             .attr('id', 'triangle_up_' + processedDimensionName)
-            .attr('y', item.top != 80 && item.bottom != 320 ? item.bottom + 10 : item.bottom)
+            .attr('y', item.bottom)
             .attr('x', -6)
             .attr('width', 14)
             .attr('height', 10)
@@ -7970,8 +7927,7 @@ function setRectToDragToDownload(featureAxis, parcoords) {
         const processedDimensionName = cleanString(d.name);
         const item = parcoords.currentPosOfDims.find((object) => object.key == d.name);
         let height = item.bottom - item.top;
-        if (item.top != 80 && item.bottom == 320)
-            height = height - 10;
+        //if (item.top != 80 && item.bottom != 320) height = height + 10;
         select$1(this)
             .append('g')
             .append('rect')
@@ -7979,7 +7935,7 @@ function setRectToDragToDownload(featureAxis, parcoords) {
             .attr('width', 12)
             .attr('height', height)
             .attr('x', -6)
-            .attr('y', item.top != 80 && item.bottom != 320 || item.top != 80 ? item.top + 10 : item.top)
+            .attr('y', item.top)
             .attr('fill', 'rgb(255, 255, 0)')
             .attr('opacity', '0.4');
     });
@@ -8609,6 +8565,7 @@ function removeClasses(svgString) {
 function createToolbar(dataset) {
     const toolbarRow = select$1('#toolbarRow');
     const toggleButton = toolbarRow.append('button')
+        .attr('id', 'toggleButton')
         .attr('title', 'Expand toolbar')
         .html(getExpandToolbarIcon())
         .style('margin', '0')
@@ -8669,9 +8626,9 @@ function createToolbar(dataset) {
         .style('width', '2rem')
         .style('height', '2rem')
         .on('click', reset);
-    let expanded = false;
     toggleButton.on('click', () => {
-        expanded = !expanded;
+        let isExpanded = toolbar.style('max-width') !== '0px';
+        let expanded = !isExpanded;
         toolbar.style('max-width', expanded ? '12.5rem' : '0')
             .style('opacity', expanded ? '1' : '0')
             .style('pointer-events', expanded ? 'auto' : 'none');
@@ -8822,58 +8779,59 @@ function downloadCSV(dataArray, filename = 'data.csv') {
 
 //******** API ********//
 //---------- Show and Hide Functions ----------
-function show(dimension) {
-    const tempFeatures = parcoords.newFeatures.slice();
-    const isShown = getHiddenStatus(dimension);
-    const temp = parcoords.currentPosOfDims.slice();
-    const item = parcoords.currentPosOfDims.find((object) => object.key == dimension);
-    const index = item.index;
-    window.selected = getSelected();
-    if (isShown == "hidden") {
-        tempFeatures.splice(index, 0, dimension);
-        redrawChart(parcoords.data, tempFeatures);
-        window.parcoords.currentPosOfDims = temp.slice();
-        window.parcoords.currentPosOfDims.forEach(function (item) {
-            if (getHiddenStatus(item.key) != 'hidden') {
-                if (item.isInverted) {
-                    invertWoTransition(item.key);
-                }
-                if (item.top != 80 || item.bottom != 320) {
-                    filterWithCoords(item.top, item.bottom, parcoords.currentPosOfDims, item.key);
-                }
-                if (!isDimensionCategorical(item.key)) {
-                    setDimensionRange(item.key, item.currentRangeBottom, item.currentRangeTop);
-                }
-            }
-        });
-        setSelection(window.selected);
-    }
-}
 function hide(dimension) {
-    select$1('#contextmenu').style('display', 'none');
-    const tempFeatures = parcoords.newFeatures.slice();
-    const isShown = getHiddenStatus(dimension);
-    const temp = window.parcoords.currentPosOfDims.slice();
-    window.selected = getSelected();
-    if (isShown == "shown") {
-        tempFeatures.splice(tempFeatures.indexOf(dimension), 1);
-        redrawChart(parcoords.data, tempFeatures);
-        window.parcoords.currentPosOfDims = temp.slice();
-        window.parcoords.currentPosOfDims.forEach(function (item) {
-            if (getHiddenStatus(item.key) != 'hidden') {
-                if (item.isInverted) {
-                    invertWoTransition(item.key);
-                }
-                if (item.top != 80 || item.bottom != 320) {
-                    filterWithCoords(item.top, item.bottom, parcoords.currentPosOfDims, item.key);
-                }
-                if (!isDimensionCategorical(item.key)) {
-                    setDimensionRange(item.key, item.currentRangeBottom, item.currentRangeTop);
-                }
-            }
-        });
-        setSelection(window.selected);
+    const newDimensions = window.parcoords.newFeatures.filter(d => d !== dimension);
+    const featureSet = window.parcoords.features.filter(d => d.name !== dimension);
+    window.parcoords.features = featureSet;
+    window.parcoords.newFeatures = newDimensions;
+    window.parcoords.xScales.domain(newDimensions);
+    selectAll('.dimensions')
+        .filter(d => newDimensions.includes(d.name || d))
+        .transition()
+        .duration(1000)
+        .attr('transform', d => 'translate(' + position(d.name || d, parcoords.dragging, parcoords.xScales) + ')')
+        .ease(cubicInOut);
+    selectAll('.dimensions')
+        .filter(d => d.name === dimension)
+        .transition()
+        .duration(500)
+        .style('opacity', 0)
+        .on('end', function () {
+        select$1(this).attr('visibility', 'hidden');
+    });
+    select$1('g.active').selectAll('path')
+        .transition()
+        .duration(1000)
+        .attr('d', d => linePath(d, newDimensions, parcoords))
+        .ease(cubicInOut);
+}
+function show(dimension) {
+    if (window.parcoords.newFeatures.includes(dimension))
+        return;
+    const existingIndex = window.initDimension.indexOf(dimension);
+    if (existingIndex !== -1) {
+        window.parcoords.newFeatures.splice(existingIndex, 0, dimension);
+        const removedItem = { name: dimension };
+        window.parcoords.features.splice(existingIndex, 0, removedItem);
     }
+    window.parcoords.xScales.domain(window.parcoords.newFeatures);
+    selectAll('.dimensions')
+        .filter(d => (typeof d === "object" ? d.name : d) === dimension)
+        .style('opacity', 1)
+        .transition()
+        .duration(500)
+        .attr('visibility', 'visible');
+    selectAll('.dimensions')
+        .filter(d => window.parcoords.newFeatures.includes(typeof d === "object" ? d.name : d))
+        .transition()
+        .duration(1000)
+        .attr('transform', d => 'translate(' + position(d.name || d, parcoords.dragging, parcoords.xScales) + ')')
+        .ease(cubicInOut);
+    select$1('g.active').selectAll('path')
+        .transition()
+        .duration(1000)
+        .attr('d', d => linePath(d, window.parcoords.newFeatures, parcoords))
+        .ease(cubicInOut);
 }
 function getHiddenStatus(dimension) {
     const index = parcoords.newFeatures.indexOf(dimension);
@@ -8913,6 +8871,7 @@ function invert(dimension) {
         })
             .ease(cubicInOut);
     });
+    
     addSettingsForBrushing(dimension, parcoords);
     if (isInverted(dimension)) {
         addInvertStatus(true, parcoords.currentPosOfDims, dimension, "isInverted");
@@ -9001,7 +8960,7 @@ function moveByOne(dimension, direction) {
     const neighbour = parcoords.newFeatures[indexOfNeighbor];
     const pos = parcoords.xScales(dimension);
     const posNeighbour = parcoords.xScales(neighbour);
-    const distance = 93.5; //(width-window.paddingXaxis)/parcoords.newFeatures.length;
+    const distance = parcoords.xScales.step();
     parcoords.dragging[dimension] = direction == 'right' ? pos + distance :
         pos - distance;
     parcoords.dragging[neighbour] = direction == 'right' ? posNeighbour - distance :
@@ -9101,17 +9060,17 @@ function getDimensionRange(dimension) {
 }
 function setDimensionRange(dimension, min, max) {
     const inverted = isInverted(dimension);
+    const hiddenDims = getAllHiddenDimensionNames();
     if (inverted) {
         window.parcoords.yScales[dimension].domain([max, min]);
-        window.yAxis = setupYAxis(window.parcoords.features, window.parcoords.yScales, window.parcoords.newDataset);
+        window.yAxis = setupYAxis(window.parcoords.yScales, window.parcoords.newDataset, hiddenDims);
     }
     else {
         window.parcoords.yScales[dimension].domain([min, max]);
-        window.yAxis = setupYAxis(window.parcoords.features, window.parcoords.yScales, window.parcoords.newDataset);
+        window.yAxis = setupYAxis(window.parcoords.yScales, window.parcoords.newDataset, hiddenDims);
     }
     addRange(min, window.parcoords.currentPosOfDims, dimension, 'currentRangeBottom');
     addRange(max, window.parcoords.currentPosOfDims, dimension, 'currentRangeTop');
-    // draw active lines
     select$1('#dimension_axis_' + cleanString(dimension))
         .call(yAxis[dimension])
         .transition()
@@ -9135,17 +9094,17 @@ function setDimensionRange(dimension, min, max) {
 }
 function setDimensionRangeRounded(dimension, min, max) {
     const inverted = isInverted(dimension);
+    const hiddenDims = getAllHiddenDimensionNames();
     if (inverted) {
         window.parcoords.yScales[dimension].domain([max, min]).nice();
-        window.yAxis = setupYAxis(window.parcoords.features, window.parcoords.yScales, window.parcoords.newDataset);
+        window.yAxis = setupYAxis(window.parcoords.yScales, window.parcoords.newDataset, hiddenDims);
     }
     else {
         window.parcoords.yScales[dimension].domain([min, max]).nice();
-        window.yAxis = setupYAxis(window.parcoords.features, window.parcoords.yScales, window.parcoords.newDataset);
+        window.yAxis = setupYAxis(window.parcoords.yScales, window.parcoords.newDataset, hiddenDims);
     }
-    addRange(min, window.parcoords.currentPosOfDims, dimension, 'currentRangeBottom');
-    addRange(max, window.parcoords.currentPosOfDims, dimension, 'currentRangeTop');
-    // draw active lines
+    addRange(Math.floor(min), window.parcoords.currentPosOfDims, dimension, 'currentRangeBottom');
+    addRange(Math.ceil(max), window.parcoords.currentPosOfDims, dimension, 'currentRangeTop');
     select$1('#dimension_axis_' + cleanString(dimension))
         .call(yAxis[dimension])
         .transition()
@@ -9191,17 +9150,15 @@ function addRange(value, currentPosOfDims, dimensionName, key) {
 }
 //---------- Filter Functions ----------
 function getFilter(dimension) {
-    const invertStatus = isInverted(dimension);
-    const dimensionRange = getDimensionRange(dimension);
-    const maxValue = invertStatus == false ? dimensionRange[1] : dimensionRange[0];
-    const minValue = invertStatus == false ? dimensionRange[0] : dimensionRange[1];
-    const range = maxValue - minValue;
-    const dimensionSettings = window.parcoords.currentPosOfDims.find((obj) => obj.key == dimension);
-    const top = invertStatus == false ? maxValue - (dimensionSettings.top - 80) / (240 / range) :
-        (dimensionSettings.top - 80) / (240 / range) + minValue;
-    const bottom = invertStatus == false ? maxValue - (dimensionSettings.bottom - 80) / (240 / range) :
-        (dimensionSettings.bottom - 80) / (240 / range) + minValue;
-    return [top, bottom];
+    const yScale = parcoords.yScales[dimension];
+    const dimensionSettings = parcoords.currentPosOfDims.find((d) => d.key === dimension);
+    if (!dimensionSettings || !yScale || typeof yScale.invert !== 'function')
+        return [0, 0];
+    const valueTop = Math.round(yScale.invert(dimensionSettings.top));
+    const valueBottom = Math.round(yScale.invert(dimensionSettings.bottom));
+    const min = Math.min(valueTop, valueBottom);
+    const max = Math.max(valueTop, valueBottom);
+    return [min, max];
 }
 function setFilter(dimension, min, max) {
     filter(dimension, min, max, parcoords);
@@ -9332,6 +9289,9 @@ function reset() {
     toolbar.style('max-width', '12.5rem')
         .style('opacity', '1')
         .style('pointer-events', 'auto');
+    let toggleButton = select$1('#toggleButton');
+    toggleButton.attr('title', 'Collapse toolbar');
+    toggleButton.html(getCollapseToolbarIcon());
 }
 function refresh() {
     const dimensions = getAllVisibleDimensionNames();
@@ -9401,6 +9361,7 @@ function setUpParcoordData(data, newFeatures) {
     window.paddingXaxis = 75;
     window.width = newFeatures.length * 100;
     window.height = 400;
+    window.initDimension = newFeatures;
     const label = newFeatures[newFeatures.length - 1];
     data.sort((a, b) => {
         const item1 = a[label];
@@ -9435,8 +9396,9 @@ function setUpParcoordData(data, newFeatures) {
             min: min, max: max, sigDig: 0, currentRangeTop: ranges[1], currentRangeBottom: ranges[0]
         });
     }
+    const hiddenDims = getAllHiddenDimensionNames();
     window.yAxis = {};
-    window.yAxis = setupYAxis(parcoords.features, parcoords.yScales, parcoords.newDataset);
+    window.yAxis = setupYAxis(parcoords.yScales, parcoords.newDataset, hiddenDims);
     let counter = 0;
     window.parcoords.features.map(x => {
         let numberOfDigs = 0;
@@ -9458,49 +9420,14 @@ function setUpParcoordData(data, newFeatures) {
     });
     window.hoverlabel = getAllVisibleDimensionNames()[0];
 }
-function redrawChart(content, newFeatures) {
-    deleteChart();
-    setUpParcoordData(content, newFeatures);
-    let height = 360;
-    let width = newFeatures.length * 100;
-    const wrapper = select$1('#parallelcoords');
-    wrapper.append('div')
-        .attr('id', 'toolbarRow')
-        .style('display', 'flex')
-        .style('flex-wrap', 'wrap')
-        .style('align-items', 'center')
-        .style('margin-top', '1.5rem')
-        .style('margin-left', '1rem')
-        .style('margin-bottom', 0);
-    createToolbar(window.parcoords.newDataset);
-    window.svg = select$1('#parallelcoords')
-        .append('svg')
-        .attr('id', 'pc_svg')
-        .attr('viewBox', [0, 0, width, height])
-        .attr('font-family', 'Verdana, sans-serif')
-        .on("contextmenu", function (event) {
-        event.stopPropagation();
-        event.preventDefault();
-    })
-        .on("mouseenter", function () {
-        cleanTooltip();
-    })
-        .on("click", function () {
-        clearSelection();
-    });
-    setDefsForIcons();
-    window.onclick = (event) => {
-        select$1('#contextmenu').style('display', 'none');
-        select$1('#contextmenuRecords').style('display', 'none');
-    };
-    window.active = setActivePathLines(svg, content, window.parcoords);
-    setFeatureAxis(svg, yAxis, window.active, window.parcoords, width, window.padding);
-}
 function createSvgString() {
-    let height = 360;
-    let width = window.parcoords.newFeatures.length * 100;
-    let yScalesForDownload = setupYScales(400, window.padding, window.parcoords.features, window.parcoords.newDataset);
-    let yAxisForDownload = setupYAxis(window.parcoords.features, yScalesForDownload, window.parcoords.newDataset);
+    let height = window.height;
+    let width = window.width;
+    const orderedFeatures = window.parcoords.newFeatures.map(name => ({ name }));
+    const hiddenDims = getAllHiddenDimensionNames();
+    let yScalesForDownload = setupYScales(window.height, window.padding, window.window.parcoords.features, window.parcoords.newDataset);
+    let yAxisForDownload = setupYAxis(yScalesForDownload, window.parcoords.newDataset, hiddenDims);
+    let xScalesForDownload = setupXScales(window.width, window.paddingXaxis, orderedFeatures);
     let svg = create$1('svg')
         .attr("xmlns", "http://www.w3.org/2000/svg")
         .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
@@ -9528,7 +9455,7 @@ function createSvgString() {
         .attr('height', 10)
         .attr('href', 'data:image/svg+xml;,' + getArrowBottom());
     setActivePathLinesToDownload(svg, window.parcoords, window.key);
-    setFeatureAxisToDownload(svg, yAxisForDownload, yScalesForDownload, window.parcoords, window.padding);
+    setFeatureAxisToDownload(svg, yAxisForDownload, yScalesForDownload, window.parcoords, window.padding, xScalesForDownload);
     return svg.node().outerHTML;
 }
 const tooltipPath = select$1('body')
@@ -9862,14 +9789,6 @@ function clearSelection() {
             .style('opacity', '0.5');
     });
 }
-// Inverting
-function onInvert() {
-    {
-        return function invertDim(event, d) {
-            invert(d.name);
-        };
-    }
-}
 function setInvertIcon(featureAxis, padding) {
     let value = (padding / 1.5).toFixed(4);
     featureAxis
@@ -9889,7 +9808,10 @@ function setInvertIcon(featureAxis, padding) {
             .text('up')
             .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowDownCursor()), 12)}') 8 8, auto`);
     })
-        .on('click', onInvert());
+        .on('click', (event, d) => {
+        invert(d.name);
+        event.stopPropagation();
+    });
 }
 function setMarker(featureAxis) {
     featureAxis

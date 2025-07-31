@@ -83,7 +83,7 @@
 import { ref, onMounted, computed, nextTick } from 'vue';
 import * as spcd3 from '../spcd3.js';
 import scrollama from 'scrollama';
-import { originalColumns, originalRows, columnsStudent, rowsStudent } from '../data.js';
+import { originalColumns, originalRows } from '../data.js';
 import gsap from 'gsap'
 import ScrollTrigger from 'gsap/ScrollTrigger'
 
@@ -218,42 +218,22 @@ const selectRecord = () => {
 }
 
 const filterRecords = () => {
-  let isInverted = spcd3.getInversionStatus('English');
-  if (isInverted == 'ascending') {
-    if (spcd3.getFilter('English')[1] == 1) {
-      spcd3.setFilter('English', 99, 50);
-      document.getElementById('filter-button').textContent = 'English: Reset filter';
-    }
-    else if (spcd3.getFilter('English')[1] == 0) {
-      spcd3.setFilter('English', 100, 50);
-      document.getElementById('filter-button').textContent = 'English: Reset filter';
-    }
-    else if (spcd3.getFilter('English')[1] == 50 && spcd3.getFilter('English')[0] == 100) {
-      spcd3.setFilter('English', 100, 0);
-      document.getElementById('filter-button').textContent = 'English: Filter 50 - 100';
-    }
-    else {
-      spcd3.setFilter('English', 100, 0);
-      document.getElementById('filter-button').textContent = 'English: Filter 50 - 100';
-    }
+  console.log(spcd3.getFilter('English'));
+  if (spcd3.getFilter('English')[0] == 1) {
+    spcd3.setFilter('English', 99, 51);
+    document.getElementById('filter-button').textContent = 'English: Reset filter';
+  }
+  else if (spcd3.getFilter('English')[0] == 51) {
+    spcd3.setFilter('English', 99, 1);
+    document.getElementById('filter-button').textContent = 'English: Filter 50 - 99';
+  }
+  else if (spcd3.getFilter('English')[0] == 0 && spcd3.getFilter('English')[1] == 100) {
+    spcd3.setFilter('English', 100, 50);
+    document.getElementById('filter-button').textContent = 'English: Filter 50 - 100';
   }
   else {
-    if (spcd3.getFilter('English')[0] == 1) {
-      spcd3.setFilter('English', 50, 99);
-      document.getElementById('filter-button').textContent = 'English: Reset filter';
-    }
-    else if (spcd3.getFilter('English')[0] == 0) {
-      spcd3.setFilter('English', 50, 100);
-      document.getElementById('filter-button').textContent = 'English: Reset filter';
-    }
-    else if (spcd3.getFilter('English')[0] == 50 && spcd3.getFilter('English')[1] == 100) {
-      spcd3.setFilter('English', 0, 100);
-      document.getElementById('filter-button').textContent = 'English: Filter 50 - 100';
-    }
-    else {
-      spcd3.setFilter('English', 0, 100);
-      document.getElementById('filter-button').textContent = 'English: Filter 50 - 100';
-    }
+    spcd3.setFilter('English', 100, 0);
+    document.getElementById('filter-button').textContent = 'English: Reset filter';
   }
 }
 
@@ -271,19 +251,7 @@ const moveDimension = () => {
 }
 
 const invertDimension = () => {
-  if (spcd3.getInversionStatus('English') == 'descending') {
-    spcd3.setInversionStatus('English', 'ascending');
-    filterRecordsForInvert()
-  }
-  else {
-    spcd3.setInversionStatus('English', 'descending');
-    filterRecordsForInvert();
-  }
-}
-
-const filterRecordsForInvert = () => {
-  console.log(spcd3.getFilter('English'));
-  spcd3.setFilter('English', spcd3.getFilter('English')[0], spcd3.getFilter('English')[1]);
+  spcd3.invert('English');
 }
 
 const addRow = () => {
