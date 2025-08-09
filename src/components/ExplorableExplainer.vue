@@ -79,7 +79,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, computed, nextTick } from 'vue';
 import * as spcd3 from '../spcd3.js';
 import scrollama from 'scrollama';
@@ -112,7 +112,7 @@ const singleLine = ref(null);
 const supportsScrollDrivenAnimations = CSS.supports('animation-timeline: scroll()');
 let lastStep = -1;
 
-const addClickEvent = () => {
+const addClickEvent = (): void => {
   const outlierButton = document.getElementById('outlier-button');
   if (outlierButton) {
     outlierButton.addEventListener('click', selectOutlier);
@@ -147,7 +147,7 @@ const addClickEvent = () => {
   }
 }
 
-const selectOutlier = () => {
+const selectOutlier = (): void => {
   if (spcd3.isSelected('Patient F')) {
     spcd3.setUnselected('Patient F')
     document.getElementById('outlier-button').textContent = 'Show outlier';
@@ -158,7 +158,7 @@ const selectOutlier = () => {
   }
 };
 
-const showPositiveCorrelation = () => {
+const showPositiveCorrelation = (): void => {
   if (spcd3.getInversionStatus('Age') == 'descending') {
     spcd3.setInversionStatus('Age', 'ascending');
     spcd3.hideMarker('Age');
@@ -169,7 +169,7 @@ const showPositiveCorrelation = () => {
   }
 }
 
-const showNegativeCorrelation = () => {
+const showNegativeCorrelation = (): void => {
   const posFitness = spcd3.getDimensionPosition('Fitness Score');
   const posAge = spcd3.getDimensionPosition('Age');
   const diff = posAge - posFitness;
@@ -182,7 +182,7 @@ const showNegativeCorrelation = () => {
   spcd3.swap('Fitness Score', 'Blood Pressure');
 }
 
-const setRange = () => {
+const setRange = (): void => {
   const currentRange = spcd3.getDimensionRange('PE');
   if (currentRange[0] == 51) {
     const dimensions = spcd3.getAllDimensionNames();
@@ -206,7 +206,7 @@ const setRange = () => {
   }
 }
 
-const selectRecord = () => {
+const selectRecord = (): void => {
   if (spcd3.isSelected('Sylvia')) {
     spcd3.setUnselected('Sylvia');
     document.getElementById('select-button').textContent = 'Select record: Sylvia';
@@ -217,7 +217,7 @@ const selectRecord = () => {
   }
 }
 
-const filterRecords = () => {
+const filterRecords = (): void => {
   console.log(spcd3.getFilter('English'));
   if (spcd3.getFilter('English')[0] == 1) {
     spcd3.setFilter('English', 99, 51);
@@ -237,7 +237,7 @@ const filterRecords = () => {
   }
 }
 
-const moveDimension = () => {
+const moveDimension = (): void => {
   const posGerman = spcd3.getDimensionPosition('German');
   const posEnglish = spcd3.getDimensionPosition('English');
   const diff = posEnglish - posGerman;
@@ -250,11 +250,11 @@ const moveDimension = () => {
   spcd3.swap('PE', 'German');
 }
 
-const invertDimension = () => {
+const invertDimension = (): void => {
   spcd3.invert('English');
 }
 
-const addRow = () => {
+const addRow = (): void => {
   const newRow = {};
   columns.value.forEach((column) => {
     newRow[column.key] = '';
@@ -262,23 +262,23 @@ const addRow = () => {
   rows.value.push(newRow);
 };
 
-const deleteRow = (index) => {
+const deleteRow = (index: number): void => {
   if (index >= 0 && index < rows.value.length) {
     rows.value.splice(index, 1);
   }
   redrawChart();
 };
 
-const openModal = () => {
+const openModal = (): void => {
   isModalOpen.value = true;
 };
 
-const closeModal = () => {
+const closeModal = (): void => {
   isModalOpen.value = false;
   newColumn.value = '';
 };
 
-const addColumn = () => {
+const addColumn = (): void => {
   const trimmed = newColumn.value.trim();
   let newCol = '';
   if (trimmed) {
@@ -291,7 +291,7 @@ const addColumn = () => {
   closeModal();
 };
 
-const deleteColumn = (key) => {
+const deleteColumn = (key: string): void => {
   const array = JSON.parse(JSON.stringify(columns.value));
   const index = array.findIndex(column => column.key === key);
   columns.value.splice(index, 1);
@@ -303,7 +303,7 @@ const deleteColumn = (key) => {
   redrawChart();
 };
 
-const redrawChart = () => {
+const redrawChart = (): void => {
   const headers = columns.value.map(column => column.label).join(',');
   const newRows = rows.value.map(row => {
     return columns.value.map(column => row[column.key]).join(',');
@@ -314,13 +314,13 @@ const redrawChart = () => {
   spcd3.drawChart(newData);
 };
 
-const resetTable = () => {
+const resetTable = (): void => {
   columns.value = structuredClone(originalColumns);
   rows.value = structuredClone(originalRows);
   redrawChart();
 }
 
-const isFormValid = computed(() => {
+const isFormValid = computed<boolean>(() => {
   return rows.value.every(row =>
     columns.value.every(column => {
       const value = row[column.key];
@@ -330,7 +330,7 @@ const isFormValid = computed(() => {
 });
 
 // draw parallel coordinates with spcd3
-const drawChart = async (dataset) => {
+const drawChart = async (dataset: any): void => {
   try {
     let newData = spcd3.loadCSV(dataset);
     if (newData.length !== 0) {
@@ -342,7 +342,7 @@ const drawChart = async (dataset) => {
 };
 
 // Load files from public/content/
-const loadContent = async (content, filePath) => {
+const loadContent = async (content: any, filePath: string): void => {
   try {
     const response = await fetch(filePath);
     const data = await response.text();
@@ -357,7 +357,7 @@ const loadContent = async (content, filePath) => {
 };
 
 // Load files from public/data
-const loadDataset = async (filePath) => {
+const loadDataset = async (filePath: string): any => {
   try {
     const response = await fetch(filePath);
     const csv = await response.text();
@@ -368,7 +368,7 @@ const loadDataset = async (filePath) => {
   }
 };
 
-const handleStepEnter = (element) => {
+const handleStepEnter = (element: number): void => {
   if (element == 1) {
     document.getElementById('outlier-button').disabled = true;
     document.getElementById('correlation-button').disabled = true;
@@ -398,7 +398,7 @@ const handleStepEnter = (element) => {
   }
 }
 
-const getCurrentStepIndex = () => {
+const getCurrentStepIndex = (): number => {
   const steps = document.querySelectorAll('.step');
   let currentIndex = 0;
   let maxVisibleTop = null;
@@ -413,12 +413,12 @@ const getCurrentStepIndex = () => {
   return currentIndex;
 }
 
-const getDatasetForStep = (step) => {
+const getDatasetForStep = (step: number): void => {
   if (step == 0) return healthDataset.value;
   if (step == 1) return studentDataset.value;
 }
 
-window.addEventListener('scroll', () => {
+window.addEventListener('scroll', (): void => {
   const currentStep = getCurrentStepIndex();
 
   if (currentStep !== lastStep) {
@@ -447,18 +447,18 @@ window.addEventListener('scroll', () => {
   }
 });
 
-onMounted(async () => {
+onMounted(async (): void => {
   healthDataset.value = await loadDataset('data/healthdata.csv');
-  await drawChart(healthDataset.value);
+  drawChart(healthDataset.value);
   studentDataset.value = await loadDataset('data/student-marks.csv');
-  await loadContent(introText, 'content/introduction.html');
-  await loadContent(dataText, 'content/data.html');
-  await loadContent(interactivityText, 'content/interactivity.html');
-  await loadContent(usageText, 'content/usage.html');
-  await loadContent(caseStudy1Text, 'content/casestudy1.html');
-  await loadContent(caseStudy2Text, 'content/casestudy2.html');
-  await loadContent(healthDatasetText, 'content/healthdata.html');
-  await loadContent(studentDatasetText, 'content/studentmarksdata.html');
+  loadContent(introText, 'content/introduction.html');
+  loadContent(dataText, 'content/data.html');
+  loadContent(interactivityText, 'content/interactivity.html');
+  loadContent(usageText, 'content/usage.html');
+  loadContent(caseStudy1Text, 'content/casestudy1.html');
+  loadContent(caseStudy2Text, 'content/casestudy2.html');
+  loadContent(healthDatasetText, 'content/healthdata.html');
+  loadContent(studentDatasetText, 'content/studentmarksdata.html');
 
   await nextTick();
 
