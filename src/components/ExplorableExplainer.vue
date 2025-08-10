@@ -1,9 +1,6 @@
 <!-- eslint-disable vue/no-v-html -->
 <template>
-  <div 
-    class="step" 
-    data-step="2"
-  >
+  <div>
     <div
       ref="header"
       :class="['sticky-header', { 'use-native': supportsScrollDrivenAnimations }]"
@@ -256,11 +253,13 @@ const showNegativeCorrelation = (): void => {
   const diff = posAge - posFitness;
   if (diff == 1) {
     (document.getElementById('correlation-neg-button') as HTMLButtonElement).textContent = 'Move Fitness Score next to Age';
+    spcd3.move('Fitness Score', true, 'Cholesterol');
   }
   else {
     (document.getElementById('correlation-neg-button') as HTMLButtonElement).textContent = 'Fitness Score: Reset position';
+    spcd3.move('Fitness Score', true, 'Age');
   }
-  spcd3.swap('Fitness Score', 'Blood Pressure');
+ 
 }
 
 const setRange = (): void => {
