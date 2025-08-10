@@ -1,4 +1,5 @@
 // SPCD3 version 1.0.0 ESM
+/* eslint-disable */
 var xhtml = "http://www.w3.org/1999/xhtml";
 
 var namespaces = {
@@ -12,7 +13,7 @@ var namespaces = {
 function namespace(name) {
   var prefix = name += "", i = prefix.indexOf(":");
   if (i >= 0 && (prefix = name.slice(0, i)) !== "xmlns") name = name.slice(i + 1);
-  return namespaces.hasOwnProperty(prefix) ? {space: namespaces[prefix], local: name} : name; // eslint-disable-line no-prototype-builtins
+  return namespaces.hasOwnProperty(prefix) ? {space: namespaces[prefix], local: name} : name;
 }
 
 function creatorInherit(name) {
@@ -418,7 +419,7 @@ function selection_node() {
 
 function selection_size() {
   let size = 0;
-  for (const node of this) ++size; // eslint-disable-line no-unused-vars
+  for (const node of this) ++size;
   return size;
 }
 
@@ -1589,7 +1590,7 @@ function color(format) {
       : (m = reRgbaPercent.exec(format)) ? rgba(m[1] * 255 / 100, m[2] * 255 / 100, m[3] * 255 / 100, m[4]) // rgb(100%, 0%, 0%, 1)
       : (m = reHslPercent.exec(format)) ? hsla(m[1], m[2] / 100, m[3] / 100, 1) // hsl(120, 50%, 50%)
       : (m = reHslaPercent.exec(format)) ? hsla(m[1], m[2] / 100, m[3] / 100, m[4]) // hsla(120, 50%, 50%, 1)
-      : named.hasOwnProperty(format) ? rgbn(named[format]) // eslint-disable-line no-prototype-builtins
+      : named.hasOwnProperty(format) ? rgbn(named[format])
       : format === "transparent" ? new Rgb(NaN, NaN, NaN, 0)
       : null;
 }
@@ -4978,9 +4979,9 @@ function timeInterval(floori, offseti, count, field) {
     }, (date, step) => {
       if (date >= date) {
         if (step < 0) while (++step <= 0) {
-          while (offseti(date, -1), !test(date)) {} // eslint-disable-line no-empty
+          while (offseti(date, -1), !test(date)) {}
         } else while (--step >= 0) {
-          while (offseti(date, +1), !test(date)) {} // eslint-disable-line no-empty
+          while (offseti(date, +1), !test(date)) {}
         }
       }
     });

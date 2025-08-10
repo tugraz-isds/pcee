@@ -1,25 +1,44 @@
+<!-- eslint-disable vue/no-v-html -->
 <template>
-  <div>
-    <div :class="['sticky-header', { 'use-native': supportsScrollDrivenAnimations }]" ref="header">
-      <div ref="multiLine" class="multi-line">
-        Parallel Coordinates:<br />
+  <div 
+    class="step" 
+    data-step="2"
+  >
+    <div
+      ref="header"
+      :class="['sticky-header', { 'use-native': supportsScrollDrivenAnimations }]"
+    >
+      <div
+        ref="multiLine"
+        class="multi-line"
+      >
+        Parallel Coordinates:<br>
         An Explorable Explainer
       </div>
-      <div ref="singleLine" class="single-line">
+      <div
+        ref="singleLine"
+        class="single-line"
+      >
         Parallel Coordinates: An Explorable Explainer
       </div>
     </div>
   </div>
-  <div class="header-spacer"></div>
+  <div class="header-spacer" />
 
   <div class="explorable-explainer">
-    <div class="chart-container" ref="textArea">
-      <div id="parallelcoords" class="main-chart"></div>
+    <div
+      ref="textArea"
+      class="chart-container"
+    >
+      <div
+        id="parallelcoords"
+        class="main-chart"
+      />
     </div>
     <div class="text-container">
-      <div v-html="introText"></div>
-      <div v-html="dataText"></div>
-      <div v-html="healthDatasetText"></div>
+      <div v-html="introText" />
+      <div v-html="dataText" />
+      <div v-html="healthDatasetText" />
 
       <div class="table-container">
         <p>
@@ -31,56 +50,108 @@
           <table border="1">
             <thead>
               <tr>
-                <th v-for="column in columns" :key="column.key">{{ column.label }}
+                <th
+                  v-for="column in columns"
+                  :key="column.key"
+                >
+                  {{ column.label }}
                 </th>
-                <th></th>
+                <th />
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(row, rowIndex) in rows" :key="rowIndex">
-                <td v-for="column in columns" :key="column.key">
-                  <input v-model="row[column.key]" type="text" />
+              <tr
+                v-for="(row, rowIndex) in rows"
+                :key="rowIndex"
+              >
+                <td
+                  v-for="column in columns"
+                  :key="column.key"
+                >
+                  <input
+                    v-model="row[column.key]"
+                    type="text"
+                  >
                 </td>
                 <td>
-                  <button class="delete-button" @click="deleteRow(rowIndex)">Delete</button>
+                  <button
+                    class="delete-button"
+                    @click="deleteRow(rowIndex)"
+                  >
+                    Delete
+                  </button>
                 </td>
               </tr>
             </tbody>
             <tfoot>
               <tr>
-                <td v-for="column in columns" :key="column.key">
-                  <button class="delete-button" @click="deleteColumn(column.key)">Delete {{ column.label }}
+                <td
+                  v-for="column in columns"
+                  :key="column.key"
+                >
+                  <button
+                    class="delete-button"
+                    @click="deleteColumn(column.key)"
+                  >
+                    Delete {{ column.label }}
                   </button>
                 </td>
-                <td></td>
+                <td />
               </tr>
             </tfoot>
           </table>
-          <button @click="addRow">Add Row</button>
-          <button @click="openModal">Add Column</button>
-          <button @click="redrawChart" :disabled="!isFormValid">Redraw Chart
+          <button @click="addRow">
+            Add Row
           </button>
-          <button @click="resetTable">Reset Table</button>
-          <div v-if="isModalOpen" class="modal">
+          <button @click="openModal">
+            Add Column
+          </button>
+          <button
+            :disabled="!isFormValid"
+            @click="redrawChart"
+          >
+            Redraw Chart
+          </button>
+          <button @click="resetTable">
+            Reset Table
+          </button>
+          <div
+            v-if="isModalOpen"
+            class="modal"
+          >
             <div class="modal-content">
               <div>Add new column name:</div>
-              <input v-model="newColumn" type="text" placeholder="Enter column name..." />
-              <button class="add-button" @click="addColumn">Add</button>
-              <button class="add-button" @click="closeModal">Cancel</button>
+              <input
+                v-model="newColumn"
+                type="text"
+                placeholder="Enter column name..."
+              >
+              <button
+                class="add-button"
+                @click="addColumn"
+              >
+                Add
+              </button>
+              <button
+                class="add-button"
+                @click="closeModal"
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </div>
       </div>
-      <div v-html="interactivityText"></div>
-      <div v-html="usageText"></div>
-      <div v-html="caseStudy1Text"></div>
-      <div v-html="caseStudy2Text"></div>
+      <div v-html="interactivityText" />
+      <div v-html="usageText" />
+      <div v-html="caseStudy1Text" />
+      <div v-html="caseStudy2Text" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, nextTick } from 'vue';
+import { ref, onMounted, computed, nextTick, type Ref } from 'vue';
 import * as spcd3 from '../spcd3.js';
 import scrollama from 'scrollama';
 import { originalColumns, originalRows } from '../data.js';
@@ -88,6 +159,13 @@ import gsap from 'gsap'
 import ScrollTrigger from 'gsap/ScrollTrigger'
 
 gsap.registerPlugin(ScrollTrigger);
+
+interface Column {
+  key: string
+  label: string
+}
+
+type Row = Record<string, unknown>;
 
 const introText = ref('');
 const dataText = ref('');
@@ -103,13 +181,16 @@ const studentDataset = ref('');
 const isModalOpen = ref(false);
 const newColumn = ref('');
 const showTable = ref(true);
-const columns = ref(structuredClone(originalColumns));
-const rows = ref(structuredClone(originalRows));
+const columns = ref<Column[]>(structuredClone(originalColumns));
+const rows = ref<Row[]>(structuredClone(originalRows));
 const scroller = scrollama();
-const header = ref(null);
-const multiLine = ref(null);
-const singleLine = ref(null);
-const supportsScrollDrivenAnimations = CSS.supports('animation-timeline: scroll()');
+const header = ref<HTMLElement | null>(null);
+const multiLine = ref<HTMLElement | null>(null);
+const singleLine = ref<HTMLElement | null>(null);
+const supportsScrollDrivenAnimations: boolean =
+  typeof CSS !== 'undefined' &&
+  typeof CSS.supports === 'function' &&
+  CSS.supports('animation-timeline: scroll()');
 let lastStep = -1;
 
 const addClickEvent = (): void => {
@@ -149,12 +230,12 @@ const addClickEvent = (): void => {
 
 const selectOutlier = (): void => {
   if (spcd3.isSelected('Patient F')) {
-    spcd3.setUnselected('Patient F')
-    document.getElementById('outlier-button').textContent = 'Show outlier';
+    spcd3.setUnselected('Patient F');
+    (document.getElementById('outlier-button') as HTMLButtonElement).textContent = 'Show outlier';
   }
   else {
     spcd3.setSelected('Patient F');
-    document.getElementById('outlier-button').textContent = 'Hide outlier';
+    (document.getElementById('outlier-button') as HTMLButtonElement).textContent = 'Hide outlier';
   }
 };
 
@@ -174,10 +255,10 @@ const showNegativeCorrelation = (): void => {
   const posAge = spcd3.getDimensionPosition('Age');
   const diff = posAge - posFitness;
   if (diff == 1) {
-    document.getElementById('correlation-neg-button').textContent = 'Move Fitness Score next to Age';
+    (document.getElementById('correlation-neg-button') as HTMLButtonElement).textContent = 'Move Fitness Score next to Age';
   }
   else {
-    document.getElementById('correlation-neg-button').textContent = 'Fitness Score: Reset position';
+    (document.getElementById('correlation-neg-button') as HTMLButtonElement).textContent = 'Fitness Score: Reset position';
   }
   spcd3.swap('Fitness Score', 'Blood Pressure');
 }
@@ -186,34 +267,34 @@ const setRange = (): void => {
   const currentRange = spcd3.getDimensionRange('PE');
   if (currentRange[0] == 51) {
     const dimensions = spcd3.getAllDimensionNames();
-    dimensions.forEach(function (dimension) {
+    dimensions.forEach(function (dimension: string) {
       if (!isNaN(spcd3.getMinValue(dimension))) {
         spcd3.setDimensionRange(dimension, 0, 100);
       }
     });
-    document.getElementById('range-button').textContent = 'Set dimension ranges from data';
+    (document.getElementById('range-button') as HTMLButtonElement).textContent = 'Set dimension ranges from data';
   }
   else {
     const dimensions = spcd3.getAllDimensionNames();
-    dimensions.forEach(function (dimension) {
+    dimensions.forEach(function (dimension: string) {
       if (!isNaN(spcd3.getMinValue(dimension))) {
-        let min = spcd3.getMinValue(dimension);
-        let max = spcd3.getMaxValue(dimension);
+        const min = spcd3.getMinValue(dimension);
+        const max = spcd3.getMaxValue(dimension);
         spcd3.setDimensionRange(dimension, min, max);
       }
     });
-    document.getElementById('range-button').textContent = 'Set dimension ranges 0 - 100';
+    (document.getElementById('range-button') as HTMLButtonElement).textContent = 'Set dimension ranges 0 - 100';
   }
 }
 
 const selectRecord = (): void => {
   if (spcd3.isSelected('Sylvia')) {
     spcd3.setUnselected('Sylvia');
-    document.getElementById('select-button').textContent = 'Select record: Sylvia';
+    (document.getElementById('select-button') as HTMLButtonElement).textContent = 'Select record: Sylvia';
   }
   else {
     spcd3.setSelected('Sylvia');
-    document.getElementById('select-button').textContent = 'Unselect record: Sylvia';
+    (document.getElementById('select-button') as HTMLButtonElement).textContent = 'Unselect record: Sylvia';
   }
 }
 
@@ -221,19 +302,19 @@ const filterRecords = (): void => {
   console.log(spcd3.getFilter('English'));
   if (spcd3.getFilter('English')[0] == 1) {
     spcd3.setFilter('English', 99, 51);
-    document.getElementById('filter-button').textContent = 'English: Reset filter';
+    (document.getElementById('filter-button') as HTMLButtonElement).textContent = 'English: Reset filter';
   }
   else if (spcd3.getFilter('English')[0] == 51) {
     spcd3.setFilter('English', 99, 1);
-    document.getElementById('filter-button').textContent = 'English: Filter 50 - 99';
+    (document.getElementById('filter-button') as HTMLButtonElement).textContent = 'English: Filter 50 - 99';
   }
   else if (spcd3.getFilter('English')[0] == 0 && spcd3.getFilter('English')[1] == 100) {
     spcd3.setFilter('English', 100, 50);
-    document.getElementById('filter-button').textContent = 'English: Filter 50 - 100';
+    (document.getElementById('filter-button') as HTMLButtonElement).textContent = 'English: Filter 50 - 100';
   }
   else {
     spcd3.setFilter('English', 100, 0);
-    document.getElementById('filter-button').textContent = 'English: Reset filter';
+    (document.getElementById('filter-button') as HTMLButtonElement).textContent = 'English: Reset filter';
   }
 }
 
@@ -242,10 +323,10 @@ const moveDimension = (): void => {
   const posEnglish = spcd3.getDimensionPosition('English');
   const diff = posEnglish - posGerman;
   if (diff == 1) {
-    document.getElementById('move-button').textContent = 'Move German next to English';
+    (document.getElementById('move-button') as HTMLButtonElement).textContent = 'Move German next to English';
   }
   else {
-    document.getElementById('move-button').textContent = 'German: Reset position';
+    (document.getElementById('move-button') as HTMLButtonElement).textContent = 'German: Reset position';
   }
   spcd3.swap('PE', 'German');
 }
@@ -255,7 +336,7 @@ const invertDimension = (): void => {
 }
 
 const addRow = (): void => {
-  const newRow = {};
+  const newRow: Row = {};
   columns.value.forEach((column) => {
     newRow[column.key] = '';
   });
@@ -280,7 +361,7 @@ const closeModal = (): void => {
 
 const addColumn = (): void => {
   const trimmed = newColumn.value.trim();
-  let newCol = '';
+  let newCol: Column = {key: '', label: ''};
   if (trimmed) {
     newCol = { key: trimmed, label: trimmed };
   }
@@ -292,16 +373,19 @@ const addColumn = (): void => {
 };
 
 const deleteColumn = (key: string): void => {
-  const array = JSON.parse(JSON.stringify(columns.value));
-  const index = array.findIndex(column => column.key === key);
-  columns.value.splice(index, 1);
-  rows.value.forEach(row => {
-    if (row && row[key]) {
-      delete row[key];
+  const index = columns.value.findIndex(c => c.key === key)
+  if (index === -1) return
+
+  columns.value.splice(index, 1)
+
+  for (const row of rows.value) {
+    if (row && key in row) {
+      delete row[key]
     }
-  });
-  redrawChart();
-};
+  }
+
+  redrawChart()
+}
 
 const redrawChart = (): void => {
   const headers = columns.value.map(column => column.label).join(',');
@@ -330,19 +414,21 @@ const isFormValid = computed<boolean>(() => {
 });
 
 // draw parallel coordinates with spcd3
-const drawChart = async (dataset: any): void => {
+const drawChart = async (dataset: string | undefined): Promise<void> => {
   try {
+    if (dataset !== undefined) {
     let newData = spcd3.loadCSV(dataset);
     if (newData.length !== 0) {
       spcd3.drawChart(newData);
     }
+  }
   } catch (error) {
     console.error('Error drawing data:', error);
   }
 };
 
 // Load files from public/content/
-const loadContent = async (content: any, filePath: string): void => {
+const loadContent = async (content: Ref<string>, filePath: string): Promise<void> => {
   try {
     const response = await fetch(filePath);
     const data = await response.text();
@@ -357,63 +443,68 @@ const loadContent = async (content: any, filePath: string): void => {
 };
 
 // Load files from public/data
-const loadDataset = async (filePath: string): any => {
+const loadDataset = async (filePath: string): Promise<string> => {
   try {
     const response = await fetch(filePath);
     const csv = await response.text();
     return csv;
   } catch (error) {
     console.error('Error loading dataset:', error);
-    return null;
+    return '';
   }
 };
 
 const handleStepEnter = (element: number): void => {
-  if (element == 1) {
-    document.getElementById('outlier-button').disabled = true;
-    document.getElementById('correlation-button').disabled = true;
-    document.getElementById('correlation-neg-button').disabled = true;
-    document.getElementById('range-button').disabled = false;
-    document.getElementById('select-button').disabled = false;
-    document.getElementById('filter-button').disabled = false;
-    document.getElementById('move-button').disabled = false;
-    document.getElementById('invert-button').disabled = false;
+  if (element == 2) {
+    // do nothing
+  }
+  else if (element == 1) {
+    (document.getElementById('outlier-button') as HTMLButtonElement).disabled = true;
+    (document.getElementById('correlation-button') as HTMLButtonElement).disabled = true;
+    (document.getElementById('correlation-neg-button') as HTMLButtonElement).disabled = true;
+    (document.getElementById('range-button') as HTMLButtonElement).disabled = false;
+    (document.getElementById('select-button') as HTMLButtonElement).disabled = false;
+    (document.getElementById('filter-button') as HTMLButtonElement).disabled = false;
+    (document.getElementById('move-button') as HTMLButtonElement).disabled = false;
+    (document.getElementById('invert-button') as HTMLButtonElement).disabled = false;
     drawChart(studentDataset.value);
   } else if (element == 0) {
     redrawChart();
-    if (document.getElementById('outlier-button').textContent === 'Unselect Outlier') {
+    if ((document.getElementById('outlier-button') as HTMLButtonElement).textContent === 'Unselect Outlier') {
       spcd3.setSelected('Patient F');
     }
-    if (document.getElementById('correlation-button').textContent === 'Show positive correlation') {
+    if ((document.getElementById('correlation-button') as HTMLButtonElement).textContent === 'Show positive correlation') {
       spcd3.setInversionStatus('Age', 'descending');
     }
-    document.getElementById('outlier-button').disabled = false;
-    document.getElementById('correlation-button').disabled = false;
-    document.getElementById('correlation-neg-button').disabled = false;
-    document.getElementById('range-button').disabled = true;
-    document.getElementById('select-button').disabled = true;
-    document.getElementById('filter-button').disabled = true;
-    document.getElementById('move-button').disabled = true;
-    document.getElementById('invert-button').disabled = true;
+    (document.getElementById('outlier-button') as HTMLButtonElement).disabled = false;
+    (document.getElementById('correlation-button') as HTMLButtonElement).disabled = false;
+    (document.getElementById('correlation-neg-button') as HTMLButtonElement).disabled = false;
+    (document.getElementById('range-button') as HTMLButtonElement).disabled = true;
+    (document.getElementById('select-button') as HTMLButtonElement).disabled = true;
+    (document.getElementById('filter-button') as HTMLButtonElement).disabled = true;
+    (document.getElementById('move-button') as HTMLButtonElement).disabled = true;
+    (document.getElementById('invert-button') as HTMLButtonElement).disabled = true;
   }
 }
 
 const getCurrentStepIndex = (): number => {
-  const steps = document.querySelectorAll('.step');
-  let currentIndex = 0;
-  let maxVisibleTop = null;
+  const steps = document.querySelectorAll<HTMLElement>('.step')
+  let currentIndex = 0
+  let maxVisibleTop: number | null = null
 
   steps.forEach((step, i) => {
-    const rect = step.getBoundingClientRect();
-    if ((rect.top <= window.innerHeight * 0.5) && (maxVisibleTop === null || rect.top > maxVisibleTop)) {
-      maxVisibleTop = rect.top;
-      currentIndex = i;
+    const rect = step.getBoundingClientRect()
+    const isHalfInView = rect.top <= window.innerHeight * 0.5
+    if (isHalfInView && (maxVisibleTop === null || rect.top > maxVisibleTop)) {
+      maxVisibleTop = rect.top
+      currentIndex = i
     }
-  });
-  return currentIndex;
+  })
+  return currentIndex
 }
 
-const getDatasetForStep = (step: number): void => {
+
+const getDatasetForStep = (step: number): string | undefined => {
   if (step == 0) return healthDataset.value;
   if (step == 1) return studentDataset.value;
 }
@@ -425,29 +516,29 @@ window.addEventListener('scroll', (): void => {
     lastStep = currentStep;
     const dataset = getDatasetForStep(currentStep);
     if (currentStep === 0) {
-      document.getElementById('outlier-button').disabled = false;
-      document.getElementById('correlation-button').disabled = false;
-      document.getElementById('correlation-neg-button').disabled = false;
-      document.getElementById('range-button').disabled = true;
-      document.getElementById('select-button').disabled = true;
-      document.getElementById('filter-button').disabled = true;
-      document.getElementById('move-button').disabled = true;
-      document.getElementById('invert-button').disabled = true;
+      (document.getElementById('outlier-button') as HTMLButtonElement).disabled = false;
+      (document.getElementById('correlation-button') as HTMLButtonElement).disabled = false;
+      (document.getElementById('correlation-neg-button') as HTMLButtonElement).disabled = false;
+      (document.getElementById('range-button') as HTMLButtonElement).disabled = true;
+      (document.getElementById('select-button') as HTMLButtonElement).disabled = true;
+      (document.getElementById('filter-button') as HTMLButtonElement).disabled = true;
+      (document.getElementById('move-button') as HTMLButtonElement).disabled = true;
+      (document.getElementById('invert-button') as HTMLButtonElement).disabled = true;
     } else {
-      document.getElementById('outlier-button').disabled = true;
-      document.getElementById('correlation-button').disabled = true;
-      document.getElementById('correlation-neg-button').disabled = true;
-      document.getElementById('range-button').disabled = false;
-      document.getElementById('select-button').disabled = false;
-      document.getElementById('filter-button').disabled = false;
-      document.getElementById('move-button').disabled = false;
-      document.getElementById('invert-button').disabled = false;
+      (document.getElementById('outlier-button') as HTMLButtonElement).disabled = true;
+      (document.getElementById('correlation-button') as HTMLButtonElement).disabled = true;
+      (document.getElementById('correlation-neg-button') as HTMLButtonElement).disabled = true;
+      (document.getElementById('range-button') as HTMLButtonElement).disabled = false;
+      (document.getElementById('select-button') as HTMLButtonElement).disabled = false;
+      (document.getElementById('filter-button') as HTMLButtonElement).disabled = false;
+      (document.getElementById('move-button') as HTMLButtonElement).disabled = false;
+      (document.getElementById('invert-button') as HTMLButtonElement).disabled = false;
     }
     drawChart(dataset);
   }
 });
 
-onMounted(async (): void => {
+onMounted(async (): Promise<void> => {
   healthDataset.value = await loadDataset('data/healthdata.csv');
   drawChart(healthDataset.value);
   studentDataset.value = await loadDataset('data/student-marks.csv');
@@ -485,8 +576,11 @@ onMounted(async (): void => {
         start: 'top top',
         end: '+=80vh',
         scrub: 0.2,
-        onUpdate: self => {
-          multiLine.value.style.visibility = self.progress < 1 ? 'visible' : 'hidden'
+        onUpdate: (self) => {
+          if (multiLine.value) {
+            multiLine.value.style.visibility =
+              self.progress < 1 ? 'visible' : 'hidden'
+          }
         }
       },
       ease: 'none'
@@ -500,7 +594,10 @@ onMounted(async (): void => {
         end: '+=90vh',
         scrub: 0.2,
         onUpdate: self => {
-          singleLine.value.style.visibility = self.progress > 0 ? 'visible' : 'hidden'
+          if (singleLine.value) {
+            singleLine.value.style.visibility =
+              self.progress > 0 ? 'visible' : 'hidden'
+          }
         }
       },
       ease: 'none'

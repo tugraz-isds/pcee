@@ -57,7 +57,7 @@ yarn clean
 ### Restore project folder by deleting dist/, node_modules/ and yarn.lock
 
 ```
-yarn clean-all
+yarn cleanAll
 ```
 
 ## Licence
