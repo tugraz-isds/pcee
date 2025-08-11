@@ -13,7 +13,7 @@ var namespaces = {
 function namespace(name) {
   var prefix = name += "", i = prefix.indexOf(":");
   if (i >= 0 && (prefix = name.slice(0, i)) !== "xmlns") name = name.slice(i + 1);
-  return namespaces.hasOwnProperty(prefix) ? {space: namespaces[prefix], local: name} : name;
+  return namespaces.hasOwnProperty(prefix) ? {space: namespaces[prefix], local: name} : name; // eslint-disable-line no-prototype-builtins
 }
 
 function creatorInherit(name) {
@@ -419,7 +419,7 @@ function selection_node() {
 
 function selection_size() {
   let size = 0;
-  for (const node of this) ++size;
+  for (const node of this) ++size; // eslint-disable-line no-unused-vars
   return size;
 }
 
@@ -1333,7 +1333,7 @@ function create(node, id, self) {
     self.state = ENDED;
     self.timer.stop();
     delete schedules[id];
-    for (var i in schedules) return;  
+    for (var i in schedules) return; // eslint-disable-line no-unused-vars
     delete node.__transition;
   }
 }
@@ -1590,7 +1590,7 @@ function color(format) {
       : (m = reRgbaPercent.exec(format)) ? rgba(m[1] * 255 / 100, m[2] * 255 / 100, m[3] * 255 / 100, m[4]) // rgb(100%, 0%, 0%, 1)
       : (m = reHslPercent.exec(format)) ? hsla(m[1], m[2] / 100, m[3] / 100, 1) // hsl(120, 50%, 50%)
       : (m = reHslaPercent.exec(format)) ? hsla(m[1], m[2] / 100, m[3] / 100, m[4]) // hsla(120, 50%, 50%, 1)
-      : named.hasOwnProperty(format) ? rgbn(named[format])
+      : named.hasOwnProperty(format) ? rgbn(named[format]) // eslint-disable-line no-prototype-builtins
       : format === "transparent" ? new Rgb(NaN, NaN, NaN, 0)
       : null;
 }
@@ -3422,6 +3422,1644 @@ function drag() {
   return drag;
 }
 
+function constant(x) {
+  return function constant() {
+    return x;
+  };
+}
+
+const epsilon$2 = 1e-12;
+
+const pi = Math.PI,
+    tau = 2 * pi,
+    epsilon$1 = 1e-6,
+    tauEpsilon = tau - epsilon$1;
+
+function append(strings) {
+  this._ += strings[0];
+  for (let i = 1, n = strings.length; i < n; ++i) {
+    this._ += arguments[i] + strings[i];
+  }
+}
+
+function appendRound(digits) {
+  let d = Math.floor(digits);
+  if (!(d >= 0)) throw new Error(`invalid digits: ${digits}`);
+  if (d > 15) return append;
+  const k = 10 ** d;
+  return function(strings) {
+    this._ += strings[0];
+    for (let i = 1, n = strings.length; i < n; ++i) {
+      this._ += Math.round(arguments[i] * k) / k + strings[i];
+    }
+  };
+}
+
+class Path {
+  constructor(digits) {
+    this._x0 = this._y0 = // start of current subpath
+    this._x1 = this._y1 = null; // end of current subpath
+    this._ = "";
+    this._append = digits == null ? append : appendRound(digits);
+  }
+  moveTo(x, y) {
+    this._append`M${this._x0 = this._x1 = +x},${this._y0 = this._y1 = +y}`;
+  }
+  closePath() {
+    if (this._x1 !== null) {
+      this._x1 = this._x0, this._y1 = this._y0;
+      this._append`Z`;
+    }
+  }
+  lineTo(x, y) {
+    this._append`L${this._x1 = +x},${this._y1 = +y}`;
+  }
+  quadraticCurveTo(x1, y1, x, y) {
+    this._append`Q${+x1},${+y1},${this._x1 = +x},${this._y1 = +y}`;
+  }
+  bezierCurveTo(x1, y1, x2, y2, x, y) {
+    this._append`C${+x1},${+y1},${+x2},${+y2},${this._x1 = +x},${this._y1 = +y}`;
+  }
+  arcTo(x1, y1, x2, y2, r) {
+    x1 = +x1, y1 = +y1, x2 = +x2, y2 = +y2, r = +r;
+
+    // Is the radius negative? Error.
+    if (r < 0) throw new Error(`negative radius: ${r}`);
+
+    let x0 = this._x1,
+        y0 = this._y1,
+        x21 = x2 - x1,
+        y21 = y2 - y1,
+        x01 = x0 - x1,
+        y01 = y0 - y1,
+        l01_2 = x01 * x01 + y01 * y01;
+
+    // Is this path empty? Move to (x1,y1).
+    if (this._x1 === null) {
+      this._append`M${this._x1 = x1},${this._y1 = y1}`;
+    }
+
+    // Or, is (x1,y1) coincident with (x0,y0)? Do nothing.
+    else if (!(l01_2 > epsilon$1));
+
+    // Or, are (x0,y0), (x1,y1) and (x2,y2) collinear?
+    // Equivalently, is (x1,y1) coincident with (x2,y2)?
+    // Or, is the radius zero? Line to (x1,y1).
+    else if (!(Math.abs(y01 * x21 - y21 * x01) > epsilon$1) || !r) {
+      this._append`L${this._x1 = x1},${this._y1 = y1}`;
+    }
+
+    // Otherwise, draw an arc!
+    else {
+      let x20 = x2 - x0,
+          y20 = y2 - y0,
+          l21_2 = x21 * x21 + y21 * y21,
+          l20_2 = x20 * x20 + y20 * y20,
+          l21 = Math.sqrt(l21_2),
+          l01 = Math.sqrt(l01_2),
+          l = r * Math.tan((pi - Math.acos((l21_2 + l01_2 - l20_2) / (2 * l21 * l01))) / 2),
+          t01 = l / l01,
+          t21 = l / l21;
+
+      // If the start tangent is not coincident with (x0,y0), line to.
+      if (Math.abs(t01 - 1) > epsilon$1) {
+        this._append`L${x1 + t01 * x01},${y1 + t01 * y01}`;
+      }
+
+      this._append`A${r},${r},0,0,${+(y01 * x20 > x01 * y20)},${this._x1 = x1 + t21 * x21},${this._y1 = y1 + t21 * y21}`;
+    }
+  }
+  arc(x, y, r, a0, a1, ccw) {
+    x = +x, y = +y, r = +r, ccw = !!ccw;
+
+    // Is the radius negative? Error.
+    if (r < 0) throw new Error(`negative radius: ${r}`);
+
+    let dx = r * Math.cos(a0),
+        dy = r * Math.sin(a0),
+        x0 = x + dx,
+        y0 = y + dy,
+        cw = 1 ^ ccw,
+        da = ccw ? a0 - a1 : a1 - a0;
+
+    // Is this path empty? Move to (x0,y0).
+    if (this._x1 === null) {
+      this._append`M${x0},${y0}`;
+    }
+
+    // Or, is (x0,y0) not coincident with the previous point? Line to (x0,y0).
+    else if (Math.abs(this._x1 - x0) > epsilon$1 || Math.abs(this._y1 - y0) > epsilon$1) {
+      this._append`L${x0},${y0}`;
+    }
+
+    // Is this arc empty? We’re done.
+    if (!r) return;
+
+    // Does the angle go the wrong way? Flip the direction.
+    if (da < 0) da = da % tau + tau;
+
+    // Is this a complete circle? Draw two arcs to complete the circle.
+    if (da > tauEpsilon) {
+      this._append`A${r},${r},0,1,${cw},${x - dx},${y - dy}A${r},${r},0,1,${cw},${this._x1 = x0},${this._y1 = y0}`;
+    }
+
+    // Is this arc non-empty? Draw an arc!
+    else if (da > epsilon$1) {
+      this._append`A${r},${r},0,${+(da >= pi)},${cw},${this._x1 = x + r * Math.cos(a1)},${this._y1 = y + r * Math.sin(a1)}`;
+    }
+  }
+  rect(x, y, w, h) {
+    this._append`M${this._x0 = this._x1 = +x},${this._y0 = this._y1 = +y}h${w = +w}v${+h}h${-w}Z`;
+  }
+  toString() {
+    return this._;
+  }
+}
+
+function withPath(shape) {
+  let digits = 3;
+
+  shape.digits = function(_) {
+    if (!arguments.length) return digits;
+    if (_ == null) {
+      digits = null;
+    } else {
+      const d = Math.floor(_);
+      if (!(d >= 0)) throw new RangeError(`invalid digits: ${_}`);
+      digits = d;
+    }
+    return shape;
+  };
+
+  return () => new Path(digits);
+}
+
+function array(x) {
+  return typeof x === "object" && "length" in x
+    ? x // Array, TypedArray, NodeList, array-like
+    : Array.from(x); // Map, Set, iterable, string, or anything else
+}
+
+function Linear(context) {
+  this._context = context;
+}
+
+Linear.prototype = {
+  areaStart: function() {
+    this._line = 0;
+  },
+  areaEnd: function() {
+    this._line = NaN;
+  },
+  lineStart: function() {
+    this._point = 0;
+  },
+  lineEnd: function() {
+    if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
+    this._line = 1 - this._line;
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+    switch (this._point) {
+      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
+      case 1: this._point = 2; // falls through
+      default: this._context.lineTo(x, y); break;
+    }
+  }
+};
+
+function curveLinear(context) {
+  return new Linear(context);
+}
+
+function x(p) {
+  return p[0];
+}
+
+function y(p) {
+  return p[1];
+}
+
+function line(x$1, y$1) {
+  var defined = constant(true),
+      context = null,
+      curve = curveLinear,
+      output = null,
+      path = withPath(line);
+
+  x$1 = typeof x$1 === "function" ? x$1 : (x$1 === undefined) ? x : constant(x$1);
+  y$1 = typeof y$1 === "function" ? y$1 : (y$1 === undefined) ? y : constant(y$1);
+
+  function line(data) {
+    var i,
+        n = (data = array(data)).length,
+        d,
+        defined0 = false,
+        buffer;
+
+    if (context == null) output = curve(buffer = path());
+
+    for (i = 0; i <= n; ++i) {
+      if (!(i < n && defined(d = data[i], i, data)) === defined0) {
+        if (defined0 = !defined0) output.lineStart();
+        else output.lineEnd();
+      }
+      if (defined0) output.point(+x$1(d, i, data), +y$1(d, i, data));
+    }
+
+    if (buffer) return output = null, buffer + "" || null;
+  }
+
+  line.x = function(_) {
+    return arguments.length ? (x$1 = typeof _ === "function" ? _ : constant(+_), line) : x$1;
+  };
+
+  line.y = function(_) {
+    return arguments.length ? (y$1 = typeof _ === "function" ? _ : constant(+_), line) : y$1;
+  };
+
+  line.defined = function(_) {
+    return arguments.length ? (defined = typeof _ === "function" ? _ : constant(!!_), line) : defined;
+  };
+
+  line.curve = function(_) {
+    return arguments.length ? (curve = _, context != null && (output = curve(context)), line) : curve;
+  };
+
+  line.context = function(_) {
+    return arguments.length ? (_ == null ? context = output = null : output = curve(context = _), line) : context;
+  };
+
+  return line;
+}
+
+function noop() {}
+
+function point$4(that, x, y) {
+  that._context.bezierCurveTo(
+    (2 * that._x0 + that._x1) / 3,
+    (2 * that._y0 + that._y1) / 3,
+    (that._x0 + 2 * that._x1) / 3,
+    (that._y0 + 2 * that._y1) / 3,
+    (that._x0 + 4 * that._x1 + x) / 6,
+    (that._y0 + 4 * that._y1 + y) / 6
+  );
+}
+
+function Basis(context) {
+  this._context = context;
+}
+
+Basis.prototype = {
+  areaStart: function() {
+    this._line = 0;
+  },
+  areaEnd: function() {
+    this._line = NaN;
+  },
+  lineStart: function() {
+    this._x0 = this._x1 =
+    this._y0 = this._y1 = NaN;
+    this._point = 0;
+  },
+  lineEnd: function() {
+    switch (this._point) {
+      case 3: point$4(this, this._x1, this._y1); // falls through
+      case 2: this._context.lineTo(this._x1, this._y1); break;
+    }
+    if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
+    this._line = 1 - this._line;
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+    switch (this._point) {
+      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
+      case 1: this._point = 2; break;
+      case 2: this._point = 3; this._context.lineTo((5 * this._x0 + this._x1) / 6, (5 * this._y0 + this._y1) / 6); // falls through
+      default: point$4(this, x, y); break;
+    }
+    this._x0 = this._x1, this._x1 = x;
+    this._y0 = this._y1, this._y1 = y;
+  }
+};
+
+function Bundle(context, beta) {
+  this._basis = new Basis(context);
+  this._beta = beta;
+}
+
+Bundle.prototype = {
+  lineStart: function() {
+    this._x = [];
+    this._y = [];
+    this._basis.lineStart();
+  },
+  lineEnd: function() {
+    var x = this._x,
+        y = this._y,
+        j = x.length - 1;
+
+    if (j > 0) {
+      var x0 = x[0],
+          y0 = y[0],
+          dx = x[j] - x0,
+          dy = y[j] - y0,
+          i = -1,
+          t;
+
+      while (++i <= j) {
+        t = i / j;
+        this._basis.point(
+          this._beta * x[i] + (1 - this._beta) * (x0 + t * dx),
+          this._beta * y[i] + (1 - this._beta) * (y0 + t * dy)
+        );
+      }
+    }
+
+    this._x = this._y = null;
+    this._basis.lineEnd();
+  },
+  point: function(x, y) {
+    this._x.push(+x);
+    this._y.push(+y);
+  }
+};
+
+((function custom(beta) {
+
+  function bundle(context) {
+    return beta === 1 ? new Basis(context) : new Bundle(context, beta);
+  }
+
+  bundle.beta = function(beta) {
+    return custom(+beta);
+  };
+
+  return bundle;
+}))(0.85);
+
+function point$3(that, x, y) {
+  that._context.bezierCurveTo(
+    that._x1 + that._k * (that._x2 - that._x0),
+    that._y1 + that._k * (that._y2 - that._y0),
+    that._x2 + that._k * (that._x1 - x),
+    that._y2 + that._k * (that._y1 - y),
+    that._x2,
+    that._y2
+  );
+}
+
+function Cardinal(context, tension) {
+  this._context = context;
+  this._k = (1 - tension) / 6;
+}
+
+Cardinal.prototype = {
+  areaStart: function() {
+    this._line = 0;
+  },
+  areaEnd: function() {
+    this._line = NaN;
+  },
+  lineStart: function() {
+    this._x0 = this._x1 = this._x2 =
+    this._y0 = this._y1 = this._y2 = NaN;
+    this._point = 0;
+  },
+  lineEnd: function() {
+    switch (this._point) {
+      case 2: this._context.lineTo(this._x2, this._y2); break;
+      case 3: point$3(this, this._x1, this._y1); break;
+    }
+    if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
+    this._line = 1 - this._line;
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+    switch (this._point) {
+      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
+      case 1: this._point = 2; this._x1 = x, this._y1 = y; break;
+      case 2: this._point = 3; // falls through
+      default: point$3(this, x, y); break;
+    }
+    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
+    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
+  }
+};
+
+((function custom(tension) {
+
+  function cardinal(context) {
+    return new Cardinal(context, tension);
+  }
+
+  cardinal.tension = function(tension) {
+    return custom(+tension);
+  };
+
+  return cardinal;
+}))(0);
+
+function CardinalClosed(context, tension) {
+  this._context = context;
+  this._k = (1 - tension) / 6;
+}
+
+CardinalClosed.prototype = {
+  areaStart: noop,
+  areaEnd: noop,
+  lineStart: function() {
+    this._x0 = this._x1 = this._x2 = this._x3 = this._x4 = this._x5 =
+    this._y0 = this._y1 = this._y2 = this._y3 = this._y4 = this._y5 = NaN;
+    this._point = 0;
+  },
+  lineEnd: function() {
+    switch (this._point) {
+      case 1: {
+        this._context.moveTo(this._x3, this._y3);
+        this._context.closePath();
+        break;
+      }
+      case 2: {
+        this._context.lineTo(this._x3, this._y3);
+        this._context.closePath();
+        break;
+      }
+      case 3: {
+        this.point(this._x3, this._y3);
+        this.point(this._x4, this._y4);
+        this.point(this._x5, this._y5);
+        break;
+      }
+    }
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+    switch (this._point) {
+      case 0: this._point = 1; this._x3 = x, this._y3 = y; break;
+      case 1: this._point = 2; this._context.moveTo(this._x4 = x, this._y4 = y); break;
+      case 2: this._point = 3; this._x5 = x, this._y5 = y; break;
+      default: point$3(this, x, y); break;
+    }
+    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
+    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
+  }
+};
+
+((function custom(tension) {
+
+  function cardinal(context) {
+    return new CardinalClosed(context, tension);
+  }
+
+  cardinal.tension = function(tension) {
+    return custom(+tension);
+  };
+
+  return cardinal;
+}))(0);
+
+function CardinalOpen(context, tension) {
+  this._context = context;
+  this._k = (1 - tension) / 6;
+}
+
+CardinalOpen.prototype = {
+  areaStart: function() {
+    this._line = 0;
+  },
+  areaEnd: function() {
+    this._line = NaN;
+  },
+  lineStart: function() {
+    this._x0 = this._x1 = this._x2 =
+    this._y0 = this._y1 = this._y2 = NaN;
+    this._point = 0;
+  },
+  lineEnd: function() {
+    if (this._line || (this._line !== 0 && this._point === 3)) this._context.closePath();
+    this._line = 1 - this._line;
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+    switch (this._point) {
+      case 0: this._point = 1; break;
+      case 1: this._point = 2; break;
+      case 2: this._point = 3; this._line ? this._context.lineTo(this._x2, this._y2) : this._context.moveTo(this._x2, this._y2); break;
+      case 3: this._point = 4; // falls through
+      default: point$3(this, x, y); break;
+    }
+    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
+    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
+  }
+};
+
+((function custom(tension) {
+
+  function cardinal(context) {
+    return new CardinalOpen(context, tension);
+  }
+
+  cardinal.tension = function(tension) {
+    return custom(+tension);
+  };
+
+  return cardinal;
+}))(0);
+
+function point$2(that, x, y) {
+  var x1 = that._x1,
+      y1 = that._y1,
+      x2 = that._x2,
+      y2 = that._y2;
+
+  if (that._l01_a > epsilon$2) {
+    var a = 2 * that._l01_2a + 3 * that._l01_a * that._l12_a + that._l12_2a,
+        n = 3 * that._l01_a * (that._l01_a + that._l12_a);
+    x1 = (x1 * a - that._x0 * that._l12_2a + that._x2 * that._l01_2a) / n;
+    y1 = (y1 * a - that._y0 * that._l12_2a + that._y2 * that._l01_2a) / n;
+  }
+
+  if (that._l23_a > epsilon$2) {
+    var b = 2 * that._l23_2a + 3 * that._l23_a * that._l12_a + that._l12_2a,
+        m = 3 * that._l23_a * (that._l23_a + that._l12_a);
+    x2 = (x2 * b + that._x1 * that._l23_2a - x * that._l12_2a) / m;
+    y2 = (y2 * b + that._y1 * that._l23_2a - y * that._l12_2a) / m;
+  }
+
+  that._context.bezierCurveTo(x1, y1, x2, y2, that._x2, that._y2);
+}
+
+function CatmullRom(context, alpha) {
+  this._context = context;
+  this._alpha = alpha;
+}
+
+CatmullRom.prototype = {
+  areaStart: function() {
+    this._line = 0;
+  },
+  areaEnd: function() {
+    this._line = NaN;
+  },
+  lineStart: function() {
+    this._x0 = this._x1 = this._x2 =
+    this._y0 = this._y1 = this._y2 = NaN;
+    this._l01_a = this._l12_a = this._l23_a =
+    this._l01_2a = this._l12_2a = this._l23_2a =
+    this._point = 0;
+  },
+  lineEnd: function() {
+    switch (this._point) {
+      case 2: this._context.lineTo(this._x2, this._y2); break;
+      case 3: this.point(this._x2, this._y2); break;
+    }
+    if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
+    this._line = 1 - this._line;
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+
+    if (this._point) {
+      var x23 = this._x2 - x,
+          y23 = this._y2 - y;
+      this._l23_a = Math.sqrt(this._l23_2a = Math.pow(x23 * x23 + y23 * y23, this._alpha));
+    }
+
+    switch (this._point) {
+      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
+      case 1: this._point = 2; break;
+      case 2: this._point = 3; // falls through
+      default: point$2(this, x, y); break;
+    }
+
+    this._l01_a = this._l12_a, this._l12_a = this._l23_a;
+    this._l01_2a = this._l12_2a, this._l12_2a = this._l23_2a;
+    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
+    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
+  }
+};
+
+((function custom(alpha) {
+
+  function catmullRom(context) {
+    return alpha ? new CatmullRom(context, alpha) : new Cardinal(context, 0);
+  }
+
+  catmullRom.alpha = function(alpha) {
+    return custom(+alpha);
+  };
+
+  return catmullRom;
+}))(0.5);
+
+function CatmullRomClosed(context, alpha) {
+  this._context = context;
+  this._alpha = alpha;
+}
+
+CatmullRomClosed.prototype = {
+  areaStart: noop,
+  areaEnd: noop,
+  lineStart: function() {
+    this._x0 = this._x1 = this._x2 = this._x3 = this._x4 = this._x5 =
+    this._y0 = this._y1 = this._y2 = this._y3 = this._y4 = this._y5 = NaN;
+    this._l01_a = this._l12_a = this._l23_a =
+    this._l01_2a = this._l12_2a = this._l23_2a =
+    this._point = 0;
+  },
+  lineEnd: function() {
+    switch (this._point) {
+      case 1: {
+        this._context.moveTo(this._x3, this._y3);
+        this._context.closePath();
+        break;
+      }
+      case 2: {
+        this._context.lineTo(this._x3, this._y3);
+        this._context.closePath();
+        break;
+      }
+      case 3: {
+        this.point(this._x3, this._y3);
+        this.point(this._x4, this._y4);
+        this.point(this._x5, this._y5);
+        break;
+      }
+    }
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+
+    if (this._point) {
+      var x23 = this._x2 - x,
+          y23 = this._y2 - y;
+      this._l23_a = Math.sqrt(this._l23_2a = Math.pow(x23 * x23 + y23 * y23, this._alpha));
+    }
+
+    switch (this._point) {
+      case 0: this._point = 1; this._x3 = x, this._y3 = y; break;
+      case 1: this._point = 2; this._context.moveTo(this._x4 = x, this._y4 = y); break;
+      case 2: this._point = 3; this._x5 = x, this._y5 = y; break;
+      default: point$2(this, x, y); break;
+    }
+
+    this._l01_a = this._l12_a, this._l12_a = this._l23_a;
+    this._l01_2a = this._l12_2a, this._l12_2a = this._l23_2a;
+    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
+    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
+  }
+};
+
+((function custom(alpha) {
+
+  function catmullRom(context) {
+    return alpha ? new CatmullRomClosed(context, alpha) : new CardinalClosed(context, 0);
+  }
+
+  catmullRom.alpha = function(alpha) {
+    return custom(+alpha);
+  };
+
+  return catmullRom;
+}))(0.5);
+
+function CatmullRomOpen(context, alpha) {
+  this._context = context;
+  this._alpha = alpha;
+}
+
+CatmullRomOpen.prototype = {
+  areaStart: function() {
+    this._line = 0;
+  },
+  areaEnd: function() {
+    this._line = NaN;
+  },
+  lineStart: function() {
+    this._x0 = this._x1 = this._x2 =
+    this._y0 = this._y1 = this._y2 = NaN;
+    this._l01_a = this._l12_a = this._l23_a =
+    this._l01_2a = this._l12_2a = this._l23_2a =
+    this._point = 0;
+  },
+  lineEnd: function() {
+    if (this._line || (this._line !== 0 && this._point === 3)) this._context.closePath();
+    this._line = 1 - this._line;
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+
+    if (this._point) {
+      var x23 = this._x2 - x,
+          y23 = this._y2 - y;
+      this._l23_a = Math.sqrt(this._l23_2a = Math.pow(x23 * x23 + y23 * y23, this._alpha));
+    }
+
+    switch (this._point) {
+      case 0: this._point = 1; break;
+      case 1: this._point = 2; break;
+      case 2: this._point = 3; this._line ? this._context.lineTo(this._x2, this._y2) : this._context.moveTo(this._x2, this._y2); break;
+      case 3: this._point = 4; // falls through
+      default: point$2(this, x, y); break;
+    }
+
+    this._l01_a = this._l12_a, this._l12_a = this._l23_a;
+    this._l01_2a = this._l12_2a, this._l12_2a = this._l23_2a;
+    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
+    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
+  }
+};
+
+((function custom(alpha) {
+
+  function catmullRom(context) {
+    return alpha ? new CatmullRomOpen(context, alpha) : new CardinalOpen(context, 0);
+  }
+
+  catmullRom.alpha = function(alpha) {
+    return custom(+alpha);
+  };
+
+  return catmullRom;
+}))(0.5);
+
+function sign(x) {
+  return x < 0 ? -1 : 1;
+}
+
+// Calculate the slopes of the tangents (Hermite-type interpolation) based on
+// the following paper: Steffen, M. 1990. A Simple Method for Monotonic
+// Interpolation in One Dimension. Astronomy and Astrophysics, Vol. 239, NO.
+// NOV(II), P. 443, 1990.
+function slope3(that, x2, y2) {
+  var h0 = that._x1 - that._x0,
+      h1 = x2 - that._x1,
+      s0 = (that._y1 - that._y0) / (h0 || h1 < 0 && -0),
+      s1 = (y2 - that._y1) / (h1 || h0 < 0 && -0),
+      p = (s0 * h1 + s1 * h0) / (h0 + h1);
+  return (sign(s0) + sign(s1)) * Math.min(Math.abs(s0), Math.abs(s1), 0.5 * Math.abs(p)) || 0;
+}
+
+// Calculate a one-sided slope.
+function slope2(that, t) {
+  var h = that._x1 - that._x0;
+  return h ? (3 * (that._y1 - that._y0) / h - t) / 2 : t;
+}
+
+// According to https://en.wikipedia.org/wiki/Cubic_Hermite_spline#Representations
+// "you can express cubic Hermite interpolation in terms of cubic Bézier curves
+// with respect to the four values p0, p0 + m0 / 3, p1 - m1 / 3, p1".
+function point$1(that, t0, t1) {
+  var x0 = that._x0,
+      y0 = that._y0,
+      x1 = that._x1,
+      y1 = that._y1,
+      dx = (x1 - x0) / 3;
+  that._context.bezierCurveTo(x0 + dx, y0 + dx * t0, x1 - dx, y1 - dx * t1, x1, y1);
+}
+
+function MonotoneX(context) {
+  this._context = context;
+}
+
+MonotoneX.prototype = {
+  areaStart: function() {
+    this._line = 0;
+  },
+  areaEnd: function() {
+    this._line = NaN;
+  },
+  lineStart: function() {
+    this._x0 = this._x1 =
+    this._y0 = this._y1 =
+    this._t0 = NaN;
+    this._point = 0;
+  },
+  lineEnd: function() {
+    switch (this._point) {
+      case 2: this._context.lineTo(this._x1, this._y1); break;
+      case 3: point$1(this, this._t0, slope2(this, this._t0)); break;
+    }
+    if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
+    this._line = 1 - this._line;
+  },
+  point: function(x, y) {
+    var t1 = NaN;
+
+    x = +x, y = +y;
+    if (x === this._x1 && y === this._y1) return; // Ignore coincident points.
+    switch (this._point) {
+      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
+      case 1: this._point = 2; break;
+      case 2: this._point = 3; point$1(this, slope2(this, t1 = slope3(this, x, y)), t1); break;
+      default: point$1(this, this._t0, t1 = slope3(this, x, y)); break;
+    }
+
+    this._x0 = this._x1, this._x1 = x;
+    this._y0 = this._y1, this._y1 = y;
+    this._t0 = t1;
+  }
+};
+
+(Object.create(MonotoneX.prototype)).point = function(x, y) {
+  MonotoneX.prototype.point.call(this, y, x);
+};
+
+var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+
+function getDefaultExportFromCjs (x) {
+	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
+}
+
+var d3InterpolatePathExports = {};
+var d3InterpolatePath = {
+  get exports(){ return d3InterpolatePathExports; },
+  set exports(v){ d3InterpolatePathExports = v; },
+};
+
+(function (module, exports) {
+	(function (global, factory) {
+	factory(exports) ;
+	}(commonjsGlobal, (function (exports) {
+	function ownKeys(object, enumerableOnly) {
+	  var keys = Object.keys(object);
+
+	  if (Object.getOwnPropertySymbols) {
+	    var symbols = Object.getOwnPropertySymbols(object);
+
+	    if (enumerableOnly) {
+	      symbols = symbols.filter(function (sym) {
+	        return Object.getOwnPropertyDescriptor(object, sym).enumerable;
+	      });
+	    }
+
+	    keys.push.apply(keys, symbols);
+	  }
+
+	  return keys;
+	}
+
+	function _objectSpread2(target) {
+	  for (var i = 1; i < arguments.length; i++) {
+	    var source = arguments[i] != null ? arguments[i] : {};
+
+	    if (i % 2) {
+	      ownKeys(Object(source), true).forEach(function (key) {
+	        _defineProperty(target, key, source[key]);
+	      });
+	    } else if (Object.getOwnPropertyDescriptors) {
+	      Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
+	    } else {
+	      ownKeys(Object(source)).forEach(function (key) {
+	        Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
+	      });
+	    }
+	  }
+
+	  return target;
+	}
+
+	function _typeof(obj) {
+	  "@babel/helpers - typeof";
+
+	  if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
+	    _typeof = function (obj) {
+	      return typeof obj;
+	    };
+	  } else {
+	    _typeof = function (obj) {
+	      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+	    };
+	  }
+
+	  return _typeof(obj);
+	}
+
+	function _defineProperty(obj, key, value) {
+	  if (key in obj) {
+	    Object.defineProperty(obj, key, {
+	      value: value,
+	      enumerable: true,
+	      configurable: true,
+	      writable: true
+	    });
+	  } else {
+	    obj[key] = value;
+	  }
+
+	  return obj;
+	}
+
+	function _extends() {
+	  _extends = Object.assign || function (target) {
+	    for (var i = 1; i < arguments.length; i++) {
+	      var source = arguments[i];
+
+	      for (var key in source) {
+	        if (Object.prototype.hasOwnProperty.call(source, key)) {
+	          target[key] = source[key];
+	        }
+	      }
+	    }
+
+	    return target;
+	  };
+
+	  return _extends.apply(this, arguments);
+	}
+
+	function _unsupportedIterableToArray(o, minLen) {
+	  if (!o) return;
+	  if (typeof o === "string") return _arrayLikeToArray(o, minLen);
+	  var n = Object.prototype.toString.call(o).slice(8, -1);
+	  if (n === "Object" && o.constructor) n = o.constructor.name;
+	  if (n === "Map" || n === "Set") return Array.from(o);
+	  if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
+	}
+
+	function _arrayLikeToArray(arr, len) {
+	  if (len == null || len > arr.length) len = arr.length;
+
+	  for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
+
+	  return arr2;
+	}
+
+	function _createForOfIteratorHelper(o, allowArrayLike) {
+	  var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"];
+
+	  if (!it) {
+	    if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {
+	      if (it) o = it;
+	      var i = 0;
+
+	      var F = function () {};
+
+	      return {
+	        s: F,
+	        n: function () {
+	          if (i >= o.length) return {
+	            done: true
+	          };
+	          return {
+	            done: false,
+	            value: o[i++]
+	          };
+	        },
+	        e: function (e) {
+	          throw e;
+	        },
+	        f: F
+	      };
+	    }
+
+	    throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+	  }
+
+	  var normalCompletion = true,
+	      didErr = false,
+	      err;
+	  return {
+	    s: function () {
+	      it = it.call(o);
+	    },
+	    n: function () {
+	      var step = it.next();
+	      normalCompletion = step.done;
+	      return step;
+	    },
+	    e: function (e) {
+	      didErr = true;
+	      err = e;
+	    },
+	    f: function () {
+	      try {
+	        if (!normalCompletion && it.return != null) it.return();
+	      } finally {
+	        if (didErr) throw err;
+	      }
+	    }
+	  };
+	}
+
+	/**
+	 * de Casteljau's algorithm for drawing and splitting bezier curves.
+	 * Inspired by https://pomax.github.io/bezierinfo/
+	 *
+	 * @param {Number[][]} points Array of [x,y] points: [start, control1, control2, ..., end]
+	 *   The original segment to split.
+	 * @param {Number} t Where to split the curve (value between [0, 1])
+	 * @return {Object} An object { left, right } where left is the segment from 0..t and
+	 *   right is the segment from t..1.
+	 */
+	function decasteljau(points, t) {
+	  var left = [];
+	  var right = [];
+
+	  function decasteljauRecurse(points, t) {
+	    if (points.length === 1) {
+	      left.push(points[0]);
+	      right.push(points[0]);
+	    } else {
+	      var newPoints = Array(points.length - 1);
+
+	      for (var i = 0; i < newPoints.length; i++) {
+	        if (i === 0) {
+	          left.push(points[0]);
+	        }
+
+	        if (i === newPoints.length - 1) {
+	          right.push(points[i + 1]);
+	        }
+
+	        newPoints[i] = [(1 - t) * points[i][0] + t * points[i + 1][0], (1 - t) * points[i][1] + t * points[i + 1][1]];
+	      }
+
+	      decasteljauRecurse(newPoints, t);
+	    }
+	  }
+
+	  if (points.length) {
+	    decasteljauRecurse(points, t);
+	  }
+
+	  return {
+	    left: left,
+	    right: right.reverse()
+	  };
+	}
+	/**
+	 * Convert segments represented as points back into a command object
+	 *
+	 * @param {Number[][]} points Array of [x,y] points: [start, control1, control2, ..., end]
+	 *   Represents a segment
+	 * @return {Object} A command object representing the segment.
+	 */
+
+
+	function pointsToCommand(points) {
+	  var command = {};
+
+	  if (points.length === 4) {
+	    command.x2 = points[2][0];
+	    command.y2 = points[2][1];
+	  }
+
+	  if (points.length >= 3) {
+	    command.x1 = points[1][0];
+	    command.y1 = points[1][1];
+	  }
+
+	  command.x = points[points.length - 1][0];
+	  command.y = points[points.length - 1][1];
+
+	  if (points.length === 4) {
+	    // start, control1, control2, end
+	    command.type = 'C';
+	  } else if (points.length === 3) {
+	    // start, control, end
+	    command.type = 'Q';
+	  } else {
+	    // start, end
+	    command.type = 'L';
+	  }
+
+	  return command;
+	}
+	/**
+	 * Runs de Casteljau's algorithm enough times to produce the desired number of segments.
+	 *
+	 * @param {Number[][]} points Array of [x,y] points for de Casteljau (the initial segment to split)
+	 * @param {Number} segmentCount Number of segments to split the original into
+	 * @return {Number[][][]} Array of segments
+	 */
+
+
+	function splitCurveAsPoints(points, segmentCount) {
+	  segmentCount = segmentCount || 2;
+	  var segments = [];
+	  var remainingCurve = points;
+	  var tIncrement = 1 / segmentCount; // x-----x-----x-----x
+	  // t=  0.33   0.66   1
+	  // x-----o-----------x
+	  // r=  0.33
+	  //       x-----o-----x
+	  // r=         0.5  (0.33 / (1 - 0.33))  === tIncrement / (1 - (tIncrement * (i - 1))
+	  // x-----x-----x-----x----x
+	  // t=  0.25   0.5   0.75  1
+	  // x-----o----------------x
+	  // r=  0.25
+	  //       x-----o----------x
+	  // r=         0.33  (0.25 / (1 - 0.25))
+	  //             x-----o----x
+	  // r=         0.5  (0.25 / (1 - 0.5))
+
+	  for (var i = 0; i < segmentCount - 1; i++) {
+	    var tRelative = tIncrement / (1 - tIncrement * i);
+	    var split = decasteljau(remainingCurve, tRelative);
+	    segments.push(split.left);
+	    remainingCurve = split.right;
+	  } // last segment is just to the end from the last point
+
+
+	  segments.push(remainingCurve);
+	  return segments;
+	}
+	/**
+	 * Convert command objects to arrays of points, run de Casteljau's algorithm on it
+	 * to split into to the desired number of segments.
+	 *
+	 * @param {Object} commandStart The start command object
+	 * @param {Object} commandEnd The end command object
+	 * @param {Number} segmentCount The number of segments to create
+	 * @return {Object[]} An array of commands representing the segments in sequence
+	 */
+
+
+	function splitCurve(commandStart, commandEnd, segmentCount) {
+	  var points = [[commandStart.x, commandStart.y]];
+
+	  if (commandEnd.x1 != null) {
+	    points.push([commandEnd.x1, commandEnd.y1]);
+	  }
+
+	  if (commandEnd.x2 != null) {
+	    points.push([commandEnd.x2, commandEnd.y2]);
+	  }
+
+	  points.push([commandEnd.x, commandEnd.y]);
+	  return splitCurveAsPoints(points, segmentCount).map(pointsToCommand);
+	}
+
+	var commandTokenRegex = /[MLCSTQAHVZmlcstqahv]|-?[\d.e+-]+/g;
+	/**
+	 * List of params for each command type in a path `d` attribute
+	 */
+
+	var typeMap = {
+	  M: ['x', 'y'],
+	  L: ['x', 'y'],
+	  H: ['x'],
+	  V: ['y'],
+	  C: ['x1', 'y1', 'x2', 'y2', 'x', 'y'],
+	  S: ['x2', 'y2', 'x', 'y'],
+	  Q: ['x1', 'y1', 'x', 'y'],
+	  T: ['x', 'y'],
+	  A: ['rx', 'ry', 'xAxisRotation', 'largeArcFlag', 'sweepFlag', 'x', 'y'],
+	  Z: []
+	}; // Add lower case entries too matching uppercase (e.g. 'm' == 'M')
+
+	Object.keys(typeMap).forEach(function (key) {
+	  typeMap[key.toLowerCase()] = typeMap[key];
+	});
+
+	function arrayOfLength(length, value) {
+	  var array = Array(length);
+
+	  for (var i = 0; i < length; i++) {
+	    array[i] = value;
+	  }
+
+	  return array;
+	}
+	/**
+	 * Converts a command object to a string to be used in a `d` attribute
+	 * @param {Object} command A command object
+	 * @return {String} The string for the `d` attribute
+	 */
+
+
+	function commandToString(command) {
+	  return "".concat(command.type).concat(typeMap[command.type].map(function (p) {
+	    return command[p];
+	  }).join(','));
+	}
+	/**
+	 * Converts command A to have the same type as command B.
+	 *
+	 * e.g., L0,5 -> C0,5,0,5,0,5
+	 *
+	 * Uses these rules:
+	 * x1 <- x
+	 * x2 <- x
+	 * y1 <- y
+	 * y2 <- y
+	 * rx <- 0
+	 * ry <- 0
+	 * xAxisRotation <- read from B
+	 * largeArcFlag <- read from B
+	 * sweepflag <- read from B
+	 *
+	 * @param {Object} aCommand Command object from path `d` attribute
+	 * @param {Object} bCommand Command object from path `d` attribute to match against
+	 * @return {Object} aCommand converted to type of bCommand
+	 */
+
+
+	function convertToSameType(aCommand, bCommand) {
+	  var conversionMap = {
+	    x1: 'x',
+	    y1: 'y',
+	    x2: 'x',
+	    y2: 'y'
+	  };
+	  var readFromBKeys = ['xAxisRotation', 'largeArcFlag', 'sweepFlag']; // convert (but ignore M types)
+
+	  if (aCommand.type !== bCommand.type && bCommand.type.toUpperCase() !== 'M') {
+	    var aConverted = {};
+	    Object.keys(bCommand).forEach(function (bKey) {
+	      var bValue = bCommand[bKey]; // first read from the A command
+
+	      var aValue = aCommand[bKey]; // if it is one of these values, read from B no matter what
+
+	      if (aValue === undefined) {
+	        if (readFromBKeys.includes(bKey)) {
+	          aValue = bValue;
+	        } else {
+	          // if it wasn't in the A command, see if an equivalent was
+	          if (aValue === undefined && conversionMap[bKey]) {
+	            aValue = aCommand[conversionMap[bKey]];
+	          } // if it doesn't have a converted value, use 0
+
+
+	          if (aValue === undefined) {
+	            aValue = 0;
+	          }
+	        }
+	      }
+
+	      aConverted[bKey] = aValue;
+	    }); // update the type to match B
+
+	    aConverted.type = bCommand.type;
+	    aCommand = aConverted;
+	  }
+
+	  return aCommand;
+	}
+	/**
+	 * Interpolate between command objects commandStart and commandEnd segmentCount times.
+	 * If the types are L, Q, or C then the curves are split as per de Casteljau's algorithm.
+	 * Otherwise we just copy commandStart segmentCount - 1 times, finally ending with commandEnd.
+	 *
+	 * @param {Object} commandStart Command object at the beginning of the segment
+	 * @param {Object} commandEnd Command object at the end of the segment
+	 * @param {Number} segmentCount The number of segments to split this into. If only 1
+	 *   Then [commandEnd] is returned.
+	 * @return {Object[]} Array of ~segmentCount command objects between commandStart and
+	 *   commandEnd. (Can be segmentCount+1 objects if commandStart is type M).
+	 */
+
+
+	function splitSegment(commandStart, commandEnd, segmentCount) {
+	  var segments = []; // line, quadratic bezier, or cubic bezier
+
+	  if (commandEnd.type === 'L' || commandEnd.type === 'Q' || commandEnd.type === 'C') {
+	    segments = segments.concat(splitCurve(commandStart, commandEnd, segmentCount)); // general case - just copy the same point
+	  } else {
+	    var copyCommand = _extends({}, commandStart); // convert M to L
+
+
+	    if (copyCommand.type === 'M') {
+	      copyCommand.type = 'L';
+	    }
+
+	    segments = segments.concat(arrayOfLength(segmentCount - 1).map(function () {
+	      return copyCommand;
+	    }));
+	    segments.push(commandEnd);
+	  }
+
+	  return segments;
+	}
+	/**
+	 * Extends an array of commandsToExtend to the length of the referenceCommands by
+	 * splitting segments until the number of commands match. Ensures all the actual
+	 * points of commandsToExtend are in the extended array.
+	 *
+	 * @param {Object[]} commandsToExtend The command object array to extend
+	 * @param {Object[]} referenceCommands The command object array to match in length
+	 * @param {Function} excludeSegment a function that takes a start command object and
+	 *   end command object and returns true if the segment should be excluded from splitting.
+	 * @return {Object[]} The extended commandsToExtend array
+	 */
+
+
+	function extend(commandsToExtend, referenceCommands, excludeSegment) {
+	  // compute insertion points:
+	  // number of segments in the path to extend
+	  var numSegmentsToExtend = commandsToExtend.length - 1; // number of segments in the reference path.
+
+	  var numReferenceSegments = referenceCommands.length - 1; // this value is always between [0, 1].
+
+	  var segmentRatio = numSegmentsToExtend / numReferenceSegments; // create a map, mapping segments in referenceCommands to how many points
+	  // should be added in that segment (should always be >= 1 since we need each
+	  // point itself).
+	  // 0 = segment 0-1, 1 = segment 1-2, n-1 = last vertex
+
+	  var countPointsPerSegment = arrayOfLength(numReferenceSegments).reduce(function (accum, d, i) {
+	    var insertIndex = Math.floor(segmentRatio * i); // handle excluding segments
+
+	    if (excludeSegment && insertIndex < commandsToExtend.length - 1 && excludeSegment(commandsToExtend[insertIndex], commandsToExtend[insertIndex + 1])) {
+	      // set the insertIndex to the segment that this point should be added to:
+	      // round the insertIndex essentially so we split half and half on
+	      // neighbouring segments. hence the segmentRatio * i < 0.5
+	      var addToPriorSegment = segmentRatio * i % 1 < 0.5; // only skip segment if we already have 1 point in it (can't entirely remove a segment)
+
+	      if (accum[insertIndex]) {
+	        // TODO - Note this is a naive algorithm that should work for most d3-area use cases
+	        // but if two adjacent segments are supposed to be skipped, this will not perform as
+	        // expected. Could be updated to search for nearest segment to place the point in, but
+	        // will only do that if necessary.
+	        // add to the prior segment
+	        if (addToPriorSegment) {
+	          if (insertIndex > 0) {
+	            insertIndex -= 1; // not possible to add to previous so adding to next
+	          } else if (insertIndex < commandsToExtend.length - 1) {
+	            insertIndex += 1;
+	          } // add to next segment
+
+	        } else if (insertIndex < commandsToExtend.length - 1) {
+	          insertIndex += 1; // not possible to add to next so adding to previous
+	        } else if (insertIndex > 0) {
+	          insertIndex -= 1;
+	        }
+	      }
+	    }
+
+	    accum[insertIndex] = (accum[insertIndex] || 0) + 1;
+	    return accum;
+	  }, []); // extend each segment to have the correct number of points for a smooth interpolation
+
+	  var extended = countPointsPerSegment.reduce(function (extended, segmentCount, i) {
+	    // if last command, just add `segmentCount` number of times
+	    if (i === commandsToExtend.length - 1) {
+	      var lastCommandCopies = arrayOfLength(segmentCount, _extends({}, commandsToExtend[commandsToExtend.length - 1])); // convert M to L
+
+	      if (lastCommandCopies[0].type === 'M') {
+	        lastCommandCopies.forEach(function (d) {
+	          d.type = 'L';
+	        });
+	      }
+
+	      return extended.concat(lastCommandCopies);
+	    } // otherwise, split the segment segmentCount times.
+
+
+	    return extended.concat(splitSegment(commandsToExtend[i], commandsToExtend[i + 1], segmentCount));
+	  }, []); // add in the very first point since splitSegment only adds in the ones after it
+
+	  extended.unshift(commandsToExtend[0]);
+	  return extended;
+	}
+	/**
+	 * Takes a path `d` string and converts it into an array of command
+	 * objects. Drops the `Z` character.
+	 *
+	 * @param {String|null} d A path `d` string
+	 */
+
+
+	function pathCommandsFromString(d) {
+	  // split into valid tokens
+	  var tokens = (d || '').match(commandTokenRegex) || [];
+	  var commands = [];
+	  var commandArgs;
+	  var command; // iterate over each token, checking if we are at a new command
+	  // by presence in the typeMap
+
+	  for (var i = 0; i < tokens.length; ++i) {
+	    commandArgs = typeMap[tokens[i]]; // new command found:
+
+	    if (commandArgs) {
+	      command = {
+	        type: tokens[i]
+	      }; // add each of the expected args for this command:
+
+	      for (var a = 0; a < commandArgs.length; ++a) {
+	        command[commandArgs[a]] = +tokens[i + a + 1];
+	      } // need to increment our token index appropriately since
+	      // we consumed token args
+
+
+	      i += commandArgs.length;
+	      commands.push(command);
+	    }
+	  }
+
+	  return commands;
+	}
+	/**
+	 * Interpolate from A to B by extending A and B during interpolation to have
+	 * the same number of points. This allows for a smooth transition when they
+	 * have a different number of points.
+	 *
+	 * Ignores the `Z` command in paths unless both A and B end with it.
+	 *
+	 * This function works directly with arrays of command objects instead of with
+	 * path `d` strings (see interpolatePath for working with `d` strings).
+	 *
+	 * @param {Object[]} aCommandsInput Array of path commands
+	 * @param {Object[]} bCommandsInput Array of path commands
+	 * @param {(Function|Object)} interpolateOptions
+	 * @param {Function} interpolateOptions.excludeSegment a function that takes a start command object and
+	 *   end command object and returns true if the segment should be excluded from splitting.
+	 * @param {Boolean} interpolateOptions.snapEndsToInput a boolean indicating whether end of input should
+	 *   be sourced from input argument or computed.
+	 * @returns {Function} Interpolation function that maps t ([0, 1]) to an array of path commands.
+	 */
+
+	function interpolatePathCommands(aCommandsInput, bCommandsInput, interpolateOptions) {
+	  // make a copy so we don't mess with the input arrays
+	  var aCommands = aCommandsInput == null ? [] : aCommandsInput.slice();
+	  var bCommands = bCommandsInput == null ? [] : bCommandsInput.slice();
+
+	  var _ref = _typeof(interpolateOptions) === 'object' ? interpolateOptions : {
+	    excludeSegment: interpolateOptions,
+	    snapEndsToInput: true
+	  },
+	      excludeSegment = _ref.excludeSegment,
+	      snapEndsToInput = _ref.snapEndsToInput; // both input sets are empty, so we don't interpolate
+
+
+	  if (!aCommands.length && !bCommands.length) {
+	    return function nullInterpolator() {
+	      return [];
+	    };
+	  } // do we add Z during interpolation? yes if both have it. (we'd expect both to have it or not)
+
+
+	  var addZ = (aCommands.length === 0 || aCommands[aCommands.length - 1].type === 'Z') && (bCommands.length === 0 || bCommands[bCommands.length - 1].type === 'Z'); // we temporarily remove Z
+
+	  if (aCommands.length > 0 && aCommands[aCommands.length - 1].type === 'Z') {
+	    aCommands.pop();
+	  }
+
+	  if (bCommands.length > 0 && bCommands[bCommands.length - 1].type === 'Z') {
+	    bCommands.pop();
+	  } // if A is empty, treat it as if it used to contain just the first point
+	  // of B. This makes it so the line extends out of from that first point.
+
+
+	  if (!aCommands.length) {
+	    aCommands.push(bCommands[0]); // otherwise if B is empty, treat it as if it contains the first point
+	    // of A. This makes it so the line retracts into the first point.
+	  } else if (!bCommands.length) {
+	    bCommands.push(aCommands[0]);
+	  } // extend to match equal size
+
+
+	  var numPointsToExtend = Math.abs(bCommands.length - aCommands.length);
+
+	  if (numPointsToExtend !== 0) {
+	    // B has more points than A, so add points to A before interpolating
+	    if (bCommands.length > aCommands.length) {
+	      aCommands = extend(aCommands, bCommands, excludeSegment); // else if A has more points than B, add more points to B
+	    } else if (bCommands.length < aCommands.length) {
+	      bCommands = extend(bCommands, aCommands, excludeSegment);
+	    }
+	  } // commands have same length now.
+	  // convert commands in A to the same type as those in B
+
+
+	  aCommands = aCommands.map(function (aCommand, i) {
+	    return convertToSameType(aCommand, bCommands[i]);
+	  }); // create mutable interpolated command objects
+
+	  var interpolatedCommands = aCommands.map(function (aCommand) {
+	    return _objectSpread2({}, aCommand);
+	  });
+
+	  if (addZ) {
+	    interpolatedCommands.push({
+	      type: 'Z'
+	    });
+	    aCommands.push({
+	      type: 'Z'
+	    }); // required for when returning at t == 0
+	  }
+
+	  return function pathCommandInterpolator(t) {
+	    // at 1 return the final value without the extensions used during interpolation
+	    if (t === 1 && snapEndsToInput) {
+	      return bCommandsInput == null ? [] : bCommandsInput;
+	    } // work with aCommands directly since interpolatedCommands are mutated
+
+
+	    if (t === 0) {
+	      return aCommands;
+	    } // interpolate the commands using the mutable interpolated command objs
+
+
+	    for (var i = 0; i < interpolatedCommands.length; ++i) {
+	      // if (interpolatedCommands[i].type === 'Z') continue;
+	      var aCommand = aCommands[i];
+	      var bCommand = bCommands[i];
+	      var interpolatedCommand = interpolatedCommands[i];
+
+	      var _iterator = _createForOfIteratorHelper(typeMap[interpolatedCommand.type]),
+	          _step;
+
+	      try {
+	        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+	          var arg = _step.value;
+	          interpolatedCommand[arg] = (1 - t) * aCommand[arg] + t * bCommand[arg]; // do not use floats for flags (#27), round to integer
+
+	          if (arg === 'largeArcFlag' || arg === 'sweepFlag') {
+	            interpolatedCommand[arg] = Math.round(interpolatedCommand[arg]);
+	          }
+	        }
+	      } catch (err) {
+	        _iterator.e(err);
+	      } finally {
+	        _iterator.f();
+	      }
+	    }
+
+	    return interpolatedCommands;
+	  };
+	}
+	/** @typedef InterpolateOptions  */
+
+	/**
+	 * Interpolate from A to B by extending A and B during interpolation to have
+	 * the same number of points. This allows for a smooth transition when they
+	 * have a different number of points.
+	 *
+	 * Ignores the `Z` character in paths unless both A and B end with it.
+	 *
+	 * @param {String} a The `d` attribute for a path
+	 * @param {String} b The `d` attribute for a path
+	 * @param {((command1, command2) => boolean|{
+	 *   excludeSegment?: (command1, command2) => boolean;
+	 *   snapEndsToInput?: boolean
+	 * })} interpolateOptions The excludeSegment function or an options object
+	 *    - interpolateOptions.excludeSegment a function that takes a start command object and
+	 *      end command object and returns true if the segment should be excluded from splitting.
+	 *    - interpolateOptions.snapEndsToInput a boolean indicating whether end of input should
+	 *      be sourced from input argument or computed.
+	 * @returns {Function} Interpolation function that maps t ([0, 1]) to a path `d` string.
+	 */
+
+	function interpolatePath(a, b, interpolateOptions) {
+	  var aCommands = pathCommandsFromString(a);
+	  var bCommands = pathCommandsFromString(b);
+
+	  var _ref2 = _typeof(interpolateOptions) === 'object' ? interpolateOptions : {
+	    excludeSegment: interpolateOptions,
+	    snapEndsToInput: true
+	  },
+	      excludeSegment = _ref2.excludeSegment,
+	      snapEndsToInput = _ref2.snapEndsToInput;
+
+	  if (!aCommands.length && !bCommands.length) {
+	    return function nullInterpolator() {
+	      return '';
+	    };
+	  }
+
+	  var commandInterpolator = interpolatePathCommands(aCommands, bCommands, {
+	    excludeSegment: excludeSegment,
+	    snapEndsToInput: snapEndsToInput
+	  });
+	  return function pathStringInterpolator(t) {
+	    // at 1 return the final value without the extensions used during interpolation
+	    if (t === 1 && snapEndsToInput) {
+	      return b == null ? '' : b;
+	    }
+
+	    var interpolatedCommands = commandInterpolator(t); // convert to a string (fastest concat: https://jsperf.com/join-concat/150)
+
+	    var interpolatedString = '';
+
+	    var _iterator2 = _createForOfIteratorHelper(interpolatedCommands),
+	        _step2;
+
+	    try {
+	      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+	        var interpolatedCommand = _step2.value;
+	        interpolatedString += commandToString(interpolatedCommand);
+	      }
+	    } catch (err) {
+	      _iterator2.e(err);
+	    } finally {
+	      _iterator2.f();
+	    }
+
+	    return interpolatedString;
+	  };
+	}
+
+	exports.interpolatePath = interpolatePath;
+	exports.interpolatePathCommands = interpolatePathCommands;
+	exports.pathCommandsFromString = pathCommandsFromString;
+
+	Object.defineProperty(exports, '__esModule', { value: true });
+
+	})));
+} (d3InterpolatePath, d3InterpolatePathExports));
+
 function getArrowBottomCursor() {
     return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 5"><path fill="white" stroke="black" stroke-width="0.5" d="M 1 0 L 7 0 L 4 5 z"/></svg>';
 }
@@ -3570,7 +5208,7 @@ function brushDown(cleanDimensionName, event, d, parcoords, active, tooltipValue
             .style('cursor', 'default');
     }
     else {
-        select$1('#rect_' + cleanDimensionName).style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopAndBottom()), 15)}') 8 8, auto`);
+        select$1('#rect_' + cleanDimensionName).style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopAndBottom()), 20)}') 8 8, auto`);
     }
     select$1('#triangle_down_' + cleanDimensionName).attr('y', yPosTop);
     const heightTopRect = yPosRect - 80;
@@ -3604,7 +5242,7 @@ function brushUp(cleanDimensionName, event, d, parcoords, active, tooltipValues,
             .style('cursor', 'default');
     }
     else {
-        select$1('#rect_' + cleanDimensionName).style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopAndBottom()), 15)}') 8 8, auto`);
+        select$1('#rect_' + cleanDimensionName).style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopAndBottom()), 20)}') 8 8, auto`);
     }
     select$1('#triangle_up_' + cleanDimensionName).attr('y', yPosBottom);
     const heightTopRect = yPosTop - 70;
@@ -3708,17 +5346,17 @@ function filter(dimensionName, topValue, bottomValue, parcoords) {
     addPosition(bottomPosition, parcoords.currentPosOfDims, dimensionName, 'bottom');
     select$1('#rect_' + cleanDimensionName)
         .transition()
-        .duration(500)
+        .duration(300)
         .attr('y', topPosition)
         .attr('height', rectHeight)
         .style('opacity', 0.3);
     select$1('#triangle_down_' + cleanDimensionName)
         .transition()
-        .duration(600)
+        .duration(300)
         .attr('y', topPosition - 10);
     select$1('#triangle_up_' + cleanDimensionName)
         .transition()
-        .duration(600)
+        .duration(300)
         .attr('y', bottomPosition);
     let active = select$1('g.active').selectAll('path');
     const rangeTop = topPosition - 10;
@@ -3988,43 +5626,77 @@ function makeInactive(currentLineName, dimensionName) {
         .style('opacity', '0.4')
         .text(dimensionName);
 }
-function addSettingsForBrushing(dimensionName, parcoords) {
+function addSettingsForBrushing(dimensionName, parcoords, invertStatus, filter) {
     const processedName = cleanString(dimensionName);
+    const yScale = parcoords.yScales[processedName];
+    const [minValue, maxValue] = invertStatus ? yScale.domain().slice().reverse() : yScale.domain();
+    const scaleValue = (value) => {
+        if (isNaN(value)) {
+            return yScale(value);
+        }
+        const range = maxValue - minValue;
+        return invertStatus ? 240 / range * (value - minValue) + 80 :
+            240 / range * (maxValue - value) + 80;
+    };
+    let topPosition = invertStatus ? scaleValue(filter[0]) : scaleValue(filter[1]);
+    let bottomPosition = invertStatus ? scaleValue(filter[1]) : scaleValue(filter[0]);
+    let rectHeight = bottomPosition - topPosition;
     const rect = select$1('#rect_' + processedName);
     const triDown = select$1('#triangle_down_' + processedName);
     const triUp = select$1('#triangle_up_' + processedName);
     const rectNode = rect.node();
     if (!rectNode)
         return;
-    const rectHeight = Number(rectNode.getBoundingClientRect().height);
-    const yTop = Number(rect.attr('y'));
-    const yBottom = yTop + rectHeight;
     const bounds = { top: 80, bottom: 320, height: 240 };
-    if (yTop > bounds.top && yBottom < bounds.bottom) {
+    if (topPosition > bounds.top && bottomPosition < bounds.bottom) {
         const distBottom = bounds.bottom - Number(triUp.attr('y'));
         const newY = bounds.top + distBottom;
-        rect.attr('y', newY);
-        triDown.attr('y', newY);
-        triUp.attr('y', newY + rectHeight);
-        //addPosition(newY, parcoords.currentPosOfDims, dimensionName, 'top');
-        //addPosition(newY + rectHeight, parcoords.currentPosOfDims, dimensionName, 'bottom');
+        rect.transition()
+            .duration(300)
+            .attr('y', newY)
+            .attr('height', rectHeight)
+            .style('opacity', 0.3);
+        triDown.transition()
+            .duration(300)
+            .attr('y', newY - 10);
+        triUp.transition()
+            .duration(300)
+            .attr('y', bottomPosition);
+        addPosition(newY, parcoords.currentPosOfDims, dimensionName, 'top');
+        addPosition(bottomPosition, parcoords.currentPosOfDims, dimensionName, 'bottom');
     }
-    else if (yTop > bounds.top && yBottom >= bounds.bottom) {
-        const newHeight = bounds.height - (yTop - bounds.top);
-        rect.attr('y', bounds.top).attr('height', newHeight);
-        triDown.attr('y', bounds.top);
-        triUp.attr('y', bounds.bottom - (yTop - bounds.top));
-        //addPosition(bounds.top, parcoords.currentPosOfDims, dimensionName, 'top');
-        //addPosition(bounds.bottom - (yTop - bounds.top), parcoords.currentPosOfDims, dimensionName, 'bottom');
+    else if (topPosition > bounds.top && bottomPosition >= bounds.bottom) {
+        const newHeight = bounds.height - (topPosition - bounds.top);
+        rect.transition()
+            .duration(300)
+            .attr('y', bounds.top)
+            .attr('height', newHeight)
+            .style('opacity', 0.3);
+        triDown.transition()
+            .duration(300)
+            .attr('y', bounds.top - 10);
+        triUp.transition()
+            .duration(300)
+            .attr('y', bounds.bottom - (topPosition - bounds.top));
+        addPosition(bounds.top, parcoords.currentPosOfDims, dimensionName, 'top');
+        addPosition(bounds.bottom - (topPosition - bounds.top), parcoords.currentPosOfDims, dimensionName, 'bottom');
     }
-    else if (yTop <= bounds.top && yBottom < bounds.bottom) {
+    else if (topPosition <= bounds.top && bottomPosition < bounds.bottom) {
         const newY = bounds.bottom - rectHeight;
-        const newHeight = bounds.height - (bounds.bottom - yBottom);
-        rect.attr('y', newY).attr('height', newHeight);
-        triDown.attr('y', bounds.top + (bounds.bottom - yBottom) - 10);
-        triUp.attr('y', bounds.bottom);
-        //addPosition(bounds.top + (bounds.bottom - yBottom), parcoords.currentPosOfDims, dimensionName, 'top');
-        //addPosition(bounds.bottom, parcoords.currentPosOfDims, dimensionName, 'bottom');
+        const newHeight = bounds.height - (bounds.bottom - bottomPosition);
+        rect.transition()
+            .duration(300)
+            .attr('y', newY)
+            .attr('height', newHeight)
+            .style('opacity', 0.3);
+        triDown.transition()
+            .duration(300)
+            .attr('y', bounds.top + (bounds.bottom - bottomPosition) - 10);
+        triUp.transition()
+            .duration(300)
+            .attr('y', bounds.bottom);
+        addPosition(bounds.top + (bounds.bottom - bottomPosition), parcoords.currentPosOfDims, dimensionName, 'top');
+        addPosition(bounds.bottom, parcoords.currentPosOfDims, dimensionName, 'bottom');
     }
 }
 function getInvertStatus(key, currentPosOfDims) {
@@ -4382,7 +6054,7 @@ function pointish(scale) {
   return scale;
 }
 
-function point$4() {
+function point() {
   return pointish(band.apply(null, arguments).paddingInner(1));
 }
 
@@ -4979,9 +6651,9 @@ function timeInterval(floori, offseti, count, field) {
     }, (date, step) => {
       if (date >= date) {
         if (step < 0) while (++step <= 0) {
-          while (offseti(date, -1), !test(date)) {}
+          while (offseti(date, -1), !test(date)) {} // eslint-disable-line no-empty
         } else while (--step >= 0) {
-          while (offseti(date, +1), !test(date)) {}
+          while (offseti(date, +1), !test(date)) {} // eslint-disable-line no-empty
         }
       }
     });
@@ -5994,7 +7666,7 @@ var top = 1,
     right = 2,
     bottom = 3,
     left = 4,
-    epsilon$2 = 1e-6;
+    epsilon = 1e-6;
 
 function translateX(x) {
   return "translate(" + x + ",0)";
@@ -6068,11 +7740,11 @@ function axis(orient, scale) {
       text = text.transition(context);
 
       tickExit = tickExit.transition(context)
-          .attr("opacity", epsilon$2)
+          .attr("opacity", epsilon)
           .attr("transform", function(d) { return isFinite(d = position(d)) ? transform(d + offset) : this.getAttribute("transform"); });
 
       tickEnter
-          .attr("opacity", epsilon$2)
+          .attr("opacity", epsilon)
           .attr("transform", function(d) { var p = this.parentNode.__axis; return transform((p && isFinite(p = p(d)) ? p : position(d)) + offset); });
     }
 
@@ -6151,850 +7823,6 @@ function axisLeft(scale) {
   return axis(left, scale);
 }
 
-function constant(x) {
-  return function constant() {
-    return x;
-  };
-}
-
-const epsilon$1 = 1e-12;
-
-const pi = Math.PI,
-    tau = 2 * pi,
-    epsilon = 1e-6,
-    tauEpsilon = tau - epsilon;
-
-function append(strings) {
-  this._ += strings[0];
-  for (let i = 1, n = strings.length; i < n; ++i) {
-    this._ += arguments[i] + strings[i];
-  }
-}
-
-function appendRound(digits) {
-  let d = Math.floor(digits);
-  if (!(d >= 0)) throw new Error(`invalid digits: ${digits}`);
-  if (d > 15) return append;
-  const k = 10 ** d;
-  return function(strings) {
-    this._ += strings[0];
-    for (let i = 1, n = strings.length; i < n; ++i) {
-      this._ += Math.round(arguments[i] * k) / k + strings[i];
-    }
-  };
-}
-
-class Path {
-  constructor(digits) {
-    this._x0 = this._y0 = // start of current subpath
-    this._x1 = this._y1 = null; // end of current subpath
-    this._ = "";
-    this._append = digits == null ? append : appendRound(digits);
-  }
-  moveTo(x, y) {
-    this._append`M${this._x0 = this._x1 = +x},${this._y0 = this._y1 = +y}`;
-  }
-  closePath() {
-    if (this._x1 !== null) {
-      this._x1 = this._x0, this._y1 = this._y0;
-      this._append`Z`;
-    }
-  }
-  lineTo(x, y) {
-    this._append`L${this._x1 = +x},${this._y1 = +y}`;
-  }
-  quadraticCurveTo(x1, y1, x, y) {
-    this._append`Q${+x1},${+y1},${this._x1 = +x},${this._y1 = +y}`;
-  }
-  bezierCurveTo(x1, y1, x2, y2, x, y) {
-    this._append`C${+x1},${+y1},${+x2},${+y2},${this._x1 = +x},${this._y1 = +y}`;
-  }
-  arcTo(x1, y1, x2, y2, r) {
-    x1 = +x1, y1 = +y1, x2 = +x2, y2 = +y2, r = +r;
-
-    // Is the radius negative? Error.
-    if (r < 0) throw new Error(`negative radius: ${r}`);
-
-    let x0 = this._x1,
-        y0 = this._y1,
-        x21 = x2 - x1,
-        y21 = y2 - y1,
-        x01 = x0 - x1,
-        y01 = y0 - y1,
-        l01_2 = x01 * x01 + y01 * y01;
-
-    // Is this path empty? Move to (x1,y1).
-    if (this._x1 === null) {
-      this._append`M${this._x1 = x1},${this._y1 = y1}`;
-    }
-
-    // Or, is (x1,y1) coincident with (x0,y0)? Do nothing.
-    else if (!(l01_2 > epsilon));
-
-    // Or, are (x0,y0), (x1,y1) and (x2,y2) collinear?
-    // Equivalently, is (x1,y1) coincident with (x2,y2)?
-    // Or, is the radius zero? Line to (x1,y1).
-    else if (!(Math.abs(y01 * x21 - y21 * x01) > epsilon) || !r) {
-      this._append`L${this._x1 = x1},${this._y1 = y1}`;
-    }
-
-    // Otherwise, draw an arc!
-    else {
-      let x20 = x2 - x0,
-          y20 = y2 - y0,
-          l21_2 = x21 * x21 + y21 * y21,
-          l20_2 = x20 * x20 + y20 * y20,
-          l21 = Math.sqrt(l21_2),
-          l01 = Math.sqrt(l01_2),
-          l = r * Math.tan((pi - Math.acos((l21_2 + l01_2 - l20_2) / (2 * l21 * l01))) / 2),
-          t01 = l / l01,
-          t21 = l / l21;
-
-      // If the start tangent is not coincident with (x0,y0), line to.
-      if (Math.abs(t01 - 1) > epsilon) {
-        this._append`L${x1 + t01 * x01},${y1 + t01 * y01}`;
-      }
-
-      this._append`A${r},${r},0,0,${+(y01 * x20 > x01 * y20)},${this._x1 = x1 + t21 * x21},${this._y1 = y1 + t21 * y21}`;
-    }
-  }
-  arc(x, y, r, a0, a1, ccw) {
-    x = +x, y = +y, r = +r, ccw = !!ccw;
-
-    // Is the radius negative? Error.
-    if (r < 0) throw new Error(`negative radius: ${r}`);
-
-    let dx = r * Math.cos(a0),
-        dy = r * Math.sin(a0),
-        x0 = x + dx,
-        y0 = y + dy,
-        cw = 1 ^ ccw,
-        da = ccw ? a0 - a1 : a1 - a0;
-
-    // Is this path empty? Move to (x0,y0).
-    if (this._x1 === null) {
-      this._append`M${x0},${y0}`;
-    }
-
-    // Or, is (x0,y0) not coincident with the previous point? Line to (x0,y0).
-    else if (Math.abs(this._x1 - x0) > epsilon || Math.abs(this._y1 - y0) > epsilon) {
-      this._append`L${x0},${y0}`;
-    }
-
-    // Is this arc empty? We’re done.
-    if (!r) return;
-
-    // Does the angle go the wrong way? Flip the direction.
-    if (da < 0) da = da % tau + tau;
-
-    // Is this a complete circle? Draw two arcs to complete the circle.
-    if (da > tauEpsilon) {
-      this._append`A${r},${r},0,1,${cw},${x - dx},${y - dy}A${r},${r},0,1,${cw},${this._x1 = x0},${this._y1 = y0}`;
-    }
-
-    // Is this arc non-empty? Draw an arc!
-    else if (da > epsilon) {
-      this._append`A${r},${r},0,${+(da >= pi)},${cw},${this._x1 = x + r * Math.cos(a1)},${this._y1 = y + r * Math.sin(a1)}`;
-    }
-  }
-  rect(x, y, w, h) {
-    this._append`M${this._x0 = this._x1 = +x},${this._y0 = this._y1 = +y}h${w = +w}v${+h}h${-w}Z`;
-  }
-  toString() {
-    return this._;
-  }
-}
-
-function withPath(shape) {
-  let digits = 3;
-
-  shape.digits = function(_) {
-    if (!arguments.length) return digits;
-    if (_ == null) {
-      digits = null;
-    } else {
-      const d = Math.floor(_);
-      if (!(d >= 0)) throw new RangeError(`invalid digits: ${_}`);
-      digits = d;
-    }
-    return shape;
-  };
-
-  return () => new Path(digits);
-}
-
-function array(x) {
-  return typeof x === "object" && "length" in x
-    ? x // Array, TypedArray, NodeList, array-like
-    : Array.from(x); // Map, Set, iterable, string, or anything else
-}
-
-function Linear(context) {
-  this._context = context;
-}
-
-Linear.prototype = {
-  areaStart: function() {
-    this._line = 0;
-  },
-  areaEnd: function() {
-    this._line = NaN;
-  },
-  lineStart: function() {
-    this._point = 0;
-  },
-  lineEnd: function() {
-    if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
-    this._line = 1 - this._line;
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-    switch (this._point) {
-      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
-      case 1: this._point = 2; // falls through
-      default: this._context.lineTo(x, y); break;
-    }
-  }
-};
-
-function curveLinear(context) {
-  return new Linear(context);
-}
-
-function x(p) {
-  return p[0];
-}
-
-function y(p) {
-  return p[1];
-}
-
-function line(x$1, y$1) {
-  var defined = constant(true),
-      context = null,
-      curve = curveLinear,
-      output = null,
-      path = withPath(line);
-
-  x$1 = typeof x$1 === "function" ? x$1 : (x$1 === undefined) ? x : constant(x$1);
-  y$1 = typeof y$1 === "function" ? y$1 : (y$1 === undefined) ? y : constant(y$1);
-
-  function line(data) {
-    var i,
-        n = (data = array(data)).length,
-        d,
-        defined0 = false,
-        buffer;
-
-    if (context == null) output = curve(buffer = path());
-
-    for (i = 0; i <= n; ++i) {
-      if (!(i < n && defined(d = data[i], i, data)) === defined0) {
-        if (defined0 = !defined0) output.lineStart();
-        else output.lineEnd();
-      }
-      if (defined0) output.point(+x$1(d, i, data), +y$1(d, i, data));
-    }
-
-    if (buffer) return output = null, buffer + "" || null;
-  }
-
-  line.x = function(_) {
-    return arguments.length ? (x$1 = typeof _ === "function" ? _ : constant(+_), line) : x$1;
-  };
-
-  line.y = function(_) {
-    return arguments.length ? (y$1 = typeof _ === "function" ? _ : constant(+_), line) : y$1;
-  };
-
-  line.defined = function(_) {
-    return arguments.length ? (defined = typeof _ === "function" ? _ : constant(!!_), line) : defined;
-  };
-
-  line.curve = function(_) {
-    return arguments.length ? (curve = _, context != null && (output = curve(context)), line) : curve;
-  };
-
-  line.context = function(_) {
-    return arguments.length ? (_ == null ? context = output = null : output = curve(context = _), line) : context;
-  };
-
-  return line;
-}
-
-function noop() {}
-
-function point$3(that, x, y) {
-  that._context.bezierCurveTo(
-    (2 * that._x0 + that._x1) / 3,
-    (2 * that._y0 + that._y1) / 3,
-    (that._x0 + 2 * that._x1) / 3,
-    (that._y0 + 2 * that._y1) / 3,
-    (that._x0 + 4 * that._x1 + x) / 6,
-    (that._y0 + 4 * that._y1 + y) / 6
-  );
-}
-
-function Basis(context) {
-  this._context = context;
-}
-
-Basis.prototype = {
-  areaStart: function() {
-    this._line = 0;
-  },
-  areaEnd: function() {
-    this._line = NaN;
-  },
-  lineStart: function() {
-    this._x0 = this._x1 =
-    this._y0 = this._y1 = NaN;
-    this._point = 0;
-  },
-  lineEnd: function() {
-    switch (this._point) {
-      case 3: point$3(this, this._x1, this._y1); // falls through
-      case 2: this._context.lineTo(this._x1, this._y1); break;
-    }
-    if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
-    this._line = 1 - this._line;
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-    switch (this._point) {
-      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
-      case 1: this._point = 2; break;
-      case 2: this._point = 3; this._context.lineTo((5 * this._x0 + this._x1) / 6, (5 * this._y0 + this._y1) / 6); // falls through
-      default: point$3(this, x, y); break;
-    }
-    this._x0 = this._x1, this._x1 = x;
-    this._y0 = this._y1, this._y1 = y;
-  }
-};
-
-function Bundle(context, beta) {
-  this._basis = new Basis(context);
-  this._beta = beta;
-}
-
-Bundle.prototype = {
-  lineStart: function() {
-    this._x = [];
-    this._y = [];
-    this._basis.lineStart();
-  },
-  lineEnd: function() {
-    var x = this._x,
-        y = this._y,
-        j = x.length - 1;
-
-    if (j > 0) {
-      var x0 = x[0],
-          y0 = y[0],
-          dx = x[j] - x0,
-          dy = y[j] - y0,
-          i = -1,
-          t;
-
-      while (++i <= j) {
-        t = i / j;
-        this._basis.point(
-          this._beta * x[i] + (1 - this._beta) * (x0 + t * dx),
-          this._beta * y[i] + (1 - this._beta) * (y0 + t * dy)
-        );
-      }
-    }
-
-    this._x = this._y = null;
-    this._basis.lineEnd();
-  },
-  point: function(x, y) {
-    this._x.push(+x);
-    this._y.push(+y);
-  }
-};
-
-((function custom(beta) {
-
-  function bundle(context) {
-    return beta === 1 ? new Basis(context) : new Bundle(context, beta);
-  }
-
-  bundle.beta = function(beta) {
-    return custom(+beta);
-  };
-
-  return bundle;
-}))(0.85);
-
-function point$2(that, x, y) {
-  that._context.bezierCurveTo(
-    that._x1 + that._k * (that._x2 - that._x0),
-    that._y1 + that._k * (that._y2 - that._y0),
-    that._x2 + that._k * (that._x1 - x),
-    that._y2 + that._k * (that._y1 - y),
-    that._x2,
-    that._y2
-  );
-}
-
-function Cardinal(context, tension) {
-  this._context = context;
-  this._k = (1 - tension) / 6;
-}
-
-Cardinal.prototype = {
-  areaStart: function() {
-    this._line = 0;
-  },
-  areaEnd: function() {
-    this._line = NaN;
-  },
-  lineStart: function() {
-    this._x0 = this._x1 = this._x2 =
-    this._y0 = this._y1 = this._y2 = NaN;
-    this._point = 0;
-  },
-  lineEnd: function() {
-    switch (this._point) {
-      case 2: this._context.lineTo(this._x2, this._y2); break;
-      case 3: point$2(this, this._x1, this._y1); break;
-    }
-    if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
-    this._line = 1 - this._line;
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-    switch (this._point) {
-      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
-      case 1: this._point = 2; this._x1 = x, this._y1 = y; break;
-      case 2: this._point = 3; // falls through
-      default: point$2(this, x, y); break;
-    }
-    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
-    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
-  }
-};
-
-((function custom(tension) {
-
-  function cardinal(context) {
-    return new Cardinal(context, tension);
-  }
-
-  cardinal.tension = function(tension) {
-    return custom(+tension);
-  };
-
-  return cardinal;
-}))(0);
-
-function CardinalClosed(context, tension) {
-  this._context = context;
-  this._k = (1 - tension) / 6;
-}
-
-CardinalClosed.prototype = {
-  areaStart: noop,
-  areaEnd: noop,
-  lineStart: function() {
-    this._x0 = this._x1 = this._x2 = this._x3 = this._x4 = this._x5 =
-    this._y0 = this._y1 = this._y2 = this._y3 = this._y4 = this._y5 = NaN;
-    this._point = 0;
-  },
-  lineEnd: function() {
-    switch (this._point) {
-      case 1: {
-        this._context.moveTo(this._x3, this._y3);
-        this._context.closePath();
-        break;
-      }
-      case 2: {
-        this._context.lineTo(this._x3, this._y3);
-        this._context.closePath();
-        break;
-      }
-      case 3: {
-        this.point(this._x3, this._y3);
-        this.point(this._x4, this._y4);
-        this.point(this._x5, this._y5);
-        break;
-      }
-    }
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-    switch (this._point) {
-      case 0: this._point = 1; this._x3 = x, this._y3 = y; break;
-      case 1: this._point = 2; this._context.moveTo(this._x4 = x, this._y4 = y); break;
-      case 2: this._point = 3; this._x5 = x, this._y5 = y; break;
-      default: point$2(this, x, y); break;
-    }
-    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
-    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
-  }
-};
-
-((function custom(tension) {
-
-  function cardinal(context) {
-    return new CardinalClosed(context, tension);
-  }
-
-  cardinal.tension = function(tension) {
-    return custom(+tension);
-  };
-
-  return cardinal;
-}))(0);
-
-function CardinalOpen(context, tension) {
-  this._context = context;
-  this._k = (1 - tension) / 6;
-}
-
-CardinalOpen.prototype = {
-  areaStart: function() {
-    this._line = 0;
-  },
-  areaEnd: function() {
-    this._line = NaN;
-  },
-  lineStart: function() {
-    this._x0 = this._x1 = this._x2 =
-    this._y0 = this._y1 = this._y2 = NaN;
-    this._point = 0;
-  },
-  lineEnd: function() {
-    if (this._line || (this._line !== 0 && this._point === 3)) this._context.closePath();
-    this._line = 1 - this._line;
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-    switch (this._point) {
-      case 0: this._point = 1; break;
-      case 1: this._point = 2; break;
-      case 2: this._point = 3; this._line ? this._context.lineTo(this._x2, this._y2) : this._context.moveTo(this._x2, this._y2); break;
-      case 3: this._point = 4; // falls through
-      default: point$2(this, x, y); break;
-    }
-    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
-    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
-  }
-};
-
-((function custom(tension) {
-
-  function cardinal(context) {
-    return new CardinalOpen(context, tension);
-  }
-
-  cardinal.tension = function(tension) {
-    return custom(+tension);
-  };
-
-  return cardinal;
-}))(0);
-
-function point$1(that, x, y) {
-  var x1 = that._x1,
-      y1 = that._y1,
-      x2 = that._x2,
-      y2 = that._y2;
-
-  if (that._l01_a > epsilon$1) {
-    var a = 2 * that._l01_2a + 3 * that._l01_a * that._l12_a + that._l12_2a,
-        n = 3 * that._l01_a * (that._l01_a + that._l12_a);
-    x1 = (x1 * a - that._x0 * that._l12_2a + that._x2 * that._l01_2a) / n;
-    y1 = (y1 * a - that._y0 * that._l12_2a + that._y2 * that._l01_2a) / n;
-  }
-
-  if (that._l23_a > epsilon$1) {
-    var b = 2 * that._l23_2a + 3 * that._l23_a * that._l12_a + that._l12_2a,
-        m = 3 * that._l23_a * (that._l23_a + that._l12_a);
-    x2 = (x2 * b + that._x1 * that._l23_2a - x * that._l12_2a) / m;
-    y2 = (y2 * b + that._y1 * that._l23_2a - y * that._l12_2a) / m;
-  }
-
-  that._context.bezierCurveTo(x1, y1, x2, y2, that._x2, that._y2);
-}
-
-function CatmullRom(context, alpha) {
-  this._context = context;
-  this._alpha = alpha;
-}
-
-CatmullRom.prototype = {
-  areaStart: function() {
-    this._line = 0;
-  },
-  areaEnd: function() {
-    this._line = NaN;
-  },
-  lineStart: function() {
-    this._x0 = this._x1 = this._x2 =
-    this._y0 = this._y1 = this._y2 = NaN;
-    this._l01_a = this._l12_a = this._l23_a =
-    this._l01_2a = this._l12_2a = this._l23_2a =
-    this._point = 0;
-  },
-  lineEnd: function() {
-    switch (this._point) {
-      case 2: this._context.lineTo(this._x2, this._y2); break;
-      case 3: this.point(this._x2, this._y2); break;
-    }
-    if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
-    this._line = 1 - this._line;
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-
-    if (this._point) {
-      var x23 = this._x2 - x,
-          y23 = this._y2 - y;
-      this._l23_a = Math.sqrt(this._l23_2a = Math.pow(x23 * x23 + y23 * y23, this._alpha));
-    }
-
-    switch (this._point) {
-      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
-      case 1: this._point = 2; break;
-      case 2: this._point = 3; // falls through
-      default: point$1(this, x, y); break;
-    }
-
-    this._l01_a = this._l12_a, this._l12_a = this._l23_a;
-    this._l01_2a = this._l12_2a, this._l12_2a = this._l23_2a;
-    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
-    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
-  }
-};
-
-((function custom(alpha) {
-
-  function catmullRom(context) {
-    return alpha ? new CatmullRom(context, alpha) : new Cardinal(context, 0);
-  }
-
-  catmullRom.alpha = function(alpha) {
-    return custom(+alpha);
-  };
-
-  return catmullRom;
-}))(0.5);
-
-function CatmullRomClosed(context, alpha) {
-  this._context = context;
-  this._alpha = alpha;
-}
-
-CatmullRomClosed.prototype = {
-  areaStart: noop,
-  areaEnd: noop,
-  lineStart: function() {
-    this._x0 = this._x1 = this._x2 = this._x3 = this._x4 = this._x5 =
-    this._y0 = this._y1 = this._y2 = this._y3 = this._y4 = this._y5 = NaN;
-    this._l01_a = this._l12_a = this._l23_a =
-    this._l01_2a = this._l12_2a = this._l23_2a =
-    this._point = 0;
-  },
-  lineEnd: function() {
-    switch (this._point) {
-      case 1: {
-        this._context.moveTo(this._x3, this._y3);
-        this._context.closePath();
-        break;
-      }
-      case 2: {
-        this._context.lineTo(this._x3, this._y3);
-        this._context.closePath();
-        break;
-      }
-      case 3: {
-        this.point(this._x3, this._y3);
-        this.point(this._x4, this._y4);
-        this.point(this._x5, this._y5);
-        break;
-      }
-    }
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-
-    if (this._point) {
-      var x23 = this._x2 - x,
-          y23 = this._y2 - y;
-      this._l23_a = Math.sqrt(this._l23_2a = Math.pow(x23 * x23 + y23 * y23, this._alpha));
-    }
-
-    switch (this._point) {
-      case 0: this._point = 1; this._x3 = x, this._y3 = y; break;
-      case 1: this._point = 2; this._context.moveTo(this._x4 = x, this._y4 = y); break;
-      case 2: this._point = 3; this._x5 = x, this._y5 = y; break;
-      default: point$1(this, x, y); break;
-    }
-
-    this._l01_a = this._l12_a, this._l12_a = this._l23_a;
-    this._l01_2a = this._l12_2a, this._l12_2a = this._l23_2a;
-    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
-    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
-  }
-};
-
-((function custom(alpha) {
-
-  function catmullRom(context) {
-    return alpha ? new CatmullRomClosed(context, alpha) : new CardinalClosed(context, 0);
-  }
-
-  catmullRom.alpha = function(alpha) {
-    return custom(+alpha);
-  };
-
-  return catmullRom;
-}))(0.5);
-
-function CatmullRomOpen(context, alpha) {
-  this._context = context;
-  this._alpha = alpha;
-}
-
-CatmullRomOpen.prototype = {
-  areaStart: function() {
-    this._line = 0;
-  },
-  areaEnd: function() {
-    this._line = NaN;
-  },
-  lineStart: function() {
-    this._x0 = this._x1 = this._x2 =
-    this._y0 = this._y1 = this._y2 = NaN;
-    this._l01_a = this._l12_a = this._l23_a =
-    this._l01_2a = this._l12_2a = this._l23_2a =
-    this._point = 0;
-  },
-  lineEnd: function() {
-    if (this._line || (this._line !== 0 && this._point === 3)) this._context.closePath();
-    this._line = 1 - this._line;
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-
-    if (this._point) {
-      var x23 = this._x2 - x,
-          y23 = this._y2 - y;
-      this._l23_a = Math.sqrt(this._l23_2a = Math.pow(x23 * x23 + y23 * y23, this._alpha));
-    }
-
-    switch (this._point) {
-      case 0: this._point = 1; break;
-      case 1: this._point = 2; break;
-      case 2: this._point = 3; this._line ? this._context.lineTo(this._x2, this._y2) : this._context.moveTo(this._x2, this._y2); break;
-      case 3: this._point = 4; // falls through
-      default: point$1(this, x, y); break;
-    }
-
-    this._l01_a = this._l12_a, this._l12_a = this._l23_a;
-    this._l01_2a = this._l12_2a, this._l12_2a = this._l23_2a;
-    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
-    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
-  }
-};
-
-((function custom(alpha) {
-
-  function catmullRom(context) {
-    return alpha ? new CatmullRomOpen(context, alpha) : new CardinalOpen(context, 0);
-  }
-
-  catmullRom.alpha = function(alpha) {
-    return custom(+alpha);
-  };
-
-  return catmullRom;
-}))(0.5);
-
-function sign(x) {
-  return x < 0 ? -1 : 1;
-}
-
-// Calculate the slopes of the tangents (Hermite-type interpolation) based on
-// the following paper: Steffen, M. 1990. A Simple Method for Monotonic
-// Interpolation in One Dimension. Astronomy and Astrophysics, Vol. 239, NO.
-// NOV(II), P. 443, 1990.
-function slope3(that, x2, y2) {
-  var h0 = that._x1 - that._x0,
-      h1 = x2 - that._x1,
-      s0 = (that._y1 - that._y0) / (h0 || h1 < 0 && -0),
-      s1 = (y2 - that._y1) / (h1 || h0 < 0 && -0),
-      p = (s0 * h1 + s1 * h0) / (h0 + h1);
-  return (sign(s0) + sign(s1)) * Math.min(Math.abs(s0), Math.abs(s1), 0.5 * Math.abs(p)) || 0;
-}
-
-// Calculate a one-sided slope.
-function slope2(that, t) {
-  var h = that._x1 - that._x0;
-  return h ? (3 * (that._y1 - that._y0) / h - t) / 2 : t;
-}
-
-// According to https://en.wikipedia.org/wiki/Cubic_Hermite_spline#Representations
-// "you can express cubic Hermite interpolation in terms of cubic Bézier curves
-// with respect to the four values p0, p0 + m0 / 3, p1 - m1 / 3, p1".
-function point(that, t0, t1) {
-  var x0 = that._x0,
-      y0 = that._y0,
-      x1 = that._x1,
-      y1 = that._y1,
-      dx = (x1 - x0) / 3;
-  that._context.bezierCurveTo(x0 + dx, y0 + dx * t0, x1 - dx, y1 - dx * t1, x1, y1);
-}
-
-function MonotoneX(context) {
-  this._context = context;
-}
-
-MonotoneX.prototype = {
-  areaStart: function() {
-    this._line = 0;
-  },
-  areaEnd: function() {
-    this._line = NaN;
-  },
-  lineStart: function() {
-    this._x0 = this._x1 =
-    this._y0 = this._y1 =
-    this._t0 = NaN;
-    this._point = 0;
-  },
-  lineEnd: function() {
-    switch (this._point) {
-      case 2: this._context.lineTo(this._x1, this._y1); break;
-      case 3: point(this, this._t0, slope2(this, this._t0)); break;
-    }
-    if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
-    this._line = 1 - this._line;
-  },
-  point: function(x, y) {
-    var t1 = NaN;
-
-    x = +x, y = +y;
-    if (x === this._x1 && y === this._y1) return; // Ignore coincident points.
-    switch (this._point) {
-      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
-      case 1: this._point = 2; break;
-      case 2: this._point = 3; point(this, slope2(this, t1 = slope3(this, x, y)), t1); break;
-      default: point(this, this._t0, t1 = slope3(this, x, y)); break;
-    }
-
-    this._x0 = this._x1, this._x1 = x;
-    this._y0 = this._y1, this._y1 = y;
-    this._t0 = t1;
-  }
-};
-
-(Object.create(MonotoneX.prototype)).point = function(x, y) {
-  MonotoneX.prototype.point.call(this, y, x);
-};
-
 function prepareData(data, newFeatures) {
     let newDataset = [];
     data.forEach(obj => {
@@ -7017,7 +7845,7 @@ function setupYScales(height, padding, features, newDataset) {
             values.forEach(function (element) {
                 labels.push(element.length > 10 ? element.substr(0, 10) + '...' : element);
             });
-            yScales[x.name] = point$4()
+            yScales[x.name] = point()
                 .domain(labels)
                 .range([padding, height - padding])
                 .padding(0.2);
@@ -7033,7 +7861,7 @@ function setupYScales(height, padding, features, newDataset) {
     return yScales;
 }
 function setupXScales(width, padding, features) {
-    return point$4()
+    return point()
         .domain(features.map(x => x.name))
         .range([width - padding, padding]);
 }
@@ -7234,12 +8062,22 @@ function setContextMenu(featureAxis, padding, parcoords, active, width) {
         filterMenu(values, dimension);
         resetFilterMenu(values, dimension);
         showAllMenu();
+        copyDimensionName(dimension);
         event.preventDefault();
     });
 }
 let scrollXPos;
 let timer;
 const paddingXaxis = 75;
+function copyDimensionName(dimension) {
+    select$1('#copyDimensionName')
+        .style('visibility', 'visible')
+        .on('click', async (event) => {
+        await navigator.clipboard.writeText(dimension);
+        select$1('#contextmenu').style('display', 'none');
+        event.stopPropagation();
+    });
+}
 function showAllMenu() {
     select$1('#showAllMenu')
         .style('visibility', 'visible')
@@ -7515,6 +8353,7 @@ function invertDimensionMenu(dimension) {
 }
 function hideDimensionMenu(dimension) {
     select$1('#hideMenu')
+        .style('border-top', '0.08rem lightgrey solid')
         .on('click', (event) => {
         hide(dimension);
         select$1('#contextmenu').style('display', 'none');
@@ -7629,6 +8468,10 @@ function createContextMenu() {
         .attr('id', 'contextmenu')
         .style('position', 'absolute')
         .style('display', 'none');
+    contextMenu.append('div')
+        .attr('id', 'copyDimensionName')
+        .attr('class', 'contextmenu')
+        .text('Copy Name');
     contextMenu.append('div')
         .attr('id', 'hideMenu')
         .attr('class', 'contextmenu')
@@ -7928,7 +8771,6 @@ function setRectToDragToDownload(featureAxis, parcoords) {
         const processedDimensionName = cleanString(d.name);
         const item = parcoords.currentPosOfDims.find((object) => object.key == d.name);
         let height = item.bottom - item.top;
-        //if (item.top != 80 && item.bottom != 320) height = height + 10;
         select$1(this)
             .append('g')
             .append('rect')
@@ -7963,12 +8805,6 @@ function setInvertIconToDownload(featureAxis, padding) {
                 .attr('href', '#arrow_image_up');
         }
     });
-}
-
-var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
-
-function getDefaultExportFromCjs (x) {
-	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
 }
 
 var cjsExports$1 = {};
@@ -8569,12 +9405,12 @@ function createToolbar(dataset) {
         .attr('id', 'toggleButton')
         .attr('title', 'Expand toolbar')
         .html(getExpandToolbarIcon())
-        .style('margin', '0')
+        .style('margin', '0rem')
         .style('border', 'none')
         .style('border-radius', '0')
-        .style('padding', '0')
-        .style('width', '2rem')
-        .style('height', '2rem');
+        .style('padding', '0.1rem')
+        .style('width', '1.3rem')
+        .style('height', '1.3rem');
     const toolbar = toolbarRow.append('div')
         .attr('id', 'toolbar')
         .style('display', 'flex')
@@ -8590,42 +9426,42 @@ function createToolbar(dataset) {
         .style('margin', '0rem')
         .style('border', 'none')
         .style('border-radius', '0')
-        .style('padding', '0')
-        .style('width', '2rem')
-        .style('height', '2rem')
+        .style('padding', '0.1rem')
+        .style('width', '1.3rem')
+        .style('height', '1.3rem')
         .on('click', () => showModalWithData(dataset));
     toolbar.append('button')
         .attr('id', 'downloadButton')
         .attr('title', 'Download SVG')
         .html(getDownloadButton())
-        .style('margin', '0')
+        .style('margin', '0rem')
         .style('border', 'none')
         .style('border-radius', '0')
-        .style('padding', '0')
-        .style('width', '2rem')
-        .style('height', '2rem')
+        .style('padding', '0.1rem')
+        .style('width', '1.3rem')
+        .style('height', '1.3rem')
         .on('click', saveAsSvg);
     toolbar.append('button')
         .attr('id', 'refreshButton')
         .attr('title', 'Refresh')
         .html(getRefreshIcon())
-        .style('margin', '0')
+        .style('margin', '0rem')
         .style('border', 'none')
         .style('border-radius', '0')
-        .style('padding', '0')
-        .style('width', '2rem')
-        .style('height', '2rem')
+        .style('padding', '0.1rem')
+        .style('width', '1.3rem')
+        .style('height', '1.3rem')
         .on('click', refresh);
     toolbar.append('button')
         .attr('id', 'resetButton')
         .attr('title', 'Reset')
         .html(getResetIcon())
-        .style('margin', '0')
+        .style('margin', '0rem')
         .style('border', 'none')
         .style('border-radius', '0')
-        .style('padding', '0')
-        .style('width', '2rem')
-        .style('height', '2rem')
+        .style('padding', '0.1rem')
+        .style('width', '1.3rem')
+        .style('height', '1.3rem')
         .on('click', reset);
     toggleButton.on('click', () => {
         let isExpanded = toolbar.style('max-width') !== '0px';
@@ -8785,15 +9621,16 @@ function hide(dimension) {
     const featureSet = window.parcoords.features.filter(d => d.name !== dimension);
     window.parcoords.features = featureSet;
     window.parcoords.newFeatures = newDimensions;
+    const oldxScales = window.parcoords.xScales.copy();
     window.parcoords.xScales.domain(newDimensions);
     selectAll('.dimensions')
         .filter(d => newDimensions.includes(d.name || d))
         .transition()
         .duration(1000)
-        .attr('transform', d => 'translate(' + position(d.name || d, parcoords.dragging, parcoords.xScales) + ')')
+        .attr('transform', (d) => 'translate(' + position(d.name || d, parcoords.dragging, parcoords.xScales) + ')')
         .ease(cubicInOut);
     selectAll('.dimensions')
-        .filter(d => d.name === dimension)
+        .filter((d) => d.name === dimension)
         .transition()
         .duration(500)
         .style('opacity', 0)
@@ -8803,8 +9640,15 @@ function hide(dimension) {
     select$1('g.active').selectAll('path')
         .transition()
         .duration(1000)
-        .attr('d', d => linePath(d, newDimensions, parcoords))
-        .ease(cubicInOut);
+        .attrTween('d', (d) => generateLineTween(oldxScales, window.parcoords.xScales, newDimensions, window.parcoords.yScales)(d));
+}
+function generateLineTween(oldXscales, newXscales, newDimensions, yScales) {
+    const line$1 = line().defined(d => d != null);
+    return function (d) {
+        const oldPoints = newDimensions.map((dim) => [oldXscales(dim), yScales[dim](d[dim])]);
+        const newPoints = newDimensions.map((dim) => [newXscales(dim), yScales[dim](d[dim])]);
+        return d3InterpolatePathExports.interpolatePath(line$1(oldPoints), line$1(newPoints));
+    };
 }
 function show(dimension) {
     if (window.parcoords.newFeatures.includes(dimension))
@@ -8817,22 +9661,26 @@ function show(dimension) {
     }
     window.parcoords.xScales.domain(window.parcoords.newFeatures);
     selectAll('.dimensions')
-        .filter(d => (typeof d === "object" ? d.name : d) === dimension)
+        .filter((d) => (typeof d === "object" ? d.name : d) === dimension)
         .style('opacity', 1)
         .transition()
         .duration(500)
         .attr('visibility', 'visible');
     selectAll('.dimensions')
-        .filter(d => window.parcoords.newFeatures.includes(typeof d === "object" ? d.name : d))
+        .filter((d) => window.parcoords.newFeatures.includes(typeof d === "object" ? d.name : d))
         .transition()
         .duration(1000)
-        .attr('transform', d => 'translate(' + position(d.name || d, parcoords.dragging, parcoords.xScales) + ')')
+        .attr('transform', (d) => 'translate(' + position(d.name || d, parcoords.dragging, parcoords.xScales) + ')')
         .ease(cubicInOut);
     select$1('g.active').selectAll('path')
-        .transition()
-        .duration(1000)
-        .attr('d', d => linePath(d, window.parcoords.newFeatures, parcoords))
-        .ease(cubicInOut);
+        .attr('d', function (d) {
+        const points = window.parcoords.newFeatures.map(p => {
+            const x = window.parcoords.xScales(p);
+            const y = window.parcoords.yScales[p](d[p]);
+            return [x, y];
+        });
+        return line()(points);
+    });
 }
 function getHiddenStatus(dimension) {
     const index = parcoords.newFeatures.indexOf(dimension);
@@ -8872,8 +9720,8 @@ function invert(dimension) {
         })
             .ease(cubicInOut);
     });
-    
-    addSettingsForBrushing(dimension, parcoords);
+    const filter = getFilter(dimension);
+    addSettingsForBrushing(dimension, parcoords, isInverted(dimension), filter);
     if (isInverted(dimension)) {
         addInvertStatus(true, parcoords.currentPosOfDims, dimension, "isInverted");
     }
@@ -8903,7 +9751,8 @@ function invertWoTransition(dimension) {
             return linePath(d, parcoords.newFeatures, parcoords);
         });
     });
-    addSettingsForBrushing(dimension, parcoords);
+    const filter = getFilter(dimension);
+    addSettingsForBrushing(dimension, parcoords, isInverted(dimension), filter);
     if (isInverted(dimension)) {
         addInvertStatus(true, parcoords.currentPosOfDims, dimension, "isInverted");
     }
@@ -8944,7 +9793,8 @@ function setInversionStatus(dimension, status) {
         })
             .ease(cubicInOut);
     });
-    addSettingsForBrushing(dimension, parcoords);
+    const filter = getFilter(dimension);
+    addSettingsForBrushing(dimension, parcoords, isInverted(dimension), filter);
     if (isInverted(dimension)) {
         addInvertStatus(true, parcoords.currentPosOfDims, dimension, "isInverted");
     }
@@ -9254,8 +10104,8 @@ function drawChart(content) {
         .style('display', 'flex')
         .style('flex-wrap', 'wrap')
         .style('align-items', 'center')
-        .style('margin-top', '1.5rem')
-        .style('margin-left', '1rem')
+        .style('margin-top', '1.2rem')
+        .style('margin-left', '2rem')
         .style('margin-bottom', 0);
     createToolbar(window.parcoords.newDataset);
     window.svg = wrapper
@@ -9278,6 +10128,9 @@ function drawChart(content) {
     })
         .on("click", function () {
         clearSelection();
+    })
+        .on("mousedown.selection", function (event) {
+        event.preventDefault();
     });
     window.onclick = (event) => {
         select$1('#contextmenu').style('display', 'none');
@@ -9850,7 +10703,7 @@ function setRectToDrag(featureAxis, svg, parcoords, active, tooltipValuesTop, to
             .attr('y', 80)
             .attr('fill', 'rgb(255, 255, 0)')
             .attr('opacity', '0.4')
-            .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopAndBottom()), 12)}') 8 8, auto`)
+            .style('cursor', 'default')
             .call(drag()
             .on('drag', (event, d) => {
             if (parcoords.newFeatures.length > 25) {
