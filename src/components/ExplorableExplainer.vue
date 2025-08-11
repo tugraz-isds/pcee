@@ -117,7 +117,7 @@
             class="modal"
           >
             <div class="modal-content">
-              <div>Add new column name:</div>
+              <div>Add New Column Name:</div>
               <input
                 v-model="newColumn"
                 type="text"
@@ -228,11 +228,11 @@ const addClickEvent = (): void => {
 const selectOutlier = (): void => {
   if (spcd3.isSelected('Patient F')) {
     spcd3.setUnselected('Patient F');
-    (document.getElementById('outlier-button') as HTMLButtonElement).textContent = 'Show outlier';
+    (document.getElementById('outlier-button') as HTMLButtonElement).textContent = 'Show Outlier';
   }
   else {
     spcd3.setSelected('Patient F');
-    (document.getElementById('outlier-button') as HTMLButtonElement).textContent = 'Hide outlier';
+    (document.getElementById('outlier-button') as HTMLButtonElement).textContent = 'Hide Outlier';
   }
 };
 
@@ -252,11 +252,11 @@ const showNegativeCorrelation = (): void => {
   const posAge = spcd3.getDimensionPosition('Age');
   const diff = posAge - posFitness;
   if (diff == 1) {
-    (document.getElementById('correlation-neg-button') as HTMLButtonElement).textContent = 'Move Fitness Score next to Age';
+    (document.getElementById('correlation-neg-button') as HTMLButtonElement).textContent = 'Move Fitness Score Next to Age';
     spcd3.move('Fitness Score', true, 'Cholesterol');
   }
   else {
-    (document.getElementById('correlation-neg-button') as HTMLButtonElement).textContent = 'Fitness Score: Reset position';
+    (document.getElementById('correlation-neg-button') as HTMLButtonElement).textContent = 'Fitness Score: Reset Position';
     spcd3.move('Fitness Score', true, 'Age');
   }
  
@@ -271,7 +271,7 @@ const setRange = (): void => {
         spcd3.setDimensionRange(dimension, 0, 100);
       }
     });
-    (document.getElementById('range-button') as HTMLButtonElement).textContent = 'Set dimension ranges from data';
+    (document.getElementById('range-button') as HTMLButtonElement).textContent = 'Set Dimension Ranges from Data';
   }
   else {
     const dimensions = spcd3.getAllDimensionNames();
@@ -282,18 +282,18 @@ const setRange = (): void => {
         spcd3.setDimensionRange(dimension, min, max);
       }
     });
-    (document.getElementById('range-button') as HTMLButtonElement).textContent = 'Set dimension ranges 0 - 100';
+    (document.getElementById('range-button') as HTMLButtonElement).textContent = 'Set Dimension Ranges 0 - 100';
   }
 }
 
 const selectRecord = (): void => {
   if (spcd3.isSelected('Sylvia')) {
     spcd3.setUnselected('Sylvia');
-    (document.getElementById('select-button') as HTMLButtonElement).textContent = 'Select record: Sylvia';
+    (document.getElementById('select-button') as HTMLButtonElement).textContent = 'Select Record: Sylvia';
   }
   else {
     spcd3.setSelected('Sylvia');
-    (document.getElementById('select-button') as HTMLButtonElement).textContent = 'Unselect record: Sylvia';
+    (document.getElementById('select-button') as HTMLButtonElement).textContent = 'Unselect Record: Sylvia';
   }
 }
 
@@ -309,11 +309,11 @@ const filterRecords = (): void => {
   }
   else if (spcd3.getFilter('English')[0] == 0 && spcd3.getFilter('English')[1] == 100) {
     spcd3.setFilter('English', 100, 50);
-    (document.getElementById('filter-button') as HTMLButtonElement).textContent = 'English: Filter 50 - 100';
+    (document.getElementById('filter-button') as HTMLButtonElement).textContent = 'English: Reset Filter';
   }
   else {
     spcd3.setFilter('English', 100, 0);
-    (document.getElementById('filter-button') as HTMLButtonElement).textContent = 'English: Reset filter';
+    (document.getElementById('filter-button') as HTMLButtonElement).textContent = 'English: Filter 50 - 100';
   }
 }
 
@@ -322,10 +322,10 @@ const moveDimension = (): void => {
   const posEnglish = spcd3.getDimensionPosition('English');
   const diff = posEnglish - posGerman;
   if (diff == 1) {
-    (document.getElementById('move-button') as HTMLButtonElement).textContent = 'Move German next to English';
+    (document.getElementById('move-button') as HTMLButtonElement).textContent = 'Move German Next to English';
   }
   else {
-    (document.getElementById('move-button') as HTMLButtonElement).textContent = 'German: Reset position';
+    (document.getElementById('move-button') as HTMLButtonElement).textContent = 'German: Reset Position';
   }
   spcd3.swap('PE', 'German');
 }
@@ -472,7 +472,7 @@ const handleStepEnter = (element: number): void => {
     if ((document.getElementById('outlier-button') as HTMLButtonElement).textContent === 'Unselect Outlier') {
       spcd3.setSelected('Patient F');
     }
-    if ((document.getElementById('correlation-button') as HTMLButtonElement).textContent === 'Show positive correlation') {
+    if ((document.getElementById('correlation-button') as HTMLButtonElement).textContent === 'Show Positive Correlation') {
       spcd3.setInversionStatus('Age', 'descending');
     }
     (document.getElementById('outlier-button') as HTMLButtonElement).disabled = false;
