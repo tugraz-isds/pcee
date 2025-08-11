@@ -252,7 +252,7 @@ const showNegativeCorrelation = (): void => {
   const posAge = spcd3.getDimensionPosition('Age');
   const diff = posAge - posFitness;
   if (diff == 1) {
-    (document.getElementById('correlation-neg-button') as HTMLButtonElement).textContent = 'Move Fitness Score Next to Age';
+    (document.getElementById('correlation-neg-button') as HTMLButtonElement).textContent = 'Move Fitness Score next to Age';
     spcd3.move('Fitness Score', true, 'Cholesterol');
   }
   else {
@@ -301,7 +301,7 @@ const filterRecords = (): void => {
   console.log(spcd3.getFilter('English'));
   if (spcd3.getFilter('English')[0] == 1) {
     spcd3.setFilter('English', 99, 51);
-    (document.getElementById('filter-button') as HTMLButtonElement).textContent = 'English: Reset filter';
+    (document.getElementById('filter-button') as HTMLButtonElement).textContent = 'English: Reset Filter';
   }
   else if (spcd3.getFilter('English')[0] == 51) {
     spcd3.setFilter('English', 99, 1);
@@ -322,7 +322,7 @@ const moveDimension = (): void => {
   const posEnglish = spcd3.getDimensionPosition('English');
   const diff = posEnglish - posGerman;
   if (diff == 1) {
-    (document.getElementById('move-button') as HTMLButtonElement).textContent = 'Move German Next to English';
+    (document.getElementById('move-button') as HTMLButtonElement).textContent = 'Move German next to English';
   }
   else {
     (document.getElementById('move-button') as HTMLButtonElement).textContent = 'German: Reset Position';
