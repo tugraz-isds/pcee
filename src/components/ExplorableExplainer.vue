@@ -20,7 +20,14 @@
       </div>
     </div>
   </div>
-  <div class="header-spacer" />
+  <div
+    v-if="supportsScrollDrivenAnimations"
+    class="header-spacer-native"
+  />
+  <div
+    v-else
+    class="header-spacer-polyfill"
+  />
 
   <div class="explorable-explainer">
     <div
@@ -305,7 +312,7 @@ const filterRecords = (): void => {
   }
   else if (spcd3.getFilter('English')[0] == 51) {
     spcd3.setFilter('English', 99, 1);
-    (document.getElementById('filter-button') as HTMLButtonElement).textContent = 'English: Filter 50 - 99';
+    (document.getElementById('filter-button') as HTMLButtonElement).textContent = 'English: Set Filter to 50';
   }
   else if (spcd3.getFilter('English')[0] == 0 && spcd3.getFilter('English')[1] == 100) {
     spcd3.setFilter('English', 100, 50);
@@ -313,7 +320,7 @@ const filterRecords = (): void => {
   }
   else {
     spcd3.setFilter('English', 100, 0);
-    (document.getElementById('filter-button') as HTMLButtonElement).textContent = 'English: Filter 50 - 100';
+    (document.getElementById('filter-button') as HTMLButtonElement).textContent = 'English: Set Filter to 50';
   }
 }
 
@@ -322,12 +329,13 @@ const moveDimension = (): void => {
   const posEnglish = spcd3.getDimensionPosition('English');
   const diff = posEnglish - posGerman;
   if (diff == 1) {
+    spcd3.move('German', true, 'Biology');
     (document.getElementById('move-button') as HTMLButtonElement).textContent = 'Move German next to English';
   }
   else {
+    spcd3.move('German', true, 'English');
     (document.getElementById('move-button') as HTMLButtonElement).textContent = 'German: Reset Position';
   }
-  spcd3.swap('PE', 'German');
 }
 
 const invertDimension = (): void => {
@@ -731,8 +739,12 @@ onMounted(async (): Promise<void> => {
   }
 }
 
-.header-spacer {
+.header-spacer-native {
   height: 100vh;
+}
+
+.header-spacer-polyfill {
+  height: 30vh;
 }
 
 .explorable-explainer {
