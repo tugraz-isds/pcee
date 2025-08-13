@@ -936,18 +936,41 @@ figcaption {
   margin-top: 0.5rem;
 }
 
-@media (max-width: 40rem) {
-  .chart-container {
+@media (max-width: 60rem) {
+  .explorable-explainer {
     flex-direction: column;
   }
-
+  
   .main-chart {
+    position: fixed;
+    top: 3rem;
+    left: 0;
     width: 100%;
-    height: 16rem;
+    background: white;
+    z-index: 100;
   }
 
+  .chart-container,
   .text-container {
-    width: 100%;
+    min-width: 100%;
+    padding-left: 1.7rem;
+  }
+
+  @keyframes sticky-header-move-and-size {
+    from {
+      background-position: 50% 0%;
+      height: 100vh;
+      width: 100%;
+      font-size: calc(3vw + 1rem);
+    }
+
+    to {
+      background-position: 50% 100%;
+      height: 7vh;
+      width: 100%;
+      font-size: 2rem;
+      padding-left: 1rem;
+    }
   }
 }
 </style>
