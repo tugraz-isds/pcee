@@ -60,7 +60,23 @@ yarn clean
 yarn cleanAll
 ```
 
+
+
 ## Licence
 
 PCEE is distributed under the MIT Licence. See [LICENSE](LICENSE) for
 more information.
+
+
+
+## Contributors
+
+- Keith Andrews [kandrews@iicm.edu](mailto:kandrews@iicm.edu?subject=Rslidy)  
+  Project Leader
+
+- Romana Gruber  
+  Master's Thesis, main developer
+
+- Philipp Drescher, Jeremias Kleinschuster, Sebastian Schreiner, Burim Vrella  
+  InfoVis SS 2023 G1
+
