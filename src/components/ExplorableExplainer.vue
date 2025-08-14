@@ -702,14 +702,14 @@ onMounted(async (): Promise<void> => {
     background-position: 50% 0%;
     height: 100vh;
     width: 100%;
-    font-size: calc(3vw + 1rem);
+    font-size: calc(3vw + 2rem);
   }
 
   to {
     background-position: 50% 100%;
     height: 6.5vh;
     width: 100%;
-    font-size: clamp(1rem, 1rem, 2rem);
+    font-size: 2rem;
     padding-left: 1rem;
   }
 }
@@ -761,7 +761,7 @@ onMounted(async (): Promise<void> => {
   position: sticky;
   top: calc(10vh + 2rem);
   width: 100%;
-  padding-top: 2.5rem;
+  padding-top: 3rem;
 }
 
 .text-container {
@@ -958,6 +958,47 @@ figcaption {
   .text-container {
     min-width: 100%;
     padding-left: 1.7rem;
+  }
+
+  @keyframes sticky-header-move-and-size {
+    from {
+      background-position: 50% 0%;
+      height: 100vh;
+      width: 100%;
+      font-size: calc(3vw + 2rem);
+    }
+
+    to {
+      background-position: 50% 100%;
+      height: 7.5vh;
+      width: 100%;
+      font-size: 2rem;
+      padding-left: 1rem;
+    }
+  }
+}
+
+@media (max-width: 600px) {
+
+  .main-chart {
+    top: 1rem;
+  }
+
+  @keyframes sticky-header-move-and-size {
+    from {
+      background-position: 50% 0%;
+      height: 100vh;
+      width: 100%;
+      font-size: calc(3vw + 2rem);
+    }
+
+    to {
+      background-position: 50% 100%;
+      height: 8vh;
+      width: 100%;
+      font-size: 0.5rem;
+      padding-left: 1rem;
+    }
   }
 }
 </style>
