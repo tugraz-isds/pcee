@@ -563,7 +563,7 @@ onMounted(async (): Promise<void> => {
   if (!supportsScrollDrivenAnimations) {
     gsap.to(header.value, {
       height: '6.5vh',
-      fontSize: '2rem',
+      fontSize: '1.3rem',
       backgroundPosition: '50% 100%',
       paddingLeft: '1rem',
       scrollTrigger: {
@@ -680,9 +680,25 @@ onMounted(async (): Promise<void> => {
 }
 
 .use-native {
-  animation: sticky-header-move-and-size linear forwards;
+  animation: sticky-header-move-and-size-desktop linear forwards;
   animation-timeline: scroll();
   animation-range: 0vh 90vh;
+}
+
+@media (max-width: 960px) {
+  .use-native {
+    animation: sticky-header-move-and-size-tablet linear forwards;
+    animation-timeline: scroll();
+    animation-range: 0vh 90vh;
+  }
+}
+
+@media (max-width: 600px) {
+  .use-native {
+    animation: sticky-header-move-and-size-mobile linear forwards;
+    animation-timeline: scroll();
+    animation-range: 0vh 90vh;
+  }
 }
 
 .use-native .multi-line {
@@ -697,12 +713,12 @@ onMounted(async (): Promise<void> => {
   animation-range: 80vh 90vh;
 }
 
-@keyframes sticky-header-move-and-size {
+@keyframes sticky-header-move-and-size-desktop {
   from {
     background-position: 50% 0%;
     height: 100vh;
     width: 100%;
-    font-size: calc(3vw + 2rem);
+    font-size: 3rem;
   }
 
   to {
@@ -712,6 +728,44 @@ onMounted(async (): Promise<void> => {
     font-size: 2rem;
     padding-left: 1rem;
   }
+}
+
+@media (max-width: 960px) {
+  @keyframes sticky-header-move-and-size-tablet {
+  from {
+    background-position: 50% 0%;
+    height: 100vh;
+    width: 100%;
+    font-size: 3rem;
+  }
+
+  to {
+    background-position: 50% 100%;
+    height: 6vh;
+    width: 100%;
+    font-size: 2rem;
+    padding-left: 1rem;
+  }
+}
+}
+
+@media (max-width: 600px) {
+  @keyframes sticky-header-move-and-size-mobile {
+  from {
+    background-position: 50% 0%;
+    height: 100vh;
+    width: 100%;
+    font-size: 2rem;
+  }
+
+  to {
+    background-position: 50% 100%;
+    height: 6.5vh;
+    width: 100%;
+    font-size: 1rem;
+    padding-left: 1.25rem;
+  }
+}
 }
 
 @keyframes multiTextOut {
@@ -960,45 +1014,12 @@ figcaption {
     padding-left: 1.7rem;
   }
 
-  @keyframes sticky-header-move-and-size {
-    from {
-      background-position: 50% 0%;
-      height: 100vh;
-      width: 100%;
-      font-size: calc(3vw + 2rem);
-    }
-
-    to {
-      background-position: 50% 100%;
-      height: 7.5vh;
-      width: 100%;
-      font-size: 2rem;
-      padding-left: 1rem;
-    }
-  }
 }
 
 @media (max-width: 600px) {
 
   .main-chart {
     top: 1rem;
-  }
-
-  @keyframes sticky-header-move-and-size {
-    from {
-      background-position: 50% 0%;
-      height: 100vh;
-      width: 100%;
-      font-size: calc(3vw + 2rem);
-    }
-
-    to {
-      background-position: 50% 100%;
-      height: 8vh;
-      width: 100%;
-      font-size: 0.5rem;
-      padding-left: 1rem;
-    }
   }
 }
 </style>
