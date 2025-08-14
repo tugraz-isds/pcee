@@ -827,13 +827,12 @@ p {
   margin-top: 0.5rem;
 }
 
-
 .table-container {
   flex: 1 1 20rem;
   max-height: 30rem;
   overflow-y: auto;
-  padding-right: 2rem;
   padding-top: 2rem;
+  margin-right: 2rem;
 }
 
 table {
@@ -936,7 +935,7 @@ figcaption {
   margin-top: 0.5rem;
 }
 
-@media (max-width: 60rem) {
+@media (max-width: 960px) {
   .explorable-explainer {
     flex-direction: column;
   }
@@ -948,9 +947,15 @@ figcaption {
     width: 100%;
     background: white;
     z-index: 100;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   }
 
-  .chart-container,
+  .chart-container {
+    min-width: 100%;
+    padding-left: 1.7rem;
+    padding-bottom: 0;
+  }
+
   .text-container {
     min-width: 100%;
     padding-left: 1.7rem;
@@ -961,14 +966,14 @@ figcaption {
       background-position: 50% 0%;
       height: 100vh;
       width: 100%;
-      font-size: calc(3vw + 1rem);
+      font-size: calc(2vw + 1rem);
     }
 
     to {
       background-position: 50% 100%;
       height: 7vh;
       width: 100%;
-      font-size: 2rem;
+      font-size: 1rem;
       padding-left: 1rem;
     }
   }
