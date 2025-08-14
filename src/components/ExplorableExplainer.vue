@@ -645,7 +645,6 @@ onMounted(async (): Promise<void> => {
 
   z-index: 1000;
 
-  font-size: calc(3vw + 1rem);
   padding: 0 5vw;
 
   will-change: transform, height, font-size;
@@ -710,7 +709,7 @@ onMounted(async (): Promise<void> => {
     background-position: 50% 100%;
     height: 6.5vh;
     width: 100%;
-    font-size: 2rem;
+    font-size: clamp(1rem, 1rem, 2rem);
     padding-left: 1rem;
   }
 }
@@ -959,23 +958,6 @@ figcaption {
   .text-container {
     min-width: 100%;
     padding-left: 1.7rem;
-  }
-
-  @keyframes sticky-header-move-and-size {
-    from {
-      background-position: 50% 0%;
-      height: 100vh;
-      width: 100%;
-      font-size: calc(2vw + 1rem);
-    }
-
-    to {
-      background-position: 50% 100%;
-      height: 7vh;
-      width: 100%;
-      font-size: 1rem;
-      padding-left: 1rem;
-    }
   }
 }
 </style>
