@@ -78,5 +78,5 @@ more information.
   Master's Thesis, main developer
 
 - Philipp Drescher, Jeremias Kleinschuster, Sebastian Schreiner, Burim Vrella  
-  InfoVis SS 2023 G1
+  InfoVis SS 2023 G1, prepared original students dataset
 
