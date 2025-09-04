@@ -42,14 +42,7 @@
     <div class="text-container">
       <div v-html="introText" />
       <div v-html="dataText" />
-      <div v-html="healthDatasetText" />
-
       <div class="table-container">
-        <p>
-          <!--<button @click="toggleTable">
-            {{ showTable ? 'Hide Heart Health Data' : 'Show Heart Health Data' }}
-          </button>-->
-        </p>
         <div v-if="showTable">
           <table border="1">
             <thead>
@@ -59,8 +52,22 @@
                   :key="column.key"
                 >
                   {{ column.label }}
+                  <button
+                    class="delete-button"
+                    @click="deleteColumn(column.key)"
+                  >
+                    -
+                  </button>
                 </th>
-                <th />
+                <th class="narrow-column">
+                  <!-- Add Column Button -->
+                  <button
+                    class="add-button"
+                    @click="openModal"
+                  >
+                    +
+                  </button>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -71,45 +78,45 @@
                 <td
                   v-for="column in columns"
                   :key="column.key"
+                  :class="{
+                    'text-right': column.type === 'number',
+                    'text-left': column.type === 'string'
+                  }"
                 >
                   <input
                     v-model="row[column.key]"
                     type="text"
+                    :class="{
+                      'text-right': column.type === 'number',
+                      'text-left': column.type === 'string'
+                    }"
                   >
                 </td>
-                <td>
+                <td class="narrow-column">
+                  <!-- Delete Row Button -->
                   <button
                     class="delete-button"
                     @click="deleteRow(rowIndex)"
                   >
-                    Delete
+                    -
+                  </button>
+                </td>
+              </tr>
+              <!-- Add Row Button -->
+              <tr>
+                <td :colspan="columns.length" />
+                <td class="narrow-column">
+                  <button
+                    class="add-button"
+                    @click="addRow"
+                  >
+                    +
                   </button>
                 </td>
               </tr>
             </tbody>
-            <tfoot>
-              <tr>
-                <td
-                  v-for="column in columns"
-                  :key="column.key"
-                >
-                  <button
-                    class="delete-button"
-                    @click="deleteColumn(column.key)"
-                  >
-                    Delete {{ column.label }}
-                  </button>
-                </td>
-                <td />
-              </tr>
-            </tfoot>
           </table>
-          <button @click="addRow">
-            Add Row
-          </button>
-          <button @click="openModal">
-            Add Column
-          </button>
+
           <button
             :disabled="!isFormValid"
             @click="redrawChart"
@@ -119,6 +126,8 @@
           <button @click="resetTable">
             Reset Table
           </button>
+
+          <!-- Modal -->
           <div
             v-if="isModalOpen"
             class="modal"
@@ -146,7 +155,9 @@
           </div>
         </div>
       </div>
+
       <div v-html="interactivityText" />
+      <div v-html="healthDatasetText" />
       <div v-html="usageText" />
       <div v-html="caseStudy1Text" />
       <div v-html="caseStudy2Text" />
@@ -158,7 +169,7 @@
 import { ref, onMounted, computed, nextTick, type Ref } from 'vue';
 import * as spcd3 from '../spcd3.js';
 import scrollama from 'scrollama';
-import { originalColumns, originalRows } from '../data.js';
+import { columnsBudget, rowsBudget } from '../data.js';
 import gsap from 'gsap'
 import ScrollTrigger from 'gsap/ScrollTrigger'
 
@@ -167,6 +178,7 @@ gsap.registerPlugin(ScrollTrigger);
 interface Column {
   key: string
   label: string
+  type: string
 }
 
 type Row = Record<string, unknown>;
@@ -179,14 +191,16 @@ const caseStudy1Text = ref('');
 const caseStudy2Text = ref('');
 const healthDatasetText = ref('');
 const studentDatasetText = ref('');
+//const budgetDatasetText = ref('');
 const textArea = ref(null);
 const healthDataset = ref('');
 const studentDataset = ref('');
+const budgetDataset = ref('');
 const isModalOpen = ref(false);
 const newColumn = ref('');
 const showTable = ref(true);
-const columns = ref<Column[]>(structuredClone(originalColumns));
-const rows = ref<Row[]>(structuredClone(originalRows));
+const columns = ref<Column[]>(structuredClone(columnsBudget));
+const rows = ref<Row[]>(structuredClone(rowsBudget));
 const scroller = scrollama();
 const header = ref<HTMLElement | null>(null);
 const multiLine = ref<HTMLElement | null>(null);
@@ -246,11 +260,14 @@ const selectOutlier = (): void => {
 const showPositiveCorrelation = (): void => {
   if (spcd3.getInversionStatus('Age') == 'descending') {
     spcd3.setInversionStatus('Age', 'ascending');
-    spcd3.hideMarker('Age');
   }
   else {
-    spcd3.setInversionStatus('Age', 'descending');
     spcd3.showMarker('Age');
+    spcd3.setInversionStatus('Age', 'descending');
+    // eslint-disable-next-line no-undef
+    setTimeout(() => {
+    spcd3.hideMarker('Age');
+  }, 1000); 
   }
 }
 
@@ -368,9 +385,9 @@ const closeModal = (): void => {
 
 const addColumn = (): void => {
   const trimmed = newColumn.value.trim();
-  let newCol: Column = {key: '', label: ''};
+  let newCol: Column = {key: '', label: '', type: ''};
   if (trimmed) {
-    newCol = { key: trimmed, label: trimmed };
+    newCol = { key: trimmed, label: trimmed, type: 'number' };
   }
   columns.value.push(newCol);
   rows.value.forEach(row => {
@@ -406,8 +423,8 @@ const redrawChart = (): void => {
 };
 
 const resetTable = (): void => {
-  columns.value = structuredClone(originalColumns);
-  rows.value = structuredClone(originalRows);
+  columns.value = structuredClone(columnsBudget);
+  rows.value = structuredClone(rowsBudget);
   redrawChart();
 }
 
@@ -462,10 +479,10 @@ const loadDataset = async (filePath: string): Promise<string> => {
 };
 
 const handleStepEnter = (element: number): void => {
-  if (element == 2) {
-    // do nothing
+  if (element == 0) {
+    redrawChart()
   }
-  else if (element == 1) {
+  else if (element == 2) {
     (document.getElementById('outlier-button') as HTMLButtonElement).disabled = true;
     (document.getElementById('correlation-button') as HTMLButtonElement).disabled = true;
     (document.getElementById('correlation-neg-button') as HTMLButtonElement).disabled = true;
@@ -475,8 +492,8 @@ const handleStepEnter = (element: number): void => {
     (document.getElementById('move-button') as HTMLButtonElement).disabled = false;
     (document.getElementById('invert-button') as HTMLButtonElement).disabled = false;
     drawChart(studentDataset.value);
-  } else if (element == 0) {
-    redrawChart();
+  } else if (element == 1) {
+    drawChart(healthDataset.value);
     if ((document.getElementById('outlier-button') as HTMLButtonElement).textContent === 'Unselect Outlier') {
       spcd3.setSelected('Patient F');
     }
@@ -512,8 +529,9 @@ const getCurrentStepIndex = (): number => {
 
 
 const getDatasetForStep = (step: number): string | undefined => {
-  if (step == 0) return healthDataset.value;
-  if (step == 1) return studentDataset.value;
+  if (step == 0) return budgetDataset.value;
+  if (step == 1) return healthDataset.value;
+  if (step == 2) return studentDataset.value;
 }
 
 window.addEventListener('scroll', (): void => {
@@ -522,7 +540,7 @@ window.addEventListener('scroll', (): void => {
   if (currentStep !== lastStep) {
     lastStep = currentStep;
     const dataset = getDatasetForStep(currentStep);
-    if (currentStep === 0) {
+    if (currentStep === 1) {
       (document.getElementById('outlier-button') as HTMLButtonElement).disabled = false;
       (document.getElementById('correlation-button') as HTMLButtonElement).disabled = false;
       (document.getElementById('correlation-neg-button') as HTMLButtonElement).disabled = false;
@@ -547,7 +565,8 @@ window.addEventListener('scroll', (): void => {
 
 onMounted(async (): Promise<void> => {
   healthDataset.value = await loadDataset('data/healthdata.csv');
-  drawChart(healthDataset.value);
+  budgetDataset.value = await loadDataset('data/budget.csv');
+  drawChart(budgetDataset.value);
   studentDataset.value = await loadDataset('data/student-marks.csv');
   loadContent(introText, 'content/introduction.html');
   loadContent(dataText, 'content/data.html');
@@ -816,6 +835,9 @@ onMounted(async (): Promise<void> => {
   top: calc(10vh + 2rem);
   width: 100%;
   padding-top: 3rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .text-container {
@@ -890,7 +912,64 @@ p {
 
 table {
   text-align: justify;
+  width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
+}
+
+th, td {
+  position: relative;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0.5rem 0.75rem;
+}
+
+th .delete-button,
+th .add-button,
+td .delete-button,
+td .add-button {
+  border: none;
+  background: #eee;
+  border-radius: 50%;
+  width: 1.2rem;
+  height: 1.2rem;
+  line-height: 1.2rem;
+  text-align: center;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0;
+}
+
+th .delete-button {
+  position: absolute;
+  top: 0.2rem;
+  right: 0.2rem;
+}
+
+th .add-button {
+  display: block;
+  margin: 0 auto;
+}
+
+td .delete-button {
+  display: block;
+  margin: 0 auto;
+}
+
+td .add-button {
+  display: block;
+  margin: 0 auto;
+}
+
+.narrow-column {
+  width: 2.5rem;
+  text-align: center;
+}
+
+.narrow-column button {
+  margin: 0 auto;
+  display: block;
 }
 
 td {
@@ -911,6 +990,13 @@ tfoot button {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.text-left {
+  text-align: left;
+}
+.text-right {
+  text-align: right;
 }
 
 input[type="text"] {

@@ -1,13 +1,11 @@
-import { ref } from 'vue';
-
 export const originalColumns = [
-    {key: 'Patient', label: 'Patient'},
-    {key: 'Age', label: 'Age'}, 
-    {key: 'BloodPressure', label: 'Blood Pressure'},
-    {key: 'HeartRate', label: 'Heart Rate'},
-    {key: 'BMI', label: 'BMI'},
-    {key: 'Cholesterol', label: 'Cholesterol'},
-    {key: 'FitnessScore', label: 'Fitness Score'}
+    {key: 'Patient', label: 'Patient', type: 'string'},
+    {key: 'Age', label: 'Age', type: 'number'}, 
+    {key: 'BloodPressure', label: 'Blood Pressure', type: 'number'},
+    {key: 'HeartRate', label: 'Heart Rate', type: 'number'},
+    {key: 'BMI', label: 'BMI', type: 'number'},
+    {key: 'Cholesterol', label: 'Cholesterol', type: 'number'},
+    {key: 'FitnessScore', label: 'Fitness Score', type: 'number'}
   ];
 
   export const originalRows = [
@@ -19,19 +17,19 @@ export const originalColumns = [
   { Patient: 'Patient F', Age: 70, BloodPressure: 180, HeartRate: 60, BMI: 35, Cholesterol: 800, FitnessScore: 50 }
   ];
 
-  export const columnsStudent = ref([
-    {key: 'Name', label: 'Name'},
-    {key: 'Maths', label: 'Maths'}, 
-    {key: 'English', label: 'English'},
-    {key: 'PE', label: 'PE'},
-    {key: 'Art', label: 'Art'},
-    {key: 'History', label: 'History'},
-    {key: 'IT', label: 'IT'},
-    {key: 'Biology', label: 'Biology'},
-    {key: 'German', label: 'German'}
-  ]);
+  export const columnsStudent = [
+    {key: 'Name', label: 'Name', type: 'string'},
+    {key: 'Maths', label: 'Maths', type: 'number'}, 
+    {key: 'English', label: 'English', type: 'number'},
+    {key: 'PE', label: 'PE', type: 'number'},
+    {key: 'Art', label: 'Art', type: 'number'},
+    {key: 'History', label: 'History', type: 'number'},
+    {key: 'IT', label: 'IT', type: 'number'},
+    {key: 'Biology', label: 'Biology', type: 'number'},
+    {key: 'German', label: 'German', type: 'number'}
+  ];
 
-  export const rowsStudent = ref([
+  export const rowsStudent = [
   { Name: 'Adrian', Maths: 95, English: 24, PE: 82, Art: 49, History: 58, IT: 85, Biology: 21, German: 24 },
   { Name: 'Amelia', Maths: 45, English: 120, PE: 72, Art: 25, History: 200, IT: 85, Biology: 21, German: 24 },
   { Name: 'Patient A', Maths: 45, English: 120, PE: 72, Art: 25, History: 200, IT: 85, Biology: 21, German: 24 },
@@ -62,4 +60,21 @@ export const originalColumns = [
   { Name: 'Patient A', Maths: 45, English: 120, PE: 72, Art: 25, History: 200, IT: 85, Biology: 21, German: 24 },
   { Name: 'Patient A', Maths: 45, English: 120, PE: 72, Art: 25, History: 200, IT: 85, Biology: 21, German: 24 },
   { Name: 'Patient A', Maths: 45, English: 120, PE: 72, Art: 25, History: 200, IT: 85, Biology: 21, German: 24 }
-  ]);
+  ];
+
+  export const columnsBudget = [
+    {key: 'Name', label: 'Name', type: 'string'},
+    {key: 'Income', label: 'Income', type: 'number'}, 
+    {key: 'FixedCosts', label: 'Fixed Costs', type: 'number'},
+    {key: 'Savings', label: 'Savings', type: 'number'},
+    {key: 'Debt', label: 'Debt', type: 'number'}
+  ];
+
+  export const rowsBudget = [
+  { Name: 'Alice',   Income: 3500, FixedCosts: 1200, Savings: 500,  Debt: 2000 },
+  { Name: 'Bob',     Income: 2800, FixedCosts: 900,  Savings: 300,  Debt: 1500 },
+  { Name: 'Charlie', Income: 4200, FixedCosts: 1500, Savings: 700,  Debt: 1000 },
+  { Name: 'Fiona',   Income: 2700, FixedCosts: 800,  Savings: 200,  Debt: 1800 },
+  { Name: 'Ursula',  Income: 6000, FixedCosts: 2500, Savings: 200,  Debt: 4500 },
+  { Name: 'Victor',  Income: 3400, FixedCosts: 1100, Savings: 900,  Debt: 400 }
+]

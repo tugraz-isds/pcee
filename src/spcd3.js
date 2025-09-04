@@ -1,5 +1,6 @@
 // SPCD3 version 1.0.0 ESM
 /* eslint-disable */
+
 var xhtml = "http://www.w3.org/1999/xhtml";
 
 var namespaces = {
@@ -5219,7 +5220,7 @@ function brushDown(cleanDimensionName, event, d, parcoords, active, tooltipValue
     if (!isNaN(parcoords.yScales[d.name].domain()[0])) {
         setToolTipBrush(tooltipValues, d, event, parcoords, window, true);
     }
-    updateLines(parcoords, active, d.name, cleanDimensionName);
+    updateLines(parcoords, d.name, cleanDimensionName);
 }
 function brushUp(cleanDimensionName, event, d, parcoords, active, tooltipValues, window) {
     const yPosTop = Number(select$1('#triangle_down_' + cleanDimensionName).attr('y'));
@@ -5252,7 +5253,7 @@ function brushUp(cleanDimensionName, event, d, parcoords, active, tooltipValues,
     if (!isNaN(parcoords.yScales[d.name].domain()[0])) {
         setToolTipBrush(tooltipValues, d, event, parcoords, window, false);
     }
-    updateLines(parcoords, active, d.name, cleanDimensionName);
+    updateLines(parcoords, d.name, cleanDimensionName);
 }
 function dragAndBrush(cleanDimensionName, d, svg, event, parcoords, active, delta, tooltipValuesTop, tooltipValuesDown, window) {
     let yPosTop;
@@ -5308,7 +5309,7 @@ function dragAndBrush(cleanDimensionName, d, svg, event, parcoords, active, delt
             const dimNameToCheck = select$1('.' + currentLine).text();
             const emptyString = '';
             if (value < yPosRect || value > yPosRect + rectHeight) {
-                makeInactive(currentLine, dimensionName);
+                makeInactive(currentLine, dimensionName, 300);
             }
             else if (dimNameToCheck == dimensionName && dimNameToCheck != emptyString) {
                 let checkedLines = [];
@@ -5319,7 +5320,7 @@ function dragAndBrush(cleanDimensionName, d, svg, event, parcoords, active, delt
                     }
                 });
                 if (!checkedLines.includes(currentLine)) {
-                    makeActive(currentLine);
+                    makeActive(currentLine, 300);
                 }
             }
             else ;
@@ -5346,17 +5347,17 @@ function filter(dimensionName, topValue, bottomValue, parcoords) {
     addPosition(bottomPosition, parcoords.currentPosOfDims, dimensionName, 'bottom');
     select$1('#rect_' + cleanDimensionName)
         .transition()
-        .duration(300)
+        .duration(1000)
         .attr('y', topPosition)
         .attr('height', rectHeight)
         .style('opacity', 0.3);
     select$1('#triangle_down_' + cleanDimensionName)
         .transition()
-        .duration(300)
+        .duration(1000)
         .attr('y', topPosition - 10);
     select$1('#triangle_up_' + cleanDimensionName)
         .transition()
-        .duration(300)
+        .duration(1000)
         .attr('y', bottomPosition);
     let active = select$1('g.active').selectAll('path');
     const rangeTop = topPosition - 10;
@@ -5377,17 +5378,17 @@ function filter(dimensionName, topValue, bottomValue, parcoords) {
         const emptyString = '';
         if (value < rangeTop + 10 || value > rangeBottom) {
             if (dimNameToCheck == emptyString) {
-                makeInactive(currentLine, dimensionName);
+                makeInactive(currentLine, dimensionName, 1000);
             }
         }
         else if (value == 320 && value == rangeTop + 10 && value == rangeBottom) {
             if (dimNameToCheck == emptyString) {
-                makeInactive(currentLine, dimensionName);
+                makeInactive(currentLine, dimensionName, 1000);
             }
         }
         else if (value == 80 && value == rangeTop + 10 && value == rangeBottom) {
             if (dimNameToCheck == emptyString) {
-                makeInactive(currentLine, dimensionName);
+                makeInactive(currentLine, dimensionName, 1000);
             }
         }
         else if (dimNameToCheck == dimensionName && dimNameToCheck != emptyString) {
@@ -5399,7 +5400,7 @@ function filter(dimensionName, topValue, bottomValue, parcoords) {
                 }
             });
             if (!checkedLines.includes(currentLine)) {
-                makeActive(currentLine);
+                makeActive(currentLine, 1000);
             }
         }
         else ;
@@ -5450,7 +5451,7 @@ function setToolTipBrush(tooltipValues, d, event, parcoords, window, direction) 
     const digs = getSigDig(d.name, parcoords.currentPosOfDims);
     tooltipValues.text(Math.round(tooltipValue.toPrecision(digs).toLocaleString('en-GB') * 10) / 10);
     tooltipValues.style('visibility', 'visible');
-    tooltipValues.style('top', window.event.clientY + 'px').style('left', window.event.clientX + 'px');
+    tooltipValues.style('top', window.event.pageY + 'px').style('left', window.event.pageX + 'px');
     tooltipValues.style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
         .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
         .style('padding', 0.12 + 'rem').style('white-space', 'pre-line')
@@ -5482,7 +5483,7 @@ function setToolTipDragAndBrush(tooltipValuesTop, tooltipValuesDown, d, parcoord
     else {
         tooltipValuesTop.text(Math.round(tooltipValueTop));
         tooltipValuesTop.style('visibility', 'visible');
-        tooltipValuesTop.style('top', Number(yPosTop + 180) + 'px').style('left', window.event.clientX + 'px');
+        tooltipValuesTop.style('top', Number(yPosTop + 180) + 'px').style('left', window.event.pageX + 'px');
         tooltipValuesTop.style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
             .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
             .style('padding', 0.12 + 'rem').style('white-space', 'pre-line')
@@ -5494,14 +5495,14 @@ function setToolTipDragAndBrush(tooltipValuesTop, tooltipValuesDown, d, parcoord
     else {
         tooltipValuesDown.text(Math.round(tooltipValueBottom));
         tooltipValuesDown.style('visibility', 'visible');
-        tooltipValuesDown.style('top', Number(yPosBottom + 180) + 'px').style('left', window.event.clientX + 'px');
+        tooltipValuesDown.style('top', Number(yPosBottom + 180) + 'px').style('left', window.event.pageX + 'px');
         tooltipValuesDown.style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
             .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
             .style('padding', 0.12 + 'rem').style('white-space', 'pre-line')
             .style('background-color', 'LightGray').style('margin-left', 0.5 + 'rem');
     }
 }
-function updateLines(parcoords, active, dimensionName, cleanDimensionName) {
+function updateLines(parcoords, dimensionName, cleanDimensionName) {
     const rangeTop = Number(select$1('#triangle_down_' + cleanDimensionName).attr('y'));
     const rangeBottom = Number(select$1('#triangle_up_' + cleanDimensionName).attr('y'));
     const invertStatus = getInvertStatus(dimensionName, parcoords.currentPosOfDims);
@@ -5510,6 +5511,7 @@ function updateLines(parcoords, active, dimensionName, cleanDimensionName) {
     const minValue = invertStatus == false ? parcoords.yScales[dimensionName].domain()[0] :
         parcoords.yScales[dimensionName].domain()[1];
     const range = maxValue - minValue;
+    let active = select$1('g.active').selectAll('path');
     active.each(function (d) {
         let value;
         if (invertStatus) {
@@ -5525,17 +5527,17 @@ function updateLines(parcoords, active, dimensionName, cleanDimensionName) {
         const emptyString = '';
         if (value < rangeTop + 10 || value > rangeBottom) {
             if (dimNameToCheck == emptyString) {
-                makeInactive(currentLine, dimensionName);
+                makeInactive(currentLine, dimensionName, 300);
             }
         }
         else if (value == 320 && value == rangeTop + 10 && value == rangeBottom) {
             if (dimNameToCheck == emptyString) {
-                makeInactive(currentLine, dimensionName);
+                makeInactive(currentLine, dimensionName, 300);
             }
         }
         else if (value == 80 && value == rangeTop + 10 && value == rangeBottom) {
             if (dimNameToCheck == emptyString) {
-                makeInactive(currentLine, dimensionName);
+                makeInactive(currentLine, dimensionName, 300);
             }
         }
         else if (dimNameToCheck == dimensionName && dimNameToCheck != emptyString) {
@@ -5547,7 +5549,7 @@ function updateLines(parcoords, active, dimensionName, cleanDimensionName) {
                 }
             });
             if (!checkedLines.includes(currentLine)) {
-                makeActive(currentLine);
+                makeActive(currentLine, 300);
             }
         }
         else ;
@@ -5597,11 +5599,11 @@ function checkAllPositionsBottom(positionItem, dimensionName, parcoords, d, chec
         }
     }
 }
-function makeActive(currentLineName) {
+function makeActive(currentLineName, duration) {
     if (select$1('.' + currentLineName).classed('selected')) {
         select$1('.' + currentLineName)
             .transition()
-            .duration(300)
+            .duration(duration)
             .style('pointer-events', 'stroke')
             .style('stroke', 'rgb(255, 165, 0)')
             .style('opacity', '1')
@@ -5610,17 +5612,17 @@ function makeActive(currentLineName) {
     else {
         select$1('.' + currentLineName)
             .transition()
-            .duration(300)
+            .duration(duration)
             .style('pointer-events', 'stroke')
             .style('stroke', 'rgb(0, 129, 175)')
             .style('opacity', '0.5')
             .text('');
     }
 }
-function makeInactive(currentLineName, dimensionName) {
+function makeInactive(currentLineName, dimensionName, duration) {
     select$1('.' + currentLineName)
         .transition()
-        .duration(300)
+        .duration(duration)
         .style('pointer-events', 'none')
         .style('stroke', 'lightgrey')
         .style('opacity', '0.4')
@@ -5638,66 +5640,29 @@ function addSettingsForBrushing(dimensionName, parcoords, invertStatus, filter) 
         return invertStatus ? 240 / range * (value - minValue) + 80 :
             240 / range * (maxValue - value) + 80;
     };
-    let topPosition = invertStatus ? scaleValue(filter[0]) : scaleValue(filter[1]);
-    let bottomPosition = invertStatus ? scaleValue(filter[1]) : scaleValue(filter[0]);
-    let rectHeight = bottomPosition - topPosition;
+    const dimensionSettings = parcoords.currentPosOfDims.find((d) => d.key === processedName);
+    var top = invertStatus ? scaleValue(dimensionSettings.currentFilterTop) : scaleValue(dimensionSettings.currentFilterBottom);
+    var bottom = invertStatus ? scaleValue(dimensionSettings.currentFilterBottom) : scaleValue(dimensionSettings.currentFilterTop);
+    var rectH = bottom - top;
     const rect = select$1('#rect_' + processedName);
     const triDown = select$1('#triangle_down_' + processedName);
     const triUp = select$1('#triangle_up_' + processedName);
     const rectNode = rect.node();
     if (!rectNode)
         return;
-    const bounds = { top: 80, bottom: 320, height: 240 };
-    if (topPosition > bounds.top && bottomPosition < bounds.bottom) {
-        const distBottom = bounds.bottom - Number(triUp.attr('y'));
-        const newY = bounds.top + distBottom;
-        rect.transition()
-            .duration(300)
-            .attr('y', newY)
-            .attr('height', rectHeight)
-            .style('opacity', 0.3);
-        triDown.transition()
-            .duration(300)
-            .attr('y', newY - 10);
-        triUp.transition()
-            .duration(300)
-            .attr('y', bottomPosition);
-        addPosition(newY, parcoords.currentPosOfDims, dimensionName, 'top');
-        addPosition(bottomPosition, parcoords.currentPosOfDims, dimensionName, 'bottom');
-    }
-    else if (topPosition > bounds.top && bottomPosition >= bounds.bottom) {
-        const newHeight = bounds.height - (topPosition - bounds.top);
-        rect.transition()
-            .duration(300)
-            .attr('y', bounds.top)
-            .attr('height', newHeight)
-            .style('opacity', 0.3);
-        triDown.transition()
-            .duration(300)
-            .attr('y', bounds.top - 10);
-        triUp.transition()
-            .duration(300)
-            .attr('y', bounds.bottom - (topPosition - bounds.top));
-        addPosition(bounds.top, parcoords.currentPosOfDims, dimensionName, 'top');
-        addPosition(bounds.bottom - (topPosition - bounds.top), parcoords.currentPosOfDims, dimensionName, 'bottom');
-    }
-    else if (topPosition <= bounds.top && bottomPosition < bounds.bottom) {
-        const newY = bounds.bottom - rectHeight;
-        const newHeight = bounds.height - (bounds.bottom - bottomPosition);
-        rect.transition()
-            .duration(300)
-            .attr('y', newY)
-            .attr('height', newHeight)
-            .style('opacity', 0.3);
-        triDown.transition()
-            .duration(300)
-            .attr('y', bounds.top + (bounds.bottom - bottomPosition) - 10);
-        triUp.transition()
-            .duration(300)
-            .attr('y', bounds.bottom);
-        addPosition(bounds.top + (bounds.bottom - bottomPosition), parcoords.currentPosOfDims, dimensionName, 'top');
-        addPosition(bounds.bottom, parcoords.currentPosOfDims, dimensionName, 'bottom');
-    }
+    rect.transition()
+        .duration(300)
+        .attr('y', top)
+        .attr('height', rectH)
+        .style('opacity', 0.3);
+    triDown.transition()
+        .duration(300)
+        .attr('y', top - 10);
+    triUp.transition()
+        .duration(300)
+        .attr('y', bottom);
+    addPosition(top, parcoords.currentPosOfDims, dimensionName, 'top');
+    addPosition(bottom, parcoords.currentPosOfDims, dimensionName, 'bottom');
 }
 function getInvertStatus(key, currentPosOfDims) {
     const item = currentPosOfDims.find((object) => object.key == key);
@@ -7936,38 +7901,31 @@ function getAllVisibleDimensionNames$1() {
 }
 function createToolTipForValues(recordData) {
     const dimensions = getAllVisibleDimensionNames$1();
-    let counter = 0;
-    const rectLeft = select$1('#rect_' + cleanString(dimensions[0]))?.node()?.getBoundingClientRect().left;
-    const rectTop = select$1('#rect_' + cleanString(dimensions[0]))?.node()?.getBoundingClientRect().top;
-    select$1('#rect_' + cleanString(dimensions[0]))?.node()?.getBoundingClientRect().bottom;
-    const xScale1 = parcoords.xScales(dimensions[0]);
-    const xScale2 = parcoords.xScales(dimensions[1]);
-    const range = xScale2 - xScale1;
+    const svg = select$1('#pc_svg').node();
     dimensions.forEach(dimension => {
         const cleanString$1 = cleanString(dimension);
         if (isElementVisible(select$1('#rect_' + cleanString$1))) {
-            const tooltipValues = select$1('#parallelcoords')
-                .append('g')
-                .attr('class', 'tooltip')
+            const yScale = parcoords.yScales[dimension];
+            const x = parcoords.xScales(dimension);
+            const y = yScale(recordData[dimension]);
+            const pt = svg.createSVGPoint();
+            pt.x = x;
+            pt.y = y;
+            const screenPoint = pt.matrixTransform(svg.getScreenCTM());
+            select$1('body')
+                .append('div')
+                .attr('class', 'tooltip-div')
                 .style('position', 'absolute')
-                .style('visibility', 'hidden');
-            const scale = parcoords.yScales[dimension];
-            let value = scale(recordData[dimension]);
-            const x = rectLeft + counter * range;
-            const y = rectTop + value - 100;
-            tooltipValues.text(recordData[dimension].toString())
-                .style('visibility', 'visible')
-                .style('top', `${y}px`)
-                .style('left', `${x}px`)
+                .style('left', `${screenPoint.x}px`)
+                .style('top', `${screenPoint.y}px`)
                 .style('font-size', '0.65rem')
                 .style('margin', '0.5rem')
                 .style('color', 'red')
                 .style('background-color', '#d3d3d3ad')
                 .style('font-weight', 'bold')
                 .style('padding', '0.12rem')
-                .style('white-space', 'pre-line')
-                .style('margin-left', '0.5rem');
-            counter++;
+                .style('white-space', 'nowrap')
+                .text(recordData[dimension].toString());
         }
     });
 }
@@ -8003,11 +7961,10 @@ function position(dimensionName, dragging, xScales) {
     return value == null ? xScales(dimensionName) : value;
 }
 function cleanTooltip() {
-    selectAll(".tooltip")
-        .remove();
+    selectAll('.tooltip-div').remove();
 }
 
-function setContextMenu(featureAxis, padding, parcoords, active, width) {
+function setContextMenu(featureAxis, padding, parcoords, width) {
     createContextMenu();
     createModalToSetRange();
     createModalToFilter();
@@ -8026,8 +7983,8 @@ function setContextMenu(featureAxis, padding, parcoords, active, width) {
         .style('font-size', '0.7rem')
         .call(drag()
         .on('start', onDragStartEventHandler(parcoords))
-        .on('drag', onDragEventHandler(parcoords, featureAxis, active, width))
-        .on('end', onDragEndEventHandler(parcoords, featureAxis, active)))
+        .on('drag', onDragEventHandler(parcoords, featureAxis, width))
+        .on('end', onDragEndEventHandler(parcoords, featureAxis)))
         .on('mouseover', function () {
         return tooltipFeatures.style('visibility', 'visible');
     })
@@ -8203,6 +8160,7 @@ function filterMenu(values, dimension) {
                 select$1('#modalFilter').style('display', 'none');
                 select$1('#modalOverlayFilter').style('display', 'none');
             });
+            select$1('#contextmenu').style('display', 'none');
             event.stopPropagation();
         });
     }
@@ -8335,6 +8293,7 @@ function setRangeMenu(values, dimension) {
                 select$1('#modalSetRange').style('display', 'none');
                 select$1('#modalOverlaySetRange').style('display', 'none');
             });
+            select$1('#contextmenu').style('display', 'none');
             event.stopPropagation();
         });
     }
@@ -8348,6 +8307,7 @@ function invertDimensionMenu(dimension) {
     select$1('#invertMenu')
         .on('click', (event) => {
         invert(dimension);
+        select$1('#contextmenu').style('display', 'none');
         event.stopPropagation();
     });
 }
@@ -8361,9 +8321,13 @@ function hideDimensionMenu(dimension) {
     });
 }
 function styleContextMenu(event) {
+    const container = document.querySelector("#parallelcoords");
+    const rect = container.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
     select$1('#contextmenu')
-        .style('left', event.clientX / 16 + 'rem')
-        .style('top', 13.6 + 'rem')
+        .style('left', x + 'px')
+        .style('top', y + 'px')
         .style('display', 'block')
         .style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
         .style('border-radius', 0.3 + 'rem').style('margin', 0.5 + 'rem')
@@ -8403,7 +8367,7 @@ function onDragStartEventHandler(parcoords) {
         };
     }
 }
-function onDragEventHandler(parcoords, featureAxis, active, width) {
+function onDragEventHandler(parcoords, featureAxis, width) {
     {
         return function onDrag(d) {
             if (timer !== null) {
@@ -8412,6 +8376,7 @@ function onDragEventHandler(parcoords, featureAxis, active, width) {
             }
             timer = setInterval(() => { scroll(parcoords, d); });
             parcoords.dragging[(d.subject).name] = Math.min(width - paddingXaxis, Math.max(paddingXaxis, this.__origin__ += d.x));
+            let active = select$1('g.active').selectAll('path');
             active.each(function (d) {
                 select$1(this)
                     .attr('d', linePath(d, parcoords.newFeatures, parcoords));
@@ -8427,7 +8392,7 @@ function onDragEventHandler(parcoords, featureAxis, active, width) {
         };
     }
 }
-function onDragEndEventHandler(parcoords, featureAxis, active) {
+function onDragEndEventHandler(parcoords, featureAxis) {
     {
         return function onDragEnd(d) {
             const width = parcoords.width;
@@ -8446,6 +8411,7 @@ function onDragEndEventHandler(parcoords, featureAxis, active) {
             delete this.__origin__;
             delete parcoords.dragging[(d.subject).name];
             delete parcoords.dragPosStart[(d.subject).name];
+            let active = select$1('g.active').selectAll('path');
             trans(active).each(function (d) {
                 select$1(this)
                     .attr('d', linePath(d, parcoords.newFeatures, parcoords));
@@ -9301,6 +9267,16 @@ function setOptionsAndDownload(svgString) {
     title.style.marginBottom = '0.5rem';
     title.style.background = 'lightgrey';
     title.style.textAlign = 'left';
+    const closeButton = document.createElement('span');
+    closeButton.innerHTML = '&times;';
+    closeButton.style.padding = '0.5rem';
+    closeButton.style.marginBottom = '0.5rem';
+    closeButton.style.marginLeft = '9rem';
+    closeButton.style.cursor = 'pointer';
+    closeButton.style.fontWeight = 'bold';
+    closeButton.style.fontSize = '1.25rem';
+    closeButton.style.textAlign = 'right';
+    title.append(closeButton);
     modal.append(title);
     const form = document.createElement('div');
     form.style.display = 'flex';
@@ -9385,6 +9361,9 @@ function setOptionsAndDownload(svgString) {
         if (e.target === modalOverlay) {
             document.body.removeChild(modalOverlay);
         }
+    });
+    closeButton.addEventListener('click', () => {
+        document.body.removeChild(modalOverlay);
     });
 }
 function getImageTag(key, svg) {
@@ -9617,29 +9596,28 @@ function downloadCSV(dataArray, filename = 'data.csv') {
 //******** API ********//
 //---------- Show and Hide Functions ----------
 function hide(dimension) {
-    const newDimensions = window.parcoords.newFeatures.filter(d => d !== dimension);
-    const featureSet = window.parcoords.features.filter(d => d.name !== dimension);
+    const newDimensions = window.parcoords.newFeatures.filter((d) => d !== dimension);
+    const featureSet = window.parcoords.features.filter((d) => d.name !== dimension);
     window.parcoords.features = featureSet;
     window.parcoords.newFeatures = newDimensions;
     const oldxScales = window.parcoords.xScales.copy();
     window.parcoords.xScales.domain(newDimensions);
     selectAll('.dimensions')
-        .filter(d => newDimensions.includes(d.name || d))
+        .filter((d) => newDimensions.includes(d.name || d))
         .transition()
-        .duration(1000)
-        .attr('transform', (d) => 'translate(' + position(d.name || d, parcoords.dragging, parcoords.xScales) + ')')
-        .ease(cubicInOut);
+        .duration(1500)
+        .attr('transform', (d) => 'translate(' + position(d.name || d, parcoords.dragging, parcoords.xScales) + ')');
     selectAll('.dimensions')
         .filter((d) => d.name === dimension)
         .transition()
-        .duration(500)
+        .duration(1500)
         .style('opacity', 0)
         .on('end', function () {
         select$1(this).attr('visibility', 'hidden');
     });
     select$1('g.active').selectAll('path')
         .transition()
-        .duration(1000)
+        .duration(1500)
         .attrTween('d', (d) => generateLineTween(oldxScales, window.parcoords.xScales, newDimensions, window.parcoords.yScales)(d));
 }
 function generateLineTween(oldXscales, newXscales, newDimensions, yScales) {
@@ -9662,16 +9640,17 @@ function show(dimension) {
     window.parcoords.xScales.domain(window.parcoords.newFeatures);
     selectAll('.dimensions')
         .filter((d) => (typeof d === "object" ? d.name : d) === dimension)
-        .style('opacity', 1)
+        .style('opacity', 0)
         .transition()
-        .duration(500)
-        .attr('visibility', 'visible');
+        .attr('visibility', 'visible')
+        .duration(1500)
+        .style('opacity', 1);
     selectAll('.dimensions')
         .filter((d) => window.parcoords.newFeatures.includes(typeof d === "object" ? d.name : d))
         .transition()
-        .duration(1000)
+        .duration(1500)
         .attr('transform', (d) => 'translate(' + position(d.name || d, parcoords.dragging, parcoords.xScales) + ')')
-        .ease(cubicInOut);
+        .style('opacity', 1);
     select$1('g.active').selectAll('path')
         .attr('d', function (d) {
         const points = window.parcoords.newFeatures.map(p => {
@@ -9720,8 +9699,8 @@ function invert(dimension) {
         })
             .ease(cubicInOut);
     });
-    const filter = getFilter(dimension);
-    addSettingsForBrushing(dimension, parcoords, isInverted(dimension), filter);
+    getFilter(dimension);
+    addSettingsForBrushing(dimension, parcoords, isInverted(dimension));
     if (isInverted(dimension)) {
         addInvertStatus(true, parcoords.currentPosOfDims, dimension, "isInverted");
     }
@@ -9751,8 +9730,8 @@ function invertWoTransition(dimension) {
             return linePath(d, parcoords.newFeatures, parcoords);
         });
     });
-    const filter = getFilter(dimension);
-    addSettingsForBrushing(dimension, parcoords, isInverted(dimension), filter);
+    getFilter(dimension);
+    addSettingsForBrushing(dimension, parcoords, isInverted(dimension));
     if (isInverted(dimension)) {
         addInvertStatus(true, parcoords.currentPosOfDims, dimension, "isInverted");
     }
@@ -9793,8 +9772,8 @@ function setInversionStatus(dimension, status) {
         })
             .ease(cubicInOut);
     });
-    const filter = getFilter(dimension);
-    addSettingsForBrushing(dimension, parcoords, isInverted(dimension), filter);
+    getFilter(dimension);
+    addSettingsForBrushing(dimension, parcoords, isInverted(dimension));
     if (isInverted(dimension)) {
         addInvertStatus(true, parcoords.currentPosOfDims, dimension, "isInverted");
     }
@@ -9894,8 +9873,7 @@ function swap(dimensionA, dimensionB) {
         .duration(1000)
         .attr('d', (d) => {
         return linePath(d, parcoords.newFeatures, parcoords);
-    })
-        .ease(cubicInOut);
+    });
     featureAxis.transition()
         .duration(1000)
         .attr('transform', (d) => {
@@ -9942,6 +9920,37 @@ function setDimensionRange(dimension, min, max) {
             .attr('d', linePath(d, window.parcoords.newFeatures, window.parcoords))
             .ease(cubicInOut);
     });
+    setFilterAfterSettingRanges(dimension, inverted);
+}
+function setFilterAfterSettingRanges(dimension, inverted) {
+    const rect = select$1('#rect_' + dimension);
+    const triDown = select$1('#triangle_down_' + dimension);
+    const triUp = select$1('#triangle_up_' + dimension);
+    const dimensionSettings = parcoords.currentPosOfDims.find((d) => d.key === dimension);
+    const yScale = parcoords.yScales[dimension];
+    const [minValue, maxValue] = inverted ? yScale.domain().slice().reverse() : yScale.domain();
+    const scaleValue = (value) => {
+        if (isNaN(value)) {
+            return yScale(value);
+        }
+        const range = maxValue - minValue;
+        return inverted ? 240 / range * (value - minValue) + 80 :
+            240 / range * (maxValue - value) + 80;
+    };
+    var top = inverted ? scaleValue(dimensionSettings.currentFilterTop) : scaleValue(dimensionSettings.currentFilterBottom);
+    var bottom = inverted ? scaleValue(dimensionSettings.currentFilterBottom) : scaleValue(dimensionSettings.currentFilterTop);
+    var rectH = inverted ? top - bottom : bottom - top;
+    rect.transition()
+        .duration(300)
+        .attr('y', top)
+        .attr('height', rectH)
+        .style('opacity', 0.3);
+    triDown.transition()
+        .duration(300)
+        .attr('y', top - 10);
+    triUp.transition()
+        .duration(300)
+        .attr('y', bottom);
 }
 function setDimensionRangeRounded(dimension, min, max) {
     const inverted = isInverted(dimension);
@@ -10012,6 +10021,8 @@ function getFilter(dimension) {
     return [min, max];
 }
 function setFilter(dimension, min, max) {
+    addRange(min, window.parcoords.currentPosOfDims, dimension, 'currentFilterBottom');
+    addRange(max, window.parcoords.currentPosOfDims, dimension, 'currentFilterTop');
     filter(dimension, min, max, parcoords);
 }
 //---------- Selection Functions ----------
@@ -10098,26 +10109,44 @@ function drawChart(content) {
     let newFeatures = content['columns'].reverse();
     setUpParcoordData(content, newFeatures);
     const height = 360;
-    const wrapper = select$1('#parallelcoords');
-    wrapper.append('div')
+    const wrapper = select$1('#parallelcoords')
+        .style('display', 'block')
+        .style('width', '100%')
+        .style('margin', '0')
+        .style('padding', '0')
+        .style('text-align', 'left')
+        .style('justify-content', 'flex-start')
+        .style('align-items', 'flex-start');
+    const chartWrapper = wrapper.append('div')
+        .attr('id', 'chartWrapper')
+        .style('display', 'block')
+        .style('width', '100%')
+        .style('margin', '0')
+        .style('padding', '0')
+        .style('text-align', 'left');
+    chartWrapper.append('div')
         .attr('id', 'toolbarRow')
         .style('display', 'flex')
         .style('flex-wrap', 'wrap')
         .style('align-items', 'center')
+        .style('justify-content', 'flex-start')
         .style('margin-top', '1.2rem')
-        .style('margin-left', '2rem')
+        .style('margin-left', '1rem')
         .style('margin-bottom', 0);
     createToolbar(window.parcoords.newDataset);
-    window.svg = wrapper
-        .append('svg')
+    window.svg = chartWrapper.append('svg')
         .attr('id', 'pc_svg')
         .attr('viewBox', [-10, 20, window.width, height])
+        .attr('preserveAspectRatio', 'xMinYMin meet')
         .attr('font-family', 'Verdana, sans-serif')
         .attr('user-select', 'none')
-        .style('margin-top', 0);
+        .style('display', 'block')
+        .style('width', '100%')
+        .style('margin-top', 0)
+        .style('margin-left', 0);
     setDefsForIcons();
-    window.active = setActivePathLines(svg, content, window.parcoords);
     setFeatureAxis(svg, yAxis, window.active, window.parcoords, width, window.padding);
+    window.active = setActivePathLines(svg, content, window.parcoords);
     window.svg
         .on("contextmenu", function (event) {
         event.stopPropagation();
@@ -10247,7 +10276,7 @@ function setUpParcoordData(data, newFeatures) {
         const ranges = getDimensionRange(newFeatures[i]);
         window.parcoords.currentPosOfDims.push({
             key: newFeatures[i], top: 80, bottom: 320, isInverted: false, index: i,
-            min: min, max: max, sigDig: 0, currentRangeTop: ranges[1], currentRangeBottom: ranges[0]
+            min: min, max: max, sigDig: 0, currentRangeTop: ranges[1], currentRangeBottom: ranges[0], currentFilterBottom: max, currentFilterTop: min
         });
     }
     const hiddenDims = getAllHiddenDimensionNames();
@@ -10346,12 +10375,12 @@ const handlePointerEnter = (event, d) => {
     parcoords.newDataset.forEach((record) => {
         datasetMap.set(record[window.hoverlabel], record);
     });
-    /*data.forEach((item) => {
+    data.forEach((item) => {
         const matchingRecord = datasetMap.get(item);
         if (matchingRecord) {
             createToolTipForValues(matchingRecord);
         }
-    });*/
+    });
 };
 const handlePointerLeaveOrOut = () => {
     doNotHighlight();
@@ -10464,10 +10493,14 @@ function setActivePathLines(svg, content, parcoords) {
     return active;
 }
 const delay1 = 50;
-//const throttleShowValues = throttle(createToolTipForValues, delay1);
+const throttleShowValues = throttle(createToolTipForValues, delay1);
 function setContextMenuForActiceRecords(contextMenu, event, d) {
-    contextMenu.style('left', event.clientX / 16 + 'rem')
-        .style('top', event.clientY / 16 + 'rem')
+    const container = document.querySelector("#parallelcoords");
+    const rect = container.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    contextMenu.style('left', x + 'px')
+        .style('top', y + 'px')
         .style('display', 'block')
         .style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
         .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
@@ -10556,11 +10589,11 @@ function setFeatureAxis(svg, yAxis, active, parcoords, width, padding) {
         .append('div')
         .style('position', 'absolute')
         .style('visibility', 'hidden');
-    setBrushDown(featureAxis, parcoords, active, tooltipValues);
-    setBrushUp(featureAxis, parcoords, active, tooltipValues);
-    setRectToDrag(featureAxis, svg, parcoords, active, tooltipValuesTop, tooltipValuesDown);
+    setBrushDown(featureAxis, parcoords, tooltipValues);
+    setBrushUp(featureAxis, parcoords, tooltipValues);
+    setRectToDrag(featureAxis, svg, parcoords, tooltipValuesTop, tooltipValuesDown);
     setMarker(featureAxis);
-    setContextMenu(featureAxis, padding, parcoords, active, width);
+    setContextMenu(featureAxis, padding, parcoords, width);
     setInvertIcon(featureAxis, padding);
 }
 function showMarker(dimension) {
@@ -10687,7 +10720,7 @@ function setMarker(featureAxis) {
     });
 }
 // Brushing
-function setRectToDrag(featureAxis, svg, parcoords, active, tooltipValuesTop, tooltipValuesDown) {
+function setRectToDrag(featureAxis, svg, parcoords, tooltipValuesTop, tooltipValuesDown) {
     let delta;
     featureAxis
         .each(function (d) {
@@ -10704,6 +10737,9 @@ function setRectToDrag(featureAxis, svg, parcoords, active, tooltipValuesTop, to
             .attr('fill', 'rgb(255, 255, 0)')
             .attr('opacity', '0.4')
             .style('cursor', 'default')
+            .on('mousedown.selection', function (event) {
+            event.preventDefault();
+        })
             .call(drag()
             .on('drag', (event, d) => {
             if (parcoords.newFeatures.length > 25) {
@@ -10723,7 +10759,7 @@ function setRectToDrag(featureAxis, svg, parcoords, active, tooltipValuesTop, to
         }));
     });
 }
-function setBrushUp(featureAxis, parcoords, active, tooltipValues) {
+function setBrushUp(featureAxis, parcoords, tooltipValues) {
     featureAxis
         .each(function (d) {
         const processedDimensionName = cleanString(d.name);
@@ -10738,7 +10774,11 @@ function setBrushUp(featureAxis, parcoords, active, tooltipValues) {
             .attr('height', 10)
             .attr('href', '#brush_image_top')
             .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopCursor()), 13)}') 8 8, auto`)
-            .call(drag().on('drag', (event, d) => {
+            .on('mousedown.selection', function (event) {
+            event.preventDefault();
+        })
+            .call(drag()
+            .on('drag', (event, d) => {
             if (parcoords.newFeatures.length > 25) {
                 throttleBrushUp(processedDimensionName, event, d, parcoords, active, tooltipValues, window);
             }
@@ -10751,7 +10791,7 @@ function setBrushUp(featureAxis, parcoords, active, tooltipValues) {
         }));
     });
 }
-function setBrushDown(featureAxis, parcoords, active, tooltipValues) {
+function setBrushDown(featureAxis, parcoords, tooltipValues) {
     featureAxis
         .each(function (d) {
         const processedDimensionName = cleanString(d.name);
@@ -10766,6 +10806,9 @@ function setBrushDown(featureAxis, parcoords, active, tooltipValues) {
             .attr('height', 10)
             .attr('href', '#brush_image_bottom')
             .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowBottomCursor()), 13)}') 8 8, auto`)
+            .on('mousedown.selection', function (event) {
+            event.preventDefault();
+        })
             .call(drag()
             .on('drag', (event, d) => {
             if (parcoords.newFeatures.length > 25) {
@@ -10975,5 +11018,5 @@ function checkIfDuplicatesExists(value) {
     return new Set(value).size !== value.length;
 }
 
-export { createSvgString, deleteChart, drawChart, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelected, hide, hideMarker, invert, invertWoTransition, isDimensionCategorical, isSelected, isSelectedWithRecordId, loadCSV, move, moveByOne, refresh, reset, saveAsSvg, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setFilter, setInversionStatus, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setUnselected, setUnselectedWithId, show, showMarker, swap, toggleSelection, toggleSelectionWithId };
+export { createSvgString, deleteChart, drawChart, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelected, hide, hideMarker, invert, invertWoTransition, isDimensionCategorical, isSelected, isSelectedWithRecordId, loadCSV, move, moveByOne, refresh, reset, saveAsSvg, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setFilter, setInversionStatus, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setUnselected, setUnselectedWithId, show, showMarker, swap, throttleShowValues, toggleSelection, toggleSelectionWithId };
 //# sourceMappingURL=spcd3.js.map
