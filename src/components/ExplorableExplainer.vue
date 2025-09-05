@@ -41,7 +41,7 @@
     </div>
     <div class="text-container">
       <div v-html="introText" />
-      <div v-html="dataText" />
+      <div v-html="budgetDatasetText" />
       <div class="table-container">
         <div v-if="showTable">
           <table border="1">
@@ -161,6 +161,7 @@
       <div v-html="usageText" />
       <div v-html="caseStudy1Text" />
       <div v-html="caseStudy2Text" />
+      <div v-html="multipleViewsText" />
     </div>
   </div>
 </template>
@@ -191,7 +192,8 @@ const caseStudy1Text = ref('');
 const caseStudy2Text = ref('');
 const healthDatasetText = ref('');
 const studentDatasetText = ref('');
-//const budgetDatasetText = ref('');
+const multipleViewsText = ref('');
+const budgetDatasetText = ref('');
 const textArea = ref(null);
 const healthDataset = ref('');
 const studentDataset = ref('');
@@ -576,6 +578,8 @@ onMounted(async (): Promise<void> => {
   loadContent(caseStudy2Text, 'content/casestudy2.html');
   loadContent(healthDatasetText, 'content/healthdata.html');
   loadContent(studentDatasetText, 'content/studentmarksdata.html');
+  loadContent(multipleViewsText, 'content/multipleviews.html');
+  loadContent(budgetDatasetText, 'content/budget.html');
 
   await nextTick();
 

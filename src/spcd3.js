@@ -1,6 +1,5 @@
 // SPCD3 version 1.0.0 ESM
 /* eslint-disable */
-
 var xhtml = "http://www.w3.org/1999/xhtml";
 
 var namespaces = {
@@ -5309,7 +5308,7 @@ function dragAndBrush(cleanDimensionName, d, svg, event, parcoords, active, delt
             const dimNameToCheck = select$1('.' + currentLine).text();
             const emptyString = '';
             if (value < yPosRect || value > yPosRect + rectHeight) {
-                makeInactive(currentLine, dimensionName, 300);
+                makeInactive(currentLine, dimensionName, 100);
             }
             else if (dimNameToCheck == dimensionName && dimNameToCheck != emptyString) {
                 let checkedLines = [];
@@ -5527,17 +5526,17 @@ function updateLines(parcoords, dimensionName, cleanDimensionName) {
         const emptyString = '';
         if (value < rangeTop + 10 || value > rangeBottom) {
             if (dimNameToCheck == emptyString) {
-                makeInactive(currentLine, dimensionName, 300);
+                makeInactive(currentLine, dimensionName, 100);
             }
         }
         else if (value == 320 && value == rangeTop + 10 && value == rangeBottom) {
             if (dimNameToCheck == emptyString) {
-                makeInactive(currentLine, dimensionName, 300);
+                makeInactive(currentLine, dimensionName, 100);
             }
         }
         else if (value == 80 && value == rangeTop + 10 && value == rangeBottom) {
             if (dimNameToCheck == emptyString) {
-                makeInactive(currentLine, dimensionName, 300);
+                makeInactive(currentLine, dimensionName, 100);
             }
         }
         else if (dimNameToCheck == dimensionName && dimNameToCheck != emptyString) {
@@ -5602,31 +5601,44 @@ function checkAllPositionsBottom(positionItem, dimensionName, parcoords, d, chec
 function makeActive(currentLineName, duration) {
     if (select$1('.' + currentLineName).classed('selected')) {
         select$1('.' + currentLineName)
+            .style('pointer-events', 'stroke')
+            .text('')
             .transition()
             .duration(duration)
-            .style('pointer-events', 'stroke')
             .style('stroke', 'rgb(255, 165, 0)')
-            .style('opacity', '1')
-            .text('');
+            .style('opacity', '1');
     }
     else {
         select$1('.' + currentLineName)
+            .style('pointer-events', 'stroke')
+            .text('')
             .transition()
             .duration(duration)
-            .style('pointer-events', 'stroke')
             .style('stroke', 'rgb(0, 129, 175)')
-            .style('opacity', '0.5')
-            .text('');
+            .style('opacity', '0.5');
     }
 }
 function makeInactive(currentLineName, dimensionName, duration) {
-    select$1('.' + currentLineName)
-        .transition()
+    const line = select$1('.' + currentLineName);
+    const bbox = line.node().getBBox();
+    const overlay = select$1(line.node().parentNode)
+        .append('rect')
+        .attr('class', 'hover-blocker')
+        .attr('x', bbox.x)
+        .attr('y', bbox.y)
+        .attr('width', bbox.width)
+        .attr('height', bbox.height)
+        .style('fill', 'transparent')
+        .style('pointer-events', 'all');
+    line.transition()
+        .text(dimensionName)
         .duration(duration)
-        .style('pointer-events', 'none')
         .style('stroke', 'lightgrey')
-        .style('opacity', '0.4')
-        .text(dimensionName);
+        .style('opacity', 0.4)
+        .on('end', function () {
+        overlay.remove();
+        select$1(this).style('pointer-events', 'none');
+    });
 }
 function addSettingsForBrushing(dimensionName, parcoords, invertStatus, filter) {
     const processedName = cleanString(dimensionName);
@@ -10271,8 +10283,17 @@ function setUpParcoordData(data, newFeatures) {
     window.parcoords.newFeatures = newFeatures;
     window.parcoords.data = data;
     for (let i = 0; i < newFeatures.length; i++) {
-        const max = Math.max(...window.parcoords.newDataset.map(o => o[newFeatures[i]]));
-        const min = Math.min(...window.parcoords.newDataset.map(o => o[newFeatures[i]]));
+        let max;
+        let min;
+        if (isNaN(Math.max(...window.parcoords.newDataset.map(o => o[newFeatures[i]])))) {
+            const sorted = [...window.parcoords.newDataset.map(o => o[newFeatures[i]])].sort((a, b) => a.localeCompare(b));
+            min = sorted[sorted.length - 1];
+            max = sorted[0];
+        }
+        else {
+            max = Math.max(...window.parcoords.newDataset.map(o => o[newFeatures[i]]));
+            min = Math.min(...window.parcoords.newDataset.map(o => o[newFeatures[i]]));
+        }
         const ranges = getDimensionRange(newFeatures[i]);
         window.parcoords.currentPosOfDims.push({
             key: newFeatures[i], top: 80, bottom: 320, isInverted: false, index: i,
