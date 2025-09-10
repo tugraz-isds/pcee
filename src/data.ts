@@ -62,19 +62,18 @@ export const originalColumns = [
   { Name: 'Patient A', Maths: 45, English: 120, PE: 72, Art: 25, History: 200, IT: 85, Biology: 21, German: 24 }
   ];
 
-  export const columnsBudget = [
+  export const columnsFinance = [
     {key: 'Name', label: 'Name', type: 'string'},
     {key: 'Income', label: 'Income', type: 'number'}, 
-    {key: 'FixedCosts', label: 'Fixed Costs', type: 'number'},
-    {key: 'Savings', label: 'Savings', type: 'number'},
-    {key: 'Debt', label: 'Debt', type: 'number'}
+    {key: 'Costs', label: 'Costs', type: 'number'},
+    {key: 'Leftover', label: 'Leftover', type: 'number'}
   ];
 
-  export const rowsBudget = [
-  { Name: 'Alice',   Income: 3500, FixedCosts: 1200, Savings: 500,  Debt: 2000 },
-  { Name: 'Bob',     Income: 2800, FixedCosts: 900,  Savings: 300,  Debt: 1500 },
-  { Name: 'Charlie', Income: 4200, FixedCosts: 1500, Savings: 700,  Debt: 1000 },
-  { Name: 'Fiona',   Income: 2700, FixedCosts: 800,  Savings: 200,  Debt: 1800 },
-  { Name: 'Ursula',  Income: 6000, FixedCosts: 2500, Savings: 200,  Debt: 4500 },
-  { Name: 'Victor',  Income: 3400, FixedCosts: 1100, Savings: 900,  Debt: 400 }
+  export const rowsFinance = [
+  { Name: 'Alice',   Income: 3500, Costs: 1200, Leftover: 2300},
+  { Name: 'Bob',     Income: 2800, Costs: 900,  Leftover: 1900},
+  { Name: 'Charlie', Income: 4200, Costs: 1500, Leftover: 2700},
+  { Name: 'Fiona',   Income: 2700, Costs: 800,  Leftover: 1900},
+  { Name: 'Ursula',  Income: 6000, Costs: 2500, Leftover: 3500},
+  { Name: 'Victor',  Income: 3400, Costs: 1100, Leftover: 2300}
 ]

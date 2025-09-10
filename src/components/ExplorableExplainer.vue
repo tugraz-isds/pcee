@@ -1,3 +1,4 @@
+<!-- eslint-disable no-undef -->
 <!-- eslint-disable vue/no-v-html -->
 <template>
   <div>
@@ -41,136 +42,131 @@
     </div>
     <div class="text-container">
       <div v-html="introText" />
-      <div v-html="budgetDatasetText" />
+      <div v-html="financeDatasetText" />
       <div class="table-container">
-        <div v-if="showTable">
-          <table border="1">
-            <thead>
-              <tr>
-                <th
-                  v-for="column in columns"
-                  :key="column.key"
-                >
-                  {{ column.label }}
-                  <button
-                    class="delete-button"
-                    @click="deleteColumn(column.key)"
-                  >
-                    -
-                  </button>
-                </th>
-                <th class="narrow-column">
-                  <!-- Add Column Button -->
-                  <button
-                    class="add-button"
-                    @click="openModal"
-                  >
-                    +
-                  </button>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="(row, rowIndex) in rows"
-                :key="rowIndex"
+        <table border="1">
+          <thead>
+            <tr>
+              <th
+                v-for="column in columns"
+                :key="column.key"
               >
-                <td
-                  v-for="column in columns"
-                  :key="column.key"
+                <input
+                  v-model="column.label"
+                  type="text"
+                  placeholder="Column name"
+                  class="header-input"
+                >
+                <button
+                  class="delete-button"
+                  @click="deleteColumn(column.key)"
+                >
+                  -
+                </button>
+              </th>
+              <th class="narrow-column">
+                <!-- Add Column Button -->
+                <button
+                  class="add-button"
+                  @click="addColumn"
+                >
+                  +
+                </button>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="(row, rowIndex) in rows"
+              :key="rowIndex"
+            >
+              <td
+                v-for="column in columns"
+                :key="column.key"
+                :class="{
+                  'text-right': column.type === 'number',
+                  'text-left': column.type === 'string'
+                }"
+              >
+                <input
+                  v-model="row[column.key]"
+                  type="text"
                   :class="{
                     'text-right': column.type === 'number',
                     'text-left': column.type === 'string'
                   }"
                 >
-                  <input
-                    v-model="row[column.key]"
-                    type="text"
-                    :class="{
-                      'text-right': column.type === 'number',
-                      'text-left': column.type === 'string'
-                    }"
-                  >
-                </td>
-                <td class="narrow-column">
-                  <!-- Delete Row Button -->
-                  <button
-                    class="delete-button"
-                    @click="deleteRow(rowIndex)"
-                  >
-                    -
-                  </button>
-                </td>
-              </tr>
-              <!-- Add Row Button -->
-              <tr>
-                <td :colspan="columns.length" />
-                <td class="narrow-column">
-                  <button
-                    class="add-button"
-                    @click="addRow"
-                  >
-                    +
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-
-          <button
-            :disabled="!isFormValid"
-            @click="redrawChart"
-          >
-            Redraw Chart
-          </button>
-          <button @click="resetTable">
-            Reset Table
-          </button>
-
-          <!-- Modal -->
-          <div
-            v-if="isModalOpen"
-            class="modal"
-          >
-            <div class="modal-content">
-              <div>Add New Column Name:</div>
-              <input
-                v-model="newColumn"
-                type="text"
-                placeholder="Enter column name..."
-              >
-              <button
-                class="add-button"
-                @click="addColumn"
-              >
-                Add
-              </button>
-              <button
-                class="add-button"
-                @click="closeModal"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
+              </td>
+              <td class="narrow-column">
+                <!-- Delete Row Button -->
+                <button
+                  class="delete-button"
+                  @click="deleteRow(rowIndex)"
+                >
+                  -
+                </button>
+              </td>
+            </tr>
+            <!-- Control Row -->
+            <tr>
+              <td :colspan="columns.length">
+                <button
+                  :disabled="!isFormValid"
+                  @click="redrawChart"
+                >
+                  Redraw Chart
+                </button>
+                <button @click="resetTable">
+                  Reset Table
+                </button>
+              </td>
+              <td class="narrow-column">
+                <!-- Add Row Button -->
+                <button
+                  class="add-button"
+                  @click="addRow"
+                >
+                  +
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
-      <div v-html="interactivityText" />
+      <div v-html="interactiveOperationsText" />
+      <div v-html="recordOperationsText" />
+      <div v-html="dimensionOperationsText" />
       <div v-html="healthDatasetText" />
-      <div v-html="usageText" />
+      <div
+        ref="usageContainer" 
+        class="cursor-zoom-in"
+        v-html="usageText" 
+      />
       <div v-html="caseStudy1Text" />
       <div v-html="caseStudy2Text" />
       <div v-html="multipleViewsText" />
+      <!--<div v-html="referencesDatasetText" />-->
+      <div
+        v-if="zoomSrc"
+        class="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+        @click="zoomSrc = null"
+      >
+        <img
+          :src="zoomSrc"
+          alt="Zoom Bild"
+          class="max-h-[90%] max-w-[90%] object-contain w-auto h-auto cursor-zoom-out"
+        >
+      </div> 
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, nextTick, type Ref } from 'vue';
+import { ref, onMounted, onBeforeUnmount, computed, nextTick, type Ref } from 'vue';
 import * as spcd3 from '../spcd3.js';
 import scrollama from 'scrollama';
-import { columnsBudget, rowsBudget } from '../data.js';
+import { columnsFinance, rowsFinance } from '../data.js';
 import gsap from 'gsap'
 import ScrollTrigger from 'gsap/ScrollTrigger'
 
@@ -187,22 +183,24 @@ type Row = Record<string, unknown>;
 const introText = ref('');
 const dataText = ref('');
 const interactivityText = ref('');
+const interactiveOperationsText = ref('');
+const recordOperationsText = ref('');
+const dimensionOperationsText = ref('');
 const usageText = ref('');
 const caseStudy1Text = ref('');
 const caseStudy2Text = ref('');
 const healthDatasetText = ref('');
 const studentDatasetText = ref('');
 const multipleViewsText = ref('');
-const budgetDatasetText = ref('');
+const financeDatasetText = ref('');
+const referencesDatasetText = ref('');
 const textArea = ref(null);
 const healthDataset = ref('');
 const studentDataset = ref('');
-const budgetDataset = ref('');
-const isModalOpen = ref(false);
+const financeDataset = ref('');
 const newColumn = ref('');
-const showTable = ref(true);
-const columns = ref<Column[]>(structuredClone(columnsBudget));
-const rows = ref<Row[]>(structuredClone(rowsBudget));
+const columns = ref<Column[]>(structuredClone(columnsFinance));
+const rows = ref<Row[]>(structuredClone(rowsFinance));
 const scroller = scrollama();
 const header = ref<HTMLElement | null>(null);
 const multiLine = ref<HTMLElement | null>(null);
@@ -212,6 +210,20 @@ const supportsScrollDrivenAnimations: boolean =
   typeof CSS.supports === 'function' &&
   CSS.supports('animation-timeline: scroll()');
 let lastStep = -1;
+
+// eslint-disable-next-line no-undef
+const usageContainer = ref<HTMLDivElement | null>(null);
+const zoomSrc = ref<string | null>(null);
+
+// eslint-disable-next-line no-undef
+const handleClick = (e: Event): void => {
+  const target = e.target as HTMLElement;
+    // eslint-disable-next-line no-undef
+    const img = target.closest("img") as HTMLImageElement | null;
+    if (img) {
+      zoomSrc.value = img.src;
+    }
+}
 
 const addClickEvent = (): void => {
   const outlierButton = document.getElementById('outlier-button');
@@ -324,7 +336,6 @@ const selectRecord = (): void => {
 }
 
 const filterRecords = (): void => {
-  console.log(spcd3.getFilter('English'));
   if (spcd3.getFilter('English')[0] == 1) {
     spcd3.setFilter('English', 99, 51);
     (document.getElementById('filter-button') as HTMLButtonElement).textContent = 'English: Reset Filter';
@@ -376,15 +387,6 @@ const deleteRow = (index: number): void => {
   redrawChart();
 };
 
-const openModal = (): void => {
-  isModalOpen.value = true;
-};
-
-const closeModal = (): void => {
-  isModalOpen.value = false;
-  newColumn.value = '';
-};
-
 const addColumn = (): void => {
   const trimmed = newColumn.value.trim();
   let newCol: Column = {key: '', label: '', type: ''};
@@ -395,7 +397,6 @@ const addColumn = (): void => {
   rows.value.forEach(row => {
     row[newCol.key] = '';
   });
-  closeModal();
 };
 
 const deleteColumn = (key: string): void => {
@@ -409,7 +410,6 @@ const deleteColumn = (key: string): void => {
       delete row[key]
     }
   }
-
   redrawChart()
 }
 
@@ -425,8 +425,8 @@ const redrawChart = (): void => {
 };
 
 const resetTable = (): void => {
-  columns.value = structuredClone(columnsBudget);
-  rows.value = structuredClone(rowsBudget);
+  columns.value = structuredClone(columnsFinance);
+  rows.value = structuredClone(rowsFinance);
   redrawChart();
 }
 
@@ -531,7 +531,7 @@ const getCurrentStepIndex = (): number => {
 
 
 const getDatasetForStep = (step: number): string | undefined => {
-  if (step == 0) return budgetDataset.value;
+  if (step == 0) return financeDataset.value;
   if (step == 1) return healthDataset.value;
   if (step == 2) return studentDataset.value;
 }
@@ -565,28 +565,43 @@ window.addEventListener('scroll', (): void => {
   }
 });
 
+onBeforeUnmount(() => {
+  if (usageContainer.value) {
+    usageContainer.value.removeEventListener("click", handleClick);
+  }
+})
+
 onMounted(async (): Promise<void> => {
   healthDataset.value = await loadDataset('data/healthdata.csv');
-  budgetDataset.value = await loadDataset('data/budget.csv');
-  drawChart(budgetDataset.value);
+  financeDataset.value = await loadDataset('data/finance.csv');
+  drawChart(financeDataset.value);
   studentDataset.value = await loadDataset('data/student-marks.csv');
   loadContent(introText, 'content/introduction.html');
   loadContent(dataText, 'content/data.html');
   loadContent(interactivityText, 'content/interactivity.html');
+  loadContent(interactiveOperationsText, 'content/interactiveoperations.html');
+  loadContent(recordOperationsText, 'content/recordoperations.html');
+  loadContent(dimensionOperationsText, 'content/dimensionoperations.html');
   loadContent(usageText, 'content/usage.html');
   loadContent(caseStudy1Text, 'content/casestudy1.html');
   loadContent(caseStudy2Text, 'content/casestudy2.html');
   loadContent(healthDatasetText, 'content/healthdata.html');
   loadContent(studentDatasetText, 'content/studentmarksdata.html');
   loadContent(multipleViewsText, 'content/multipleviews.html');
-  loadContent(budgetDatasetText, 'content/budget.html');
+  loadContent(financeDatasetText, 'content/personalfinances.html');
+  loadContent(referencesDatasetText, 'content/references.html');
+
+  const container = usageContainer.value;
+  if(container) {
+    container.addEventListener('click', handleClick);
+  }
 
   await nextTick();
 
   if (!supportsScrollDrivenAnimations) {
     gsap.to(header.value, {
       height: '6.5vh',
-      fontSize: '1.3rem',
+      //fontSize: '1.5rem',
       backgroundPosition: '50% 100%',
       paddingLeft: '1rem',
       scrollTrigger: {
@@ -649,6 +664,12 @@ onMounted(async (): Promise<void> => {
   box-sizing: border-box;
 }
 
+#pc_svg {
+  height: 31rem;
+  justify-content: 'center';
+  text-align: 'center';
+}
+
 .sticky-header {
   position: fixed;
   top: 0;
@@ -661,10 +682,10 @@ onMounted(async (): Promise<void> => {
   align-items: center;
   text-align: center;
 
-  color: black;
-  background: linear-gradient(to bottom, rgba(0, 129, 175, 0.5), rgba(255, 255, 0, 0.3));
-  backdrop-filter: blur(2.5rem);
+  color: white;
+  background: rgba(0, 129, 175, 1);
   pointer-events: none;
+  font-size: 2.5rem;
 
   z-index: 1000;
 
@@ -714,6 +735,16 @@ onMounted(async (): Promise<void> => {
     animation-timeline: scroll();
     animation-range: 0vh 90vh;
   }
+
+  .sticky-header {
+    font-size: large;
+  }
+
+  #pc_svg {
+  height: 21rem;
+  justify-content: 'center';
+  text-align: 'center';
+}
 }
 
 @media (max-width: 600px) {
@@ -721,6 +752,10 @@ onMounted(async (): Promise<void> => {
     animation: sticky-header-move-and-size-mobile linear forwards;
     animation-timeline: scroll();
     animation-range: 0vh 90vh;
+  }
+
+  .sticky-header {
+    font-size: medium;
   }
 }
 
@@ -837,7 +872,6 @@ onMounted(async (): Promise<void> => {
 .main-chart {
   position: sticky;
   top: calc(10vh + 2rem);
-  width: 100%;
   padding-top: 3rem;
   display: flex;
   justify-content: center;
@@ -856,9 +890,9 @@ section {
   text-align: justify;
   width: calc(100% - 2rem);
   max-width: 100%;
-  background: rgba(255, 255, 0, 0.3);
-  border-radius: 1rem;
-  margin-top: 2rem;
+  background: rgb(229, 229, 220);
+  border-radius: 0.3rem;
+  margin-top: 1rem;
   opacity: 0;
   transform: translateY(100px);
   padding-right: 1.5rem;
@@ -889,19 +923,17 @@ h2 {
 }
 
 h3 {
-  padding-left: 1.5rem;
+  padding-left: 1rem;
   margin-bottom: 0;
 }
 
 h4 {
-  padding-left: 1.5rem;
+  padding-left: 1rem;
   margin-bottom: 0;
 }
 
 p {
   border-left: 1rem solid transparent;
-  transition: border-color 0.3s ease;
-  padding-left: 0.5rem;
   margin-bottom: 0.5rem;
   margin-top: 0.5rem;
 }
@@ -910,7 +942,7 @@ p {
   flex: 1 1 20rem;
   max-height: 30rem;
   overflow-y: auto;
-  padding-top: 2rem;
+  padding-top: 1rem;
   margin-right: 2rem;
 }
 
@@ -934,7 +966,7 @@ th .add-button,
 td .delete-button,
 td .add-button {
   border: none;
-  background: #eee;
+  background: white;
   border-radius: 50%;
   width: 1.2rem;
   height: 1.2rem;
@@ -943,6 +975,9 @@ td .add-button {
   cursor: pointer;
   font-size: 0.9rem;
   padding: 0;
+  margin-top: 0.6rem;
+  margin-right: 0.2rem;
+  color: black;
 }
 
 th .delete-button {
@@ -977,13 +1012,14 @@ td .add-button {
 }
 
 td {
-  background-color: rgba(255, 255, 0, 0.3);
+  background-color: rgb(229, 229, 220);
   padding: 0.2rem;
   text-align: left;
 }
 
 th {
-  background-color: rgba(0, 129, 175, 0.3);
+  background-color: rgba(30,61,89,0.8);
+  color: white;
   text-align: left;
   padding: 0.3rem;
 }
@@ -1013,21 +1049,25 @@ input[type="text"] {
   padding-left: 1.5rem;
 }
 
+.liheading {
+  font-weight: bold;
+}
+
+.litext {
+  border-left: 0rem solid transparent;
+}
+
+.liuitext {
+  border-left: 0rem solid transparent;
+  font-style: italic;
+  color: rgb(228, 90, 15);
+}
+
 ul {
   border-left: 1rem solid transparent;
   transition: border-color 0.3s ease;
-  padding-left: 1.5rem;
+  padding-left: 1rem;
   margin-top: 0;
-}
-
-ul ul {
-  padding-left: 0.5rem;
-  border-left: 0;
-}
-
-ol {
-  border-left: 1rem solid transparent;
-  transition: border-color 0.3s ease;
 }
 
 button {
@@ -1038,7 +1078,7 @@ button {
 
 .usage-button {
   margin-top: 0;
-  margin-left: 1.5rem;
+  margin-left: 1rem;
 }
 
 .delete-button {
@@ -1056,10 +1096,12 @@ button {
 .figure-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 2rem;
-  padding: 1rem 1.5rem;
+  gap: 1.5rem;
+  padding-left: 2rem;
+  padding-top: 0.5rem;
   max-width: 100%;
-  box-sizing: border-box;
+  justify-content: center;
+  align-items: center;
 }
 
 figure {
@@ -1068,14 +1110,10 @@ figure {
   margin: 0;
 }
 
-img {
-  width: 100%;
-  max-width: 8rem;
-  height: auto;
-}
-
 figcaption {
   margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: smaller;
 }
 
 @media (max-width: 960px) {
@@ -1085,12 +1123,11 @@ figcaption {
   
   .main-chart {
     position: fixed;
-    top: 3rem;
+    top: 0rem;
     left: 0;
     width: 100%;
     background: white;
     z-index: 100;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   }
 
   .chart-container {
@@ -1104,12 +1141,5 @@ figcaption {
     padding-left: 1.7rem;
   }
 
-}
-
-@media (max-width: 600px) {
-
-  .main-chart {
-    top: 1rem;
-  }
 }
 </style>

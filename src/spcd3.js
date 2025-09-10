@@ -10149,13 +10149,12 @@ function drawChart(content) {
     window.svg = chartWrapper.append('svg')
         .attr('id', 'pc_svg')
         .attr('viewBox', [-10, 20, window.width, height])
-        .attr('preserveAspectRatio', 'xMinYMin meet')
         .attr('font-family', 'Verdana, sans-serif')
         .attr('user-select', 'none')
         .style('display', 'block')
         .style('width', '100%')
         .style('margin-top', 0)
-        .style('margin-left', 0);
+        .style('margin-left', 0)
     setDefsForIcons();
     setFeatureAxis(svg, yAxis, window.active, window.parcoords, width, window.padding);
     window.active = setActivePathLines(svg, content, window.parcoords);
