@@ -51,18 +51,20 @@
                 v-for="column in columns"
                 :key="column.key"
               >
-                <input
-                  v-model="column.label"
-                  type="text"
-                  placeholder="Column name"
-                  class="header-input"
-                >
-                <button
-                  class="delete-button"
-                  @click="deleteColumn(column.key)"
-                >
-                  -
-                </button>
+                <div class="flex items-center gap-2">
+                  <input
+                    v-model="column.label"
+                    type="text"
+                    placeholder="Column name"
+                    class="flex-1 min-w-0 p-1"
+                  >
+                  <button
+                    class="delete-button"
+                    @click="deleteColumn(column.key)"
+                  >
+                    -
+                  </button>
+                </div>
               </th>
               <th class="narrow-column">
                 <!-- Add Column Button -->
@@ -149,12 +151,11 @@
       <!--<div v-html="referencesDatasetText" />-->
       <div
         v-if="zoomSrc"
-        class="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+        class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 z-[9999]"
         @click="zoomSrc = null"
       >
         <img
           :src="zoomSrc"
-          alt="Zoom Bild"
           class="max-h-[90%] max-w-[90%] object-contain w-auto h-auto cursor-zoom-out"
         >
       </div> 
@@ -598,17 +599,23 @@ onMounted(async (): Promise<void> => {
 
   await nextTick();
 
+  scroller.setup({
+    step: '.step',
+    offset: 0.5,
+  }).onStepEnter(response => {
+    handleStepEnter(response.index);
+  });
+
   if (!supportsScrollDrivenAnimations) {
     gsap.to(header.value, {
-      height: '6.5vh',
-      //fontSize: '1.5rem',
+      height: '6.8vh',
       backgroundPosition: '50% 100%',
       paddingLeft: '1rem',
       scrollTrigger: {
         trigger: document.body,
         start: 'top top',
         end: '+=90vh',
-        scrub: 0.2,
+        scrub: 1,
         invalidateOnRefresh: true,
       },
       ease: 'none',
@@ -620,11 +627,12 @@ onMounted(async (): Promise<void> => {
         trigger: document.body,
         start: 'top top',
         end: '+=80vh',
-        scrub: 0.2,
+        scrub: 1,
         onUpdate: (self) => {
           if (multiLine.value) {
             multiLine.value.style.visibility =
               self.progress < 1 ? 'visible' : 'hidden'
+            multiLine.value.style.fontSize = '1rem'
           }
         }
       },
@@ -637,7 +645,7 @@ onMounted(async (): Promise<void> => {
         trigger: document.body,
         start: '+=80vh',
         end: '+=90vh',
-        scrub: 0.2,
+        scrub: 1,
         onUpdate: self => {
           if (singleLine.value) {
             singleLine.value.style.visibility =
@@ -648,28 +656,12 @@ onMounted(async (): Promise<void> => {
       ease: 'none'
     });
   }
-
-  scroller.setup({
-    step: '.step',
-    offset: 0.5,
-  }).onStepEnter(response => {
-    handleStepEnter(response.index);
-  })
 });
 
 </script>
 
 <style>
-* {
-  box-sizing: border-box;
-}
-
-#pc_svg {
-  height: 31rem;
-  justify-content: 'center';
-  text-align: 'center';
-}
-
+/* Header native and polyfill */
 .sticky-header {
   position: fixed;
   top: 0;
@@ -685,11 +677,9 @@ onMounted(async (): Promise<void> => {
   color: white;
   background: rgba(0, 129, 175, 1);
   pointer-events: none;
-  font-size: 2.5rem;
+  font-size: xx-large;
 
   z-index: 1000;
-
-  padding: 0 5vw;
 
   will-change: transform, height, font-size;
   contain: layout style;
@@ -714,49 +704,11 @@ onMounted(async (): Promise<void> => {
 .multi-line {
   opacity: 1;
   visibility: visible;
-  transition: opacity 0.2s ease;
 }
 
 .single-line {
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.2s ease;
-}
-
-.use-native {
-  animation: sticky-header-move-and-size-desktop linear forwards;
-  animation-timeline: scroll();
-  animation-range: 0vh 90vh;
-}
-
-@media (max-width: 960px) {
-  .use-native {
-    animation: sticky-header-move-and-size-tablet linear forwards;
-    animation-timeline: scroll();
-    animation-range: 0vh 90vh;
-  }
-
-  .sticky-header {
-    font-size: large;
-  }
-
-  #pc_svg {
-  height: 21rem;
-  justify-content: 'center';
-  text-align: 'center';
-}
-}
-
-@media (max-width: 600px) {
-  .use-native {
-    animation: sticky-header-move-and-size-mobile linear forwards;
-    animation-timeline: scroll();
-    animation-range: 0vh 90vh;
-  }
-
-  .sticky-header {
-    font-size: medium;
-  }
 }
 
 .use-native .multi-line {
@@ -769,61 +721,6 @@ onMounted(async (): Promise<void> => {
   animation: singleTextIn linear forwards;
   animation-timeline: scroll();
   animation-range: 80vh 90vh;
-}
-
-@keyframes sticky-header-move-and-size-desktop {
-  from {
-    background-position: 50% 0%;
-    height: 100vh;
-    width: 100%;
-    font-size: 3rem;
-  }
-
-  to {
-    background-position: 50% 100%;
-    height: 6.5vh;
-    width: 100%;
-    font-size: 2rem;
-    padding-left: 1rem;
-  }
-}
-
-@media (max-width: 960px) {
-  @keyframes sticky-header-move-and-size-tablet {
-  from {
-    background-position: 50% 0%;
-    height: 100vh;
-    width: 100%;
-    font-size: 3rem;
-  }
-
-  to {
-    background-position: 50% 100%;
-    height: 6vh;
-    width: 100%;
-    font-size: 2rem;
-    padding-left: 1rem;
-  }
-}
-}
-
-@media (max-width: 600px) {
-  @keyframes sticky-header-move-and-size-mobile {
-  from {
-    background-position: 50% 0%;
-    height: 100vh;
-    width: 100%;
-    font-size: 2rem;
-  }
-
-  to {
-    background-position: 50% 100%;
-    height: 6.5vh;
-    width: 100%;
-    font-size: 1rem;
-    padding-left: 1.25rem;
-  }
-}
 }
 
 @keyframes multiTextOut {
@@ -850,12 +747,123 @@ onMounted(async (): Promise<void> => {
   }
 }
 
+.use-native {
+  animation: sticky-header-move-and-size-desktop linear forwards;
+  animation-timeline: scroll();
+  animation-range: 0vh 90vh;
+}
+
+@media (max-width: 960px) and (orientation: portrait){
+  .use-native {
+    animation: sticky-header-move-and-size-tablet linear forwards;
+    animation-timeline: scroll();
+    animation-range: 0vh 90vh;
+  }
+
+  .sticky-header {
+    font-size: large;
+  }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .use-native {
+    animation: sticky-header-move-and-size-mobile linear forwards;
+    animation-timeline: scroll();
+    animation-range: 0vh 90vh;
+  }
+
+  .sticky-header {
+    font-size: medium;
+  }
+}
+
+@keyframes sticky-header-move-and-size-desktop {
+  from {
+    background-position: 50% 0%;
+    height: 100vh;
+    width: 100%;
+    font-size: 3rem;
+  }
+
+  to {
+    background-position: 50% 100%;
+    height: 6.5vh;
+    width: 100%;
+    font-size: 2rem;
+    padding-left: 1rem;
+  }
+}
+
+@media (max-width: 960px) and (orientation: portrait) {
+  @keyframes sticky-header-move-and-size-tablet {
+    from {
+      background-position: 50% 0%;
+      height: 100vh;
+      width: 100%;
+      font-size: 3rem;
+    }
+
+    to {
+      background-position: 50% 100%;
+      height: 6vh;
+      width: 100%;
+      font-size: 1.3rem;
+      padding-left: 1rem;
+    }
+  }
+}
+
+@media (max-width: 600px) and (orientation: portrait) {
+  @keyframes sticky-header-move-and-size-tablet {
+    from {
+      background-position: 50% 0%;
+      height: 100vh;
+      width: 100%;
+      font-size: 2rem;
+    }
+
+    to {
+      background-position: 50% 100%;
+      height: 6vh;
+      width: 100%;
+      font-size: 1rem;
+      padding-left: 1rem;
+    }
+  }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  @keyframes sticky-header-move-and-size-mobile {
+    from {
+      background-position: 50% 0%;
+      height: 100vh;
+      width: 100%;
+      font-size: 2rem;
+    }
+
+    to {
+      background-position: 50% 100%;
+      height: 6.5vh;
+      width: 100%;
+      font-size: 1rem;
+      padding-left: 1.25rem;
+    }
+  }
+}
+
 .header-spacer-native {
   height: 100vh;
 }
 
 .header-spacer-polyfill {
   height: 30vh;
+}
+
+/* Desktop (chart and text row) */
+#pc_svg {
+  height: 31rem;
+  justify-content: 'center';
+  text-align: 'center';
 }
 
 .explorable-explainer {
@@ -882,10 +890,117 @@ onMounted(async (): Promise<void> => {
   flex: 1 1 23rem;
   min-width: 23rem;
   flex-direction: column;
-  width: calc(100% - 2rem);
-  max-width: 100%;
+  width: 100%;
 }
 
+/* Tablet portrait (chart and text column) */
+@media (max-width: 960px) and (orientation: portrait) {
+  .explorable-explainer {
+    flex-direction: column;
+  }
+
+  .main-chart {
+    position: fixed;
+    top: 4.5rem;
+    left: 0;
+    width: 100%;
+    background: white;
+    z-index: 100;
+  }
+
+  .chart-container {
+    flex: 1 1 20rem;
+    min-width: 100%;
+    padding-left: 1.7rem;
+    padding-bottom: 0;
+  }
+
+  .text-container {
+    min-width: 100%;
+    padding-left: 1.7rem;
+  }
+
+  #pc_svg {
+    height: 20rem;
+    justify-content: 'center';
+    text-align: 'center';
+  }
+}
+
+/* Mini tablet (chart and text column)*/
+@media (max-width: 768px) and (orientation: portrait) {
+  .main-chart {
+    top: 3rem;
+  }
+}
+
+/* Mobile portrait (chart and text column) */
+@media (max-width: 600px) and (orientation: portrait) {
+  .explorable-explainer {
+    flex-direction: column;
+  }
+
+  .main-chart {
+    position: fixed;
+    top: 2.5rem;
+    left: 0;
+    width: 100%;
+    background: white;
+    z-index: 100;
+  }
+
+  .chart-container {
+    flex: 1 1 20rem;
+    min-width: 100%;
+    padding-left: 1.7rem;
+    padding-bottom: 0;
+  }
+
+  .text-container {
+    min-width: 100%;
+    padding-left: 1.7rem;
+  }
+
+  #pc_svg {
+    height: 20rem;
+    justify-content: 'center';
+    text-align: 'center';
+  }
+}
+
+/* Mobile landscape (chart and text row) */
+@media (max-height: 500px) and (orientation: landscape) {
+  .explorable-explainer {
+    flex-direction: row;
+  }
+
+  .main-chart {
+    position: sticky;
+    top: 2rem;
+    padding-top: 0;
+    height: auto;
+  }
+
+  .chart-container {
+    flex: 1 1 50%;
+    min-width: 40%;
+    padding: 0;
+  }
+
+  .text-container {
+    flex: 1 1 50%;
+    min-width: 40%;
+    padding: 0 1rem;
+  }
+
+  #pc_svg {
+    height: 16rem;
+    justify-content: 'center';
+    text-align: 'center';
+  }
+}
+
+/* Sections in Textcontainer with animation */
 section {
   text-align: justify;
   width: calc(100% - 2rem);
@@ -916,27 +1031,56 @@ section {
   }
 }
 
+/* Misc Headers */
+
 h2 {
-  color: black;
   padding-top: 1rem;
+  padding-bottom: 0.5rem;
   padding-left: 1rem;
 }
 
 h3 {
   padding-left: 1rem;
   margin-bottom: 0;
+  padding-top: 0.5rem;
+  padding-bottom: 0.25rem;
 }
 
 h4 {
   padding-left: 1rem;
+  padding-top: 0.5rem;
   margin-bottom: 0;
 }
 
 p {
   border-left: 1rem solid transparent;
   margin-bottom: 0.5rem;
-  margin-top: 0.5rem;
 }
+
+/* listings */
+
+ul {
+  border-left: 1rem solid transparent;
+  padding-left: 1rem;
+  margin-top: 0;
+}
+
+.liheading {
+  font-weight: bold;
+  margin-top: 1rem;
+}
+
+.litext {
+  border-left: 0rem solid transparent;
+}
+
+.liuitext {
+  border-left: 0rem solid transparent;
+  font-style: italic;
+  color: rgb(228, 90, 15);
+}
+
+/* Table */
 
 .table-container {
   flex: 1 1 20rem;
@@ -956,80 +1100,18 @@ table {
 th, td {
   position: relative;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   padding: 0.5rem 0.75rem;
-}
-
-th .delete-button,
-th .add-button,
-td .delete-button,
-td .add-button {
-  border: none;
-  background: white;
-  border-radius: 50%;
-  width: 1.2rem;
-  height: 1.2rem;
-  line-height: 1.2rem;
-  text-align: center;
-  cursor: pointer;
-  font-size: 0.9rem;
-  padding: 0;
-  margin-top: 0.6rem;
-  margin-right: 0.2rem;
-  color: black;
-}
-
-th .delete-button {
-  position: absolute;
-  top: 0.2rem;
-  right: 0.2rem;
-}
-
-th .add-button {
-  display: block;
-  margin: 0 auto;
-}
-
-td .delete-button {
-  display: block;
-  margin: 0 auto;
-}
-
-td .add-button {
-  display: block;
-  margin: 0 auto;
-}
-
-.narrow-column {
-  width: 2.5rem;
-  text-align: center;
-}
-
-.narrow-column button {
-  margin: 0 auto;
-  display: block;
 }
 
 td {
   background-color: rgb(229, 229, 220);
   padding: 0.2rem;
-  text-align: left;
 }
 
 th {
   background-color: rgba(30,61,89,0.8);
   color: white;
-  text-align: left;
   padding: 0.3rem;
-}
-
-tfoot button {
-  width: 100%;
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .text-left {
@@ -1039,59 +1121,56 @@ tfoot button {
   text-align: right;
 }
 
+th .delete-button,
+th .add-button,
+td .delete-button,
+td .add-button {
+  border: none;
+  background: white;
+  border-radius: 75%;
+  width: 1.2rem;
+  height: 1.2rem;
+  line-height: 1.2rem;
+  text-align: center;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0;
+  margin-top: 0.5rem;
+  margin-right: 0.2rem;
+  color: black;
+  font-weight: bold;
+  top: 0.2rem;
+  right: 0.5rem;
+  position: absolute;
+}
+
+.narrow-column {
+  width: 2.5rem;
+  text-align: center;
+}
+
 input[type="text"] {
   width: 100%;
-  padding: 0.313rem;
+  padding: 0.3rem;
   box-sizing: border-box;
 }
 
-.modal-content {
-  padding-left: 1.5rem;
+th input[type="text"] {
+  width: auto !important;
 }
 
-.liheading {
-  font-weight: bold;
-}
-
-.litext {
-  border-left: 0rem solid transparent;
-}
-
-.liuitext {
-  border-left: 0rem solid transparent;
-  font-style: italic;
-  color: rgb(228, 90, 15);
-}
-
-ul {
-  border-left: 1rem solid transparent;
-  transition: border-color 0.3s ease;
-  padding-left: 1rem;
-  margin-top: 0;
-}
+/* Buttons */
 
 button {
-  padding: 0.5rem;
-  margin-top: 0.5rem;
+  padding: 0.25rem;
   margin-right: 0.5rem;
 }
 
 .usage-button {
-  margin-top: 0;
   margin-left: 1rem;
 }
 
-.delete-button {
-  padding: 0.3rem;
-  margin-top: 0;
-  margin-right: 0;
-}
-
-.add-button {
-  padding: 0.3rem;
-  margin-top: 0.3rem;
-  margin-right: 0.3rem;
-}
+/* Figures */
 
 .figure-row {
   display: flex;
@@ -1114,32 +1193,5 @@ figcaption {
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
   font-size: smaller;
-}
-
-@media (max-width: 960px) {
-  .explorable-explainer {
-    flex-direction: column;
-  }
-  
-  .main-chart {
-    position: fixed;
-    top: 0rem;
-    left: 0;
-    width: 100%;
-    background: white;
-    z-index: 100;
-  }
-
-  .chart-container {
-    min-width: 100%;
-    padding-left: 1.7rem;
-    padding-bottom: 0;
-  }
-
-  .text-container {
-    min-width: 100%;
-    padding-left: 1.7rem;
-  }
-
 }
 </style>
