@@ -615,7 +615,7 @@ onMounted(async (): Promise<void> => {
         trigger: document.body,
         start: 'top top',
         end: '+=90vh',
-        scrub: 1,
+        scrub: 2,
         invalidateOnRefresh: true,
       },
       ease: 'none',
@@ -627,12 +627,11 @@ onMounted(async (): Promise<void> => {
         trigger: document.body,
         start: 'top top',
         end: '+=80vh',
-        scrub: 1,
+        scrub: 2,
         onUpdate: (self) => {
           if (multiLine.value) {
             multiLine.value.style.visibility =
               self.progress < 1 ? 'visible' : 'hidden'
-            multiLine.value.style.fontSize = '1rem'
           }
         }
       },
@@ -645,7 +644,7 @@ onMounted(async (): Promise<void> => {
         trigger: document.body,
         start: '+=80vh',
         end: '+=90vh',
-        scrub: 1,
+        scrub: 2,
         onUpdate: self => {
           if (singleLine.value) {
             singleLine.value.style.visibility =
@@ -856,7 +855,7 @@ onMounted(async (): Promise<void> => {
 }
 
 .header-spacer-polyfill {
-  height: 30vh;
+  height: 40vh;
 }
 
 /* Desktop (chart and text row) */
@@ -866,6 +865,10 @@ onMounted(async (): Promise<void> => {
   text-align: 'center';
 }
 
+#toolbarRow {
+ font-size: 0.8vw !important;
+}
+
 .explorable-explainer {
   display: flex;
   gap: 1rem;
@@ -873,17 +876,18 @@ onMounted(async (): Promise<void> => {
 
 .chart-container {
   flex: 1 1 30rem;
-  min-width: 20rem;
   position: relative;
+  justify-content: center;
 }
 
 .main-chart {
   position: sticky;
   top: calc(10vh + 2rem);
   padding-top: 3rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: grid !important;
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 0;
 }
 
 .text-container {
@@ -942,7 +946,7 @@ onMounted(async (): Promise<void> => {
 
   .main-chart {
     position: fixed;
-    top: 2.5rem;
+    top: 2rem;
     left: 0;
     width: 100%;
     background: white;
