@@ -527,25 +527,15 @@ window.addEventListener('scroll', (): void => {
     lastStep = currentStep;
     const dataset = getDatasetForStep(currentStep);
      writeTitleToDataset(currentStep);
-    /*if (currentStep === 1) {
+    if (currentStep === 1) {
       (document.getElementById('outlier-button') as HTMLButtonElement).disabled = false;
       (document.getElementById('correlation-button') as HTMLButtonElement).disabled = false;
       (document.getElementById('correlation-neg-button') as HTMLButtonElement).disabled = false;
-      (document.getElementById('range-button') as HTMLButtonElement).disabled = true;
-      (document.getElementById('select-button') as HTMLButtonElement).disabled = true;
-      (document.getElementById('filter-button') as HTMLButtonElement).disabled = true;
-      (document.getElementById('move-button') as HTMLButtonElement).disabled = true;
-      (document.getElementById('invert-button') as HTMLButtonElement).disabled = true;
     } else {
       (document.getElementById('outlier-button') as HTMLButtonElement).disabled = true;
       (document.getElementById('correlation-button') as HTMLButtonElement).disabled = true;
       (document.getElementById('correlation-neg-button') as HTMLButtonElement).disabled = true;
-      (document.getElementById('range-button') as HTMLButtonElement).disabled = false;
-      (document.getElementById('select-button') as HTMLButtonElement).disabled = false;
-      (document.getElementById('filter-button') as HTMLButtonElement).disabled = false;
-      (document.getElementById('move-button') as HTMLButtonElement).disabled = false;
-      (document.getElementById('invert-button') as HTMLButtonElement).disabled = false;
-    }*/
+    }
     drawChart(dataset);
   }
 });
@@ -906,15 +896,6 @@ onMounted(async (): Promise<void> => {
     justify-content: 'center';
     text-align: 'center';
   }
-
-  .hdr-cell {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem;
-    width: 100%;
-    box-sizing: border-box;
-  }
 }
 
 /* Mini tablet (chart and text column)*/
@@ -956,15 +937,6 @@ onMounted(async (): Promise<void> => {
     justify-content: 'center';
     text-align: 'center';
   }
-
-  .hdr-cell {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem;
-    width: 100%;
-    box-sizing: border-box;
-  }
 }
 
 /* Mobile landscape (chart and text row) */
@@ -996,15 +968,6 @@ onMounted(async (): Promise<void> => {
     height: 16rem;
     justify-content: 'center';
     text-align: 'center';
-  }
-
-  .hdr-cell {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem;
-    width: 100%;
-    box-sizing: border-box;
   }
 }
 
