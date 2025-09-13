@@ -35,10 +35,10 @@
       ref="textArea"
       class="chart-container"
     >
-      <div
-        id="parallelcoords"
-        class="main-chart"
-      />
+      <div class="main-chart">
+        <h3 id="chart-title">Personal Finances Dataset</h3>
+        <div id="parallelcoords" />
+      </div>
     </div>
     <div class="text-container">
       <div v-html="introText" />
@@ -50,16 +50,17 @@
               <th
                 v-for="column in columns"
                 :key="column.key"
+                class="header"
               >
-                <div class="flex items-center gap-2">
+                <div class="header-cell">
                   <input
                     v-model="column.label"
                     type="text"
                     placeholder="Column name"
-                    class="flex-1 min-w-0 p-1"
+                    class="header-input"
                   >
                   <button
-                    class="delete-button"
+                    class="header-button"
                     @click="deleteColumn(column.key)"
                   >
                     -
@@ -166,7 +167,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, computed, nextTick, type Ref } from 'vue';
 import * as spcd3 from '../spcd3.js';
-import scrollama from 'scrollama';
 import { columnsFinance, rowsFinance } from '../data.js';
 import gsap from 'gsap'
 import ScrollTrigger from 'gsap/ScrollTrigger'
@@ -202,7 +202,6 @@ const financeDataset = ref('');
 const newColumn = ref('');
 const columns = ref<Column[]>(structuredClone(columnsFinance));
 const rows = ref<Row[]>(structuredClone(rowsFinance));
-const scroller = scrollama();
 const header = ref<HTMLElement | null>(null);
 const multiLine = ref<HTMLElement | null>(null);
 const singleLine = ref<HTMLElement | null>(null);
@@ -481,55 +480,21 @@ const loadDataset = async (filePath: string): Promise<string> => {
   }
 };
 
-const handleStepEnter = (element: number): void => {
-  if (element == 0) {
-    redrawChart()
-  }
-  else if (element == 2) {
-    (document.getElementById('outlier-button') as HTMLButtonElement).disabled = true;
-    (document.getElementById('correlation-button') as HTMLButtonElement).disabled = true;
-    (document.getElementById('correlation-neg-button') as HTMLButtonElement).disabled = true;
-    (document.getElementById('range-button') as HTMLButtonElement).disabled = false;
-    (document.getElementById('select-button') as HTMLButtonElement).disabled = false;
-    (document.getElementById('filter-button') as HTMLButtonElement).disabled = false;
-    (document.getElementById('move-button') as HTMLButtonElement).disabled = false;
-    (document.getElementById('invert-button') as HTMLButtonElement).disabled = false;
-    drawChart(studentDataset.value);
-  } else if (element == 1) {
-    drawChart(healthDataset.value);
-    if ((document.getElementById('outlier-button') as HTMLButtonElement).textContent === 'Unselect Outlier') {
-      spcd3.setSelected('Patient F');
-    }
-    if ((document.getElementById('correlation-button') as HTMLButtonElement).textContent === 'Show Positive Correlation') {
-      spcd3.setInversionStatus('Age', 'descending');
-    }
-    (document.getElementById('outlier-button') as HTMLButtonElement).disabled = false;
-    (document.getElementById('correlation-button') as HTMLButtonElement).disabled = false;
-    (document.getElementById('correlation-neg-button') as HTMLButtonElement).disabled = false;
-    (document.getElementById('range-button') as HTMLButtonElement).disabled = true;
-    (document.getElementById('select-button') as HTMLButtonElement).disabled = true;
-    (document.getElementById('filter-button') as HTMLButtonElement).disabled = true;
-    (document.getElementById('move-button') as HTMLButtonElement).disabled = true;
-    (document.getElementById('invert-button') as HTMLButtonElement).disabled = true;
-  }
-}
-
 const getCurrentStepIndex = (): number => {
-  const steps = document.querySelectorAll<HTMLElement>('.step')
+  const steps = document.querySelectorAll<HTMLElement>('.step');
   let currentIndex = 0
   let maxVisibleTop: number | null = null
 
-  steps.forEach((step, i) => {
+  steps.forEach((step) => {
     const rect = step.getBoundingClientRect()
     const isHalfInView = rect.top <= window.innerHeight * 0.5
     if (isHalfInView && (maxVisibleTop === null || rect.top > maxVisibleTop)) {
-      maxVisibleTop = rect.top
-      currentIndex = i
+      maxVisibleTop = rect.top;
+      currentIndex = parseInt(step.dataset.step ?? "0", 10);
     }
   })
   return currentIndex
 }
-
 
 const getDatasetForStep = (step: number): string | undefined => {
   if (step == 0) return financeDataset.value;
@@ -537,13 +502,32 @@ const getDatasetForStep = (step: number): string | undefined => {
   if (step == 2) return studentDataset.value;
 }
 
+const writeTitleToDataset = (step: number): void => {
+  // eslint-disable-next-line no-undef
+  const titleElement = document.getElementById("chart-title") as HTMLHeadingElement | null;
+  if (titleElement == null) return;
+  if (step == 0) {
+    titleElement.textContent = "Personal Finances Dataset";
+  }
+  else if (step == 1) {
+    titleElement.textContent = "Heart Health Dataset";
+  }
+  else if (step == 2) {
+    titleElement.textContent = "Student Marks Dataset";
+  }
+  else 
+  {
+    titleElement.textContent = "";
+  }
+}
+
 window.addEventListener('scroll', (): void => {
   const currentStep = getCurrentStepIndex();
-
   if (currentStep !== lastStep) {
     lastStep = currentStep;
     const dataset = getDatasetForStep(currentStep);
-    if (currentStep === 1) {
+     writeTitleToDataset(currentStep);
+    /*if (currentStep === 1) {
       (document.getElementById('outlier-button') as HTMLButtonElement).disabled = false;
       (document.getElementById('correlation-button') as HTMLButtonElement).disabled = false;
       (document.getElementById('correlation-neg-button') as HTMLButtonElement).disabled = false;
@@ -561,7 +545,7 @@ window.addEventListener('scroll', (): void => {
       (document.getElementById('filter-button') as HTMLButtonElement).disabled = false;
       (document.getElementById('move-button') as HTMLButtonElement).disabled = false;
       (document.getElementById('invert-button') as HTMLButtonElement).disabled = false;
-    }
+    }*/
     drawChart(dataset);
   }
 });
@@ -575,8 +559,8 @@ onBeforeUnmount(() => {
 onMounted(async (): Promise<void> => {
   healthDataset.value = await loadDataset('data/healthdata.csv');
   financeDataset.value = await loadDataset('data/finance.csv');
-  drawChart(financeDataset.value);
   studentDataset.value = await loadDataset('data/student-marks.csv');
+  drawChart(financeDataset.value);
   loadContent(introText, 'content/introduction.html');
   loadContent(dataText, 'content/data.html');
   loadContent(interactivityText, 'content/interactivity.html');
@@ -598,13 +582,6 @@ onMounted(async (): Promise<void> => {
   }
 
   await nextTick();
-
-  scroller.setup({
-    step: '.step',
-    offset: 0.5,
-  }).onStepEnter(response => {
-    handleStepEnter(response.index);
-  });
 
   if (!supportsScrollDrivenAnimations) {
     gsap.to(header.value, {
@@ -929,6 +906,15 @@ onMounted(async (): Promise<void> => {
     justify-content: 'center';
     text-align: 'center';
   }
+
+  .hdr-cell {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    box-sizing: border-box;
+  }
 }
 
 /* Mini tablet (chart and text column)*/
@@ -970,6 +956,15 @@ onMounted(async (): Promise<void> => {
     justify-content: 'center';
     text-align: 'center';
   }
+
+  .hdr-cell {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    box-sizing: border-box;
+  }
 }
 
 /* Mobile landscape (chart and text row) */
@@ -1001,6 +996,15 @@ onMounted(async (): Promise<void> => {
     height: 16rem;
     justify-content: 'center';
     text-align: 'center';
+  }
+
+  .hdr-cell {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    box-sizing: border-box;
   }
 }
 
@@ -1036,6 +1040,13 @@ section {
 }
 
 /* Misc Headers */
+
+#chart-title {
+  font-size: 1.4rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 1rem;
+}
 
 h2 {
   padding-top: 1rem;
@@ -1092,13 +1103,16 @@ ul {
   overflow-y: auto;
   padding-top: 1rem;
   margin-right: 2rem;
+  position: relative;
+  isolation: isolate;
 }
 
 table {
   text-align: justify;
   width: 100%;
   table-layout: fixed;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 th, td {
@@ -1110,12 +1124,47 @@ th, td {
 td {
   background-color: rgb(229, 229, 220);
   padding: 0.2rem;
+  z-index: 0
 }
 
 th {
   background-color: rgba(30,61,89,0.8);
   color: white;
   padding: 0.3rem;
+}
+
+.header {
+  overflow: scroll;
+  white-space: normal;
+}
+
+.header-cell {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.header-input {
+  flex: 1 1 auto;
+  min-width: 4rem;
+  box-sizing: border-box;
+  padding: 0.25rem 0.5rem;
+}
+
+.header-button {
+  flex: 0 0 auto;
+  padding: 0 0.5rem;
+  background: white;
+  color: black;
+  border: none;
+  border-radius: 75%;
+  cursor: pointer;
+  width: 1.2rem;
+  height: 1.2rem;
+  line-height: 1.2rem;
 }
 
 .text-left {
@@ -1172,6 +1221,7 @@ button {
 
 .usage-button {
   margin-left: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 /* Figures */

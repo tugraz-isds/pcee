@@ -5097,22 +5097,22 @@ function getArrowUpCursor() {
     return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3.9687499 3.96875"><path fill="white" stroke="black" stroke-width="0.318611" d="m 2.7893699,3.7809852 c 0.061702,0.032916 0.8148899,0.013349 0.8148899,0.013349 0,0 -0.5426551,-0.5560871 -0.9382701,-0.9628429 C 2.2225906,2.375606 2.1881953,2.0163869 2.1881953,2.0163869 H 3.4341002 L 1.7835016,0.28895256 0.34946563,2.0136534 c 0.534692,0.00674 0.73263777,-0.00633 1.03341887,-0.013349 0,0 0.1208928,1.0948563 1.4064854,1.7806808 z"/></svg>';
 }
 function getRefreshIcon() {
-    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><polyline points="6.5 4 8.5 4 8.5 2" fill="none" stroke="black" stroke-width="1"/><path d="M8.5 4 L 7 2.5 A 3 3 0 0 0 2.5 2.5" fill="none" stroke="black" stroke-width="1"/><polyline points="3.5 6 1.5 6 1.5 8" fill="none" stroke="black" stroke-width="1"/><path d="M1.5 6 L 2.5 7 A 3 3 0 0 0 7 7" fill="none" stroke="black" stroke-width="1"/></svg>';
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><polyline points="6.5 4 8.5 4 8.5 2" fill="none" stroke="black" stroke-width="0.75"/><path d="M8.5 4 L 7 2.5 A 3 3 0 0 0 2.5 2.5" fill="none" stroke="black" stroke-width="0.5"/><polyline points="3.5 6 1.5 6 1.5 8" fill="none" stroke="black" stroke-width="0.5"/><path d="M1.5 6 L 2.5 7 A 3 3 0 0 0 7 7" fill="none" stroke="black" stroke-width="0.5"/></svg>';
 }
 function getTableIcon() {
-    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10" fill="currentColor"><rect x="0.5" y="0.5" width="9" height="9" rx="1" ry="1" stroke="black" stroke-width="1" fill="none" /><line x1="0.5" y1="3.3" x2="9.5" y2="3.3" stroke="black" stroke-width="1"/><line x1="0.5" y1="6.6" x2="9.5" y2="6.6" stroke="black" stroke-width="1"/><line x1="3.3" y1="0.5" x2="3.3" y2="9.5" stroke="black" stroke-width="1"/><line x1="6.6" y1="0.5" x2="6.6" y2="9.5" stroke="black" stroke-width="1"/></svg>';
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect x="0.5" y="0.5" width="9" height="9" rx="1" ry="1" stroke="black" stroke-width="0.5" fill="none" /><line x1="0.5" y1="3.3" x2="9.5" y2="3.3" stroke="black" stroke-width="0.5"/><line x1="0.5" y1="6.6" x2="9.5" y2="6.6" stroke="black" stroke-width="0.5"/><line x1="3.3" y1="0.5" x2="3.3" y2="9.5" stroke="black" stroke-width="0.5"/><line x1="6.6" y1="0.5" x2="6.6" y2="9.5" stroke="black" stroke-width="0.5"/></svg>';
 }
 function getExpandToolbarIcon() {
-    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 6"><polyline points="1.5 0.75 3 2.75 1.5 4.75" fill="none" stroke="black" stroke-width="0.5"/><polyline points="3.5 0.75 5 2.75 3.5 4.75" fill="none" stroke="black" stroke-width="0.5"/></svg>';
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -0.5 6 6"><polyline points="1 0.75 3 2.75 1 4.75" fill="none" stroke="black" stroke-width="0.25"/><polyline points="3 0.75 5 2.75 3 4.75" fill="none" stroke="black" stroke-width="0.25"/></svg>';
 }
 function getCollapseToolbarIcon() {
-    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 6"> <polyline points="3 0.75 1.5 2.75 3 4.75" fill="none" stroke="black" stroke-width="0.5"/><polyline points="5 0.75 3.5 2.75 5 4.75" fill="none" stroke="black" stroke-width="0.5"/></svg>';
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -0.5 6 6"><polyline points="3 0.75 1 2.75 3 4.75" fill="none" stroke="black" stroke-width="0.25"/><polyline points="5 0.75 3 2.75 5 4.75" fill="none" stroke="black" stroke-width="0.25"/></svg>';
 }
 function getResetIcon() {
-    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 12"><path d="M8 4 A4 4 0 1 1 2 4" fill="none" stroke="black" stroke-width="1"/><polyline points="3 5.5 2 4 0 4" fill="none" stroke="black" stroke-width="1"/><path d="M 5 1 L 5 6.5 z" fill="none" stroke="black" stroke-width="1"/></svg>';
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><g transform="scale(1,0.833) translate(0,1.2)"><path d="M8 4 A4 3.5 0 1 1 2 4" fill="none" stroke="black" stroke-width="0.5"/><polyline points="3 5.5 2 4 0 4" fill="none" stroke="black" stroke-width="0.5"/><path d="M5 1 L 5 6.5" fill="none" stroke="black" stroke-width="0.5"/></g></svg>';
 }
 function getDownloadButton() {
-    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 7"><path d="M 2.5 5 L 2.5 1 L 3 1 L 3 5 z"/><polyline points="0.75 3.5 2.75 5 4.75 3.5" fill="none" stroke="black" stroke-width="0.5"/><path d="M 0 6 L 6 6 L 6 6.5 L 0 6.5 z"/></svg>';
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><path d="M 4.65 7 L 4.65 1.4 L 5.25 1.4 L 5.25 7 z"/><polyline points="2.07 5.00 4.93 7.14 7.79 5.00" fill="none" stroke="black" stroke-width="0.5"/><path d="M 2 8.5 L 8 8.5 L 8 9 L 2 9 z"/></svg>';
 }
 
 function cleanString(stringValue) {
@@ -5284,46 +5284,10 @@ function dragAndBrush(cleanDimensionName, d, svg, event, parcoords, active, delt
             .attr('y', yPosTop);
         select$1('#triangle_up_' + cleanDimensionName)
             .attr('y', yPosRect + rectHeight);
-        const dimensionName = d.name;
-        const invertStatus = getInvertStatus(dimensionName, parcoords.currentPosOfDims);
-        const maxValue = invertStatus == false ? parcoords.yScales[dimensionName].domain()[1] :
-            parcoords.yScales[dimensionName].domain()[0];
-        const minValue = invertStatus == false ? parcoords.yScales[dimensionName].domain()[0] :
-            parcoords.yScales[dimensionName].domain()[1];
-        const range = maxValue - minValue;
         if (!isNaN(parcoords.yScales[d.name].domain()[0])) {
             setToolTipDragAndBrush(tooltipValuesTop, tooltipValuesDown, d, parcoords, window, true, yPosTop, yPosRect + rectHeight);
         }
-        active.each(function (d) {
-            const currentLine = getLineName(d);
-            let value;
-            if (invertStatus) {
-                value = isNaN(maxValue) ? parcoords.yScales[dimensionName](d[dimensionName]) :
-                    240 / range * (d[dimensionName] - minValue) + 80;
-            }
-            else {
-                value = isNaN(maxValue) ? parcoords.yScales[dimensionName](d[dimensionName]) :
-                    240 / range * (maxValue - d[dimensionName]) + 80;
-            }
-            const dimNameToCheck = select$1('.' + currentLine).text();
-            const emptyString = '';
-            if (value < yPosRect || value > yPosRect + rectHeight) {
-                makeInactive(currentLine, dimensionName, 100);
-            }
-            else if (dimNameToCheck == dimensionName && dimNameToCheck != emptyString) {
-                let checkedLines = [];
-                parcoords.currentPosOfDims.forEach(function (item) {
-                    if (item.top != 80 && item.bottom != 320) {
-                        checkAllPositionsTop(item, dimensionName, parcoords, d, checkedLines, currentLine);
-                        checkAllPositionsBottom(item, dimensionName, parcoords, d, checkedLines, currentLine);
-                    }
-                });
-                if (!checkedLines.includes(currentLine)) {
-                    makeActive(currentLine, 300);
-                }
-            }
-            else ;
-        });
+        updateLines(parcoords, d.name, cleanDimensionName);
     }
 }
 function filter(dimensionName, topValue, bottomValue, parcoords) {
@@ -5620,23 +5584,13 @@ function makeActive(currentLineName, duration) {
 }
 function makeInactive(currentLineName, dimensionName, duration) {
     const line = select$1('.' + currentLineName);
-    const bbox = line.node().getBBox();
-    const overlay = select$1(line.node().parentNode)
-        .append('rect')
-        .attr('class', 'hover-blocker')
-        .attr('x', bbox.x)
-        .attr('y', bbox.y)
-        .attr('width', bbox.width)
-        .attr('height', bbox.height)
-        .style('fill', 'transparent')
-        .style('pointer-events', 'all');
-    line.transition()
+    line
         .text(dimensionName)
+        .transition()
         .duration(duration)
         .style('stroke', 'lightgrey')
         .style('opacity', 0.4)
         .on('end', function () {
-        overlay.remove();
         select$1(this).style('pointer-events', 'none');
     });
 }
@@ -8590,7 +8544,9 @@ function createInputFieldWithLabel(modal, text, inputId) {
     modal.append(() => label);
     const input = document.createElement('input');
     input.id = inputId;
-    input.style.width = '2.5rem';
+    input.style.width = '3rem';
+    input.style.border = '0.1rem solid lightgrey';
+    input.style.borderRadius = "5%";
     modal.append(() => input);
 }
 function createButton(modal, id) {
@@ -9395,8 +9351,8 @@ function createToolbar(dataset) {
         .style('display', 'flex')
         .style('flex-wrap', 'wrap')
         .style('align-items', 'center')
-        .style('font-size', '1.1vw')
-        .style('margin-top', '1.2rem')
+        .style('font-size', '1vw')
+        .style('margin-top', '1rem')
         .style('margin-left', '1rem')
         .style('margin-bottom', '0');
     const toggleButton = toolbarRow.append('button')
@@ -9405,7 +9361,7 @@ function createToolbar(dataset) {
         .html(getExpandToolbarIcon())
         .style('margin', '0')
         .style('border', 'none')
-        .style('border-radius', '0')
+        .style('border-radius', '10%')
         .style('padding', '0.2em')
         .style('width', '2em')
         .style('height', '2em')
@@ -9424,8 +9380,8 @@ function createToolbar(dataset) {
         .html(getTableIcon())
         .style('margin', '0')
         .style('border', 'none')
-        .style('border-radius', '0')
-        .style('padding', '0.2em')
+        .style('border-radius', '5%')
+        .style('padding', '0.3em')
         .style('width', '2em')
         .style('height', '2em')
         .on('click', () => showModalWithData(dataset));
@@ -9435,8 +9391,8 @@ function createToolbar(dataset) {
         .html(getDownloadButton())
         .style('margin', '0')
         .style('border', 'none')
-        .style('border-radius', '0')
-        .style('padding', '0.2em')
+        .style('border-radius', '5%')
+        .style('padding', '0.3em')
         .style('width', '2em')
         .style('height', '2em')
         .on('click', saveAsSvg);
@@ -9446,8 +9402,8 @@ function createToolbar(dataset) {
         .html(getRefreshIcon())
         .style('margin', '0')
         .style('border', 'none')
-        .style('border-radius', '0')
-        .style('padding', '0.2em')
+        .style('border-radius', '5%')
+        .style('padding', '0.3em')
         .style('width', '2em')
         .style('height', '2em')
         .on('click', refresh);
@@ -9457,8 +9413,8 @@ function createToolbar(dataset) {
         .html(getResetIcon())
         .style('margin', '0')
         .style('border', 'none')
-        .style('border-radius', '0')
-        .style('padding', '0.2em')
+        .style('border-radius', '5%')
+        .style('padding', '0.3em')
         .style('width', '2em')
         .style('height', '2em')
         .on('click', reset);
@@ -9503,11 +9459,16 @@ function showModalWithData(dataset) {
         .style('max-height', '80vh')
         .style('max-width', '90vw')
         .style('z-index', '1000')
-        .style('display', 'block');
+        .style('display', 'flex')
+        .style('flex-direction', 'column')
+        .style('overflow', 'hidden');
     const saveAsCSV = document.createElement('button');
     saveAsCSV.id = 'saveAsCsv';
     saveAsCSV.textContent = 'Save as CSV';
     saveAsCSV.style.marginBottom = '3rem';
+    saveAsCSV.style.alignSelf = 'flex-start';
+    saveAsCSV.style.width = 'auto';
+    saveAsCSV.style.display = 'inline-block';
     modal.append(() => saveAsCSV);
     saveAsCSV.addEventListener('click', () => {
         const reservedArray = dataset.map(entry => {
@@ -9527,10 +9488,11 @@ function showModalWithData(dataset) {
     closeButton.style.marginBottom = '3rem';
     modal.append(() => closeButton);
     const scrollWrapper = document.createElement('div');
-    scrollWrapper.style.width = '100%';
+    scrollWrapper.style.flex = '1 1 auto';
+    scrollWrapper.style.minHeight = '0';
     scrollWrapper.style.overflowY = 'auto';
-    scrollWrapper.style.whiteSpace = 'nowrap';
-    scrollWrapper.style.maxHeight = '60vh';
+    scrollWrapper.style.overflowX = 'auto';
+    scrollWrapper.style.width = '100%';
     const tableContainer = document.createElement('table');
     tableContainer.style.width = '100%';
     tableContainer.style.borderCollapse = 'collapse';
@@ -9563,6 +9525,9 @@ function generateTable(dataArray, table) {
         th.style.top = '0';
         th.style.zIndex = '1';
         th.style.textAlign = 'left';
+        th.style.whiteSpace = 'nowrap';
+        th.style.overflow = 'hidden';
+        th.style.textOverflow = 'ellipsis';
         headRow.appendChild(th);
     });
     thead.appendChild(headRow);
@@ -9957,8 +9922,8 @@ function setFilterAfterSettingRanges(dimension, inverted) {
         return inverted ? 240 / range * (value - minValue) + 80 :
             240 / range * (maxValue - value) + 80;
     };
-    var top = inverted ? scaleValue(dimensionSettings.currentFilterTop) : scaleValue(dimensionSettings.currentFilterBottom);
-    var bottom = inverted ? scaleValue(dimensionSettings.currentFilterBottom) : scaleValue(dimensionSettings.currentFilterTop);
+    var top = inverted ? scaleValue(dimensionSettings.currentRangeBottom) : scaleValue(dimensionSettings.currentRangeTop);
+    var bottom = inverted ? scaleValue(dimensionSettings.currentRangeTop) : scaleValue(dimensionSettings.currentRangeBottom);
     var rectH = inverted ? top - bottom : bottom - top;
     rect.transition()
         .duration(300)
