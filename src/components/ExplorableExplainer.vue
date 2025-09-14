@@ -110,7 +110,6 @@
                 </button>
               </td>
             </tr>
-            <!-- Control Row -->
             <tr>
               <td :colspan="columns.length">
                 <button
@@ -146,9 +145,76 @@
         class="cursor-zoom-in"
         v-html="usageText" 
       />
-      <div v-html="caseStudy1Text" />
-      <div v-html="caseStudy2Text" />
-      <div v-html="multipleViewsText" />
+      <div class="stepper">
+        <h2>Case Study: Student Marks</h2>
+        <p 
+          class="step"
+          data-step="2"
+        >
+          By using the interactions described above, interesting observations can be made within a dataset.
+        </p>
+
+        <ul>
+          <li
+            v-for="(step, index) in steps"
+            :key="step.title"
+            :class="{ active: index === currentStep }"
+          >
+            {{ step.title }}
+          </li>
+        </ul>
+
+        <h3>{{ steps[currentStep].title }}</h3>
+
+        <p>
+          {{ steps[currentStep].content }}
+        </p>
+
+        <div class="buttons">
+          <!--<button
+            class="reset-icon"
+            :disabled="currentStep === 0"
+            @click="reset"
+          >
+            <img 
+              src="/svg/reset-button.svg"
+              width="16" 
+              height="16"
+            />
+          </button>-->
+          <button
+            :disabled="currentStep === 0"
+            @click="back"
+          >
+            <img 
+              src="/svg/back-button.svg"
+              width="16" 
+              height="16"
+            />
+          </button>
+          <button
+            :disabled="currentStep === steps.length - 1"
+            @click="next"
+          >
+            <img 
+              src="/svg/next-button.svg"
+              width="16" 
+              height="16"
+            />
+          </button>
+          <!--<button
+            :disabled="currentStep === 6"
+            @click="skip"
+          >
+            <img 
+              src="/svg/skip-button.svg"
+              width="16" 
+              height="16"
+            />
+          </button>-->
+        </div>
+      </div>
+      <!--<div v-html="multipleViewsText" />-->
       <!--<div v-html="referencesDatasetText" />-->
       <div
         v-if="zoomSrc"
@@ -195,6 +261,12 @@ const studentDatasetText = ref('');
 const multipleViewsText = ref('');
 const financeDatasetText = ref('');
 const referencesDatasetText = ref('');
+const invertText = ref('');
+const filterText = ref('');
+const moveText = ref('');
+const rangeText = ref('');
+const selectText = ref('');
+const summaryText = ref('');
 const textArea = ref(null);
 const healthDataset = ref('');
 const studentDataset = ref('');
@@ -210,6 +282,111 @@ const supportsScrollDrivenAnimations: boolean =
   typeof CSS.supports === 'function' &&
   CSS.supports('animation-timeline: scroll()');
 let lastStep = -1;
+
+const steps = [
+  { title: 'Student Marks Dataset', content: studentDatasetText},
+  { title: 'Adjust Dimension Range', content: rangeText },
+  { title: 'Select Record', content: selectText },
+  { title: 'Filter Record', content: filterText },
+  { title: 'Move Dimension', content: moveText },
+  { title: 'Invert Dimension', content: invertText },
+  { title: 'Summary', content: summaryText}
+];
+
+const currentStep = ref(0);
+
+const next = (): void => {
+  if (currentStep.value < steps.length - 1) {
+    currentStep.value++;
+  }
+  triggerNext(currentStep.value);
+}
+
+const back = (): void => {
+  if (currentStep.value > 0) {
+    currentStep.value--;
+  }
+  triggerBack(currentStep.value);
+}
+
+/*const reset = (): void => {
+  currentStep.value = 0;
+  triggerReset();
+}
+
+const skip = (): void => {
+  currentStep.value = 6;
+  triggerSkip();
+}
+
+const triggerReset = (): void => {
+  if (spcd3.getInversionStatus('English') == "descending") {
+    spcd3.setInversionStatus('English');
+  }
+  setRangeNext();
+  if (spcd3.isSelected('Sylvia')) {
+    spcd3.setUnselected('Sylvia');
+  }
+  filterRecordsNext();
+  moveDimensionNext();
+ 
+}
+
+const triggerSkip = (): void => {
+  setRangeNext();
+  selectRecordNext();
+  filterRecordsNext();
+  moveDimensionNext();
+  invertDimensionNext();
+}*/
+
+const triggerNext = (currentStep: number): void => {
+  switch(currentStep) {
+    case 0:
+      break;
+    case 1:
+      setRangeNext();
+      break;
+    case 2:
+      selectRecordNext();
+      break;
+    case 3:
+      filterRecordsNext();
+      break;
+    case 4:
+      moveDimensionNext();
+      break;
+    case 5:
+      invertDimensionNext();
+      break;
+    default:
+      break;
+  }
+}
+
+const triggerBack = (currentStep: number): void => {
+  switch(currentStep) {
+    case 0:
+      break;
+    case 1:
+      setRangeBack();
+      break;
+    case 2:
+      selectRecordBack();
+      break;
+    case 3:
+      filterRecordsBack();
+      break;
+    case 4:
+      moveDimensionBack();
+      break;
+    case 5:
+      invertDimensionBack();
+      break;
+    default:
+      break;
+  }
+}
 
 // eslint-disable-next-line no-undef
 const usageContainer = ref<HTMLDivElement | null>(null);
@@ -237,26 +414,6 @@ const addClickEvent = (): void => {
   const negCorrelationButton = document.getElementById('correlation-neg-button');
   if (negCorrelationButton) {
     negCorrelationButton.addEventListener('click', showNegativeCorrelation);
-  }
-  const rangeButton = document.getElementById('range-button');
-  if (rangeButton) {
-    rangeButton.addEventListener('click', setRange);
-  }
-  const selectButton = document.getElementById('select-button');
-  if (selectButton) {
-    selectButton.addEventListener('click', selectRecord);
-  }
-  const filterButton = document.getElementById('filter-button');
-  if (filterButton) {
-    filterButton.addEventListener('click', filterRecords);
-  }
-  const moveButton = document.getElementById('move-button');
-  if (moveButton) {
-    moveButton.addEventListener('click', moveDimension);
-  }
-  const invertButton = document.getElementById('invert-button');
-  if (invertButton) {
-    invertButton.addEventListener('click', invertDimension);
   }
 }
 
@@ -300,76 +457,88 @@ const showNegativeCorrelation = (): void => {
  
 }
 
-const setRange = (): void => {
-  const currentRange = spcd3.getDimensionRange('PE');
-  if (currentRange[0] == 51) {
-    const dimensions = spcd3.getAllDimensionNames();
-    dimensions.forEach(function (dimension: string) {
-      if (!isNaN(spcd3.getMinValue(dimension))) {
+const setRangeNext = (): void => {
+  const dimensions = spcd3.getAllDimensionNames();
+  dimensions.forEach(function (dimension: string) {
+    if (!isNaN(spcd3.getMinValue(dimension))) {
+      if(spcd3.getInversionStatus('English') === 'descending') {
+      spcd3.setDimensionRange(dimension, 100, 0);
+      }
+      else {
         spcd3.setDimensionRange(dimension, 0, 100);
       }
-    });
-    (document.getElementById('range-button') as HTMLButtonElement).textContent = 'Set Dimension Ranges from Data';
-  }
-  else {
-    const dimensions = spcd3.getAllDimensionNames();
-    dimensions.forEach(function (dimension: string) {
-      if (!isNaN(spcd3.getMinValue(dimension))) {
-        const min = spcd3.getMinValue(dimension);
-        const max = spcd3.getMaxValue(dimension);
-        spcd3.setDimensionRange(dimension, min, max);
+    }
+  });
+}
+
+const setRangeBack = (): void => {
+  const dimensions = spcd3.getAllDimensionNames();
+  dimensions.forEach(function (dimension: string) {
+    const range = spcd3.getDimensionRange(dimension);
+    if (!isNaN(spcd3.getMinValue(dimension))) {
+      const min = spcd3.getMinValue(dimension);
+      const max = spcd3.getMaxValue(dimension);
+      if(spcd3.getInversionStatus('English') === 'descending') {
+        if (range[1] !== min && range[1] !== 0) {
+          spcd3.setDimensionRange(dimension, min, max);
+        }
       }
-    });
-    (document.getElementById('range-button') as HTMLButtonElement).textContent = 'Set Dimension Ranges 0 - 100';
-  }
+      else {
+        if (range[0] !== min && range[0] !== 0) {
+          spcd3.setDimensionRange(dimension, min, max);
+        }
+      }
+    }
+  });
 }
 
-const selectRecord = (): void => {
-  if (spcd3.isSelected('Sylvia')) {
-    spcd3.setUnselected('Sylvia');
-    (document.getElementById('select-button') as HTMLButtonElement).textContent = 'Select Record: Sylvia';
-  }
-  else {
+const selectRecordNext = (): void => {
     spcd3.setSelected('Sylvia');
-    (document.getElementById('select-button') as HTMLButtonElement).textContent = 'Unselect Record: Sylvia';
-  }
 }
 
-const filterRecords = (): void => {
-  if (spcd3.getFilter('English')[0] == 1) {
-    spcd3.setFilter('English', 99, 51);
-    (document.getElementById('filter-button') as HTMLButtonElement).textContent = 'English: Reset Filter';
-  }
-  else if (spcd3.getFilter('English')[0] == 51) {
-    spcd3.setFilter('English', 99, 1);
-    (document.getElementById('filter-button') as HTMLButtonElement).textContent = 'English: Set Filter to 50';
-  }
-  else if (spcd3.getFilter('English')[0] == 0 && spcd3.getFilter('English')[1] == 100) {
-    spcd3.setFilter('English', 100, 50);
-    (document.getElementById('filter-button') as HTMLButtonElement).textContent = 'English: Reset Filter';
+const selectRecordBack = (): void => {
+    spcd3.setUnselected('Sylvia');
+}
+
+const filterRecordsNext = (): void => {
+  if(spcd3.getInversionStatus('English') === 'descending') {
+    spcd3.setFilter('English', 50, 100);
   }
   else {
-    spcd3.setFilter('English', 100, 0);
-    (document.getElementById('filter-button') as HTMLButtonElement).textContent = 'English: Set Filter to 50';
+     spcd3.setFilter('English', 100, 50);
   }
 }
 
-const moveDimension = (): void => {
-  const posGerman = spcd3.getDimensionPosition('German');
-  const posEnglish = spcd3.getDimensionPosition('English');
-  const diff = posEnglish - posGerman;
-  if (diff == 1) {
-    spcd3.move('German', true, 'Biology');
-    (document.getElementById('move-button') as HTMLButtonElement).textContent = 'Move German next to English';
+const filterRecordsBack = (): void => {
+  const values = spcd3.getDimensionRange('English');
+  const filterValues = spcd3.getFilter('English');
+  if(spcd3.getInversionStatus('English') === 'ascending' && 
+    filterValues[0] > values[0]) {
+    spcd3.setFilter('English', values[1], values[0]);
   }
-  else {
-    spcd3.move('German', true, 'English');
-    (document.getElementById('move-button') as HTMLButtonElement).textContent = 'German: Reset Position';
+  else if (filterValues[1] > values[1]) {
+    spcd3.setFilter('English', values[1], values[0]);
   }
 }
 
-const invertDimension = (): void => {
-  spcd3.invert('English');
+const moveDimensionNext = (): void => {
+  spcd3.move('German', true, 'English');
+}
+
+const moveDimensionBack = (): void => {
+  spcd3.move('German', true, 'Biology');
+}
+
+const invertDimensionNext = (): void => {
+  if(spcd3.getInversionStatus('English') === 'ascending') {
+    spcd3.setInversionStatus('English', 'descending');
+  }
+}
+
+const invertDimensionBack = (): void => {
+  if(spcd3.getInversionStatus('English') === 'descending') {
+    spcd3.setInversionStatus('English', 'ascending');
+  }
 }
 
 const addRow = (): void => {
@@ -497,9 +666,9 @@ const getCurrentStepIndex = (): number => {
 }
 
 const getDatasetForStep = (step: number): string | undefined => {
-  if (step == 0) return financeDataset.value;
-  if (step == 1) return healthDataset.value;
-  if (step == 2) return studentDataset.value;
+  if (step === 0) return financeDataset.value;
+  if (step === 1) return healthDataset.value;
+  if (step === 2) return studentDataset.value;
 }
 
 const writeTitleToDataset = (step: number): void => {
@@ -531,7 +700,7 @@ window.addEventListener('scroll', (): void => {
       (document.getElementById('outlier-button') as HTMLButtonElement).disabled = false;
       (document.getElementById('correlation-button') as HTMLButtonElement).disabled = false;
       (document.getElementById('correlation-neg-button') as HTMLButtonElement).disabled = false;
-    } else {
+    } else if (currentStep !== null) {
       (document.getElementById('outlier-button') as HTMLButtonElement).disabled = true;
       (document.getElementById('correlation-button') as HTMLButtonElement).disabled = true;
       (document.getElementById('correlation-neg-button') as HTMLButtonElement).disabled = true;
@@ -558,13 +727,19 @@ onMounted(async (): Promise<void> => {
   loadContent(recordOperationsText, 'content/recordoperations.html');
   loadContent(dimensionOperationsText, 'content/dimensionoperations.html');
   loadContent(usageText, 'content/usage.html');
-  loadContent(caseStudy1Text, 'content/casestudy1.html');
+  loadContent(caseStudy1Text, 'content/studentmarks.html');
   loadContent(caseStudy2Text, 'content/casestudy2.html');
   loadContent(healthDatasetText, 'content/healthdata.html');
-  loadContent(studentDatasetText, 'content/studentmarksdata.html');
   loadContent(multipleViewsText, 'content/multipleviews.html');
   loadContent(financeDatasetText, 'content/personalfinances.html');
   loadContent(referencesDatasetText, 'content/references.html');
+  loadContent(studentDatasetText, 'content/stepper/studentmarks.html');
+  loadContent(moveText, 'content/stepper/move.html');
+  loadContent(selectText, 'content/stepper/select.html');
+  loadContent(filterText, 'content/stepper/filter.html');
+  loadContent(rangeText, 'content/stepper/range.html');
+  loadContent(invertText, 'content/stepper/invert.html');
+  loadContent(summaryText, 'content/stepper/summary.html');
 
   const container = usageContainer.value;
   if(container) {
@@ -1210,5 +1385,42 @@ figcaption {
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
   font-size: smaller;
+}
+
+/* stepper */
+.stepper {
+  display: flex;
+  flex-direction: column;
+  text-align: justify;
+  width: calc(100% - 2rem);
+  max-width: 100%;
+  background: rgb(229, 229, 220);
+  border-radius: 0.3rem;
+  margin-top: 1rem;
+  opacity: 0;
+  transform: translateY(100px);
+  padding-right: 1.5rem;
+  padding-bottom: 0.5rem;
+  min-height: 30rem;
+
+  animation: slide-in-from-bottom 1s ease-out forwards;
+  animation-timeline: scroll();
+  animation-range: 0vh 100vh;
+  animation-duration: 1s;
+}
+
+.buttons {
+  margin-top: auto;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
+
+li.active {
+  background: rgba(0, 129, 175, 1) no-repeat center left;
+  color: white;
+  font-weight: bold;
+  border-radius: 0.25rem;
+  padding-left: 0.5rem;
 }
 </style>
