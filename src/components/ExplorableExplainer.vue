@@ -171,7 +171,7 @@
         </p>
 
         <div class="buttons">
-          <!--<button
+          <button
             class="reset-icon"
             :disabled="currentStep === 0"
             @click="reset"
@@ -181,7 +181,7 @@
               width="16" 
               height="16"
             />
-          </button>-->
+          </button>
           <button
             :disabled="currentStep === 0"
             @click="back"
@@ -202,7 +202,7 @@
               height="16"
             />
           </button>
-          <!--<button
+          <button
             :disabled="currentStep === 6"
             @click="skip"
           >
@@ -211,7 +211,7 @@
               width="16" 
               height="16"
             />
-          </button>-->
+          </button>
         </div>
       </div>
       <!--<div v-html="multipleViewsText" />-->
@@ -309,7 +309,7 @@ const back = (): void => {
   triggerBack(currentStep.value);
 }
 
-/*const reset = (): void => {
+const reset = (): void => {
   currentStep.value = 0;
   triggerReset();
 }
@@ -319,26 +319,33 @@ const skip = (): void => {
   triggerSkip();
 }
 
-const triggerReset = (): void => {
-  if (spcd3.getInversionStatus('English') == "descending") {
-    spcd3.setInversionStatus('English');
-  }
-  setRangeNext();
-  if (spcd3.isSelected('Sylvia')) {
-    spcd3.setUnselected('Sylvia');
-  }
-  filterRecordsNext();
-  moveDimensionNext();
- 
+function wait(ms: number) {
+  return new Promise<void>(resolve => window.setTimeout(resolve, ms))
 }
 
-const triggerSkip = (): void => {
+const triggerReset = async (): Promise<void> => {
+  invertDimensionBack();
+  await wait(200);
+  moveDimensionBack();
+  await wait(200);
+  filterRecordsBack();
+  await wait(200);
+  selectRecordBack();
+  await wait(200);
+  setRangeBack();
+}
+
+const triggerSkip = async (): Promise<void> => {
   setRangeNext();
+  await wait(200);
   selectRecordNext();
-  filterRecordsNext();
+  await wait(200);
   moveDimensionNext();
+  await wait(200);
   invertDimensionNext();
-}*/
+  await wait(200);
+  filterRecordsNext();
+}
 
 const triggerNext = (currentStep: number): void => {
   switch(currentStep) {
@@ -461,12 +468,7 @@ const setRangeNext = (): void => {
   const dimensions = spcd3.getAllDimensionNames();
   dimensions.forEach(function (dimension: string) {
     if (!isNaN(spcd3.getMinValue(dimension))) {
-      if(spcd3.getInversionStatus('English') === 'descending') {
-      spcd3.setDimensionRange(dimension, 100, 0);
-      }
-      else {
-        spcd3.setDimensionRange(dimension, 0, 100);
-      }
+      spcd3.setDimensionRange(dimension, 0, 100);
     }
   });
 }
@@ -474,20 +476,10 @@ const setRangeNext = (): void => {
 const setRangeBack = (): void => {
   const dimensions = spcd3.getAllDimensionNames();
   dimensions.forEach(function (dimension: string) {
-    const range = spcd3.getDimensionRange(dimension);
     if (!isNaN(spcd3.getMinValue(dimension))) {
       const min = spcd3.getMinValue(dimension);
       const max = spcd3.getMaxValue(dimension);
-      if(spcd3.getInversionStatus('English') === 'descending') {
-        if (range[1] !== min && range[1] !== 0) {
-          spcd3.setDimensionRange(dimension, min, max);
-        }
-      }
-      else {
-        if (range[0] !== min && range[0] !== 0) {
-          spcd3.setDimensionRange(dimension, min, max);
-        }
-      }
+      spcd3.setDimensionRange(dimension, min, max);
     }
   });
 }
@@ -511,12 +503,11 @@ const filterRecordsNext = (): void => {
 
 const filterRecordsBack = (): void => {
   const values = spcd3.getDimensionRange('English');
-  const filterValues = spcd3.getFilter('English');
-  if(spcd3.getInversionStatus('English') === 'ascending' && 
-    filterValues[0] > values[0]) {
+  //const filterValues = spcd3.getFilter('English');
+  if(spcd3.getInversionStatus('English') === 'ascending') {
     spcd3.setFilter('English', values[1], values[0]);
   }
-  else if (filterValues[1] > values[1]) {
+  else {
     spcd3.setFilter('English', values[1], values[0]);
   }
 }
@@ -691,21 +682,22 @@ const writeTitleToDataset = (step: number): void => {
 }
 
 window.addEventListener('scroll', (): void => {
-  const currentStep = getCurrentStepIndex();
-  if (currentStep !== lastStep) {
-    lastStep = currentStep;
-    const dataset = getDatasetForStep(currentStep);
-     writeTitleToDataset(currentStep);
-    if (currentStep === 1) {
+  const currentStepIndex = getCurrentStepIndex();
+  if (currentStepIndex !== lastStep) {
+    lastStep = currentStepIndex;
+    const dataset = getDatasetForStep(currentStepIndex);
+     writeTitleToDataset(currentStepIndex);
+    if (currentStepIndex === 1) {
       (document.getElementById('outlier-button') as HTMLButtonElement).disabled = false;
       (document.getElementById('correlation-button') as HTMLButtonElement).disabled = false;
       (document.getElementById('correlation-neg-button') as HTMLButtonElement).disabled = false;
-    } else if (currentStep !== null) {
+    } else if (currentStepIndex !== null) {
       (document.getElementById('outlier-button') as HTMLButtonElement).disabled = true;
       (document.getElementById('correlation-button') as HTMLButtonElement).disabled = true;
       (document.getElementById('correlation-neg-button') as HTMLButtonElement).disabled = true;
     }
     drawChart(dataset);
+    currentStep.value = 0;
   }
 });
 
