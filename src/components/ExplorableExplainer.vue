@@ -688,29 +688,33 @@ const writeTitleToDataset = (step: number): void => {
 
 window.addEventListener('scroll', (): void => {
   const currentStepIndex = getCurrentStepIndex();
+  // eslint-disable-next-line no-undef
+    const chart = document.getElementById("parallelcoords") as HTMLDivElement | null;
   if (currentStepIndex !== lastStep) {
     lastStep = currentStepIndex;
     const dataset = getDatasetForStep(currentStepIndex);
     writeTitleToDataset(currentStepIndex);
     if (currentStepIndex === 1) {
-      // eslint-disable-next-line no-undef
-      (document.getElementById('parallelcoords') as unknown as SVGElement).style.pointerEvents = "auto";
+      if (chart != null) {
+        chart.style.pointerEvents = "auto";
+      }
       (document.getElementById('outlier-button') as HTMLButtonElement).disabled = false;
       (document.getElementById('correlation-button') as HTMLButtonElement).disabled = false;
       (document.getElementById('correlation-neg-button') as HTMLButtonElement).disabled = false;
     } else if (currentStepIndex === 2) {
-     // eslint-disable-next-line no-undef
-     (document.getElementById('parallelcoords') as unknown as SVGElement).style.pointerEvents = "none";
+      if (chart != null) {
+        chart.style.pointerEvents = "none";
+      }
       (document.getElementById('outlier-button') as HTMLButtonElement).disabled = true;
       (document.getElementById('correlation-button') as HTMLButtonElement).disabled = true;
       (document.getElementById('correlation-neg-button') as HTMLButtonElement).disabled = true;
     } else if (currentStepIndex === 0) {
-      // eslint-disable-next-line no-undef
-      (document.getElementById('parallelcoords') as unknown as SVGElement).style.pointerEvents = "auto";
+      if (chart != null) {
+        chart.style.pointerEvents = "auto";
+      }
     }
 
-    // eslint-disable-next-line no-undef
-    const chart = document.getElementById("parallelcoords") as HTMLDivElement | null;
+    
     if (currentStepIndex == 3)
     {
       if (chart == null) return;
@@ -722,6 +726,7 @@ window.addEventListener('scroll', (): void => {
       </figure>`;
       chart.style.maxWidth = "40rem";
       chart.style.maxHeight = "auto";
+      chart.style.pointerEvents = "auto";
       chart.addEventListener('click', handleClick);
     }
     else {
