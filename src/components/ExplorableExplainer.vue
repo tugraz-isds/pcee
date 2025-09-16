@@ -693,13 +693,20 @@ window.addEventListener('scroll', (): void => {
     const dataset = getDatasetForStep(currentStepIndex);
     writeTitleToDataset(currentStepIndex);
     if (currentStepIndex === 1) {
+      // eslint-disable-next-line no-undef
+      (document.getElementById('parallelcoords') as unknown as SVGElement).style.pointerEvents = "auto";
       (document.getElementById('outlier-button') as HTMLButtonElement).disabled = false;
       (document.getElementById('correlation-button') as HTMLButtonElement).disabled = false;
       (document.getElementById('correlation-neg-button') as HTMLButtonElement).disabled = false;
     } else if (currentStepIndex === 2) {
+     // eslint-disable-next-line no-undef
+     (document.getElementById('parallelcoords') as unknown as SVGElement).style.pointerEvents = "none";
       (document.getElementById('outlier-button') as HTMLButtonElement).disabled = true;
       (document.getElementById('correlation-button') as HTMLButtonElement).disabled = true;
       (document.getElementById('correlation-neg-button') as HTMLButtonElement).disabled = true;
+    } else if (currentStepIndex === 0) {
+      // eslint-disable-next-line no-undef
+      (document.getElementById('parallelcoords') as unknown as SVGElement).style.pointerEvents = "auto";
     }
 
     // eslint-disable-next-line no-undef

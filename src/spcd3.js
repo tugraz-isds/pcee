@@ -10597,8 +10597,15 @@ function setFeatureAxis(svg, yAxis, active, parcoords, width, padding) {
         .append('div')
         .style('position', 'absolute')
         .style('visibility', 'hidden');
-    setBrushDown(featureAxis, parcoords, tooltipValues);
-    setBrushUp(featureAxis, parcoords, tooltipValues);
+    const brushOverlay = window.svg.append("rect")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", window.width)
+        .attr("height", height)
+        .style("fill", "transparent")
+        .style("pointer-events", "none");
+    setBrushDown(featureAxis, parcoords, tooltipValues, brushOverlay);
+    setBrushUp(featureAxis, parcoords, tooltipValues, brushOverlay);
     setRectToDrag(featureAxis, svg, parcoords, tooltipValuesTop, tooltipValuesDown);
     setMarker(featureAxis);
     setContextMenu(featureAxis, padding, parcoords, width);
@@ -10722,8 +10729,8 @@ function setMarker(featureAxis) {
             .attr('x', -22)
             .attr('y', 30)
             .attr('fill', 'none')
-            .attr('stroke', 'red')
-            .attr('stroke-width', '0.15rem')
+            .attr('stroke', "rgb(228, 90, 15)")
+            .attr('stroke-width', '0.1rem')
             .attr('opacity', '0');
     });
 }
@@ -10767,7 +10774,7 @@ function setRectToDrag(featureAxis, svg, parcoords, tooltipValuesTop, tooltipVal
         }));
     });
 }
-function setBrushUp(featureAxis, parcoords, tooltipValues) {
+function setBrushUp(featureAxis, parcoords, tooltipValues, brushOverlay) {
     featureAxis
         .each(function (d) {
         const processedDimensionName = cleanString(d.name);
@@ -10787,6 +10794,7 @@ function setBrushUp(featureAxis, parcoords, tooltipValues) {
         })
             .call(drag()
             .on('drag', (event, d) => {
+            brushOverlay.raise().style("pointer-events", "all");
             if (parcoords.newFeatures.length > 25) {
                 throttleBrushUp(processedDimensionName, event, d, parcoords, active, tooltipValues, window);
             }
@@ -10795,11 +10803,12 @@ function setBrushUp(featureAxis, parcoords, tooltipValues) {
             }
         })
             .on('end', () => {
+            brushOverlay.style("pointer-events", "none");
             tooltipValues.style('visibility', 'hidden');
         }));
     });
 }
-function setBrushDown(featureAxis, parcoords, tooltipValues) {
+function setBrushDown(featureAxis, parcoords, tooltipValues, brushOverlay) {
     featureAxis
         .each(function (d) {
         const processedDimensionName = cleanString(d.name);
@@ -10819,6 +10828,7 @@ function setBrushDown(featureAxis, parcoords, tooltipValues) {
         })
             .call(drag()
             .on('drag', (event, d) => {
+            brushOverlay.raise().style("pointer-events", "all");
             if (parcoords.newFeatures.length > 25) {
                 throttleBrushDown(processedDimensionName, event, d, parcoords, active, tooltipValues, window);
             }
@@ -10827,6 +10837,7 @@ function setBrushDown(featureAxis, parcoords, tooltipValues) {
             }
         })
             .on('end', () => {
+            brushOverlay.style("pointer-events", "none");
             tooltipValues.style('visibility', 'hidden');
         }));
     });
