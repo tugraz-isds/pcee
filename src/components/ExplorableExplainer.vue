@@ -719,6 +719,7 @@ window.addEventListener('scroll', (): void => {
     }
     else {
       if (chart ==  null) return;
+      chart.className = "pointer";
       chart.innerHTML = "";
       chart.style.maxWidth = "100%";
       chart.style.maxHeight = "auto";
