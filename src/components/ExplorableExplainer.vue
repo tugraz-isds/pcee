@@ -142,7 +142,6 @@
       <div v-html="healthDatasetText" />
       <div
         ref="usageContainer" 
-        class="cursor-zoom-in"
         v-html="usageText" 
       />
       <div class="stepper">
@@ -214,8 +213,7 @@
           </button>
         </div>
       </div>
-      <!--<div v-html="multipleViewsText" />-->
-      <!--<div v-html="referencesDatasetText" />-->
+      <div v-html="multipleViewsText" />
       <div
         v-if="zoomSrc"
         class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 z-[9999]"
@@ -228,10 +226,12 @@
       </div> 
     </div>
   </div>
+  <div id="border" />
+  <div v-html="referencesDatasetText" />
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, computed, nextTick, type Ref } from 'vue';
+import { ref, onMounted, onBeforeUnmount, computed, nextTick, type Ref, provide } from 'vue';
 import * as spcd3 from '../spcd3.js';
 import { columnsFinance, rowsFinance } from '../data.js';
 import gsap from 'gsap'
@@ -277,6 +277,11 @@ const rows = ref<Row[]>(structuredClone(rowsFinance));
 const header = ref<HTMLElement | null>(null);
 const multiLine = ref<HTMLElement | null>(null);
 const singleLine = ref<HTMLElement | null>(null);
+// eslint-disable-next-line no-undef
+const image = new Image();
+image.src = '/images/mva.png';
+provide('image', image);
+
 const supportsScrollDrivenAnimations: boolean =
   typeof CSS !== 'undefined' &&
   typeof CSS.supports === 'function' &&
@@ -320,7 +325,7 @@ const skip = (): void => {
 }
 
 function wait(ms: number) {
-  return new Promise<void>(resolve => window.setTimeout(resolve, ms))
+  return new Promise<void>(resolve => window.setTimeout(resolve, ms));
 }
 
 const triggerReset = async (): Promise<void> => {
@@ -461,7 +466,6 @@ const showNegativeCorrelation = (): void => {
     (document.getElementById('correlation-neg-button') as HTMLButtonElement).textContent = 'Fitness Score: Reset Position';
     spcd3.move('Fitness Score', true, 'Age');
   }
- 
 }
 
 const setRangeNext = (): void => {
@@ -503,7 +507,6 @@ const filterRecordsNext = (): void => {
 
 const filterRecordsBack = (): void => {
   const values = spcd3.getDimensionRange('English');
-  //const filterValues = spcd3.getFilter('English');
   if(spcd3.getInversionStatus('English') === 'ascending') {
     spcd3.setFilter('English', values[1], values[0]);
   }
@@ -675,8 +678,10 @@ const writeTitleToDataset = (step: number): void => {
   else if (step == 2) {
     titleElement.textContent = "Student Marks Dataset";
   }
-  else 
-  {
+  else if (step == 3) {
+    titleElement.textContent = "Coordinated Multiple Views";
+  }
+  else {
     titleElement.textContent = "";
   }
 }
@@ -686,17 +691,47 @@ window.addEventListener('scroll', (): void => {
   if (currentStepIndex !== lastStep) {
     lastStep = currentStepIndex;
     const dataset = getDatasetForStep(currentStepIndex);
-     writeTitleToDataset(currentStepIndex);
+    writeTitleToDataset(currentStepIndex);
     if (currentStepIndex === 1) {
       (document.getElementById('outlier-button') as HTMLButtonElement).disabled = false;
       (document.getElementById('correlation-button') as HTMLButtonElement).disabled = false;
       (document.getElementById('correlation-neg-button') as HTMLButtonElement).disabled = false;
-    } else if (currentStepIndex !== null) {
+    } else if (currentStepIndex === 2) {
       (document.getElementById('outlier-button') as HTMLButtonElement).disabled = true;
       (document.getElementById('correlation-button') as HTMLButtonElement).disabled = true;
       (document.getElementById('correlation-neg-button') as HTMLButtonElement).disabled = true;
     }
-    drawChart(dataset);
+
+    // eslint-disable-next-line no-undef
+    const chart = document.getElementById("parallelcoords") as HTMLDivElement | null;
+    if (currentStepIndex == 3)
+    {
+      if (chart == null) return;
+      chart.className = "cursor-zoom-in";
+      chart.innerHTML = `
+      <figure style="text-align:center;">
+        <img src="/images/mva.png" />
+        <figcaption style="font-size:smaller;">Figure 5: Multidimensional Visual Analyser (MVA)</figcaption>
+      </figure>`;
+      chart.style.maxWidth = "40rem";
+      chart.style.maxHeight = "auto";
+      chart.addEventListener('click', handleClick);
+    }
+    else {
+      if (chart ==  null) return;
+      chart.innerHTML = "";
+      chart.style.maxWidth = "100%";
+      chart.style.maxHeight = "auto";
+      drawChart(dataset);
+      let outlierbutton = (document.getElementById('outlier-button') as HTMLButtonElement);
+      if (outlierbutton !== null) {
+        outlierbutton.textContent = 'Show Outlier';
+      }
+      let negCorrelationButton = (document.getElementById('correlation-neg-button') as HTMLButtonElement);
+      if (negCorrelationButton !== null) {
+        negCorrelationButton.textContent = 'Move Fitness Score next to Age';
+      }
+    }
     currentStep.value = 0;
   }
 });
@@ -1371,6 +1406,7 @@ figure {
   flex: 1 1 8rem;
   text-align: center;
   margin: 0;
+  cursor: zoom-in;
 }
 
 figcaption {
@@ -1393,7 +1429,7 @@ figcaption {
   transform: translateY(100px);
   padding-right: 1.5rem;
   padding-bottom: 0.5rem;
-  min-height: 30rem;
+  min-height: 35rem;
 
   animation: slide-in-from-bottom 1s ease-out forwards;
   animation-timeline: scroll();
@@ -1414,5 +1450,20 @@ li.active {
   font-weight: bold;
   border-radius: 0.25rem;
   padding-left: 0.5rem;
+}
+
+/* References section */
+
+#border {
+  border-bottom: rgb(0, 129, 175) 0.4rem;
+  border-bottom-style: solid;
+  margin-top: 10rem;
+}
+
+.references {
+  background: white;
+  margin-top: 1rem;
+  margin-left: 1rem;
+  margin-right: 1rem;
 }
 </style>
