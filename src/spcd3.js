@@ -5290,74 +5290,61 @@ function dragAndBrush(cleanDimensionName, d, svg, event, parcoords, active, delt
         updateLines(parcoords, d.name, cleanDimensionName);
     }
 }
-function filter(dimensionName, topValue, bottomValue, parcoords) {
+function filter(dimensionName, min, max, parcoords) {
     const cleanDimensionName = cleanString(dimensionName);
     const invertStatus = getInvertStatus(dimensionName, parcoords.currentPosOfDims);
     const yScale = parcoords.yScales[dimensionName];
-    const [minValue, maxValue] = invertStatus ? yScale.domain().slice().reverse() : yScale.domain();
-    const scaleValue = (value) => {
-        if (isNaN(value)) {
-            return yScale(value);
-        }
-        const range = maxValue - minValue;
-        return invertStatus ? 240 / range * (value - minValue) + 80 :
-            240 / range * (maxValue - value) + 80;
-    };
-    let topPosition = scaleValue(topValue);
-    let bottomPosition = scaleValue(bottomValue);
-    let rectHeight = bottomPosition - topPosition;
+    let topPosition = yScale(min);
+    let bottomPosition = yScale(max);
+    if (invertStatus) {
+        [topPosition, bottomPosition] = [bottomPosition, topPosition];
+    }
+    const rectY = Math.min(topPosition, bottomPosition);
+    const rectHeight = Math.abs(bottomPosition - topPosition);
     addPosition(topPosition, parcoords.currentPosOfDims, dimensionName, 'top');
     addPosition(bottomPosition, parcoords.currentPosOfDims, dimensionName, 'bottom');
     select$1('#rect_' + cleanDimensionName)
         .transition()
         .duration(1000)
-        .attr('y', topPosition)
+        .attr('y', rectY)
         .attr('height', rectHeight)
         .style('opacity', 0.3);
     select$1('#triangle_down_' + cleanDimensionName)
         .transition()
         .duration(1000)
-        .attr('y', topPosition - 10);
+        .attr('y', rectY - 10);
     select$1('#triangle_up_' + cleanDimensionName)
         .transition()
         .duration(1000)
-        .attr('y', bottomPosition);
+        .attr('y', rectY + rectHeight);
     let active = select$1('g.active').selectAll('path');
-    const rangeTop = topPosition - 10;
-    const rangeBottom = bottomPosition;
-    const range = maxValue - minValue;
+    const rectTop = Math.min(topPosition, bottomPosition);
+    const rectBottom = Math.max(topPosition, bottomPosition);
+    if (isDimensionCategorical(dimensionName)) {
+        const selectedCategories = yScale.domain().filter(cat => {
+            const pos = yScale(cat);
+            return pos >= rectTop && pos <= rectBottom;
+        });
+        addRange$1(selectedCategories, parcoords.currentPosOfDims, dimensionName, "currentFilterCategories");
+    }
+    else {
+        addRange$1(yScale.invert(rectBottom), parcoords.currentPosOfDims, dimensionName, "currentFilterBottom");
+        addRange$1(yScale.invert(rectTop), parcoords.currentPosOfDims, dimensionName, "currentFilterTop");
+    }
     active.each(function (d) {
-        let value;
-        if (invertStatus) {
-            value = isNaN(maxValue) ? parcoords.yScales[dimensionName](d[dimensionName]) :
-                240 / range * (d[dimensionName] - minValue) + 80;
-        }
-        else {
-            value = isNaN(maxValue) ? parcoords.yScales[dimensionName](d[dimensionName]) :
-                240 / range * (maxValue - d[dimensionName]) + 80;
-        }
+        const value = yScale(d[dimensionName]);
         const currentLine = getLineName(d);
         const dimNameToCheck = select$1('.' + currentLine).text();
         const emptyString = '';
-        if (value < rangeTop + 10 || value > rangeBottom) {
-            if (dimNameToCheck == emptyString) {
+        if (value < rectTop || value > rectBottom) {
+            if (dimNameToCheck === emptyString) {
                 makeInactive(currentLine, dimensionName, 1000);
             }
         }
-        else if (value == 320 && value == rangeTop + 10 && value == rangeBottom) {
-            if (dimNameToCheck == emptyString) {
-                makeInactive(currentLine, dimensionName, 1000);
-            }
-        }
-        else if (value == 80 && value == rangeTop + 10 && value == rangeBottom) {
-            if (dimNameToCheck == emptyString) {
-                makeInactive(currentLine, dimensionName, 1000);
-            }
-        }
-        else if (dimNameToCheck == dimensionName && dimNameToCheck != emptyString) {
+        else if (dimNameToCheck === dimensionName && dimNameToCheck !== emptyString) {
             let checkedLines = [];
             parcoords.currentPosOfDims.forEach(function (item) {
-                if (item.top != 80 || item.bottom != 320) {
+                if (item.top != yScale.range()[1] || item.bottom != yScale.range()[0]) {
                     checkAllPositionsTop(item, dimensionName, parcoords, d, checkedLines, currentLine);
                     checkAllPositionsBottom(item, dimensionName, parcoords, d, checkedLines, currentLine);
                 }
@@ -5366,7 +5353,6 @@ function filter(dimensionName, topValue, bottomValue, parcoords) {
                 makeActive(currentLine, 1000);
             }
         }
-        else ;
     });
 }
 function getLineName(d) {
@@ -5474,6 +5460,17 @@ function updateLines(parcoords, dimensionName, cleanDimensionName) {
     const minValue = invertStatus == false ? parcoords.yScales[dimensionName].domain()[0] :
         parcoords.yScales[dimensionName].domain()[1];
     const range = maxValue - minValue;
+    if (isDimensionCategorical(dimensionName)) {
+        const selectedCategories = parcoords.yScales[dimensionName].domain().filter(cat => {
+            const pos = parcoords.yScales[dimensionName](cat);
+            return pos >= rangeTop && pos <= rangeBottom;
+        });
+        addRange$1(selectedCategories, parcoords.currentPosOfDims, dimensionName, "currentFilterCategories");
+    }
+    else {
+        addRange$1(parcoords.yScales[dimensionName].invert(rangeBottom), parcoords.currentPosOfDims, dimensionName, "currentFilterBottom");
+        addRange$1(parcoords.yScales[dimensionName].invert(rangeTop), parcoords.currentPosOfDims, dimensionName, "currentFilterTop");
+    }
     let active = select$1('g.active').selectAll('path');
     active.each(function (d) {
         let value;
@@ -5517,6 +5514,25 @@ function updateLines(parcoords, dimensionName, cleanDimensionName) {
         }
         else ;
     });
+}
+function addRange$1(value, dims, dimensionName, property) {
+    const dimSettings = dims.find(d => d.key === dimensionName);
+    if (!dimSettings)
+        return;
+    const yScale = parcoords.yScales[dimensionName];
+    const domain = yScale.domain();
+    if (typeof domain[0] === "number") {
+        dimSettings.type = "numeric";
+        if (property === "currentFilterTop" || property === "currentFilterBottom") {
+            dimSettings[property] = value;
+        }
+    }
+    else {
+        dimSettings.type = "categorical";
+        if (property === "currentFilterCategories") {
+            dimSettings.currentFilterCategories = value;
+        }
+    }
 }
 function checkAllPositionsTop(positionItem, dimensionName, parcoords, d, checkedLines, currentLine) {
     if (positionItem.key != dimensionName && positionItem.top != 70) {
@@ -5597,36 +5613,37 @@ function makeInactive(currentLineName, dimensionName, duration) {
 function addSettingsForBrushing(dimensionName, parcoords, invertStatus, filter) {
     const processedName = cleanString(dimensionName);
     const yScale = parcoords.yScales[processedName];
-    const [minValue, maxValue] = invertStatus ? yScale.domain().slice().reverse() : yScale.domain();
-    const scaleValue = (value) => {
-        if (isNaN(value)) {
-            return yScale(value);
-        }
-        const range = maxValue - minValue;
-        return invertStatus ? 240 / range * (value - minValue) + 80 :
-            240 / range * (maxValue - value) + 80;
-    };
     const dimensionSettings = parcoords.currentPosOfDims.find((d) => d.key === processedName);
-    var bottom = invertStatus ? scaleValue(dimensionSettings.currentFilterTop) : scaleValue(dimensionSettings.currentFilterBottom);
-    var top = invertStatus ? scaleValue(dimensionSettings.currentFilterBottom) : scaleValue(dimensionSettings.currentFilterTop);
-    var rectH = bottom - top;
+    let top, bottom;
+    if (isDimensionCategorical(dimensionName)) {
+        let categories = dimensionSettings.currentFilterCategories;
+        let positions = categories.map(cat => yScale(cat));
+        top = undefined(positions);
+        bottom = undefined(positions);
+    }
+    else {
+        top = yScale(dimensionSettings.currentFilterTop);
+        bottom = yScale(dimensionSettings.currentFilterBottom);
+    }
+    if (invertStatus) {
+        [top, bottom] = [bottom, top];
+    }
+    const rectY = Math.min(top, bottom);
+    const rectH = Math.abs(bottom - top);
     const rect = select$1('#rect_' + processedName);
     const triDown = select$1('#triangle_down_' + processedName);
     const triUp = select$1('#triangle_up_' + processedName);
-    const rectNode = rect.node();
-    if (!rectNode)
-        return;
     rect.transition()
         .duration(300)
-        .attr('y', top)
+        .attr('y', rectY)
         .attr('height', rectH)
         .style('opacity', 0.3);
     triDown.transition()
         .duration(300)
-        .attr('y', top - 10);
+        .attr('y', rectY - 10);
     triUp.transition()
         .duration(300)
-        .attr('y', bottom);
+        .attr('y', rectY + rectH);
     addPosition(top, parcoords.currentPosOfDims, dimensionName, 'top');
     addPosition(bottom, parcoords.currentPosOfDims, dimensionName, 'bottom');
 }
@@ -7784,9 +7801,17 @@ function setupYScales(height, padding, features, newDataset) {
         else {
             const max = Math.max(...newDataset.map(o => o[x.name]));
             const min = Math.min(...newDataset.map(o => o[x.name]));
-            yScales[x.name] = linear()
-                .domain([min, max])
-                .range([height - padding, padding]);
+            if (min === max) {
+                const epsilon = min === 0 ? 1 : Math.abs(min) * 0.01;
+                yScales[x.name] = linear()
+                    .domain([min - epsilon, max + epsilon])
+                    .range([height - padding, padding]);
+            }
+            else {
+                yScales[x.name] = linear()
+                    .domain([min, max])
+                    .range([height - padding, padding]);
+            }
         }
     });
     return yScales;
@@ -8055,60 +8080,42 @@ function filterMenu(values, dimension) {
             const header = dimension.length > 25 ? dimension.substr(0, 25) + '...' : dimension;
             select$1('#headerDimensionFilter').text(header);
             select$1('#buttonFilter').on('click', () => {
-                let min = select$1('#minFilterValue').node().value;
-                let max = select$1('#maxFilterValue').node().value;
+                let min = Number(select$1('#minFilterValue').node().value);
+                let max = Number(select$1('#maxFilterValue').node().value);
                 const ranges = getDimensionRange(dimension);
-                let isOk = true;
-                if (inverted) {
-                    if (min < ranges[1]) {
-                        min = ranges[1];
-                        select$1('#errorFilter').text(`Min value is smaller than 
-                                    ${getMinValue(dimension)}, filter is set to min.`)
-                            .style('display', 'block')
-                            .style('padding-left', 0.5 + 'rem')
-                            .style('padding-top', 0.5 + 'rem')
-                            .style('color', 'red')
-                            .style('font-size', 'x-small');
-                        isOk = false;
-                    }
-                    if (max > ranges[0]) {
-                        max = ranges[0];
-                        select$1('#errorFilter').text(`Max value is bigger than 
-                                    ${getMaxValue(dimension)}, filter is set to max.`)
-                            .style('display', 'block')
-                            .style('padding-left', 0.5 + 'rem')
-                            .style('padding-top', 0.5 + 'rem')
-                            .style('color', 'red')
-                            .style('font-size', 'x-small');
-                        isOk = false;
-                    }
+                let isOk = false;
+                let errorMessage = select$1('#errorFilter')
+                    .style('display', 'block')
+                    .style('padding-left', 0.5 + 'rem')
+                    .style('padding-top', 0.5 + 'rem')
+                    .style('color', 'red')
+                    .style('font-size', 'x-small');
+                const minRange = inverted ? ranges[1] : ranges[0];
+                const maxRange = inverted ? ranges[0] : ranges[1];
+                if (max < min) {
+                    max = maxRange;
+                    errorMessage.text(`Max value is smaller than min value, filter is set to min.`);
+                }
+                else if (min < minRange) {
+                    min = minRange;
+                    errorMessage.text(`Min value is smaller than ${getMinValue(dimension)}, filter is set to min.`);
+                }
+                else if (min > maxRange) {
+                    min = maxRange;
+                    errorMessage.text(`Min value is bigger than max range value, filter is set to max.`);
+                }
+                else if (max > maxRange) {
+                    max = maxRange;
+                    errorMessage.text(`Max value is bigger than ${getMaxValue(dimension)}, filter is set to max.`);
+                }
+                else if (max < minRange) {
+                    max = minRange;
+                    select$1('#errorFilter').text(`Max value is smaller than min range value, filter is set to min.`);
                 }
                 else {
-                    if (min < ranges[0]) {
-                        min = ranges[0];
-                        select$1('#errorFilter').text(`Min value is smaller than 
-                                    ${getMinValue(dimension)}, filter is set to min.`)
-                            .style('display', 'block')
-                            .style('padding-left', 0.5 + 'rem')
-                            .style('padding-top', 0.5 + 'rem')
-                            .style('color', 'red')
-                            .style('font-size', 'x-small');
-                        isOk = false;
-                    }
-                    if (max > ranges[1]) {
-                        max = ranges[1];
-                        select$1('#errorFilter').text(`Max value is bigger than 
-                                    ${getMaxValue(dimension)}, filter is set to max.`)
-                            .style('display', 'block')
-                            .style('padding-left', 0.5 + 'rem')
-                            .style('padding-top', 0.5 + 'rem')
-                            .style('color', 'red')
-                            .style('font-size', 'x-small');
-                        isOk = false;
-                    }
+                    isOk = true;
                 }
-                inverted ? setFilter(dimension, min, max) :
-                    setFilter(dimension, max, min);
+                setFilter(dimension, max, min);
                 if (isOk) {
                     select$1('#errorFilter').style('display', 'none');
                     select$1('#modalFilter').style('display', 'none');
@@ -9919,35 +9926,30 @@ function setFilterAfterSettingRanges(dimension, inverted) {
     const triUp = select$1('#triangle_up_' + dimension);
     const dimensionSettings = parcoords.currentPosOfDims.find((d) => d.key === dimension);
     const yScale = parcoords.yScales[dimension];
-    const [minValue, maxValue] = inverted ? yScale.domain().slice().reverse() : yScale.domain();
-    const scaleValue = (value) => {
-        if (isNaN(value)) {
-            return yScale(value);
-        }
-        const range = maxValue - minValue;
-        return inverted ? 240 / range * (value - minValue) + 80 :
-            240 / range * (maxValue - value) + 80;
-    };
-    var newMin = dimensionSettings.currentRangeBottom > dimensionSettings.currentFilterBottom ? dimensionSettings.currentRangeBottom : dimensionSettings.currentFilterBottom;
-    var newMax = dimensionSettings.currentRangeTop < dimensionSettings.currentFilterTop ? dimensionSettings.currentRangeTop : dimensionSettings.currentFilterTop;
-    var top = inverted ? scaleValue(newMin) : scaleValue(newMax);
-    var bottom = inverted ? scaleValue(newMax) : scaleValue(newMin);
-    var rectH = bottom - top;
+    const newMin = Math.max(dimensionSettings.currentRangeBottom, dimensionSettings.currentFilterBottom);
+    const newMax = Math.min(dimensionSettings.currentRangeTop, dimensionSettings.currentFilterTop);
+    let top = yScale(newMax);
+    let bottom = yScale(newMin);
+    if (inverted) {
+        [top, bottom] = [bottom, top];
+    }
+    const rectY = Math.min(top, bottom);
+    const rectH = Math.abs(bottom - top);
     const storeBottom = Math.min(newMin, newMax);
     const storeTop = Math.max(newMin, newMax);
-    addRange(storeBottom, window.parcoords.currentPosOfDims, dimension, 'currentFilterBottom');
-    addRange(storeTop, window.parcoords.currentPosOfDims, dimension, 'currentFilterTop');
+    addRange(storeBottom, parcoords.currentPosOfDims, dimension, 'currentFilterBottom');
+    addRange(storeTop, parcoords.currentPosOfDims, dimension, 'currentFilterTop');
     rect.transition()
         .duration(300)
-        .attr('y', top)
+        .attr('y', rectY)
         .attr('height', rectH)
         .style('opacity', 0.3);
     triDown.transition()
         .duration(300)
-        .attr('y', top - 10);
+        .attr('y', rectY - 10);
     triUp.transition()
         .duration(300)
-        .attr('y', bottom);
+        .attr('y', rectY + rectH);
 }
 function setDimensionRangeRounded(dimension, min, max) {
     const inverted = isInverted(dimension);
@@ -9982,6 +9984,7 @@ function setDimensionRangeRounded(dimension, min, max) {
             .attr('d', linePath(d, window.parcoords.newFeatures, window.parcoords))
             .ease(cubicInOut);
     });
+    setFilterAfterSettingRanges(dimension, inverted);
 }
 function getMinValue(dimension) {
     const item = window.parcoords.currentPosOfDims.find((object) => object.key == dimension);
@@ -10284,7 +10287,7 @@ function setUpParcoordData(data, newFeatures) {
         const ranges = getDimensionRange(newFeatures[i]);
         window.parcoords.currentPosOfDims.push({
             key: newFeatures[i], top: 80, bottom: 320, isInverted: false, index: i,
-            min: min, max: max, sigDig: 0, currentRangeTop: ranges[1], currentRangeBottom: ranges[0], currentFilterBottom: min, currentFilterTop: max
+            min: min, max: max, sigDig: 0, currentRangeTop: ranges[1], currentRangeBottom: ranges[0], currentFilterBottom: ranges[0], currentFilterTop: ranges[1]
         });
     }
     const hiddenDims = getAllHiddenDimensionNames();

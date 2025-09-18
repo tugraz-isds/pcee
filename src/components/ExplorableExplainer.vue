@@ -430,7 +430,23 @@ const addClickEvent = (): void => {
 }
 
 const selectOutlier = (): void => {
-  if (spcd3.isSelected('Patient F')) {
+  // eslint-disable-next-line no-undef
+  const path = document.getElementById("Patient-F") as SVGPathElement | null;
+  if (path) {
+    // eslint-disable-next-line no-undef
+    const stroke = getComputedStyle(path).getPropertyValue("stroke");
+    if (stroke === 'rgb(211, 211, 211)') {
+      return;
+    }
+  }  
+
+  if (spcd3.isSelected('Patient F') && (document.getElementById('outlier-button') as HTMLButtonElement).textContent === 'Show Outlier') {
+    (document.getElementById('outlier-button') as HTMLButtonElement).textContent = 'Hide Outlier';
+  }
+  else if (!spcd3.isSelected('Patient F') && (document.getElementById('outlier-button') as HTMLButtonElement).textContent !== 'Show Outlier') {
+    (document.getElementById('outlier-button') as HTMLButtonElement).textContent = 'Show Outlier';
+  }
+  else if (spcd3.isSelected('Patient F') && (document.getElementById('outlier-button') as HTMLButtonElement).textContent !== 'Show Outlier') {
     spcd3.setUnselected('Patient F');
     (document.getElementById('outlier-button') as HTMLButtonElement).textContent = 'Show Outlier';
   }
@@ -441,6 +457,23 @@ const selectOutlier = (): void => {
 };
 
 const showPositiveCorrelation = (): void => {
+  const hiddenDimensions = spcd3.getAllHiddenDimensionNames();
+  const isHidden = hiddenDimensions.includes("Age");
+  // eslint-disable-next-line no-undef
+  const invertError = document.getElementById("invert-error") as HTMLParagraphElement | null;
+
+  if (isHidden) {
+    if (invertError) {
+      invertError.textContent = "Dimension Age is hidden!";
+      return;
+    }
+  }
+  else {
+    if (invertError) {
+      invertError.textContent = "";
+    }
+  }
+
   if (spcd3.getInversionStatus('Age') == 'descending') {
     spcd3.setInversionStatus('Age', 'ascending');
   }
@@ -455,15 +488,32 @@ const showPositiveCorrelation = (): void => {
 }
 
 const showNegativeCorrelation = (): void => {
+  const hiddenDimensions = spcd3.getAllHiddenDimensionNames();
+  const isHiddenFitness = hiddenDimensions.includes("Fitness Score");
+  const isHiddenAge = hiddenDimensions.includes("Age");
+  // eslint-disable-next-line no-undef
+  const moveError = document.getElementById("move-error") as HTMLParagraphElement | null;
+  if (isHiddenFitness || isHiddenAge) {
+    if (moveError) {
+      moveError.textContent = "Fitness Score and/or Age is hidden!";
+      return;
+    }
+  }
+  else {
+    if (moveError) {
+      moveError.textContent = "";
+    }
+  }
+
   const posFitness = spcd3.getDimensionPosition('Fitness Score');
   const posAge = spcd3.getDimensionPosition('Age');
   const diff = posAge - posFitness;
-  if (diff == 1) {
-    (document.getElementById('correlation-neg-button') as HTMLButtonElement).textContent = 'Move Fitness Score next to Age';
+  if (diff === 1) {
+    (document.getElementById('correlation-neg-button') as HTMLButtonElement).textContent = 'Move Fitness Score Dimension';
     spcd3.move('Fitness Score', true, 'Cholesterol');
   }
   else {
-    (document.getElementById('correlation-neg-button') as HTMLButtonElement).textContent = 'Fitness Score: Reset Position';
+    (document.getElementById('correlation-neg-button') as HTMLButtonElement).textContent = 'Move Fitness Score Dimension';
     spcd3.move('Fitness Score', true, 'Age');
   }
 }
@@ -742,7 +792,17 @@ window.addEventListener('scroll', (): void => {
       }
       let negCorrelationButton = (document.getElementById('correlation-neg-button') as HTMLButtonElement);
       if (negCorrelationButton !== null) {
-        negCorrelationButton.textContent = 'Move Fitness Score next to Age';
+        negCorrelationButton.textContent = 'Move Fitness Score Dimension';
+      }
+      // eslint-disable-next-line no-undef
+      const moveError = document.getElementById("move-error") as HTMLParagraphElement | null;
+      if (moveError !== null) {
+        moveError.textContent = "";
+      }
+      // eslint-disable-next-line no-undef
+      const invertError = document.getElementById("invert-error") as HTMLParagraphElement | null;
+      if (invertError !== null) {
+        invertError.textContent = "";
       }
     }
     currentStep.value = 0;
@@ -1400,6 +1460,10 @@ button {
 .usage-button {
   margin-left: 1rem;
   margin-bottom: 0.5rem;
+}
+
+.error {
+  color: red;
 }
 
 /* Figures */
