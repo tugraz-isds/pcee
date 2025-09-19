@@ -330,26 +330,40 @@ function wait(ms: number) {
 
 const triggerReset = async (): Promise<void> => {
   invertDimensionBack();
-  await wait(200);
+  currentStep.value = 5;
+  await wait(800);
   moveDimensionBack();
-  await wait(200);
+  currentStep.value = 4;
+  await wait(800);
   filterRecordsBack();
-  await wait(200);
+  currentStep.value = 3;
+  await wait(800);
   selectRecordBack();
-  await wait(200);
+  currentStep.value = 2;
+  await wait(800);
   setRangeBack();
+  currentStep.value = 1;
+  await wait(800);
+  currentStep.value = 0;
 }
 
 const triggerSkip = async (): Promise<void> => {
   setRangeNext();
-  await wait(200);
+  currentStep.value = 1;
+  await wait(800);
   selectRecordNext();
-  await wait(200);
+  currentStep.value = 2;  
+  await wait(800);
   moveDimensionNext();
-  await wait(200);
-  invertDimensionNext();
-  await wait(200);
+  currentStep.value = 3;
+  await wait(800);
   filterRecordsNext();
+  currentStep.value = 4;
+  await wait(800);
+  invertDimensionNext();
+  currentStep.value = 5;
+  await wait(800);
+  currentStep.value = 6;
 }
 
 const triggerNext = (currentStep: number): void => {
@@ -430,6 +444,23 @@ const addClickEvent = (): void => {
 }
 
 const selectOutlier = (): void => {
+// eslint-disable-next-line no-undef
+  const showError = document.getElementById("show-error") as HTMLParagraphElement | null;
+
+  const isOutlierInactive = spcd3.isRecordInactive("Patient F");
+
+  if (isOutlierInactive) {
+    if (showError) {
+      showError.textContent = "Outlier (Patient F) is filtered out!";
+      return;
+    }
+  }
+  else {
+    if (showError) {
+      showError.textContent = "";
+    }
+  }
+
   // eslint-disable-next-line no-undef
   const path = document.getElementById("Patient-F") as SVGPathElement | null;
   if (path) {
@@ -563,6 +594,10 @@ const filterRecordsBack = (): void => {
   else {
     spcd3.setFilter('English', values[1], values[0]);
   }
+  // eslint-disable-next-line no-undef
+  document.querySelectorAll<SVGPathElement>("path").forEach(p => {
+    p.style.pointerEvents = "none";
+  });
 }
 
 const moveDimensionNext = (): void => {
@@ -779,8 +814,26 @@ window.addEventListener('scroll', (): void => {
       chart.style.pointerEvents = "auto";
       chart.addEventListener('click', handleClick);
     }
+    else if (currentStepIndex == 2) {
+      if (chart === null) return;
+      chart.className = "pointer";
+      chart.innerHTML = "";
+      chart.style.maxWidth = "100%";
+      chart.style.maxHeight = "auto";
+      drawChart(dataset);
+      // eslint-disable-next-line no-undef
+      const toolbar = (document.getElementById('toolbarRow') as HTMLDivElement);
+      if (toolbar !== null) {
+        toolbar.style.setProperty("font-size", "0vw", "important");
+      }
+      // eslint-disable-next-line no-undef
+      document.querySelectorAll<SVGPathElement>("path").forEach(p => {
+        p.style.pointerEvents = "none";
+      });
+
+    }
     else {
-      if (chart ==  null) return;
+      if (chart === null) return;
       chart.className = "pointer";
       chart.innerHTML = "";
       chart.style.maxWidth = "100%";
@@ -804,6 +857,20 @@ window.addEventListener('scroll', (): void => {
       if (invertError !== null) {
         invertError.textContent = "";
       }
+      // eslint-disable-next-line no-undef
+      const showError = document.getElementById("show-error") as HTMLParagraphElement | null;
+      if (showError !== null) {
+        showError.textContent = "";
+      }
+      // eslint-disable-next-line no-undef
+      const toolbar = (document.getElementById('toolbarRow') as HTMLDivElement);
+      if (toolbar !== null) {
+        toolbar.style.setProperty("font-size", "0.8vw", "important");
+      }
+      // eslint-disable-next-line no-undef
+      document.querySelectorAll<SVGPathElement>("path").forEach(p => {
+        p.style.pointerEvents = "stroke";
+      });
     }
     currentStep.value = 0;
   }
@@ -857,7 +924,7 @@ onMounted(async (): Promise<void> => {
         trigger: document.body,
         start: 'top top',
         end: '+=90vh',
-        scrub: 2,
+        scrub: 1,
         invalidateOnRefresh: true,
       },
       ease: 'none',
@@ -869,7 +936,7 @@ onMounted(async (): Promise<void> => {
         trigger: document.body,
         start: 'top top',
         end: '+=80vh',
-        scrub: 2,
+        scrub: 1,
         onUpdate: (self) => {
           if (multiLine.value) {
             multiLine.value.style.visibility =
@@ -886,7 +953,7 @@ onMounted(async (): Promise<void> => {
         trigger: document.body,
         start: '+=80vh',
         end: '+=90vh',
-        scrub: 2,
+        scrub: 1,
         onUpdate: self => {
           if (singleLine.value) {
             singleLine.value.style.visibility =
@@ -1107,9 +1174,6 @@ onMounted(async (): Promise<void> => {
   text-align: 'center';
 }
 
-#toolbarRow {
- font-size: 0.8vw !important;
-}
 
 .explorable-explainer {
   display: flex;

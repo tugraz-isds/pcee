@@ -5585,8 +5585,7 @@ function makeActive(currentLineName, duration) {
             .text('')
             .transition()
             .duration(duration)
-            .style('stroke', 'rgb(255, 165, 0)')
-            .style('opacity', '1');
+            .style('stroke', 'rgba(255, 165, 0, 1)');
     }
     else {
         select$1('.' + currentLineName)
@@ -5594,8 +5593,7 @@ function makeActive(currentLineName, duration) {
             .text('')
             .transition()
             .duration(duration)
-            .style('stroke', 'rgb(0, 129, 175)')
-            .style('opacity', '0.5');
+            .style('stroke', 'rgba(0, 129, 175, 0.5)');
     }
 }
 function makeInactive(currentLineName, dimensionName, duration) {
@@ -5604,8 +5602,7 @@ function makeInactive(currentLineName, dimensionName, duration) {
         .text(dimensionName)
         .transition()
         .duration(duration)
-        .style('stroke', 'lightgrey')
-        .style('opacity', 0.4)
+        .style('stroke', 'rgba(211, 211, 211, 0.4')
         .on('end', function () {
         select$1(this).style('pointer-events', 'none');
     });
@@ -8595,7 +8592,7 @@ function setActivePathLinesToDownload(svg, parcoords, key) {
     svg.append('g')
         .attr('class', 'active')
         .style('opacity', '0.5')
-        .style('stroke', 'rgb(0, 129, 175)')
+        .style('stroke', 'rgba(0, 129, 175, 0.5)')
         .style('stroke-width', '0.1rem')
         .style('fill', 'none')
         .selectAll('path')
@@ -10046,8 +10043,7 @@ function setSelection(records) {
             select$1('#' + cleanString(records[i]))
                 .classed('selected', true)
                 .transition()
-                .style('stroke', 'rgb(255, 165, 0)')
-                .style('opacity', '1');
+                .style('stroke', 'rgba(255, 165, 0, 1)');
         }
     }
 }
@@ -10072,8 +10068,13 @@ function setUnselected(record) {
     selectAll('#' + cleanString(record))
         .classed('selected', false)
         .transition()
-        .style('opacity', '0.5')
-        .style('stroke', 'rgb(0, 129, 175)');
+        .style('stroke', 'rgba(0, 129, 175, 0.5)');
+}
+function isRecordInactive(record) {
+    const stroke = select$1('#' + cleanString(record));
+    let node = stroke.node();
+    let style = node.style.stroke;
+    return style === 'rgba(211, 211, 211, 0.4)' ? true : false;
 }
 //---------- Selection Functions With IDs ----------
 function setSelectionWithId(recordIds) {
@@ -10463,10 +10464,9 @@ function setActivePathLines(svg, content, parcoords) {
         select$1(this)
             .attr('d', linePath(d, parcoords.newFeatures, parcoords));
     })
-        .style('opacity', '0.5')
         .style('pointer-events', 'stroke')
-        .style('stroke', 'rgb(0, 129, 175)')
-        .style('stroke-width', '0.1rem')
+        .style('stroke', 'rgba(0, 129, 175, 0.5)')
+        .style('stroke-width', '0.12rem')
         .style('fill', 'none')
         .on('pointerenter', handlePointerEnter)
         .on('pointerleave', handlePointerLeaveOrOut)
@@ -10656,8 +10656,7 @@ function highlight(data) {
         select$1('#' + item)
             .transition()
             .duration(5)
-            .style('opacity', '0.7')
-            .style('stroke', 'rgb(200, 28, 38)');
+            .style('stroke', 'rgba(200, 28, 38, 0.7)');
     });
 }
 function doNotHighlight() {
@@ -10667,13 +10666,11 @@ function doNotHighlight() {
         const line = select$1('#' + item);
         if (line.classed('selected')) {
             line.transition()
-                .style('stroke', 'rgb(255, 165, 0)')
-                .style('opacity', '1');
+                .style('stroke', 'rgba(255, 165, 0, 1)');
         }
         else {
             line.transition()
-                .style('stroke', 'rgb(0, 129, 175)')
-                .style('opacity', '0.5');
+                .style('stroke', 'rgba(0, 129, 175, 0.5)');
         }
     });
     currentlyHighlightedItems = [];
@@ -10690,8 +10687,7 @@ function clearSelection() {
         select$1('#' + cleanString(element))
             .classed('selected', false)
             .transition()
-            .style('stroke', 'rgb(0, 129, 175)')
-            .style('opacity', '0.5');
+            .style('stroke', 'rgba(0, 129, 175, 0.5)');
     });
 }
 function setInvertIcon(featureAxis, padding) {
@@ -11040,5 +11036,5 @@ function checkIfDuplicatesExists(value) {
     return new Set(value).size !== value.length;
 }
 
-export { createSvgString, deleteChart, drawChart, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelected, hide, hideMarker, invert, invertWoTransition, isDimensionCategorical, isSelected, isSelectedWithRecordId, loadCSV, move, moveByOne, refresh, reset, saveAsSvg, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setFilter, setInversionStatus, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setUnselected, setUnselectedWithId, show, showMarker, swap, throttleShowValues, toggleSelection, toggleSelectionWithId };
+export { createSvgString, deleteChart, drawChart, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelected, hide, hideMarker, invert, invertWoTransition, isDimensionCategorical, isRecordInactive, isSelected, isSelectedWithRecordId, loadCSV, move, moveByOne, refresh, reset, saveAsSvg, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setFilter, setInversionStatus, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setUnselected, setUnselectedWithId, show, showMarker, swap, throttleShowValues, toggleSelection, toggleSelectionWithId };
 //# sourceMappingURL=spcd3.js.map
