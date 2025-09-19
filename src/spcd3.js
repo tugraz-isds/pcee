@@ -7919,6 +7919,8 @@ function createToolTipForValues(recordData) {
 }
 function getAllPointerEventsData(event, hoverlabel) {
     const selection = selectAll(document.elementsFromPoint(event.clientX, event.clientY)).filter('path');
+    if (selection == null)
+        return;
     const object = selection._groups;
     const data = [];
     for (let i = 0; i < object[0].length; i++) {
@@ -9361,7 +9363,7 @@ function createToolbar(dataset) {
         .style('display', 'flex')
         .style('flex-wrap', 'wrap')
         .style('align-items', 'center')
-        .style('font-size', '1vw')
+        .style('font-size', '0.8vw')
         .style('margin-top', '1rem')
         .style('margin-left', '1rem')
         .style('margin-bottom', '0');
@@ -9959,8 +9961,9 @@ function setDimensionRangeRounded(dimension, min, max) {
         window.parcoords.yScales[dimension].domain([min, max]).nice();
         window.yAxis = setupYAxis(window.parcoords.yScales, window.parcoords.newDataset, hiddenDims);
     }
-    addRange(Math.floor(min), window.parcoords.currentPosOfDims, dimension, 'currentRangeBottom');
-    addRange(Math.ceil(max), window.parcoords.currentPosOfDims, dimension, 'currentRangeTop');
+    const roundedRanges = window.parcoords.yScales[dimension].domain();
+    addRange(roundedRanges[0], window.parcoords.currentPosOfDims, dimension, 'currentRangeBottom');
+    addRange(roundedRanges[1], window.parcoords.currentPosOfDims, dimension, 'currentRangeTop');
     select$1('#dimension_axis_' + cleanString(dimension))
         .call(yAxis[dimension])
         .transition()

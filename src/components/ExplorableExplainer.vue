@@ -145,7 +145,17 @@
         v-html="usageText" 
       />
       <div class="stepper">
-        <h2>Case Study: Student Marks</h2>
+        <div 
+          id="study-button"
+          style="display: flex; align-items: center; gap: 0.5rem;"
+        >
+          <h2>Case Study: Student Marks</h2>
+          <button
+            id="activate-button"
+          >
+            Activate Interactivity
+          </button>
+        </div>
         <p 
           class="step"
           data-step="2"
@@ -171,7 +181,8 @@
 
         <div class="buttons">
           <button
-            class="reset-icon"
+            id="reset-button"
+            class="stepper-button"
             :disabled="currentStep === 0"
             @click="reset"
           >
@@ -182,6 +193,8 @@
             />
           </button>
           <button
+            id="start-button"
+            class="stepper-button"
             :disabled="currentStep === 0"
             @click="back"
           >
@@ -192,6 +205,7 @@
             />
           </button>
           <button
+            class="stepper-button"
             :disabled="currentStep === steps.length - 1"
             @click="next"
           >
@@ -202,7 +216,8 @@
             />
           </button>
           <button
-            :disabled="currentStep === 6"
+            class="stepper-button"
+            :disabled="currentStep === steps.length - 1"
             @click="skip"
           >
             <img 
@@ -287,6 +302,7 @@ const supportsScrollDrivenAnimations: boolean =
   typeof CSS.supports === 'function' &&
   CSS.supports('animation-timeline: scroll()');
 let lastStep = -1;
+let status = false;
 
 const steps = [
   { title: 'Student Marks Dataset', content: studentDatasetText},
@@ -440,6 +456,67 @@ const addClickEvent = (): void => {
   const negCorrelationButton = document.getElementById('correlation-neg-button');
   if (negCorrelationButton) {
     negCorrelationButton.addEventListener('click', showNegativeCorrelation);
+  }
+  const activateButton = document.getElementById('study-button');
+  if (activateButton) {
+    activateButton.addEventListener('click', activateChart);
+  }
+}
+
+const activateChart = async (): Promise<void> => {
+  const buttons = document.querySelectorAll<HTMLButtonElement>('.stepper-button');
+  const currentStepIndex = getCurrentStepIndex();
+  if (currentStepIndex !== 2) return;
+  if (!status) {
+  // eslint-disable-next-line no-undef
+    const chart = document.getElementById("parallelcoords") as HTMLDivElement | null;
+    if (chart != null) {
+        chart.style.pointerEvents = "auto";
+    }
+    // eslint-disable-next-line no-undef
+    const toolbar = (document.getElementById('toolbarRow') as HTMLDivElement);
+    if (toolbar !== null) {
+      toolbar.style.setProperty("font-size", "0.8vw", "important");
+    }
+    // eslint-disable-next-line no-undef
+    document.querySelectorAll<SVGPathElement>("path").forEach(p => {
+      p.style.pointerEvents = "stroke";
+    });
+    buttons.forEach(btn => {
+      btn.disabled = true;
+    });
+    status = true;
+    (document.getElementById('activate-button') as HTMLButtonElement).textContent = "Deactivate Interactivity";
+  }
+  else {
+    const dataset = getDatasetForStep(currentStepIndex);
+    writeTitleToDataset(currentStepIndex);
+    drawChart(dataset);
+    // eslint-disable-next-line no-undef
+    const chart = document.getElementById("parallelcoords") as HTMLDivElement | null;
+    if (chart != null) {
+        chart.style.pointerEvents = "none";
+    }
+    // eslint-disable-next-line no-undef
+    const toolbar = (document.getElementById('toolbarRow') as HTMLDivElement);
+    if (toolbar !== null) {
+      toolbar.style.setProperty("font-size", "0vw", "important");
+    }
+    // eslint-disable-next-line no-undef
+    document.querySelectorAll<SVGPathElement>("path").forEach(p => {
+      p.style.pointerEvents = "none";
+    });
+    buttons.forEach(btn => {
+      if (btn.id === "start-button" || btn.id === "reset-button") {
+        btn.disabled = true;
+      }
+      else {
+        btn.disabled = false;
+      }
+    });
+
+    status = false;
+    (document.getElementById('activate-button') as HTMLButtonElement).textContent = "Activate Interactivity";
   }
 }
 
@@ -786,6 +863,8 @@ window.addEventListener('scroll', (): void => {
       (document.getElementById('outlier-button') as HTMLButtonElement).disabled = false;
       (document.getElementById('correlation-button') as HTMLButtonElement).disabled = false;
       (document.getElementById('correlation-neg-button') as HTMLButtonElement).disabled = false;
+      (document.getElementById('activate-button') as HTMLButtonElement).disabled = true;
+     
     } else if (currentStepIndex === 2) {
       if (chart != null) {
         chart.style.pointerEvents = "none";
@@ -793,6 +872,7 @@ window.addEventListener('scroll', (): void => {
       (document.getElementById('outlier-button') as HTMLButtonElement).disabled = true;
       (document.getElementById('correlation-button') as HTMLButtonElement).disabled = true;
       (document.getElementById('correlation-neg-button') as HTMLButtonElement).disabled = true;
+      (document.getElementById('activate-button') as HTMLButtonElement).disabled = false;
     } else if (currentStepIndex === 0) {
       if (chart != null) {
         chart.style.pointerEvents = "auto";
@@ -830,6 +910,18 @@ window.addEventListener('scroll', (): void => {
       document.querySelectorAll<SVGPathElement>("path").forEach(p => {
         p.style.pointerEvents = "none";
       });
+      const buttons = document.querySelectorAll<HTMLButtonElement>('.stepper-button');
+      buttons.forEach(btn => {
+      if (btn.id === "start-button" || btn.id === "reset-button") {
+        btn.disabled = true;
+      }
+      else {
+        btn.disabled = false;
+      }
+    });
+
+    status = false;
+    (document.getElementById('activate-button') as HTMLButtonElement).textContent = "Activate Interactivity";
 
     }
     else {
