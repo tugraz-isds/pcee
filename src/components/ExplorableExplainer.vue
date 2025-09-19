@@ -294,7 +294,7 @@ const multiLine = ref<HTMLElement | null>(null);
 const singleLine = ref<HTMLElement | null>(null);
 // eslint-disable-next-line no-undef
 const image = new Image();
-image.src = '/images/mva.png';
+image.src = 'images/mva.png';
 provide('image', image);
 
 const supportsScrollDrivenAnimations: boolean =
@@ -886,7 +886,7 @@ window.addEventListener('scroll', (): void => {
       chart.className = "cursor-zoom-in";
       chart.innerHTML = `
       <figure style="text-align:center;">
-        <img src="/images/mva.png" />
+        <img src="images/mva.png" />
         <figcaption style="font-size:smaller;">Figure 5: Multidimensional Visual Analyser (MVA)</figcaption>
       </figure>`;
       chart.style.maxWidth = "40rem";
