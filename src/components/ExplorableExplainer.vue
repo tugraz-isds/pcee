@@ -30,17 +30,17 @@
     class="header-spacer-polyfill"
   />
 
-  <div class="explorable-explainer">
+  <div class="explorable-explainer flex flex-col md:flex-row gap-4">
     <div
       ref="textArea"
-      class="chart-container"
+      class="chart-container flex-1 basis-[30rem] relative justify-center"
     >
       <div class="main-chart">
         <h3 id="chart-title">Personal Finances Dataset</h3>
         <div id="parallelcoords" />
       </div>
     </div>
-    <div class="text-container">
+    <div class="text-container flex-1 basis-[23rem] min-w-[23rem] flex flex-col w-full">
       <div v-html="introText" />
       <div v-html="financeDatasetText" />
       <div class="table-container">
@@ -887,9 +887,10 @@ window.addEventListener('scroll', (): void => {
         <img src="images/mva.png" />
         <figcaption style="font-size:smaller;">Figure 5: Multidimensional Visual Analyser (MVA)</figcaption>
       </figure>`;
-      chart.style.maxWidth = "40rem";
       chart.style.maxHeight = "auto";
       chart.style.pointerEvents = "auto";
+      chart.style.justifyContent = "center";
+      chart.style.alignItems = "center";
       chart.addEventListener('click', handleClick);
     }
     else if (currentStepIndex == 2) {
@@ -1147,14 +1148,14 @@ onMounted(async (): Promise<void> => {
 .use-native {
   animation: sticky-header-move-and-size-desktop linear forwards;
   animation-timeline: scroll();
-  animation-range: 0vh 90vh;
+  animation-range: 0vh 80vh;
 }
 
 @media (max-width: 960px) and (orientation: portrait){
   .use-native {
     animation: sticky-header-move-and-size-tablet linear forwards;
     animation-timeline: scroll();
-    animation-range: 0vh 90vh;
+    animation-range: 0vh 80vh;
   }
 
   .sticky-header {
@@ -1166,7 +1167,7 @@ onMounted(async (): Promise<void> => {
   .use-native {
     animation: sticky-header-move-and-size-mobile linear forwards;
     animation-timeline: scroll();
-    animation-range: 0vh 90vh;
+    animation-range: 0vh 80vh;
   }
 
   .sticky-header {
@@ -1179,15 +1180,14 @@ onMounted(async (): Promise<void> => {
     background-position: 50% 0%;
     height: 100vh;
     width: 100%;
-    font-size: 3rem;
+    font-size: xx-large;
   }
 
   to {
     background-position: 50% 100%;
     height: 6.5vh;
     width: 100%;
-    font-size: 2rem;
-    padding-left: 1rem;
+    font-size: larger;
   }
 }
 
@@ -1197,15 +1197,14 @@ onMounted(async (): Promise<void> => {
       background-position: 50% 0%;
       height: 100vh;
       width: 100%;
-      font-size: 3rem;
+      font-size: xx-large;
     }
 
     to {
       background-position: 50% 100%;
       height: 6vh;
       width: 100%;
-      font-size: 1.3rem;
-      padding-left: 1rem;
+      font-size: larger;
     }
   }
 }
@@ -1216,15 +1215,14 @@ onMounted(async (): Promise<void> => {
       background-position: 50% 0%;
       height: 100vh;
       width: 100%;
-      font-size: 2rem;
+      font-size: x-large;
     }
 
     to {
       background-position: 50% 100%;
       height: 6vh;
       width: 100%;
-      font-size: 1rem;
-      padding-left: 1rem;
+      font-size: large;
     }
   }
 }
@@ -1235,15 +1233,14 @@ onMounted(async (): Promise<void> => {
       background-position: 50% 0%;
       height: 100vh;
       width: 100%;
-      font-size: 2rem;
+      font-size: x-large;
     }
 
     to {
       background-position: 50% 100%;
       height: 6.5vh;
       width: 100%;
-      font-size: 1rem;
-      padding-left: 1.25rem;
+      font-size: large;
     }
   }
 }
@@ -1258,9 +1255,10 @@ onMounted(async (): Promise<void> => {
 
 /* Desktop (chart and text row) */
 #pc_svg {
-  height: 22rem;
-  justify-content: 'center';
-  text-align: 'center';
+  display: block;
+  height: auto;
+  max-height: 38rem;
+  width: 100%;;
 }
 
 #chart-title {
@@ -1271,34 +1269,21 @@ onMounted(async (): Promise<void> => {
   margin-top: 1rem;
 }
 
-.explorable-explainer {
-  display: flex;
-  gap: 1rem;
-}
-
-.chart-container {
-  flex: 1 1 24rem;
-  min-width: 24rem;
-  position: relative;
-  justify-content: center;
-}
-
 .main-chart {
   position: sticky;
-  top: calc(10vh + 2rem);
-  padding-top: 3rem;
-  display: grid !important;
+  top: calc(10vh + 1rem);
+}
+
+#parallelcoords {
+  display: flex;
   justify-content: center !important;
   align-items: center !important;
-  padding: 0;
 }
 
 .text-container {
-  flex: 1 1 22rem;
-  min-width: 22rem;
-  flex-direction: column;
-  width: 100%;
+  margin-right: 1rem;
 }
+
 
 /* Tablet portrait (chart and text column) */
 @media (max-width: 960px) and (orientation: portrait) {
@@ -1312,7 +1297,7 @@ onMounted(async (): Promise<void> => {
 
   .main-chart {
     position: fixed;
-    top: 4.5rem;
+    top: 2.9rem;
     left: 0;
     width: 100%;
     background: white;
@@ -1322,8 +1307,6 @@ onMounted(async (): Promise<void> => {
   .chart-container {
     flex: 1 1 20rem;
     min-width: 100%;
-    padding-left: 1.7rem;
-    padding-bottom: 0;
   }
 
   .text-container {
@@ -1332,8 +1315,6 @@ onMounted(async (): Promise<void> => {
 
   #pc_svg {
     height: 18rem;
-    justify-content: 'center';
-    text-align: 'center';
   }
 }
 
@@ -1370,7 +1351,6 @@ onMounted(async (): Promise<void> => {
   .chart-container {
     flex: 1 1 20rem;
     min-width: 100%;
-    padding-left: 1.7rem;
     padding-bottom: 0;
   }
 
@@ -1380,13 +1360,11 @@ onMounted(async (): Promise<void> => {
 
   #pc_svg {
     height: 18rem;
-    justify-content: 'center';
-    text-align: 'center';
   }
 }
 
 /* Mobile landscape (chart and text row) */
-@media (max-height: 550px) and (orientation: landscape) {
+@media (max-height: 500px) and (orientation: landscape) {
   .explorable-explainer {
     flex-direction: row;
   }
@@ -1398,26 +1376,21 @@ onMounted(async (): Promise<void> => {
   .main-chart {
     position: sticky;
     top: 2rem;
-    padding-top: 0;
     height: auto;
   }
 
   .chart-container {
     flex: 1 1 50%;
     min-width: 40%;
-    padding: 0;
   }
 
   .text-container {
     flex: 1 1 50%;
     min-width: 40%;
-    padding: 0 1rem;
   }
 
   #pc_svg {
     height: 16rem;
-    justify-content: 'center';
-    text-align: 'center';
   }
 }
 
@@ -1508,7 +1481,6 @@ ul {
 .table-container {
   flex: 1 1 20rem;
   max-height: 30rem;
-  overflow-y: auto;
   padding-top: 1rem;
   margin-left: 0.5rem;
   position: relative;

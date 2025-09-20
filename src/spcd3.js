@@ -10121,8 +10121,8 @@ function drawChart(content) {
         .style('margin', '0')
         .style('padding', '0')
         .style('text-align', 'left')
-        .style('justify-content', 'flex-start')
-        .style('align-items', 'flex-start');
+        .style('justify-content', 'center')
+        .style('align-items', 'center');
     const chartWrapper = wrapper.append('div')
         .attr('id', 'chartWrapper')
         .style('display', 'block')
@@ -10142,14 +10142,8 @@ function drawChart(content) {
     createToolbar(window.parcoords.newDataset);
     window.svg = chartWrapper.append('svg')
         .attr('id', 'pc_svg')
-        .attr('viewBox', [-10, 20, window.width, height])
-        .attr('preserveAspectRatio', 'xMinYMin meet')
-        .attr('font-family', 'Verdana, sans-serif')
-        .attr('user-select', 'none')
-        .style('display', 'block')
-        .style('width', '100%')
-        .style('margin-top', 0)
-        .style('margin-left', 0);
+        .attr('viewBox', [0, 0, window.width, height])
+        .attr('font-family', 'Verdana, sans-serif');
     setDefsForIcons();
     setFeatureAxis(svg, yAxis, window.active, window.parcoords, width, window.padding);
     window.active = setActivePathLines(svg, content, window.parcoords);
