@@ -804,6 +804,16 @@ const loadDataset = async (filePath: string): Promise<string> => {
   }
 };
 
+const getOrientation = (): number => {
+  if (window.innerWidth < 600) {
+    return window.innerHeight * 0.95;
+  } else if (window.innerWidth < 1200) {
+    return window.innerHeight * 0.95;
+  } else {
+    return window.innerHeight * 0.5;
+  }
+}
+
 const getCurrentStepIndex = (): number => {
   const steps = document.querySelectorAll<HTMLElement>('.step');
   let currentIndex = 0
@@ -811,7 +821,8 @@ const getCurrentStepIndex = (): number => {
 
   steps.forEach((step) => {
     const rect = step.getBoundingClientRect()
-    const isHalfInView = rect.top <= window.innerHeight * 0.5
+    const steppoint = getOrientation();
+    const isHalfInView = rect.top <= steppoint;
     if (isHalfInView && (maxVisibleTop === null || rect.top > maxVisibleTop)) {
       maxVisibleTop = rect.top;
       currentIndex = parseInt(step.dataset.step ?? "0", 10);
@@ -857,6 +868,7 @@ window.addEventListener('scroll', (): void => {
     writeTitleToDataset(currentStepIndex);
     if (currentStepIndex === 1) {
       if (chart != null) {
+        chart.style.visibility = 'visible';
         chart.style.pointerEvents = "auto";
       }
       (document.getElementById('outlier-button') as HTMLButtonElement).disabled = false;
@@ -866,6 +878,7 @@ window.addEventListener('scroll', (): void => {
      
     } else if (currentStepIndex === 2) {
       if (chart != null) {
+        chart.style.visibility = 'visible';
         chart.style.pointerEvents = "none";
       }
       (document.getElementById('outlier-button') as HTMLButtonElement).disabled = true;
@@ -874,6 +887,7 @@ window.addEventListener('scroll', (): void => {
       (document.getElementById('activate-button') as HTMLButtonElement).disabled = false;
     } else if (currentStepIndex === 0) {
       if (chart != null) {
+        chart.style.visibility = 'visible';
         chart.style.pointerEvents = "auto";
       }
     }
@@ -881,6 +895,7 @@ window.addEventListener('scroll', (): void => {
     if (currentStepIndex == 3)
     {
       if (chart == null) return;
+      chart.style.visibility = 'visible';
       chart.className = "cursor-zoom-in";
       chart.innerHTML = `
       <figure style="text-align:center;">
@@ -895,6 +910,7 @@ window.addEventListener('scroll', (): void => {
     }
     else if (currentStepIndex == 2) {
       if (chart === null) return;
+      chart.style.visibility = 'visible';
       chart.className = "pointer";
       chart.innerHTML = "";
       chart.style.maxWidth = "100%";
@@ -925,6 +941,7 @@ window.addEventListener('scroll', (): void => {
     }
     else {
       if (chart === null) return;
+      chart.style.visibility = 'visible';
       chart.className = "pointer";
       chart.innerHTML = "";
       chart.style.maxWidth = "100%";
@@ -962,6 +979,11 @@ window.addEventListener('scroll', (): void => {
       document.querySelectorAll<SVGPathElement>("path").forEach(p => {
         p.style.pointerEvents = "stroke";
       });
+    }
+
+    if (currentStepIndex == 4) {
+      if (chart == null) return;
+      chart.style.visibility = 'hidden';
     }
     currentStep.value = 0;
   }
@@ -1276,8 +1298,8 @@ onMounted(async (): Promise<void> => {
 
 #parallelcoords {
   display: flex;
-  justify-content: center !important;
-  align-items: center !important;
+  justify-content: center;
+  align-items: center;
 }
 
 .text-container {
@@ -1319,13 +1341,35 @@ onMounted(async (): Promise<void> => {
 }
 
 /* Mini tablet (chart and text column)*/
-@media (max-width: 768px) and (orientation: portrait) {
-  .main-chart {
-    top: 2.7rem;
+@media (max-width: 800px) and (orientation: portrait) {
+  #chart-title {
+    font-size: larger;
   }
 
-    #chart-title {
-    font-size: larger;
+  .explorable-explainer {
+    flex-direction: column;
+  }
+
+  .main-chart {
+    position: fixed;
+    top: 2.9rem;
+    left: 0;
+    width: 100%;
+    background: white;
+    z-index: 100;
+  }
+
+  .chart-container {
+    flex: 1 1 18rem;
+    min-width: 100%;
+  }
+
+  .text-container {
+    min-width: 100%;
+  }
+
+  #pc_svg {
+    height: 16rem;
   }
 }
 
@@ -1363,8 +1407,35 @@ onMounted(async (): Promise<void> => {
   }
 }
 
+/* Mobile portrait (chart and text column) */
+@media (max-width: 450px) and (orientation: portrait) {
+  .explorable-explainer {
+    flex-direction: column;
+  }
+
+  #chart-title {
+    font-size: large;
+  }
+
+  .main-chart {
+    position: fixed;
+    top: 2.5rem;
+    left: 0;
+    width: 100%;
+    z-index: 100;
+    justify-content: left !important;
+    align-items: left !important;
+  }
+
+  .chart-container {
+    flex: 1 1 8rem;
+    min-width: 100%;
+    padding-bottom: 0;
+  }
+}
+
 /* Mobile landscape (chart and text row) */
-@media (max-height: 500px) and (orientation: landscape) {
+@media (max-height: 600px) and (orientation: landscape) {
   .explorable-explainer {
     flex-direction: row;
   }
@@ -1404,7 +1475,7 @@ section {
   margin-top: 1rem;
   opacity: 0;
   transform: translateY(100px);
-  padding-right: 0.5rem;
+  padding-right: 1rem;
   margin-left: 0.5rem;
   margin-right: 0.5rem;
   padding-bottom: 0.5rem;
@@ -1646,7 +1717,7 @@ figcaption {
   margin-top: 1rem;
   opacity: 0;
   transform: translateY(100px);
-  padding-right: 0.5rem;
+  padding-right: 1rem;
   margin-left: 0.5rem;
   margin-right: 0.5rem;
   padding-bottom: 0.5rem;
