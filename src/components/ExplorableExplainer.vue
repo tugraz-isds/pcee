@@ -269,7 +269,6 @@ const interactiveOperationsText = ref('');
 const recordOperationsText = ref('');
 const dimensionOperationsText = ref('');
 const usageText = ref('');
-const caseStudy1Text = ref('');
 const caseStudy2Text = ref('');
 const healthDatasetText = ref('');
 const studentDatasetText = ref('');
@@ -878,7 +877,6 @@ window.addEventListener('scroll', (): void => {
         chart.style.pointerEvents = "auto";
       }
     }
-
     
     if (currentStepIndex == 3)
     {
@@ -986,7 +984,6 @@ onMounted(async (): Promise<void> => {
   loadContent(recordOperationsText, 'content/recordoperations.html');
   loadContent(dimensionOperationsText, 'content/dimensionoperations.html');
   loadContent(usageText, 'content/usage.html');
-  loadContent(caseStudy1Text, 'content/studentmarks.html');
   loadContent(caseStudy2Text, 'content/casestudy2.html');
   loadContent(healthDatasetText, 'content/healthdata.html');
   loadContent(multipleViewsText, 'content/multipleviews.html');
@@ -1261,11 +1258,18 @@ onMounted(async (): Promise<void> => {
 
 /* Desktop (chart and text row) */
 #pc_svg {
-  height: 31rem;
+  height: 22rem;
   justify-content: 'center';
   text-align: 'center';
 }
 
+#chart-title {
+  font-size: x-large;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 1rem;
+  margin-top: 1rem;
+}
 
 .explorable-explainer {
   display: flex;
@@ -1273,7 +1277,8 @@ onMounted(async (): Promise<void> => {
 }
 
 .chart-container {
-  flex: 1 1 30rem;
+  flex: 1 1 24rem;
+  min-width: 24rem;
   position: relative;
   justify-content: center;
 }
@@ -1289,8 +1294,8 @@ onMounted(async (): Promise<void> => {
 }
 
 .text-container {
-  flex: 1 1 23rem;
-  min-width: 23rem;
+  flex: 1 1 22rem;
+  min-width: 22rem;
   flex-direction: column;
   width: 100%;
 }
@@ -1299,6 +1304,10 @@ onMounted(async (): Promise<void> => {
 @media (max-width: 960px) and (orientation: portrait) {
   .explorable-explainer {
     flex-direction: column;
+  }
+
+  #chart-title {
+    font-size: x-large;
   }
 
   .main-chart {
@@ -1319,11 +1328,10 @@ onMounted(async (): Promise<void> => {
 
   .text-container {
     min-width: 100%;
-    padding-left: 1.7rem;
   }
 
   #pc_svg {
-    height: 20rem;
+    height: 18rem;
     justify-content: 'center';
     text-align: 'center';
   }
@@ -1332,7 +1340,11 @@ onMounted(async (): Promise<void> => {
 /* Mini tablet (chart and text column)*/
 @media (max-width: 768px) and (orientation: portrait) {
   .main-chart {
-    top: 3rem;
+    top: 2.7rem;
+  }
+
+    #chart-title {
+    font-size: larger;
   }
 }
 
@@ -1340,6 +1352,10 @@ onMounted(async (): Promise<void> => {
 @media (max-width: 600px) and (orientation: portrait) {
   .explorable-explainer {
     flex-direction: column;
+  }
+
+  #chart-title {
+    font-size: large;
   }
 
   .main-chart {
@@ -1360,20 +1376,23 @@ onMounted(async (): Promise<void> => {
 
   .text-container {
     min-width: 100%;
-    padding-left: 1.7rem;
   }
 
   #pc_svg {
-    height: 20rem;
+    height: 18rem;
     justify-content: 'center';
     text-align: 'center';
   }
 }
 
 /* Mobile landscape (chart and text row) */
-@media (max-height: 500px) and (orientation: landscape) {
+@media (max-height: 550px) and (orientation: landscape) {
   .explorable-explainer {
     flex-direction: row;
+  }
+
+  #chart-title {
+    font-size: large;
   }
 
   .main-chart {
@@ -1405,14 +1424,16 @@ onMounted(async (): Promise<void> => {
 /* Sections in Textcontainer with animation */
 section {
   text-align: justify;
-  width: calc(100% - 2rem);
+  width: calc(100% - 0.5rem);
   max-width: 100%;
   background: rgb(229, 229, 220);
   border-radius: 0.3rem;
   margin-top: 1rem;
   opacity: 0;
   transform: translateY(100px);
-  padding-right: 1.5rem;
+  padding-right: 0.5rem;
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
   padding-bottom: 0.5rem;
 
   animation: slide-in-from-bottom 1s ease-out forwards;
@@ -1434,13 +1455,6 @@ section {
 }
 
 /* Misc Headers */
-
-#chart-title {
-  font-size: 1.4rem;
-  font-weight: bold;
-  text-align: center;
-  margin-bottom: 1rem;
-}
 
 h2 {
   padding-top: 1rem;
@@ -1496,7 +1510,7 @@ ul {
   max-height: 30rem;
   overflow-y: auto;
   padding-top: 1rem;
-  margin-right: 2rem;
+  margin-left: 0.5rem;
   position: relative;
   isolation: isolate;
 }
@@ -1653,14 +1667,16 @@ figcaption {
   display: flex;
   flex-direction: column;
   text-align: justify;
-  width: calc(100% - 2rem);
+  width: calc(100% - 0.5rem);
   max-width: 100%;
   background: rgb(229, 229, 220);
   border-radius: 0.3rem;
   margin-top: 1rem;
   opacity: 0;
   transform: translateY(100px);
-  padding-right: 1.5rem;
+  padding-right: 0.5rem;
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
   padding-bottom: 0.5rem;
   min-height: 35rem;
 
