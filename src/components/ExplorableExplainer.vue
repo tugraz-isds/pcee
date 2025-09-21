@@ -1279,7 +1279,7 @@ onMounted(async (): Promise<void> => {
 #pc_svg {
   display: block;
   height: auto;
-  max-height: 38rem;
+  max-height: 34rem;
   width: 100%;;
 }
 
@@ -1287,7 +1287,6 @@ onMounted(async (): Promise<void> => {
   font-size: x-large;
   font-weight: bold;
   text-align: center;
-  margin-bottom: 1rem;
   margin-top: 1rem;
 }
 
@@ -1305,7 +1304,6 @@ onMounted(async (): Promise<void> => {
 .text-container {
   margin-right: 1rem;
 }
-
 
 /* Tablet portrait (chart and text column) */
 @media (max-width: 960px) and (orientation: portrait) {
@@ -1352,7 +1350,7 @@ onMounted(async (): Promise<void> => {
 
   .main-chart {
     position: fixed;
-    top: 2.9rem;
+    top: 2.7rem;
     left: 0;
     width: 100%;
     background: white;
