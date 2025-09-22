@@ -1536,13 +1536,13 @@ ul {
 }
 
 .litext {
-  border-left: 0rem solid transparent;
+  border-left: 0 solid transparent;
 }
 
 .liuitext {
-  border-left: 0rem solid transparent;
+  border-left: 0 solid transparent;
   font-style: italic;
-  color: rgb(228, 90, 15);
+  color: black;
 }
 
 /* Table */
