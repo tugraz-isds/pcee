@@ -153,7 +153,7 @@
           <button
             id="activate-button"
           >
-            Activate Interactivity
+            Interact Directly
           </button>
         </div>
         <p 
@@ -163,7 +163,7 @@
           By using the interactions described above, interesting observations can be made within a dataset.
         </p>
 
-        <ul>
+        <ol>
           <li
             v-for="(step, index) in steps"
             :key="step.title"
@@ -171,13 +171,7 @@
           >
             {{ step.title }}
           </li>
-        </ul>
-
-        <h3>{{ steps[currentStep].title }}</h3>
-
-        <p>
-          {{ steps[currentStep].content }}
-        </p>
+        </ol>
 
         <div class="buttons">
           <button
@@ -227,6 +221,22 @@
             />
           </button>
         </div>
+
+        <div class="step-indicator">
+          <span
+            v-for="(step, index) in steps"
+            :key="index"
+            :class="{ active: index === currentStep }"
+          >
+            {{ index + 1 }}
+          </span>
+        </div>
+
+        <h3>{{ steps[currentStep].title }}</h3>
+
+        <p>
+          {{ steps[currentStep].content }}
+        </p>
       </div>
       <div v-html="multipleViewsText" />
       <div
@@ -485,7 +495,7 @@ const activateChart = async (): Promise<void> => {
       btn.disabled = true;
     });
     status = true;
-    (document.getElementById('activate-button') as HTMLButtonElement).textContent = "Deactivate Interactivity";
+    (document.getElementById('activate-button') as HTMLButtonElement).textContent = "Step through";
   }
   else {
     const dataset = getDatasetForStep(currentStepIndex);
@@ -515,7 +525,7 @@ const activateChart = async (): Promise<void> => {
     });
 
     status = false;
-    (document.getElementById('activate-button') as HTMLButtonElement).textContent = "Activate Interactivity";
+    (document.getElementById('activate-button') as HTMLButtonElement).textContent = "Interact Directly";
   }
 }
 
@@ -571,7 +581,7 @@ const showPositiveCorrelation = (): void => {
 
   if (isHidden) {
     if (invertError) {
-      invertError.textContent = "Dimension Age is hidden!";
+      invertError.textContent = "Age Dimension is hidden!";
       return;
     }
   }
@@ -708,7 +718,6 @@ const deleteRow = (index: number): void => {
   if (index >= 0 && index < rows.value.length) {
     rows.value.splice(index, 1);
   }
-  redrawChart();
 };
 
 const addColumn = (): void => {
@@ -734,7 +743,6 @@ const deleteColumn = (key: string): void => {
       delete row[key]
     }
   }
-  redrawChart()
 }
 
 const redrawChart = (): void => {
@@ -900,7 +908,7 @@ window.addEventListener('scroll', (): void => {
       chart.innerHTML = `
       <figure style="text-align:center;">
         <img src="images/mva.png" />
-        <figcaption style="font-size:smaller;">Figure 5: Multidimensional Visual Analyser (MVA)</figcaption>
+        <figcaption style="font-size:x-small;">Figure 5: Multidimensional Visual Analyser (MVA)</figcaption>
       </figure>`;
       chart.style.maxHeight = "auto";
       chart.style.pointerEvents = "auto";
@@ -936,7 +944,7 @@ window.addEventListener('scroll', (): void => {
     });
 
     status = false;
-    (document.getElementById('activate-button') as HTMLButtonElement).textContent = "Activate Interactivity";
+    (document.getElementById('activate-button') as HTMLButtonElement).textContent = "Interact Directly";
 
     }
     else {
@@ -1279,7 +1287,7 @@ onMounted(async (): Promise<void> => {
 #pc_svg {
   display: block;
   height: auto;
-  max-height: 34rem;
+  max-height: 30rem;
   width: 100%;;
 }
 
@@ -1293,6 +1301,10 @@ onMounted(async (): Promise<void> => {
 .main-chart {
   position: sticky;
   top: calc(10vh + 1rem);
+  /*border: 0.10rem solid grey;
+  border-radius: 0.3rem;
+  margin-left: 0.5rem;
+  padding-bottom: 2rem;*/
 }
 
 #parallelcoords {
@@ -1519,7 +1531,12 @@ h4 {
 
 p {
   border-left: 1rem solid transparent;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
+  font-size: 0.9em;
+}
+
+p + p {
+  text-indent: 1em;
 }
 
 /* listings */
@@ -1530,19 +1547,34 @@ ul {
   margin-top: 0;
 }
 
+li {
+  font-size: 0.9em;
+}
+
 .liheading {
   font-weight: bold;
   margin-top: 1rem;
+  font-size: 0.9em;
 }
 
 .litext {
   border-left: 0 solid transparent;
+  font-size: 0.9em !important;
 }
 
-.liuitext {
+.liinstruction::before {
+  content: "{";
+}
+
+.liinstruction::after {
+  content: "}";
+}
+
+.liinstruction {
   border-left: 0 solid transparent;
   font-style: italic;
   color: black;
+  text-indent: 0;
 }
 
 /* Table */
@@ -1562,6 +1594,7 @@ table {
   table-layout: fixed;
   border-collapse: separate;
   border-spacing: 0;
+  font-size: 0.8em;
 }
 
 th, td {
@@ -1577,7 +1610,7 @@ td {
 }
 
 th {
-  background-color: rgba(30,61,89,0.8);
+  background-color: rgba(30,61,89,0.8) !important;
   color: white;
   padding: 0.3rem;
 }
@@ -1606,6 +1639,8 @@ th {
 .header-button {
   flex: 0 0 auto;
   padding: 0 0.5rem;
+  margin-top: 0rem;
+  margin-right: 0.2rem;
   background: white;
   color: black;
   border: none;
@@ -1614,6 +1649,7 @@ th {
   width: 1.2rem;
   height: 1.2rem;
   line-height: 1.2rem;
+  font-size: 0.8em;
 }
 
 .text-left {
@@ -1635,14 +1671,14 @@ td .add-button {
   line-height: 1.2rem;
   text-align: center;
   cursor: pointer;
-  font-size: 1rem;
   padding: 0;
   margin-top: 0.5rem;
   margin-right: 0.2rem;
   color: black;
   font-weight: bold;
+  font-size: 0.8em;
   top: 0.2rem;
-  right: 0.5rem;
+  right: 0.4rem;
   position: absolute;
 }
 
@@ -1666,6 +1702,8 @@ th input[type="text"] {
 button {
   padding: 0.25rem;
   margin-right: 0.5rem;
+  font-size: 0.9em;
+  margin-top: 0.5rem;
 }
 
 .usage-button {
@@ -1691,7 +1729,7 @@ button {
 }
 
 figure {
-  flex: 1 1 8rem;
+  flex: 1 1 8em;
   text-align: center;
   margin: 0;
   cursor: zoom-in;
@@ -1700,7 +1738,7 @@ figure {
 figcaption {
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
-  font-size: smaller;
+  font-size: x-small;
 }
 
 /* stepper */
@@ -1719,7 +1757,6 @@ figcaption {
   margin-left: 0.5rem;
   margin-right: 0.5rem;
   padding-bottom: 0.5rem;
-  min-height: 35rem;
 
   animation: slide-in-from-bottom 1s ease-out forwards;
   animation-timeline: scroll();
@@ -1742,6 +1779,33 @@ li.active {
   padding-left: 0.5rem;
 }
 
+li.active::marker {
+  color: black;
+  font-weight: normal;
+}
+
+.step-indicator {
+  margin-top: 0.5em;
+  display: flex;
+  gap: 0.5em;
+  justify-content: center;
+  font-size: 0.75em;
+}
+
+.step-indicator span {
+  position: relative;
+  padding: 0 0.3rem;
+}
+
+.step-indicator span.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.1em;
+  height: 0.1em;
+  background: grey;
+}
 /* References section */
 
 #border {
