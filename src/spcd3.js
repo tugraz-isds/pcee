@@ -5185,13 +5185,13 @@ function brushDown(cleanDimensionName, event, d, parcoords, active, tooltipValue
     const yPosBottom = Number(select$1('#triangle_up_' + cleanDimensionName).attr('y'));
     let yPosTop;
     let yPosRect;
-    if (event.y < 40) {
-        yPosTop = 40;
-        yPosRect = 50;
+    if (event.y < 70) {
+        yPosTop = 70;
+        yPosRect = 80;
     }
     else if (event.y > yPosBottom - 10) {
         yPosTop = yPosBottom - 10;
-        yPosRect = 350;
+        yPosRect = 320;
     }
     else if (event.y == yPosBottom - 10) {
         yPosTop = yPosBottom - 10;
@@ -5203,7 +5203,7 @@ function brushDown(cleanDimensionName, event, d, parcoords, active, tooltipValue
         yPosRect = event.y + 10;
     }
     addPosition(yPosRect, parcoords.currentPosOfDims, d.name, 'top');
-    if (yPosTop == 40 && yPosBottom == 350) {
+    if (yPosTop == 70 && yPosBottom == 320) {
         select$1('#rect_' + cleanDimensionName)
             .style('cursor', 'default');
     }
@@ -5211,12 +5211,11 @@ function brushDown(cleanDimensionName, event, d, parcoords, active, tooltipValue
         select$1('#rect_' + cleanDimensionName).style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopAndBottom()), 20)}') 8 8, auto`);
     }
     select$1('#triangle_down_' + cleanDimensionName).attr('y', yPosTop);
-    const heightTopRect = yPosRect - 50;
-    const heightBottomRect = 350 - yPosBottom;
-    console.log(yPosRect);
+    const heightTopRect = yPosRect - 80;
+    const heightBottomRect = 320 - yPosBottom;
     select$1('#rect_' + cleanDimensionName)
         .attr('y', yPosRect)
-        .attr('height', 300 - heightTopRect - heightBottomRect);
+        .attr('height', 240 - heightTopRect - heightBottomRect);
     if (!isNaN(parcoords.yScales[d.name].domain()[0])) {
         setToolTipBrush(tooltipValues, d, event, parcoords, window, true);
     }
@@ -5228,8 +5227,8 @@ function brushUp(cleanDimensionName, event, d, parcoords, active, tooltipValues,
     if (event.y < yPosTop + 10) {
         yPosBottom = yPosTop + 10;
     }
-    else if (event.y > 350) {
-        yPosBottom = 350;
+    else if (event.y > 320) {
+        yPosBottom = 320;
     }
     else if (event.y == yPosTop + 10) {
         yPosBottom = yPosTop;
@@ -5238,7 +5237,7 @@ function brushUp(cleanDimensionName, event, d, parcoords, active, tooltipValues,
         yPosBottom = event.y;
     }
     addPosition(yPosBottom, parcoords.currentPosOfDims, d.name, 'bottom');
-    if (yPosTop == 40 && yPosBottom == 350) {
+    if (yPosTop == 70 && yPosBottom == 320) {
         select$1('#rect_' + cleanDimensionName)
             .style('cursor', 'default');
     }
@@ -5246,10 +5245,10 @@ function brushUp(cleanDimensionName, event, d, parcoords, active, tooltipValues,
         select$1('#rect_' + cleanDimensionName).style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopAndBottom()), 20)}') 8 8, auto`);
     }
     select$1('#triangle_up_' + cleanDimensionName).attr('y', yPosBottom);
-    const heightTopRect = yPosTop - 40;
-    const heightBottomRect = 350 - yPosBottom;
+    const heightTopRect = yPosTop - 70;
+    const heightBottomRect = 320 - yPosBottom;
     select$1('#rect_' + cleanDimensionName)
-        .attr('height', 300 - heightTopRect - heightBottomRect);
+        .attr('height', 240 - heightTopRect - heightBottomRect);
     if (!isNaN(parcoords.yScales[d.name].domain()[0])) {
         setToolTipBrush(tooltipValues, d, event, parcoords, window, false);
     }
@@ -5260,16 +5259,16 @@ function dragAndBrush(cleanDimensionName, d, svg, event, parcoords, active, delt
     let yPosRect;
     const yPosBottom = select$1('#triangle_up_' + cleanDimensionName).attr('y');
     const yPosTopNew = select$1('#triangle_down_' + cleanDimensionName).attr('y');
-    const heightTopRect = yPosTopNew - 40;
-    const heightBottomRect = 350 - yPosBottom;
-    const rectHeight = 300 - heightTopRect - heightBottomRect;
-    if (event.y + delta - 10 <= 40) {
-        yPosTop = 40;
-        yPosRect = 50;
+    const heightTopRect = yPosTopNew - 70;
+    const heightBottomRect = 320 - yPosBottom;
+    const rectHeight = 240 - heightTopRect - heightBottomRect;
+    if (event.y + delta - 10 <= 70) {
+        yPosTop = 70;
+        yPosRect = 80;
     }
-    else if (event.y + delta + rectHeight >= 350) {
-        yPosTop = 350 - rectHeight - 10;
-        yPosRect = 350 - rectHeight;
+    else if (event.y + delta + rectHeight >= 320) {
+        yPosTop = 320 - rectHeight - 10;
+        yPosRect = 320 - rectHeight;
     }
     else {
         yPosTop = event.y + delta - 10;
@@ -5278,7 +5277,7 @@ function dragAndBrush(cleanDimensionName, d, svg, event, parcoords, active, delt
     }
     addPosition(yPosRect, parcoords.currentPosOfDims, d.name, 'top');
     addPosition(yPosRect + rectHeight, parcoords.currentPosOfDims, d.name, 'bottom');
-    if (rectHeight < 300) {
+    if (rectHeight < 240) {
         select$1('#rect_' + cleanDimensionName)
             .attr('y', yPosRect);
         select$1('#triangle_down_' + cleanDimensionName)
@@ -5375,12 +5374,12 @@ function setToolTipBrush(tooltipValues, d, event, parcoords, window, direction) 
     const scale = maxValue - minValue;
     let tooltipValue;
     if (invertStatus) {
-        tooltipValue = direction == true ? ((event.y - 40) / (300 / (scale)) + minValue) :
-            ((event.y - 50) / (300 / (scale)) + minValue);
+        tooltipValue = direction == true ? ((event.y - 70) / (240 / (scale)) + minValue) :
+            ((event.y - 80) / (240 / (scale)) + minValue);
     }
     else {
-        tooltipValue = direction == true ? maxValue - ((event.y - 40) / (300 / (scale))) :
-            maxValue - ((event.y - 50) / (300 / (scale)));
+        tooltipValue = direction == true ? maxValue - ((event.y - 70) / (240 / (scale))) :
+            maxValue - ((event.y - 80) / (240 / (scale)));
     }
     if (!invertStatus) {
         if (tooltipValue > range[1]) {
@@ -5416,16 +5415,16 @@ function setToolTipDragAndBrush(tooltipValuesTop, tooltipValuesDown, d, parcoord
     let tooltipValueTop;
     let tooltipValueBottom;
     if (invertStatus) {
-        tooltipValueTop = direction == true ? ((yPosTop - 40) / (300 / (scale)) + minValue) :
-            ((yPosTop - 50) / (300 / (scale)) + minValue);
-        tooltipValueBottom = direction == true ? ((yPosBottom - 50) / (300 / (scale)) + minValue) :
-            ((yPosBottom - 40) / (300 / (scale)) + minValue);
+        tooltipValueTop = direction == true ? ((yPosTop - 70) / (240 / (scale)) + minValue) :
+            ((yPosTop - 80) / (240 / (scale)) + minValue);
+        tooltipValueBottom = direction == true ? ((yPosBottom - 80) / (240 / (scale)) + minValue) :
+            ((yPosBottom - 70) / (240 / (scale)) + minValue);
     }
     else {
-        tooltipValueTop = direction == true ? maxValue - ((yPosTop - 40) / (300 / (scale))) :
-            maxValue - ((yPosTop - 50) / (300 / (scale)));
-        tooltipValueBottom = direction == true ? maxValue - ((yPosBottom - 50) / (300 / (scale))) :
-            maxValue - ((yPosBottom - 40) / (300 / (scale)));
+        tooltipValueTop = direction == true ? maxValue - ((yPosTop - 70) / (240 / (scale))) :
+            maxValue - ((yPosTop - 80) / (240 / (scale)));
+        tooltipValueBottom = direction == true ? maxValue - ((yPosBottom - 80) / (240 / (scale))) :
+            maxValue - ((yPosBottom - 70) / (240 / (scale)));
     }
     if ((!invertStatus && tooltipValueTop == maxValue) || (invertStatus && tooltipValueTop == minValue)) {
         tooltipValuesTop.style('visibility', 'hidden');
@@ -5477,11 +5476,11 @@ function updateLines(parcoords, dimensionName, cleanDimensionName) {
         let value;
         if (invertStatus) {
             value = isNaN(maxValue) ? parcoords.yScales[dimensionName](d[dimensionName]) :
-                300 / range * (d[dimensionName] - minValue) + 50;
+                240 / range * (d[dimensionName] - minValue) + 80;
         }
         else {
             value = isNaN(maxValue) ? parcoords.yScales[dimensionName](d[dimensionName]) :
-                300 / range * (maxValue - d[dimensionName]) + 50;
+                240 / range * (maxValue - d[dimensionName]) + 80;
         }
         const currentLine = getLineName(d);
         const dimNameToCheck = select$1('.' + currentLine).text();
@@ -5491,12 +5490,12 @@ function updateLines(parcoords, dimensionName, cleanDimensionName) {
                 makeInactive(currentLine, dimensionName, 100);
             }
         }
-        else if (value == 350 && value == rangeTop + 10 && value == rangeBottom) {
+        else if (value == 320 && value == rangeTop + 10 && value == rangeBottom) {
             if (dimNameToCheck == emptyString) {
                 makeInactive(currentLine, dimensionName, 100);
             }
         }
-        else if (value == 50 && value == rangeTop + 10 && value == rangeBottom) {
+        else if (value == 80 && value == rangeTop + 10 && value == rangeBottom) {
             if (dimNameToCheck == emptyString) {
                 makeInactive(currentLine, dimensionName, 100);
             }
@@ -5504,7 +5503,7 @@ function updateLines(parcoords, dimensionName, cleanDimensionName) {
         else if (dimNameToCheck == dimensionName && dimNameToCheck != emptyString) {
             let checkedLines = [];
             parcoords.currentPosOfDims.forEach(function (item) {
-                if (item.top != 50 || item.bottom != 350) {
+                if (item.top != 80 || item.bottom != 320) {
                     checkAllPositionsTop(item, dimensionName, parcoords, d, checkedLines, currentLine);
                     checkAllPositionsBottom(item, dimensionName, parcoords, d, checkedLines, currentLine);
                 }
@@ -5536,7 +5535,7 @@ function addRange$1(value, dims, dimensionName, property) {
     }
 }
 function checkAllPositionsTop(positionItem, dimensionName, parcoords, d, checkedLines, currentLine) {
-    if (positionItem.key != dimensionName && positionItem.top != 40) {
+    if (positionItem.key != dimensionName && positionItem.top != 70) {
         const invertStatus = getInvertStatus(positionItem.key, parcoords.currentPosOfDims);
         const maxValue = invertStatus == false ? parcoords.yScales[positionItem.key].domain()[1] :
             parcoords.yScales[positionItem.key].domain()[0];
@@ -5545,8 +5544,8 @@ function checkAllPositionsTop(positionItem, dimensionName, parcoords, d, checked
         const scale = maxValue - minValue;
         let value;
         if (!isNaN(maxValue)) {
-            value = invertStatus == false ? 300 / scale * (maxValue - d[positionItem.key]) + 50 :
-                300 / scale * (d[positionItem.key] - minValue) + 50;
+            value = invertStatus == false ? 240 / scale * (maxValue - d[positionItem.key]) + 80 :
+                240 / scale * (d[positionItem.key] - minValue) + 80;
         }
         else {
             value = parcoords.yScales[positionItem.key](d[positionItem.key]);
@@ -5567,8 +5566,8 @@ function checkAllPositionsBottom(positionItem, dimensionName, parcoords, d, chec
         const scale = maxValue - minValue;
         let value;
         if (!isNaN(maxValue)) {
-            value = invertStatus == false ? 300 / scale * (maxValue - d[positionItem.key]) + 50 :
-                300 / scale * (d[positionItem.key] - minValue) + 50;
+            value = invertStatus == false ? 240 / scale * (maxValue - d[positionItem.key]) + 80 :
+                240 / scale * (d[positionItem.key] - minValue) + 80;
         }
         else {
             value = parcoords.yScales[positionItem.key](d[positionItem.key]);
@@ -7969,7 +7968,7 @@ function setContextMenu(featureAxis, padding, parcoords, width) {
         .append('text')
         .attr('class', 'dimension')
         .attr('text-anchor', 'middle')
-        .attr('y', (padding / 2.5).toFixed(4))
+        .attr('y', (padding / 1.7).toFixed(4))
         .text(d => d.name.length > 10 ? d.name.substr(0, 10) + '...' : d.name)
         .style('font-size', '0.7rem')
         .call(drag()
@@ -8375,7 +8374,7 @@ function onDragEndEventHandler(parcoords, featureAxis) {
     {
         return function onDragEnd(d) {
             const width = parcoords.width;
-            const distance = (width - 50) / parcoords.newFeatures.length;
+            const distance = (width - 80) / parcoords.newFeatures.length;
             const init = parcoords.dragPosStart[(d.subject).name];
             if (parcoords.dragPosStart[(d.subject).name] > parcoords.dragging[(d.subject).name]) {
                 featureAxis.attr('transform', (d) => {
@@ -10246,7 +10245,7 @@ function setDimensionForHovering(dimension) {
 }
 // ---------- Needed for Built-In Interactivity Functions ---------- //
 function setUpParcoordData(data, newFeatures) {
-    window.padding = 50;
+    window.padding = 80;
     window.paddingXaxis = 60;
     window.width = newFeatures.length * 100;
     window.height = 400;
@@ -10290,7 +10289,7 @@ function setUpParcoordData(data, newFeatures) {
         }
         const ranges = getDimensionRange(newFeatures[i]);
         window.parcoords.currentPosOfDims.push({
-            key: newFeatures[i], top: 50, bottom: 350, isInverted: false, index: i,
+            key: newFeatures[i], top: 80, bottom: 320, isInverted: false, index: i,
             min: min, max: max, sigDig: 0, currentRangeTop: ranges[1], currentRangeBottom: ranges[0], currentFilterBottom: ranges[0], currentFilterTop: ranges[1]
         });
     }
@@ -10694,7 +10693,7 @@ function clearSelection() {
     });
 }
 function setInvertIcon(featureAxis, padding) {
-    let value = (padding / 2).toFixed(4);
+    let value = (padding / 1.5).toFixed(4);
     featureAxis
         .append('svg')
         .attr('y', value)
@@ -10748,9 +10747,9 @@ function setRectToDrag(featureAxis, svg, parcoords, tooltipValuesTop, tooltipVal
             .append('rect')
             .attr('id', 'rect_' + processedDimensionName)
             .attr('width', 12)
-            .attr('height', 300)
+            .attr('height', 240)
             .attr('x', -6)
-            .attr('y', 50)
+            .attr('y', 80)
             .attr('fill', 'rgb(255, 255, 0)')
             .attr('opacity', '0.4')
             .style('cursor', 'default')
@@ -10785,7 +10784,7 @@ function setBrushUp(featureAxis, parcoords, tooltipValues, brushOverlay) {
             .attr('class', 'brush_' + processedDimensionName)
             .append('use')
             .attr('id', 'triangle_up_' + processedDimensionName)
-            .attr('y', 350)
+            .attr('y', 320)
             .attr('x', -7)
             .attr('width', 14)
             .attr('height', 10)
@@ -10819,7 +10818,7 @@ function setBrushDown(featureAxis, parcoords, tooltipValues, brushOverlay) {
             .attr('class', 'brush_' + processedDimensionName)
             .append('use')
             .attr('id', 'triangle_down_' + processedDimensionName)
-            .attr('y', 40)
+            .attr('y', 70)
             .attr('x', -7)
             .attr('width', 14)
             .attr('height', 10)

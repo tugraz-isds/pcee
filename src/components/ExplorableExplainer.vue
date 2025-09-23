@@ -906,8 +906,8 @@ window.addEventListener('scroll', (): void => {
       chart.style.visibility = 'visible';
       chart.className = "cursor-zoom-in";
       chart.innerHTML = `
-      <figure style="text-align:center;">
-        <img src="images/mva.png" />
+      <figure>
+        <img class="pic" src="images/mva.png" />
         <figcaption style="font-size:x-small;">Figure 5: Multidimensional Visual Analyser (MVA)</figcaption>
       </figure>`;
       chart.style.maxHeight = "auto";
@@ -1288,7 +1288,7 @@ onMounted(async (): Promise<void> => {
   display: block;
   height: auto;
   max-height: 30rem;
-  width: 100%;;
+  width: 100%;
 }
 
 #chart-title {
@@ -1301,10 +1301,7 @@ onMounted(async (): Promise<void> => {
 .main-chart {
   position: sticky;
   top: calc(10vh + 1rem);
-  /*border: 0.10rem solid grey;
-  border-radius: 0.3rem;
-  margin-left: 0.5rem;
-  padding-bottom: 2rem;*/
+  padding-bottom: 1.5em;
 }
 
 #parallelcoords {
@@ -1317,8 +1314,159 @@ onMounted(async (): Promise<void> => {
   margin-right: 1rem;
 }
 
-/* Tablet portrait (chart and text column) */
-@media (max-width: 960px) and (orientation: portrait) {
+.pic {
+  margin-left: 2rem;
+  padding-right: 2rem;
+}
+
+
+@media (max-width: 450px) and (orientation: portrait) {
+  .explorable-explainer {
+    flex-direction: column;
+  }
+
+  #chart-title {
+    font-size: large;
+  }
+
+  .main-chart {
+    position: fixed;
+    top: 2.5rem;
+    left: 0;
+    width: 100%;
+    z-index: 100;
+    justify-content: left !important;
+    align-items: left !important;
+  }
+
+  .chart-container {
+    flex: 1 1 8rem;
+    min-width: 100%;
+    padding-bottom: 0;
+  }
+
+  figure {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .pic {
+    height: 14rem;
+    justify-content: center !important;
+    text-align: center !important;
+    margin-left: 2rem;
+    padding-right: 2rem;
+  }
+
+  #pc_svg {
+    height: 15rem;
+  }
+
+  p {
+    font-size: 0.8em;
+  }
+}
+
+@media (min-width: 451px) and (max-width: 600px) and (orientation: portrait) {
+  .explorable-explainer {
+    flex-direction: column;
+  }
+
+  #chart-title {
+    font-size: large;
+  }
+
+  .main-chart {
+    position: fixed;
+    top: 2rem;
+    left: 0;
+    width: 100%;
+    background: white;
+    z-index: 100;
+  }
+
+  .chart-container {
+    flex: 1 1 16rem;
+    min-width: 100%;
+    padding-bottom: 0;
+  }
+
+  .text-container {
+    min-width: 100%;
+  }
+
+  figure {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .pic {
+    height: 16rem;
+    justify-content: center !important;
+    text-align: center !important;
+    margin-left: 2rem;
+    padding-right: 2rem;
+  }
+
+  #pc_svg {
+    height: 16rem;
+  }
+
+  p {
+    font-size: 0.8em;
+  }
+}
+
+@media (min-width: 601px) and (max-width: 800px) and (orientation: portrait) {
+  #chart-title {
+    font-size: larger;
+  }
+
+  .explorable-explainer {
+    flex-direction: column;
+  }
+
+  .main-chart {
+    position: fixed;
+    top: 2.4rem;
+    left: 0;
+    width: 100%;
+    background: white;
+    z-index: 100;
+  }
+
+  .chart-container {
+    flex: 1 1 18rem;
+    min-width: 100%;
+  }
+
+  .text-container {
+    min-width: 100%;
+  }
+
+  figure {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .pic {
+    height: 16rem;
+    justify-content: center !important;
+    text-align: center !important;
+    margin-left: 2rem;
+    padding-right: 2rem;
+  }
+
+  #pc_svg {
+    height: 17rem;
+  }
+
+  p {
+    font-size: 0.8em;
+  }
+}
+
+@media (min-width: 801px) and (max-width: 960px) and (orientation: portrait) {
   .explorable-explainer {
     flex-direction: column;
   }
@@ -1345,106 +1493,28 @@ onMounted(async (): Promise<void> => {
     min-width: 100%;
   }
 
-  #pc_svg {
+  figure {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .pic {
     height: 18rem;
-  }
-}
-
-/* Mini tablet (chart and text column)*/
-@media (max-width: 800px) and (orientation: portrait) {
-  #chart-title {
-    font-size: larger;
-  }
-
-  .explorable-explainer {
-    flex-direction: column;
-  }
-
-  .main-chart {
-    position: fixed;
-    top: 2.7rem;
-    left: 0;
-    width: 100%;
-    background: white;
-    z-index: 100;
-  }
-
-  .chart-container {
-    flex: 1 1 18rem;
-    min-width: 100%;
-  }
-
-  .text-container {
-    min-width: 100%;
-  }
-
-  #pc_svg {
-    height: 16rem;
-  }
-}
-
-/* Mobile portrait (chart and text column) */
-@media (max-width: 600px) and (orientation: portrait) {
-  .explorable-explainer {
-    flex-direction: column;
-  }
-
-  #chart-title {
-    font-size: large;
-  }
-
-  .main-chart {
-    position: fixed;
-    top: 2rem;
-    left: 0;
-    width: 100%;
-    background: white;
-    z-index: 100;
-  }
-
-  .chart-container {
-    flex: 1 1 20rem;
-    min-width: 100%;
-    padding-bottom: 0;
-  }
-
-  .text-container {
-    min-width: 100%;
+    justify-content: center !important;
+    text-align: center !important;
+    margin-left: 4rem;
+    padding-right: 2rem;
   }
 
   #pc_svg {
     height: 18rem;
   }
-}
 
-/* Mobile portrait (chart and text column) */
-@media (max-width: 450px) and (orientation: portrait) {
-  .explorable-explainer {
-    flex-direction: column;
-  }
-
-  #chart-title {
-    font-size: large;
-  }
-
-  .main-chart {
-    position: fixed;
-    top: 2.5rem;
-    left: 0;
-    width: 100%;
-    z-index: 100;
-    justify-content: left !important;
-    align-items: left !important;
-  }
-
-  .chart-container {
-    flex: 1 1 8rem;
-    min-width: 100%;
-    padding-bottom: 0;
+  p {
+    font-size: 0.8em;
   }
 }
 
-/* Mobile landscape (chart and text row) */
 @media (max-height: 600px) and (orientation: landscape) {
   .explorable-explainer {
     flex-direction: row;
@@ -1532,7 +1602,7 @@ h4 {
 p {
   border-left: 1rem solid transparent;
   margin-bottom: 0.25rem;
-  font-size: 0.9em;
+  font-size: 1em;
 }
 
 p + p {
@@ -1548,18 +1618,18 @@ ul {
 }
 
 li {
-  font-size: 0.9em;
+  font-size: 1em;
 }
 
 .liheading {
   font-weight: bold;
   margin-top: 1rem;
-  font-size: 0.9em;
+  font-size: 1em;
 }
 
 .litext {
   border-left: 0 solid transparent;
-  font-size: 0.9em !important;
+  font-size: 1em;
 }
 
 .liinstruction::before {
@@ -1575,6 +1645,7 @@ li {
   font-style: italic;
   color: black;
   text-indent: 0;
+  font-size: 1em;
 }
 
 /* Table */
@@ -1640,7 +1711,7 @@ th {
   flex: 0 0 auto;
   padding: 0 0.5rem;
   margin-top: 0rem;
-  margin-right: 0.2rem;
+  margin-right: 0.25rem;
   background: white;
   color: black;
   border: none;
@@ -1649,7 +1720,7 @@ th {
   width: 1.2rem;
   height: 1.2rem;
   line-height: 1.2rem;
-  font-size: 0.8em;
+  font-size: 0.9em;
 }
 
 .text-left {
@@ -1676,7 +1747,7 @@ td .add-button {
   margin-right: 0.2rem;
   color: black;
   font-weight: bold;
-  font-size: 0.8em;
+  font-size: 0.9em;
   top: 0.2rem;
   right: 0.4rem;
   position: absolute;
@@ -1738,7 +1809,7 @@ figure {
 figcaption {
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
-  font-size: x-small;
+  font-size: small;
 }
 
 /* stepper */
