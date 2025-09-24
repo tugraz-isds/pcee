@@ -1284,7 +1284,6 @@ onMounted(async (): Promise<void> => {
 }
 
 /* Desktop (chart and text row) */
-/* Desktop (chart and text row) */
 #pc_svg {
   display: block;
   height: auto;
