@@ -1284,11 +1284,12 @@ onMounted(async (): Promise<void> => {
 }
 
 /* Desktop (chart and text row) */
+/* Desktop (chart and text row) */
 #pc_svg {
   display: block;
   height: auto;
   max-height: 30rem;
-  width: 100%;
+  width: 100%;;
 }
 
 #chart-title {
@@ -1301,7 +1302,7 @@ onMounted(async (): Promise<void> => {
 .main-chart {
   position: sticky;
   top: calc(10vh + 1rem);
-  padding-bottom: 1.5em;
+  padding-bottom: 1.5rem;
 }
 
 #parallelcoords {
@@ -1320,153 +1321,8 @@ onMounted(async (): Promise<void> => {
 }
 
 
-@media (max-width: 450px) and (orientation: portrait) {
-  .explorable-explainer {
-    flex-direction: column;
-  }
-
-  #chart-title {
-    font-size: large;
-  }
-
-  .main-chart {
-    position: fixed;
-    top: 2.5rem;
-    left: 0;
-    width: 100%;
-    z-index: 100;
-    justify-content: left !important;
-    align-items: left !important;
-  }
-
-  .chart-container {
-    flex: 1 1 8rem;
-    min-width: 100%;
-    padding-bottom: 0;
-  }
-
-  figure {
-    justify-content: center;
-    text-align: center;
-  }
-
-  .pic {
-    height: 14rem;
-    justify-content: center !important;
-    text-align: center !important;
-    margin-left: 2rem;
-    padding-right: 2rem;
-  }
-
-  #pc_svg {
-    height: 15rem;
-  }
-
-  p {
-    font-size: 0.8em;
-  }
-}
-
-@media (min-width: 451px) and (max-width: 600px) and (orientation: portrait) {
-  .explorable-explainer {
-    flex-direction: column;
-  }
-
-  #chart-title {
-    font-size: large;
-  }
-
-  .main-chart {
-    position: fixed;
-    top: 2rem;
-    left: 0;
-    width: 100%;
-    background: white;
-    z-index: 100;
-  }
-
-  .chart-container {
-    flex: 1 1 16rem;
-    min-width: 100%;
-    padding-bottom: 0;
-  }
-
-  .text-container {
-    min-width: 100%;
-  }
-
-  figure {
-    justify-content: center;
-    text-align: center;
-  }
-
-  .pic {
-    height: 16rem;
-    justify-content: center !important;
-    text-align: center !important;
-    margin-left: 2rem;
-    padding-right: 2rem;
-  }
-
-  #pc_svg {
-    height: 16rem;
-  }
-
-  p {
-    font-size: 0.8em;
-  }
-}
-
-@media (min-width: 601px) and (max-width: 800px) and (orientation: portrait) {
-  #chart-title {
-    font-size: larger;
-  }
-
-  .explorable-explainer {
-    flex-direction: column;
-  }
-
-  .main-chart {
-    position: fixed;
-    top: 2.4rem;
-    left: 0;
-    width: 100%;
-    background: white;
-    z-index: 100;
-  }
-
-  .chart-container {
-    flex: 1 1 18rem;
-    min-width: 100%;
-  }
-
-  .text-container {
-    min-width: 100%;
-  }
-
-  figure {
-    justify-content: center;
-    text-align: center;
-  }
-
-  .pic {
-    height: 16rem;
-    justify-content: center !important;
-    text-align: center !important;
-    margin-left: 2rem;
-    padding-right: 2rem;
-  }
-
-  #pc_svg {
-    height: 17rem;
-  }
-
-  p {
-    font-size: 0.8em;
-  }
-}
-
-@media (min-width: 801px) and (max-width: 960px) and (orientation: portrait) {
+/* Tablet portrait (chart and text column) */
+@media (max-width: 960px) and (orientation: portrait) {
   .explorable-explainer {
     flex-direction: column;
   }
@@ -1493,28 +1349,106 @@ onMounted(async (): Promise<void> => {
     min-width: 100%;
   }
 
-  figure {
-    justify-content: center;
-    text-align: center;
+  #pc_svg {
+    height: 18rem;
+  }
+}
+
+/* Mini tablet (chart and text column)*/
+@media (max-width: 800px) and (orientation: portrait) {
+  #chart-title {
+    font-size: larger;
   }
 
-  .pic {
-    height: 18rem;
-    justify-content: center !important;
-    text-align: center !important;
-    margin-left: 4rem;
-    padding-right: 2rem;
+  .explorable-explainer {
+    flex-direction: column;
+  }
+
+  .main-chart {
+    position: fixed;
+    top: 2.7rem;
+    left: 0;
+    width: 100%;
+    background: white;
+    z-index: 100;
+  }
+
+  .chart-container {
+    flex: 1 1 18rem;
+    min-width: 100%;
+  }
+
+  .text-container {
+    min-width: 100%;
+  }
+
+  #pc_svg {
+    height: 16rem;
+  }
+}
+
+/* Mobile portrait (chart and text column) */
+@media (max-width: 600px) and (orientation: portrait) {
+  .explorable-explainer {
+    flex-direction: column;
+  }
+
+  #chart-title {
+    font-size: large;
+  }
+
+  .main-chart {
+    position: fixed;
+    top: 2rem;
+    left: 0;
+    width: 100%;
+    background: white;
+    z-index: 100;
+  }
+
+  .chart-container {
+    flex: 1 1 20rem;
+    min-width: 100%;
+    padding-bottom: 0;
+  }
+
+  .text-container {
+    min-width: 100%;
   }
 
   #pc_svg {
     height: 18rem;
   }
+}
 
-  p {
-    font-size: 0.8em;
+/* Mobile portrait (chart and text column) */
+@media (max-width: 450px) and (orientation: portrait) {
+  .explorable-explainer {
+    flex-direction: column;
+  }
+
+  #chart-title {
+    font-size: large;
+  }
+
+  .main-chart {
+    position: fixed;
+    top: 2.5rem;
+    left: 0;
+    width: 100%;
+    z-index: 100;
+    justify-content: left !important;
+    align-items: left !important;
+  }
+
+  .chart-container {
+    flex: 1 1 8rem;
+    min-width: 100%;
+    padding-bottom: 0;
   }
 }
 
+/* Mobile landscape (chart and text row) */
 @media (max-height: 600px) and (orientation: landscape) {
   .explorable-explainer {
     flex-direction: row;
@@ -1544,6 +1478,7 @@ onMounted(async (): Promise<void> => {
     height: 16rem;
   }
 }
+
 
 /* Sections in Textcontainer with animation */
 section {
