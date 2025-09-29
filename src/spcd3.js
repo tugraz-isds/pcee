@@ -8172,6 +8172,7 @@ function resetRangeMenu(values, dimension) {
             .style('color', 'black')
             .on('click', (event) => {
             setDimensionRange(dimension, getMinValue(dimension), getMaxValue(dimension));
+            setFilter(dimension, getMinValue(dimension), getMaxValue(dimension));
             select$1('#contextmenu').style('display', 'none');
             event.stopPropagation();
         });
@@ -8557,7 +8558,7 @@ function createInputFieldWithLabel(modal, text, inputId) {
     const input = document.createElement('input');
     input.type = 'number';
     input.id = inputId;
-    input.style.width = '3rem';
+    input.style.width = '6rem';
     input.style.border = '0.1rem solid lightgrey';
     input.style.borderRadius = "5%";
     modal.append(() => input);

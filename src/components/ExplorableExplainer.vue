@@ -30,7 +30,7 @@
     class="header-spacer-polyfill"
   />
 
-  <div class="explorable-explainer flex flex-col md:flex-row gap-4">
+  <div class="explorable-explainer">
     <div
       ref="textArea"
       class="chart-container flex-1 basis-[30rem] relative justify-center"
@@ -93,7 +93,7 @@
               >
                 <input
                   v-model="row[column.key]"
-                  type="text"
+                  :type="column.type === 'number' ? 'number' : 'text'"
                   :class="{
                     'text-right': column.type === 'number',
                     'text-left': column.type === 'string'
@@ -720,16 +720,16 @@ const deleteRow = (index: number): void => {
   }
 };
 
+let colCounter = 0;
 const addColumn = (): void => {
   const trimmed = newColumn.value.trim();
-  let newCol: Column = {key: '', label: '', type: ''};
-  if (trimmed) {
-    newCol = { key: trimmed, label: trimmed, type: 'number' };
-  }
+  const label = trimmed;
+  const newCol: Column = { key: `col_${colCounter++}`, label, type: 'number' };
   columns.value.push(newCol);
   rows.value.forEach(row => {
     row[newCol.key] = '';
   });
+  newColumn.value = '';
 };
 
 const deleteColumn = (key: string): void => {
@@ -1284,6 +1284,13 @@ onMounted(async (): Promise<void> => {
 }
 
 /* Desktop (chart and text row) */
+
+.explorable-explainer {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+}
+
 #pc_svg {
   display: block;
   height: auto;
@@ -1323,7 +1330,7 @@ onMounted(async (): Promise<void> => {
 /* Tablet portrait (chart and text column) */
 @media (max-width: 960px) and (orientation: portrait) {
   .explorable-explainer {
-    flex-direction: column;
+    flex-direction: column !important;
   }
 
   #chart-title {
@@ -1692,7 +1699,7 @@ td .add-button {
   text-align: center;
 }
 
-input[type="text"] {
+input[type="number"] {
   width: 100%;
   padding: 0.3rem;
   box-sizing: border-box;
