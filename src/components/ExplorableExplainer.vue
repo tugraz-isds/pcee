@@ -259,8 +259,8 @@
 import { ref, onMounted, onBeforeUnmount, computed, nextTick, type Ref, provide } from 'vue';
 import * as spcd3 from '../spcd3.js';
 import { columnsFinance, rowsFinance } from '../data.js';
-import gsap from 'gsap'
-import ScrollTrigger from 'gsap/ScrollTrigger'
+import gsap from 'gsap';
+import ScrollTrigger from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -776,7 +776,7 @@ const drawChart = async (dataset: string | undefined): Promise<void> => {
   try {
     if (dataset !== undefined) {
     let newData = spcd3.loadCSV(dataset);
-    if (newData.length !== 0) {
+    if (newData !== undefined) {
       spcd3.drawChart(newData);
     }
   }
@@ -866,135 +866,107 @@ const writeTitleToDataset = (step: number): void => {
   }
 }
 
-window.addEventListener('scroll', (): void => {
-  const currentStepIndex = getCurrentStepIndex();
+window.addEventListener('scroll', () => {
   // eslint-disable-next-line no-undef
-    const chart = document.getElementById("parallelcoords") as HTMLDivElement | null;
-  if (currentStepIndex !== lastStep) {
-    lastStep = currentStepIndex;
-    const dataset = getDatasetForStep(currentStepIndex);
-    writeTitleToDataset(currentStepIndex);
-    if (currentStepIndex === 1) {
-      if (chart != null) {
-        chart.style.visibility = 'visible';
-        chart.style.pointerEvents = "auto";
-      }
-      (document.getElementById('outlier-button') as HTMLButtonElement).disabled = false;
-      (document.getElementById('correlation-button') as HTMLButtonElement).disabled = false;
-      (document.getElementById('correlation-neg-button') as HTMLButtonElement).disabled = false;
-      (document.getElementById('activate-button') as HTMLButtonElement).disabled = true;
-     
-    } else if (currentStepIndex === 2) {
-      if (chart != null) {
-        chart.style.visibility = 'visible';
-        chart.style.pointerEvents = "none";
-      }
-      (document.getElementById('outlier-button') as HTMLButtonElement).disabled = true;
-      (document.getElementById('correlation-button') as HTMLButtonElement).disabled = true;
-      (document.getElementById('correlation-neg-button') as HTMLButtonElement).disabled = true;
-      (document.getElementById('activate-button') as HTMLButtonElement).disabled = false;
-    } else if (currentStepIndex === 0) {
-      if (chart != null) {
-        chart.style.visibility = 'visible';
-        chart.style.pointerEvents = "auto";
-      }
+  const chart = document.getElementById('parallelcoords') as HTMLDivElement | null;
+  if (!chart) return;
+
+  const step = getCurrentStepIndex();
+  if (step === lastStep) return;
+  lastStep = step;
+
+  const dataset = getDatasetForStep(step);
+  writeTitleToDataset(step);
+  chart.style.opacity = '0';
+
+  window.setTimeout(() => {
+    if (step === 4) {
+      chart.style.visibility = 'hidden';
+      chart.innerHTML = '';
     }
-    
-    if (currentStepIndex == 3)
-    {
-      if (chart == null) return;
+    else if (step === 3) {
       chart.style.visibility = 'visible';
-      chart.className = "cursor-zoom-in";
+      chart.style.pointerEvents = 'auto';
+      chart.className = 'cursor-zoom-in';
       chart.innerHTML = `
-      <figure>
-        <img class="pic" src="images/mva.png" />
-        <figcaption style="font-size:x-small;">Figure 5: Multidimensional Visual Analyser (MVA)</figcaption>
-      </figure>`;
-      chart.style.maxHeight = "auto";
-      chart.style.pointerEvents = "auto";
-      chart.style.justifyContent = "center";
-      chart.style.alignItems = "center";
-      chart.addEventListener('click', handleClick);
+        <figure>
+          <img class="pic" src="images/mva.png" />
+          <figcaption style="font-size:x-small;">
+            Figure 5: Multidimensional Visual Analyser (MVA)
+          </figcaption>
+        </figure>`;
+      chart.style.maxHeight = 'auto';
+      chart.style.justifyContent = 'center';
+      chart.style.alignItems = 'center';
+      chart.onclick = handleClick;
     }
-    else if (currentStepIndex == 2) {
-      if (chart === null) return;
+    else if (step === 2) {
       chart.style.visibility = 'visible';
-      chart.className = "pointer";
-      chart.innerHTML = "";
-      chart.style.maxWidth = "100%";
-      chart.style.maxHeight = "auto";
+      chart.className = 'pointer';
+      chart.innerHTML = '';
+      chart.style.pointerEvents = 'none';
+      chart.style.maxWidth = '100%';
+      chart.style.maxHeight = 'auto';
       drawChart(dataset);
       // eslint-disable-next-line no-undef
-      const toolbar = (document.getElementById('toolbarRow') as HTMLDivElement);
-      if (toolbar !== null) {
-        toolbar.style.setProperty("font-size", "0vw", "important");
-      }
+      const toolbar = document.getElementById('toolbarRow') as HTMLDivElement | null;
+      if (toolbar) toolbar.style.setProperty('font-size', '0vw', 'important');
       // eslint-disable-next-line no-undef
-      document.querySelectorAll<SVGPathElement>("path").forEach(p => {
-        p.style.pointerEvents = "none";
+      document.querySelectorAll<SVGPathElement>('path').forEach(p => (p.style.pointerEvents = 'none'));
+      (document.getElementById('outlier-button') as HTMLButtonElement | null)?.setAttribute('disabled', '');
+      (document.getElementById('correlation-button') as HTMLButtonElement | null)?.setAttribute('disabled', '');
+      (document.getElementById('correlation-neg-button') as HTMLButtonElement | null)?.setAttribute('disabled', '');
+      const activateButton = document.getElementById('activate-button') as HTMLButtonElement | null;
+      if (activateButton) {
+        activateButton.disabled = false;
+        activateButton.textContent = 'Interact Directly';
+      }
+
+      document.querySelectorAll<HTMLButtonElement>('.stepper-button').forEach(btn => {
+        btn.disabled = btn.id === 'start-button' || btn.id === 'reset-button';
       });
-      const buttons = document.querySelectorAll<HTMLButtonElement>('.stepper-button');
-      buttons.forEach(btn => {
-      if (btn.id === "start-button" || btn.id === "reset-button") {
-        btn.disabled = true;
-      }
-      else {
-        btn.disabled = false;
-      }
-    });
 
-    status = false;
-    (document.getElementById('activate-button') as HTMLButtonElement).textContent = "Interact Directly";
-
+      status = false;
     }
     else {
-      if (chart === null) return;
       chart.style.visibility = 'visible';
-      chart.className = "pointer";
-      chart.innerHTML = "";
-      chart.style.maxWidth = "100%";
-      chart.style.maxHeight = "auto";
+      chart.className = 'pointer';
+      chart.innerHTML = '';
+      chart.style.pointerEvents = 'auto';
+      chart.style.maxWidth = '100%';
+      chart.style.maxHeight = 'auto';
       drawChart(dataset);
-      let outlierbutton = (document.getElementById('outlier-button') as HTMLButtonElement);
-      if (outlierbutton !== null) {
-        outlierbutton.textContent = 'Show Outlier';
-      }
-      let negCorrelationButton = (document.getElementById('correlation-neg-button') as HTMLButtonElement);
-      if (negCorrelationButton !== null) {
-        negCorrelationButton.textContent = 'Move Fitness Score Dimension';
-      }
-      // eslint-disable-next-line no-undef
-      const moveError = document.getElementById("move-error") as HTMLParagraphElement | null;
-      if (moveError !== null) {
-        moveError.textContent = "";
-      }
-      // eslint-disable-next-line no-undef
-      const invertError = document.getElementById("invert-error") as HTMLParagraphElement | null;
-      if (invertError !== null) {
-        invertError.textContent = "";
-      }
-      // eslint-disable-next-line no-undef
-      const showError = document.getElementById("show-error") as HTMLParagraphElement | null;
-      if (showError !== null) {
-        showError.textContent = "";
-      }
-      // eslint-disable-next-line no-undef
-      const toolbar = (document.getElementById('toolbarRow') as HTMLDivElement);
-      if (toolbar !== null) {
-        toolbar.style.setProperty("font-size", "0.8vw", "important");
-      }
-      // eslint-disable-next-line no-undef
-      document.querySelectorAll<SVGPathElement>("path").forEach(p => {
-        p.style.pointerEvents = "stroke";
-      });
-    }
 
-    if (currentStepIndex == 4) {
-      if (chart == null) return;
-      chart.style.visibility = 'hidden';
+      // eslint-disable-next-line no-undef
+      const toolbar = document.getElementById('toolbarRow') as HTMLDivElement | null;
+      if (toolbar) toolbar.style.setProperty('font-size', '0.8vw', 'important');
+
+      // eslint-disable-next-line no-undef
+      document.querySelectorAll<SVGPathElement>('path').forEach(p => (p.style.pointerEvents = 'stroke'));
+
+      const outlierBtn = document.getElementById('outlier-button') as HTMLButtonElement | null;
+      if (outlierBtn) outlierBtn.textContent = 'Show Outlier';
+
+      const negBtn = document.getElementById('correlation-neg-button') as HTMLButtonElement | null;
+      if (negBtn) negBtn.textContent = 'Move Fitness Score Dimension';
+
+      ['move-error', 'invert-error', 'show-error'].forEach(id => {
+        // eslint-disable-next-line no-undef
+        const el = document.getElementById(id) as HTMLParagraphElement | null;
+        if (el) el.textContent = '';
+      });
+
+      (document.getElementById('outlier-button') as HTMLButtonElement | null)?.removeAttribute('disabled');
+      (document.getElementById('correlation-button') as HTMLButtonElement | null)?.removeAttribute('disabled');
+      (document.getElementById('correlation-neg-button') as HTMLButtonElement | null)?.removeAttribute('disabled');
+      const act = document.getElementById('activate-button') as HTMLButtonElement | null;
+      if (act) act.disabled = true;
+    }
+    if (chart.style.visibility !== 'hidden') {
+      chart.style.opacity = '1';
     }
     currentStep.value = 0;
-  }
+  }, 450);
 });
 
 onBeforeUnmount(() => {
@@ -1315,6 +1287,8 @@ onMounted(async (): Promise<void> => {
   display: flex;
   justify-content: center;
   align-items: center;
+  opacity: 1;
+  transition: opacity 0.5s ease;
 }
 
 .text-container {

@@ -11,9 +11,6 @@ A live version of the latest deployment can be found at
 The explorable explainer uses [SPCD3](https://github.com/tugraz-isds/spcd3) to generate and
 visualise parallel coordinates.
 
-Scroll-based interactions are powered by [Scrollama](https://github.com/russellsamora/scrollama),
-a lightweight JavaScript library for scrollytelling using the Intersection Observer API.
-
 Scroll-driven animations are implemented using native CSS.
 For browsers and platforms that don't yet support it, a fallback is provided
 using [GSAP](https://github.com/greensock/GSAP) as a polyfill.

@@ -918,14 +918,14 @@ Selection$1.prototype = selection.prototype = {
   [Symbol.iterator]: selection_iterator
 };
 
-function select$1(selector) {
+function select(selector) {
   return typeof selector === "string"
       ? new Selection$1([[document.querySelector(selector)]], [document.documentElement])
       : new Selection$1([[selector]], root);
 }
 
 function create$1(name) {
-  return select$1(creator(name).call(document.documentElement));
+  return select(creator(name).call(document.documentElement));
 }
 
 var nextId = 0;
@@ -3179,7 +3179,7 @@ function noevent(event) {
 
 function nodrag(view) {
   var root = view.document.documentElement,
-      selection = select$1(view).on("dragstart.drag", noevent, nonpassivecapture);
+      selection = select(view).on("dragstart.drag", noevent, nonpassivecapture);
   if ("onselectstart" in root) {
     selection.on("selectstart.drag", noevent, nonpassivecapture);
   } else {
@@ -3190,7 +3190,7 @@ function nodrag(view) {
 
 function yesdrag(view, noclick) {
   var root = view.document.documentElement,
-      selection = select$1(view).on("dragstart.drag", null);
+      selection = select(view).on("dragstart.drag", null);
   if (noclick) {
     selection.on("click.drag", noevent, nonpassivecapture);
     setTimeout(function() { selection.on("click.drag", null); }, 0);
@@ -3280,7 +3280,7 @@ function drag() {
     if (touchending || !filter.call(this, event, d)) return;
     var gesture = beforestart(this, container.call(this, event, d), event, d, "mouse");
     if (!gesture) return;
-    select$1(event.view)
+    select(event.view)
       .on("mousemove.drag", mousemoved, nonpassivecapture)
       .on("mouseup.drag", mouseupped, nonpassivecapture);
     nodrag(event.view);
@@ -3301,7 +3301,7 @@ function drag() {
   }
 
   function mouseupped(event) {
-    select$1(event.view).on("mousemove.drag mouseup.drag", null);
+    select(event.view).on("mousemove.drag mouseup.drag", null);
     yesdrag(event.view, mousemoving);
     noevent(event);
     gestures.mouse("end", event);
@@ -3422,1644 +3422,6 @@ function drag() {
   return drag;
 }
 
-function constant(x) {
-  return function constant() {
-    return x;
-  };
-}
-
-const epsilon$2 = 1e-12;
-
-const pi = Math.PI,
-    tau = 2 * pi,
-    epsilon$1 = 1e-6,
-    tauEpsilon = tau - epsilon$1;
-
-function append(strings) {
-  this._ += strings[0];
-  for (let i = 1, n = strings.length; i < n; ++i) {
-    this._ += arguments[i] + strings[i];
-  }
-}
-
-function appendRound(digits) {
-  let d = Math.floor(digits);
-  if (!(d >= 0)) throw new Error(`invalid digits: ${digits}`);
-  if (d > 15) return append;
-  const k = 10 ** d;
-  return function(strings) {
-    this._ += strings[0];
-    for (let i = 1, n = strings.length; i < n; ++i) {
-      this._ += Math.round(arguments[i] * k) / k + strings[i];
-    }
-  };
-}
-
-class Path {
-  constructor(digits) {
-    this._x0 = this._y0 = // start of current subpath
-    this._x1 = this._y1 = null; // end of current subpath
-    this._ = "";
-    this._append = digits == null ? append : appendRound(digits);
-  }
-  moveTo(x, y) {
-    this._append`M${this._x0 = this._x1 = +x},${this._y0 = this._y1 = +y}`;
-  }
-  closePath() {
-    if (this._x1 !== null) {
-      this._x1 = this._x0, this._y1 = this._y0;
-      this._append`Z`;
-    }
-  }
-  lineTo(x, y) {
-    this._append`L${this._x1 = +x},${this._y1 = +y}`;
-  }
-  quadraticCurveTo(x1, y1, x, y) {
-    this._append`Q${+x1},${+y1},${this._x1 = +x},${this._y1 = +y}`;
-  }
-  bezierCurveTo(x1, y1, x2, y2, x, y) {
-    this._append`C${+x1},${+y1},${+x2},${+y2},${this._x1 = +x},${this._y1 = +y}`;
-  }
-  arcTo(x1, y1, x2, y2, r) {
-    x1 = +x1, y1 = +y1, x2 = +x2, y2 = +y2, r = +r;
-
-    // Is the radius negative? Error.
-    if (r < 0) throw new Error(`negative radius: ${r}`);
-
-    let x0 = this._x1,
-        y0 = this._y1,
-        x21 = x2 - x1,
-        y21 = y2 - y1,
-        x01 = x0 - x1,
-        y01 = y0 - y1,
-        l01_2 = x01 * x01 + y01 * y01;
-
-    // Is this path empty? Move to (x1,y1).
-    if (this._x1 === null) {
-      this._append`M${this._x1 = x1},${this._y1 = y1}`;
-    }
-
-    // Or, is (x1,y1) coincident with (x0,y0)? Do nothing.
-    else if (!(l01_2 > epsilon$1));
-
-    // Or, are (x0,y0), (x1,y1) and (x2,y2) collinear?
-    // Equivalently, is (x1,y1) coincident with (x2,y2)?
-    // Or, is the radius zero? Line to (x1,y1).
-    else if (!(Math.abs(y01 * x21 - y21 * x01) > epsilon$1) || !r) {
-      this._append`L${this._x1 = x1},${this._y1 = y1}`;
-    }
-
-    // Otherwise, draw an arc!
-    else {
-      let x20 = x2 - x0,
-          y20 = y2 - y0,
-          l21_2 = x21 * x21 + y21 * y21,
-          l20_2 = x20 * x20 + y20 * y20,
-          l21 = Math.sqrt(l21_2),
-          l01 = Math.sqrt(l01_2),
-          l = r * Math.tan((pi - Math.acos((l21_2 + l01_2 - l20_2) / (2 * l21 * l01))) / 2),
-          t01 = l / l01,
-          t21 = l / l21;
-
-      // If the start tangent is not coincident with (x0,y0), line to.
-      if (Math.abs(t01 - 1) > epsilon$1) {
-        this._append`L${x1 + t01 * x01},${y1 + t01 * y01}`;
-      }
-
-      this._append`A${r},${r},0,0,${+(y01 * x20 > x01 * y20)},${this._x1 = x1 + t21 * x21},${this._y1 = y1 + t21 * y21}`;
-    }
-  }
-  arc(x, y, r, a0, a1, ccw) {
-    x = +x, y = +y, r = +r, ccw = !!ccw;
-
-    // Is the radius negative? Error.
-    if (r < 0) throw new Error(`negative radius: ${r}`);
-
-    let dx = r * Math.cos(a0),
-        dy = r * Math.sin(a0),
-        x0 = x + dx,
-        y0 = y + dy,
-        cw = 1 ^ ccw,
-        da = ccw ? a0 - a1 : a1 - a0;
-
-    // Is this path empty? Move to (x0,y0).
-    if (this._x1 === null) {
-      this._append`M${x0},${y0}`;
-    }
-
-    // Or, is (x0,y0) not coincident with the previous point? Line to (x0,y0).
-    else if (Math.abs(this._x1 - x0) > epsilon$1 || Math.abs(this._y1 - y0) > epsilon$1) {
-      this._append`L${x0},${y0}`;
-    }
-
-    // Is this arc empty? We’re done.
-    if (!r) return;
-
-    // Does the angle go the wrong way? Flip the direction.
-    if (da < 0) da = da % tau + tau;
-
-    // Is this a complete circle? Draw two arcs to complete the circle.
-    if (da > tauEpsilon) {
-      this._append`A${r},${r},0,1,${cw},${x - dx},${y - dy}A${r},${r},0,1,${cw},${this._x1 = x0},${this._y1 = y0}`;
-    }
-
-    // Is this arc non-empty? Draw an arc!
-    else if (da > epsilon$1) {
-      this._append`A${r},${r},0,${+(da >= pi)},${cw},${this._x1 = x + r * Math.cos(a1)},${this._y1 = y + r * Math.sin(a1)}`;
-    }
-  }
-  rect(x, y, w, h) {
-    this._append`M${this._x0 = this._x1 = +x},${this._y0 = this._y1 = +y}h${w = +w}v${+h}h${-w}Z`;
-  }
-  toString() {
-    return this._;
-  }
-}
-
-function withPath(shape) {
-  let digits = 3;
-
-  shape.digits = function(_) {
-    if (!arguments.length) return digits;
-    if (_ == null) {
-      digits = null;
-    } else {
-      const d = Math.floor(_);
-      if (!(d >= 0)) throw new RangeError(`invalid digits: ${_}`);
-      digits = d;
-    }
-    return shape;
-  };
-
-  return () => new Path(digits);
-}
-
-function array(x) {
-  return typeof x === "object" && "length" in x
-    ? x // Array, TypedArray, NodeList, array-like
-    : Array.from(x); // Map, Set, iterable, string, or anything else
-}
-
-function Linear(context) {
-  this._context = context;
-}
-
-Linear.prototype = {
-  areaStart: function() {
-    this._line = 0;
-  },
-  areaEnd: function() {
-    this._line = NaN;
-  },
-  lineStart: function() {
-    this._point = 0;
-  },
-  lineEnd: function() {
-    if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
-    this._line = 1 - this._line;
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-    switch (this._point) {
-      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
-      case 1: this._point = 2; // falls through
-      default: this._context.lineTo(x, y); break;
-    }
-  }
-};
-
-function curveLinear(context) {
-  return new Linear(context);
-}
-
-function x(p) {
-  return p[0];
-}
-
-function y(p) {
-  return p[1];
-}
-
-function line(x$1, y$1) {
-  var defined = constant(true),
-      context = null,
-      curve = curveLinear,
-      output = null,
-      path = withPath(line);
-
-  x$1 = typeof x$1 === "function" ? x$1 : (x$1 === undefined) ? x : constant(x$1);
-  y$1 = typeof y$1 === "function" ? y$1 : (y$1 === undefined) ? y : constant(y$1);
-
-  function line(data) {
-    var i,
-        n = (data = array(data)).length,
-        d,
-        defined0 = false,
-        buffer;
-
-    if (context == null) output = curve(buffer = path());
-
-    for (i = 0; i <= n; ++i) {
-      if (!(i < n && defined(d = data[i], i, data)) === defined0) {
-        if (defined0 = !defined0) output.lineStart();
-        else output.lineEnd();
-      }
-      if (defined0) output.point(+x$1(d, i, data), +y$1(d, i, data));
-    }
-
-    if (buffer) return output = null, buffer + "" || null;
-  }
-
-  line.x = function(_) {
-    return arguments.length ? (x$1 = typeof _ === "function" ? _ : constant(+_), line) : x$1;
-  };
-
-  line.y = function(_) {
-    return arguments.length ? (y$1 = typeof _ === "function" ? _ : constant(+_), line) : y$1;
-  };
-
-  line.defined = function(_) {
-    return arguments.length ? (defined = typeof _ === "function" ? _ : constant(!!_), line) : defined;
-  };
-
-  line.curve = function(_) {
-    return arguments.length ? (curve = _, context != null && (output = curve(context)), line) : curve;
-  };
-
-  line.context = function(_) {
-    return arguments.length ? (_ == null ? context = output = null : output = curve(context = _), line) : context;
-  };
-
-  return line;
-}
-
-function noop() {}
-
-function point$4(that, x, y) {
-  that._context.bezierCurveTo(
-    (2 * that._x0 + that._x1) / 3,
-    (2 * that._y0 + that._y1) / 3,
-    (that._x0 + 2 * that._x1) / 3,
-    (that._y0 + 2 * that._y1) / 3,
-    (that._x0 + 4 * that._x1 + x) / 6,
-    (that._y0 + 4 * that._y1 + y) / 6
-  );
-}
-
-function Basis(context) {
-  this._context = context;
-}
-
-Basis.prototype = {
-  areaStart: function() {
-    this._line = 0;
-  },
-  areaEnd: function() {
-    this._line = NaN;
-  },
-  lineStart: function() {
-    this._x0 = this._x1 =
-    this._y0 = this._y1 = NaN;
-    this._point = 0;
-  },
-  lineEnd: function() {
-    switch (this._point) {
-      case 3: point$4(this, this._x1, this._y1); // falls through
-      case 2: this._context.lineTo(this._x1, this._y1); break;
-    }
-    if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
-    this._line = 1 - this._line;
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-    switch (this._point) {
-      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
-      case 1: this._point = 2; break;
-      case 2: this._point = 3; this._context.lineTo((5 * this._x0 + this._x1) / 6, (5 * this._y0 + this._y1) / 6); // falls through
-      default: point$4(this, x, y); break;
-    }
-    this._x0 = this._x1, this._x1 = x;
-    this._y0 = this._y1, this._y1 = y;
-  }
-};
-
-function Bundle(context, beta) {
-  this._basis = new Basis(context);
-  this._beta = beta;
-}
-
-Bundle.prototype = {
-  lineStart: function() {
-    this._x = [];
-    this._y = [];
-    this._basis.lineStart();
-  },
-  lineEnd: function() {
-    var x = this._x,
-        y = this._y,
-        j = x.length - 1;
-
-    if (j > 0) {
-      var x0 = x[0],
-          y0 = y[0],
-          dx = x[j] - x0,
-          dy = y[j] - y0,
-          i = -1,
-          t;
-
-      while (++i <= j) {
-        t = i / j;
-        this._basis.point(
-          this._beta * x[i] + (1 - this._beta) * (x0 + t * dx),
-          this._beta * y[i] + (1 - this._beta) * (y0 + t * dy)
-        );
-      }
-    }
-
-    this._x = this._y = null;
-    this._basis.lineEnd();
-  },
-  point: function(x, y) {
-    this._x.push(+x);
-    this._y.push(+y);
-  }
-};
-
-((function custom(beta) {
-
-  function bundle(context) {
-    return beta === 1 ? new Basis(context) : new Bundle(context, beta);
-  }
-
-  bundle.beta = function(beta) {
-    return custom(+beta);
-  };
-
-  return bundle;
-}))(0.85);
-
-function point$3(that, x, y) {
-  that._context.bezierCurveTo(
-    that._x1 + that._k * (that._x2 - that._x0),
-    that._y1 + that._k * (that._y2 - that._y0),
-    that._x2 + that._k * (that._x1 - x),
-    that._y2 + that._k * (that._y1 - y),
-    that._x2,
-    that._y2
-  );
-}
-
-function Cardinal(context, tension) {
-  this._context = context;
-  this._k = (1 - tension) / 6;
-}
-
-Cardinal.prototype = {
-  areaStart: function() {
-    this._line = 0;
-  },
-  areaEnd: function() {
-    this._line = NaN;
-  },
-  lineStart: function() {
-    this._x0 = this._x1 = this._x2 =
-    this._y0 = this._y1 = this._y2 = NaN;
-    this._point = 0;
-  },
-  lineEnd: function() {
-    switch (this._point) {
-      case 2: this._context.lineTo(this._x2, this._y2); break;
-      case 3: point$3(this, this._x1, this._y1); break;
-    }
-    if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
-    this._line = 1 - this._line;
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-    switch (this._point) {
-      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
-      case 1: this._point = 2; this._x1 = x, this._y1 = y; break;
-      case 2: this._point = 3; // falls through
-      default: point$3(this, x, y); break;
-    }
-    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
-    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
-  }
-};
-
-((function custom(tension) {
-
-  function cardinal(context) {
-    return new Cardinal(context, tension);
-  }
-
-  cardinal.tension = function(tension) {
-    return custom(+tension);
-  };
-
-  return cardinal;
-}))(0);
-
-function CardinalClosed(context, tension) {
-  this._context = context;
-  this._k = (1 - tension) / 6;
-}
-
-CardinalClosed.prototype = {
-  areaStart: noop,
-  areaEnd: noop,
-  lineStart: function() {
-    this._x0 = this._x1 = this._x2 = this._x3 = this._x4 = this._x5 =
-    this._y0 = this._y1 = this._y2 = this._y3 = this._y4 = this._y5 = NaN;
-    this._point = 0;
-  },
-  lineEnd: function() {
-    switch (this._point) {
-      case 1: {
-        this._context.moveTo(this._x3, this._y3);
-        this._context.closePath();
-        break;
-      }
-      case 2: {
-        this._context.lineTo(this._x3, this._y3);
-        this._context.closePath();
-        break;
-      }
-      case 3: {
-        this.point(this._x3, this._y3);
-        this.point(this._x4, this._y4);
-        this.point(this._x5, this._y5);
-        break;
-      }
-    }
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-    switch (this._point) {
-      case 0: this._point = 1; this._x3 = x, this._y3 = y; break;
-      case 1: this._point = 2; this._context.moveTo(this._x4 = x, this._y4 = y); break;
-      case 2: this._point = 3; this._x5 = x, this._y5 = y; break;
-      default: point$3(this, x, y); break;
-    }
-    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
-    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
-  }
-};
-
-((function custom(tension) {
-
-  function cardinal(context) {
-    return new CardinalClosed(context, tension);
-  }
-
-  cardinal.tension = function(tension) {
-    return custom(+tension);
-  };
-
-  return cardinal;
-}))(0);
-
-function CardinalOpen(context, tension) {
-  this._context = context;
-  this._k = (1 - tension) / 6;
-}
-
-CardinalOpen.prototype = {
-  areaStart: function() {
-    this._line = 0;
-  },
-  areaEnd: function() {
-    this._line = NaN;
-  },
-  lineStart: function() {
-    this._x0 = this._x1 = this._x2 =
-    this._y0 = this._y1 = this._y2 = NaN;
-    this._point = 0;
-  },
-  lineEnd: function() {
-    if (this._line || (this._line !== 0 && this._point === 3)) this._context.closePath();
-    this._line = 1 - this._line;
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-    switch (this._point) {
-      case 0: this._point = 1; break;
-      case 1: this._point = 2; break;
-      case 2: this._point = 3; this._line ? this._context.lineTo(this._x2, this._y2) : this._context.moveTo(this._x2, this._y2); break;
-      case 3: this._point = 4; // falls through
-      default: point$3(this, x, y); break;
-    }
-    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
-    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
-  }
-};
-
-((function custom(tension) {
-
-  function cardinal(context) {
-    return new CardinalOpen(context, tension);
-  }
-
-  cardinal.tension = function(tension) {
-    return custom(+tension);
-  };
-
-  return cardinal;
-}))(0);
-
-function point$2(that, x, y) {
-  var x1 = that._x1,
-      y1 = that._y1,
-      x2 = that._x2,
-      y2 = that._y2;
-
-  if (that._l01_a > epsilon$2) {
-    var a = 2 * that._l01_2a + 3 * that._l01_a * that._l12_a + that._l12_2a,
-        n = 3 * that._l01_a * (that._l01_a + that._l12_a);
-    x1 = (x1 * a - that._x0 * that._l12_2a + that._x2 * that._l01_2a) / n;
-    y1 = (y1 * a - that._y0 * that._l12_2a + that._y2 * that._l01_2a) / n;
-  }
-
-  if (that._l23_a > epsilon$2) {
-    var b = 2 * that._l23_2a + 3 * that._l23_a * that._l12_a + that._l12_2a,
-        m = 3 * that._l23_a * (that._l23_a + that._l12_a);
-    x2 = (x2 * b + that._x1 * that._l23_2a - x * that._l12_2a) / m;
-    y2 = (y2 * b + that._y1 * that._l23_2a - y * that._l12_2a) / m;
-  }
-
-  that._context.bezierCurveTo(x1, y1, x2, y2, that._x2, that._y2);
-}
-
-function CatmullRom(context, alpha) {
-  this._context = context;
-  this._alpha = alpha;
-}
-
-CatmullRom.prototype = {
-  areaStart: function() {
-    this._line = 0;
-  },
-  areaEnd: function() {
-    this._line = NaN;
-  },
-  lineStart: function() {
-    this._x0 = this._x1 = this._x2 =
-    this._y0 = this._y1 = this._y2 = NaN;
-    this._l01_a = this._l12_a = this._l23_a =
-    this._l01_2a = this._l12_2a = this._l23_2a =
-    this._point = 0;
-  },
-  lineEnd: function() {
-    switch (this._point) {
-      case 2: this._context.lineTo(this._x2, this._y2); break;
-      case 3: this.point(this._x2, this._y2); break;
-    }
-    if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
-    this._line = 1 - this._line;
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-
-    if (this._point) {
-      var x23 = this._x2 - x,
-          y23 = this._y2 - y;
-      this._l23_a = Math.sqrt(this._l23_2a = Math.pow(x23 * x23 + y23 * y23, this._alpha));
-    }
-
-    switch (this._point) {
-      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
-      case 1: this._point = 2; break;
-      case 2: this._point = 3; // falls through
-      default: point$2(this, x, y); break;
-    }
-
-    this._l01_a = this._l12_a, this._l12_a = this._l23_a;
-    this._l01_2a = this._l12_2a, this._l12_2a = this._l23_2a;
-    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
-    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
-  }
-};
-
-((function custom(alpha) {
-
-  function catmullRom(context) {
-    return alpha ? new CatmullRom(context, alpha) : new Cardinal(context, 0);
-  }
-
-  catmullRom.alpha = function(alpha) {
-    return custom(+alpha);
-  };
-
-  return catmullRom;
-}))(0.5);
-
-function CatmullRomClosed(context, alpha) {
-  this._context = context;
-  this._alpha = alpha;
-}
-
-CatmullRomClosed.prototype = {
-  areaStart: noop,
-  areaEnd: noop,
-  lineStart: function() {
-    this._x0 = this._x1 = this._x2 = this._x3 = this._x4 = this._x5 =
-    this._y0 = this._y1 = this._y2 = this._y3 = this._y4 = this._y5 = NaN;
-    this._l01_a = this._l12_a = this._l23_a =
-    this._l01_2a = this._l12_2a = this._l23_2a =
-    this._point = 0;
-  },
-  lineEnd: function() {
-    switch (this._point) {
-      case 1: {
-        this._context.moveTo(this._x3, this._y3);
-        this._context.closePath();
-        break;
-      }
-      case 2: {
-        this._context.lineTo(this._x3, this._y3);
-        this._context.closePath();
-        break;
-      }
-      case 3: {
-        this.point(this._x3, this._y3);
-        this.point(this._x4, this._y4);
-        this.point(this._x5, this._y5);
-        break;
-      }
-    }
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-
-    if (this._point) {
-      var x23 = this._x2 - x,
-          y23 = this._y2 - y;
-      this._l23_a = Math.sqrt(this._l23_2a = Math.pow(x23 * x23 + y23 * y23, this._alpha));
-    }
-
-    switch (this._point) {
-      case 0: this._point = 1; this._x3 = x, this._y3 = y; break;
-      case 1: this._point = 2; this._context.moveTo(this._x4 = x, this._y4 = y); break;
-      case 2: this._point = 3; this._x5 = x, this._y5 = y; break;
-      default: point$2(this, x, y); break;
-    }
-
-    this._l01_a = this._l12_a, this._l12_a = this._l23_a;
-    this._l01_2a = this._l12_2a, this._l12_2a = this._l23_2a;
-    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
-    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
-  }
-};
-
-((function custom(alpha) {
-
-  function catmullRom(context) {
-    return alpha ? new CatmullRomClosed(context, alpha) : new CardinalClosed(context, 0);
-  }
-
-  catmullRom.alpha = function(alpha) {
-    return custom(+alpha);
-  };
-
-  return catmullRom;
-}))(0.5);
-
-function CatmullRomOpen(context, alpha) {
-  this._context = context;
-  this._alpha = alpha;
-}
-
-CatmullRomOpen.prototype = {
-  areaStart: function() {
-    this._line = 0;
-  },
-  areaEnd: function() {
-    this._line = NaN;
-  },
-  lineStart: function() {
-    this._x0 = this._x1 = this._x2 =
-    this._y0 = this._y1 = this._y2 = NaN;
-    this._l01_a = this._l12_a = this._l23_a =
-    this._l01_2a = this._l12_2a = this._l23_2a =
-    this._point = 0;
-  },
-  lineEnd: function() {
-    if (this._line || (this._line !== 0 && this._point === 3)) this._context.closePath();
-    this._line = 1 - this._line;
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-
-    if (this._point) {
-      var x23 = this._x2 - x,
-          y23 = this._y2 - y;
-      this._l23_a = Math.sqrt(this._l23_2a = Math.pow(x23 * x23 + y23 * y23, this._alpha));
-    }
-
-    switch (this._point) {
-      case 0: this._point = 1; break;
-      case 1: this._point = 2; break;
-      case 2: this._point = 3; this._line ? this._context.lineTo(this._x2, this._y2) : this._context.moveTo(this._x2, this._y2); break;
-      case 3: this._point = 4; // falls through
-      default: point$2(this, x, y); break;
-    }
-
-    this._l01_a = this._l12_a, this._l12_a = this._l23_a;
-    this._l01_2a = this._l12_2a, this._l12_2a = this._l23_2a;
-    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
-    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
-  }
-};
-
-((function custom(alpha) {
-
-  function catmullRom(context) {
-    return alpha ? new CatmullRomOpen(context, alpha) : new CardinalOpen(context, 0);
-  }
-
-  catmullRom.alpha = function(alpha) {
-    return custom(+alpha);
-  };
-
-  return catmullRom;
-}))(0.5);
-
-function sign(x) {
-  return x < 0 ? -1 : 1;
-}
-
-// Calculate the slopes of the tangents (Hermite-type interpolation) based on
-// the following paper: Steffen, M. 1990. A Simple Method for Monotonic
-// Interpolation in One Dimension. Astronomy and Astrophysics, Vol. 239, NO.
-// NOV(II), P. 443, 1990.
-function slope3(that, x2, y2) {
-  var h0 = that._x1 - that._x0,
-      h1 = x2 - that._x1,
-      s0 = (that._y1 - that._y0) / (h0 || h1 < 0 && -0),
-      s1 = (y2 - that._y1) / (h1 || h0 < 0 && -0),
-      p = (s0 * h1 + s1 * h0) / (h0 + h1);
-  return (sign(s0) + sign(s1)) * Math.min(Math.abs(s0), Math.abs(s1), 0.5 * Math.abs(p)) || 0;
-}
-
-// Calculate a one-sided slope.
-function slope2(that, t) {
-  var h = that._x1 - that._x0;
-  return h ? (3 * (that._y1 - that._y0) / h - t) / 2 : t;
-}
-
-// According to https://en.wikipedia.org/wiki/Cubic_Hermite_spline#Representations
-// "you can express cubic Hermite interpolation in terms of cubic Bézier curves
-// with respect to the four values p0, p0 + m0 / 3, p1 - m1 / 3, p1".
-function point$1(that, t0, t1) {
-  var x0 = that._x0,
-      y0 = that._y0,
-      x1 = that._x1,
-      y1 = that._y1,
-      dx = (x1 - x0) / 3;
-  that._context.bezierCurveTo(x0 + dx, y0 + dx * t0, x1 - dx, y1 - dx * t1, x1, y1);
-}
-
-function MonotoneX(context) {
-  this._context = context;
-}
-
-MonotoneX.prototype = {
-  areaStart: function() {
-    this._line = 0;
-  },
-  areaEnd: function() {
-    this._line = NaN;
-  },
-  lineStart: function() {
-    this._x0 = this._x1 =
-    this._y0 = this._y1 =
-    this._t0 = NaN;
-    this._point = 0;
-  },
-  lineEnd: function() {
-    switch (this._point) {
-      case 2: this._context.lineTo(this._x1, this._y1); break;
-      case 3: point$1(this, this._t0, slope2(this, this._t0)); break;
-    }
-    if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
-    this._line = 1 - this._line;
-  },
-  point: function(x, y) {
-    var t1 = NaN;
-
-    x = +x, y = +y;
-    if (x === this._x1 && y === this._y1) return; // Ignore coincident points.
-    switch (this._point) {
-      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
-      case 1: this._point = 2; break;
-      case 2: this._point = 3; point$1(this, slope2(this, t1 = slope3(this, x, y)), t1); break;
-      default: point$1(this, this._t0, t1 = slope3(this, x, y)); break;
-    }
-
-    this._x0 = this._x1, this._x1 = x;
-    this._y0 = this._y1, this._y1 = y;
-    this._t0 = t1;
-  }
-};
-
-(Object.create(MonotoneX.prototype)).point = function(x, y) {
-  MonotoneX.prototype.point.call(this, y, x);
-};
-
-var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
-
-function getDefaultExportFromCjs (x) {
-	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
-}
-
-var d3InterpolatePathExports = {};
-var d3InterpolatePath = {
-  get exports(){ return d3InterpolatePathExports; },
-  set exports(v){ d3InterpolatePathExports = v; },
-};
-
-(function (module, exports) {
-	(function (global, factory) {
-	factory(exports) ;
-	}(commonjsGlobal, (function (exports) {
-	function ownKeys(object, enumerableOnly) {
-	  var keys = Object.keys(object);
-
-	  if (Object.getOwnPropertySymbols) {
-	    var symbols = Object.getOwnPropertySymbols(object);
-
-	    if (enumerableOnly) {
-	      symbols = symbols.filter(function (sym) {
-	        return Object.getOwnPropertyDescriptor(object, sym).enumerable;
-	      });
-	    }
-
-	    keys.push.apply(keys, symbols);
-	  }
-
-	  return keys;
-	}
-
-	function _objectSpread2(target) {
-	  for (var i = 1; i < arguments.length; i++) {
-	    var source = arguments[i] != null ? arguments[i] : {};
-
-	    if (i % 2) {
-	      ownKeys(Object(source), true).forEach(function (key) {
-	        _defineProperty(target, key, source[key]);
-	      });
-	    } else if (Object.getOwnPropertyDescriptors) {
-	      Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
-	    } else {
-	      ownKeys(Object(source)).forEach(function (key) {
-	        Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
-	      });
-	    }
-	  }
-
-	  return target;
-	}
-
-	function _typeof(obj) {
-	  "@babel/helpers - typeof";
-
-	  if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-	    _typeof = function (obj) {
-	      return typeof obj;
-	    };
-	  } else {
-	    _typeof = function (obj) {
-	      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-	    };
-	  }
-
-	  return _typeof(obj);
-	}
-
-	function _defineProperty(obj, key, value) {
-	  if (key in obj) {
-	    Object.defineProperty(obj, key, {
-	      value: value,
-	      enumerable: true,
-	      configurable: true,
-	      writable: true
-	    });
-	  } else {
-	    obj[key] = value;
-	  }
-
-	  return obj;
-	}
-
-	function _extends() {
-	  _extends = Object.assign || function (target) {
-	    for (var i = 1; i < arguments.length; i++) {
-	      var source = arguments[i];
-
-	      for (var key in source) {
-	        if (Object.prototype.hasOwnProperty.call(source, key)) {
-	          target[key] = source[key];
-	        }
-	      }
-	    }
-
-	    return target;
-	  };
-
-	  return _extends.apply(this, arguments);
-	}
-
-	function _unsupportedIterableToArray(o, minLen) {
-	  if (!o) return;
-	  if (typeof o === "string") return _arrayLikeToArray(o, minLen);
-	  var n = Object.prototype.toString.call(o).slice(8, -1);
-	  if (n === "Object" && o.constructor) n = o.constructor.name;
-	  if (n === "Map" || n === "Set") return Array.from(o);
-	  if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
-	}
-
-	function _arrayLikeToArray(arr, len) {
-	  if (len == null || len > arr.length) len = arr.length;
-
-	  for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
-
-	  return arr2;
-	}
-
-	function _createForOfIteratorHelper(o, allowArrayLike) {
-	  var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"];
-
-	  if (!it) {
-	    if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {
-	      if (it) o = it;
-	      var i = 0;
-
-	      var F = function () {};
-
-	      return {
-	        s: F,
-	        n: function () {
-	          if (i >= o.length) return {
-	            done: true
-	          };
-	          return {
-	            done: false,
-	            value: o[i++]
-	          };
-	        },
-	        e: function (e) {
-	          throw e;
-	        },
-	        f: F
-	      };
-	    }
-
-	    throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
-	  }
-
-	  var normalCompletion = true,
-	      didErr = false,
-	      err;
-	  return {
-	    s: function () {
-	      it = it.call(o);
-	    },
-	    n: function () {
-	      var step = it.next();
-	      normalCompletion = step.done;
-	      return step;
-	    },
-	    e: function (e) {
-	      didErr = true;
-	      err = e;
-	    },
-	    f: function () {
-	      try {
-	        if (!normalCompletion && it.return != null) it.return();
-	      } finally {
-	        if (didErr) throw err;
-	      }
-	    }
-	  };
-	}
-
-	/**
-	 * de Casteljau's algorithm for drawing and splitting bezier curves.
-	 * Inspired by https://pomax.github.io/bezierinfo/
-	 *
-	 * @param {Number[][]} points Array of [x,y] points: [start, control1, control2, ..., end]
-	 *   The original segment to split.
-	 * @param {Number} t Where to split the curve (value between [0, 1])
-	 * @return {Object} An object { left, right } where left is the segment from 0..t and
-	 *   right is the segment from t..1.
-	 */
-	function decasteljau(points, t) {
-	  var left = [];
-	  var right = [];
-
-	  function decasteljauRecurse(points, t) {
-	    if (points.length === 1) {
-	      left.push(points[0]);
-	      right.push(points[0]);
-	    } else {
-	      var newPoints = Array(points.length - 1);
-
-	      for (var i = 0; i < newPoints.length; i++) {
-	        if (i === 0) {
-	          left.push(points[0]);
-	        }
-
-	        if (i === newPoints.length - 1) {
-	          right.push(points[i + 1]);
-	        }
-
-	        newPoints[i] = [(1 - t) * points[i][0] + t * points[i + 1][0], (1 - t) * points[i][1] + t * points[i + 1][1]];
-	      }
-
-	      decasteljauRecurse(newPoints, t);
-	    }
-	  }
-
-	  if (points.length) {
-	    decasteljauRecurse(points, t);
-	  }
-
-	  return {
-	    left: left,
-	    right: right.reverse()
-	  };
-	}
-	/**
-	 * Convert segments represented as points back into a command object
-	 *
-	 * @param {Number[][]} points Array of [x,y] points: [start, control1, control2, ..., end]
-	 *   Represents a segment
-	 * @return {Object} A command object representing the segment.
-	 */
-
-
-	function pointsToCommand(points) {
-	  var command = {};
-
-	  if (points.length === 4) {
-	    command.x2 = points[2][0];
-	    command.y2 = points[2][1];
-	  }
-
-	  if (points.length >= 3) {
-	    command.x1 = points[1][0];
-	    command.y1 = points[1][1];
-	  }
-
-	  command.x = points[points.length - 1][0];
-	  command.y = points[points.length - 1][1];
-
-	  if (points.length === 4) {
-	    // start, control1, control2, end
-	    command.type = 'C';
-	  } else if (points.length === 3) {
-	    // start, control, end
-	    command.type = 'Q';
-	  } else {
-	    // start, end
-	    command.type = 'L';
-	  }
-
-	  return command;
-	}
-	/**
-	 * Runs de Casteljau's algorithm enough times to produce the desired number of segments.
-	 *
-	 * @param {Number[][]} points Array of [x,y] points for de Casteljau (the initial segment to split)
-	 * @param {Number} segmentCount Number of segments to split the original into
-	 * @return {Number[][][]} Array of segments
-	 */
-
-
-	function splitCurveAsPoints(points, segmentCount) {
-	  segmentCount = segmentCount || 2;
-	  var segments = [];
-	  var remainingCurve = points;
-	  var tIncrement = 1 / segmentCount; // x-----x-----x-----x
-	  // t=  0.33   0.66   1
-	  // x-----o-----------x
-	  // r=  0.33
-	  //       x-----o-----x
-	  // r=         0.5  (0.33 / (1 - 0.33))  === tIncrement / (1 - (tIncrement * (i - 1))
-	  // x-----x-----x-----x----x
-	  // t=  0.25   0.5   0.75  1
-	  // x-----o----------------x
-	  // r=  0.25
-	  //       x-----o----------x
-	  // r=         0.33  (0.25 / (1 - 0.25))
-	  //             x-----o----x
-	  // r=         0.5  (0.25 / (1 - 0.5))
-
-	  for (var i = 0; i < segmentCount - 1; i++) {
-	    var tRelative = tIncrement / (1 - tIncrement * i);
-	    var split = decasteljau(remainingCurve, tRelative);
-	    segments.push(split.left);
-	    remainingCurve = split.right;
-	  } // last segment is just to the end from the last point
-
-
-	  segments.push(remainingCurve);
-	  return segments;
-	}
-	/**
-	 * Convert command objects to arrays of points, run de Casteljau's algorithm on it
-	 * to split into to the desired number of segments.
-	 *
-	 * @param {Object} commandStart The start command object
-	 * @param {Object} commandEnd The end command object
-	 * @param {Number} segmentCount The number of segments to create
-	 * @return {Object[]} An array of commands representing the segments in sequence
-	 */
-
-
-	function splitCurve(commandStart, commandEnd, segmentCount) {
-	  var points = [[commandStart.x, commandStart.y]];
-
-	  if (commandEnd.x1 != null) {
-	    points.push([commandEnd.x1, commandEnd.y1]);
-	  }
-
-	  if (commandEnd.x2 != null) {
-	    points.push([commandEnd.x2, commandEnd.y2]);
-	  }
-
-	  points.push([commandEnd.x, commandEnd.y]);
-	  return splitCurveAsPoints(points, segmentCount).map(pointsToCommand);
-	}
-
-	var commandTokenRegex = /[MLCSTQAHVZmlcstqahv]|-?[\d.e+-]+/g;
-	/**
-	 * List of params for each command type in a path `d` attribute
-	 */
-
-	var typeMap = {
-	  M: ['x', 'y'],
-	  L: ['x', 'y'],
-	  H: ['x'],
-	  V: ['y'],
-	  C: ['x1', 'y1', 'x2', 'y2', 'x', 'y'],
-	  S: ['x2', 'y2', 'x', 'y'],
-	  Q: ['x1', 'y1', 'x', 'y'],
-	  T: ['x', 'y'],
-	  A: ['rx', 'ry', 'xAxisRotation', 'largeArcFlag', 'sweepFlag', 'x', 'y'],
-	  Z: []
-	}; // Add lower case entries too matching uppercase (e.g. 'm' == 'M')
-
-	Object.keys(typeMap).forEach(function (key) {
-	  typeMap[key.toLowerCase()] = typeMap[key];
-	});
-
-	function arrayOfLength(length, value) {
-	  var array = Array(length);
-
-	  for (var i = 0; i < length; i++) {
-	    array[i] = value;
-	  }
-
-	  return array;
-	}
-	/**
-	 * Converts a command object to a string to be used in a `d` attribute
-	 * @param {Object} command A command object
-	 * @return {String} The string for the `d` attribute
-	 */
-
-
-	function commandToString(command) {
-	  return "".concat(command.type).concat(typeMap[command.type].map(function (p) {
-	    return command[p];
-	  }).join(','));
-	}
-	/**
-	 * Converts command A to have the same type as command B.
-	 *
-	 * e.g., L0,5 -> C0,5,0,5,0,5
-	 *
-	 * Uses these rules:
-	 * x1 <- x
-	 * x2 <- x
-	 * y1 <- y
-	 * y2 <- y
-	 * rx <- 0
-	 * ry <- 0
-	 * xAxisRotation <- read from B
-	 * largeArcFlag <- read from B
-	 * sweepflag <- read from B
-	 *
-	 * @param {Object} aCommand Command object from path `d` attribute
-	 * @param {Object} bCommand Command object from path `d` attribute to match against
-	 * @return {Object} aCommand converted to type of bCommand
-	 */
-
-
-	function convertToSameType(aCommand, bCommand) {
-	  var conversionMap = {
-	    x1: 'x',
-	    y1: 'y',
-	    x2: 'x',
-	    y2: 'y'
-	  };
-	  var readFromBKeys = ['xAxisRotation', 'largeArcFlag', 'sweepFlag']; // convert (but ignore M types)
-
-	  if (aCommand.type !== bCommand.type && bCommand.type.toUpperCase() !== 'M') {
-	    var aConverted = {};
-	    Object.keys(bCommand).forEach(function (bKey) {
-	      var bValue = bCommand[bKey]; // first read from the A command
-
-	      var aValue = aCommand[bKey]; // if it is one of these values, read from B no matter what
-
-	      if (aValue === undefined) {
-	        if (readFromBKeys.includes(bKey)) {
-	          aValue = bValue;
-	        } else {
-	          // if it wasn't in the A command, see if an equivalent was
-	          if (aValue === undefined && conversionMap[bKey]) {
-	            aValue = aCommand[conversionMap[bKey]];
-	          } // if it doesn't have a converted value, use 0
-
-
-	          if (aValue === undefined) {
-	            aValue = 0;
-	          }
-	        }
-	      }
-
-	      aConverted[bKey] = aValue;
-	    }); // update the type to match B
-
-	    aConverted.type = bCommand.type;
-	    aCommand = aConverted;
-	  }
-
-	  return aCommand;
-	}
-	/**
-	 * Interpolate between command objects commandStart and commandEnd segmentCount times.
-	 * If the types are L, Q, or C then the curves are split as per de Casteljau's algorithm.
-	 * Otherwise we just copy commandStart segmentCount - 1 times, finally ending with commandEnd.
-	 *
-	 * @param {Object} commandStart Command object at the beginning of the segment
-	 * @param {Object} commandEnd Command object at the end of the segment
-	 * @param {Number} segmentCount The number of segments to split this into. If only 1
-	 *   Then [commandEnd] is returned.
-	 * @return {Object[]} Array of ~segmentCount command objects between commandStart and
-	 *   commandEnd. (Can be segmentCount+1 objects if commandStart is type M).
-	 */
-
-
-	function splitSegment(commandStart, commandEnd, segmentCount) {
-	  var segments = []; // line, quadratic bezier, or cubic bezier
-
-	  if (commandEnd.type === 'L' || commandEnd.type === 'Q' || commandEnd.type === 'C') {
-	    segments = segments.concat(splitCurve(commandStart, commandEnd, segmentCount)); // general case - just copy the same point
-	  } else {
-	    var copyCommand = _extends({}, commandStart); // convert M to L
-
-
-	    if (copyCommand.type === 'M') {
-	      copyCommand.type = 'L';
-	    }
-
-	    segments = segments.concat(arrayOfLength(segmentCount - 1).map(function () {
-	      return copyCommand;
-	    }));
-	    segments.push(commandEnd);
-	  }
-
-	  return segments;
-	}
-	/**
-	 * Extends an array of commandsToExtend to the length of the referenceCommands by
-	 * splitting segments until the number of commands match. Ensures all the actual
-	 * points of commandsToExtend are in the extended array.
-	 *
-	 * @param {Object[]} commandsToExtend The command object array to extend
-	 * @param {Object[]} referenceCommands The command object array to match in length
-	 * @param {Function} excludeSegment a function that takes a start command object and
-	 *   end command object and returns true if the segment should be excluded from splitting.
-	 * @return {Object[]} The extended commandsToExtend array
-	 */
-
-
-	function extend(commandsToExtend, referenceCommands, excludeSegment) {
-	  // compute insertion points:
-	  // number of segments in the path to extend
-	  var numSegmentsToExtend = commandsToExtend.length - 1; // number of segments in the reference path.
-
-	  var numReferenceSegments = referenceCommands.length - 1; // this value is always between [0, 1].
-
-	  var segmentRatio = numSegmentsToExtend / numReferenceSegments; // create a map, mapping segments in referenceCommands to how many points
-	  // should be added in that segment (should always be >= 1 since we need each
-	  // point itself).
-	  // 0 = segment 0-1, 1 = segment 1-2, n-1 = last vertex
-
-	  var countPointsPerSegment = arrayOfLength(numReferenceSegments).reduce(function (accum, d, i) {
-	    var insertIndex = Math.floor(segmentRatio * i); // handle excluding segments
-
-	    if (excludeSegment && insertIndex < commandsToExtend.length - 1 && excludeSegment(commandsToExtend[insertIndex], commandsToExtend[insertIndex + 1])) {
-	      // set the insertIndex to the segment that this point should be added to:
-	      // round the insertIndex essentially so we split half and half on
-	      // neighbouring segments. hence the segmentRatio * i < 0.5
-	      var addToPriorSegment = segmentRatio * i % 1 < 0.5; // only skip segment if we already have 1 point in it (can't entirely remove a segment)
-
-	      if (accum[insertIndex]) {
-	        // TODO - Note this is a naive algorithm that should work for most d3-area use cases
-	        // but if two adjacent segments are supposed to be skipped, this will not perform as
-	        // expected. Could be updated to search for nearest segment to place the point in, but
-	        // will only do that if necessary.
-	        // add to the prior segment
-	        if (addToPriorSegment) {
-	          if (insertIndex > 0) {
-	            insertIndex -= 1; // not possible to add to previous so adding to next
-	          } else if (insertIndex < commandsToExtend.length - 1) {
-	            insertIndex += 1;
-	          } // add to next segment
-
-	        } else if (insertIndex < commandsToExtend.length - 1) {
-	          insertIndex += 1; // not possible to add to next so adding to previous
-	        } else if (insertIndex > 0) {
-	          insertIndex -= 1;
-	        }
-	      }
-	    }
-
-	    accum[insertIndex] = (accum[insertIndex] || 0) + 1;
-	    return accum;
-	  }, []); // extend each segment to have the correct number of points for a smooth interpolation
-
-	  var extended = countPointsPerSegment.reduce(function (extended, segmentCount, i) {
-	    // if last command, just add `segmentCount` number of times
-	    if (i === commandsToExtend.length - 1) {
-	      var lastCommandCopies = arrayOfLength(segmentCount, _extends({}, commandsToExtend[commandsToExtend.length - 1])); // convert M to L
-
-	      if (lastCommandCopies[0].type === 'M') {
-	        lastCommandCopies.forEach(function (d) {
-	          d.type = 'L';
-	        });
-	      }
-
-	      return extended.concat(lastCommandCopies);
-	    } // otherwise, split the segment segmentCount times.
-
-
-	    return extended.concat(splitSegment(commandsToExtend[i], commandsToExtend[i + 1], segmentCount));
-	  }, []); // add in the very first point since splitSegment only adds in the ones after it
-
-	  extended.unshift(commandsToExtend[0]);
-	  return extended;
-	}
-	/**
-	 * Takes a path `d` string and converts it into an array of command
-	 * objects. Drops the `Z` character.
-	 *
-	 * @param {String|null} d A path `d` string
-	 */
-
-
-	function pathCommandsFromString(d) {
-	  // split into valid tokens
-	  var tokens = (d || '').match(commandTokenRegex) || [];
-	  var commands = [];
-	  var commandArgs;
-	  var command; // iterate over each token, checking if we are at a new command
-	  // by presence in the typeMap
-
-	  for (var i = 0; i < tokens.length; ++i) {
-	    commandArgs = typeMap[tokens[i]]; // new command found:
-
-	    if (commandArgs) {
-	      command = {
-	        type: tokens[i]
-	      }; // add each of the expected args for this command:
-
-	      for (var a = 0; a < commandArgs.length; ++a) {
-	        command[commandArgs[a]] = +tokens[i + a + 1];
-	      } // need to increment our token index appropriately since
-	      // we consumed token args
-
-
-	      i += commandArgs.length;
-	      commands.push(command);
-	    }
-	  }
-
-	  return commands;
-	}
-	/**
-	 * Interpolate from A to B by extending A and B during interpolation to have
-	 * the same number of points. This allows for a smooth transition when they
-	 * have a different number of points.
-	 *
-	 * Ignores the `Z` command in paths unless both A and B end with it.
-	 *
-	 * This function works directly with arrays of command objects instead of with
-	 * path `d` strings (see interpolatePath for working with `d` strings).
-	 *
-	 * @param {Object[]} aCommandsInput Array of path commands
-	 * @param {Object[]} bCommandsInput Array of path commands
-	 * @param {(Function|Object)} interpolateOptions
-	 * @param {Function} interpolateOptions.excludeSegment a function that takes a start command object and
-	 *   end command object and returns true if the segment should be excluded from splitting.
-	 * @param {Boolean} interpolateOptions.snapEndsToInput a boolean indicating whether end of input should
-	 *   be sourced from input argument or computed.
-	 * @returns {Function} Interpolation function that maps t ([0, 1]) to an array of path commands.
-	 */
-
-	function interpolatePathCommands(aCommandsInput, bCommandsInput, interpolateOptions) {
-	  // make a copy so we don't mess with the input arrays
-	  var aCommands = aCommandsInput == null ? [] : aCommandsInput.slice();
-	  var bCommands = bCommandsInput == null ? [] : bCommandsInput.slice();
-
-	  var _ref = _typeof(interpolateOptions) === 'object' ? interpolateOptions : {
-	    excludeSegment: interpolateOptions,
-	    snapEndsToInput: true
-	  },
-	      excludeSegment = _ref.excludeSegment,
-	      snapEndsToInput = _ref.snapEndsToInput; // both input sets are empty, so we don't interpolate
-
-
-	  if (!aCommands.length && !bCommands.length) {
-	    return function nullInterpolator() {
-	      return [];
-	    };
-	  } // do we add Z during interpolation? yes if both have it. (we'd expect both to have it or not)
-
-
-	  var addZ = (aCommands.length === 0 || aCommands[aCommands.length - 1].type === 'Z') && (bCommands.length === 0 || bCommands[bCommands.length - 1].type === 'Z'); // we temporarily remove Z
-
-	  if (aCommands.length > 0 && aCommands[aCommands.length - 1].type === 'Z') {
-	    aCommands.pop();
-	  }
-
-	  if (bCommands.length > 0 && bCommands[bCommands.length - 1].type === 'Z') {
-	    bCommands.pop();
-	  } // if A is empty, treat it as if it used to contain just the first point
-	  // of B. This makes it so the line extends out of from that first point.
-
-
-	  if (!aCommands.length) {
-	    aCommands.push(bCommands[0]); // otherwise if B is empty, treat it as if it contains the first point
-	    // of A. This makes it so the line retracts into the first point.
-	  } else if (!bCommands.length) {
-	    bCommands.push(aCommands[0]);
-	  } // extend to match equal size
-
-
-	  var numPointsToExtend = Math.abs(bCommands.length - aCommands.length);
-
-	  if (numPointsToExtend !== 0) {
-	    // B has more points than A, so add points to A before interpolating
-	    if (bCommands.length > aCommands.length) {
-	      aCommands = extend(aCommands, bCommands, excludeSegment); // else if A has more points than B, add more points to B
-	    } else if (bCommands.length < aCommands.length) {
-	      bCommands = extend(bCommands, aCommands, excludeSegment);
-	    }
-	  } // commands have same length now.
-	  // convert commands in A to the same type as those in B
-
-
-	  aCommands = aCommands.map(function (aCommand, i) {
-	    return convertToSameType(aCommand, bCommands[i]);
-	  }); // create mutable interpolated command objects
-
-	  var interpolatedCommands = aCommands.map(function (aCommand) {
-	    return _objectSpread2({}, aCommand);
-	  });
-
-	  if (addZ) {
-	    interpolatedCommands.push({
-	      type: 'Z'
-	    });
-	    aCommands.push({
-	      type: 'Z'
-	    }); // required for when returning at t == 0
-	  }
-
-	  return function pathCommandInterpolator(t) {
-	    // at 1 return the final value without the extensions used during interpolation
-	    if (t === 1 && snapEndsToInput) {
-	      return bCommandsInput == null ? [] : bCommandsInput;
-	    } // work with aCommands directly since interpolatedCommands are mutated
-
-
-	    if (t === 0) {
-	      return aCommands;
-	    } // interpolate the commands using the mutable interpolated command objs
-
-
-	    for (var i = 0; i < interpolatedCommands.length; ++i) {
-	      // if (interpolatedCommands[i].type === 'Z') continue;
-	      var aCommand = aCommands[i];
-	      var bCommand = bCommands[i];
-	      var interpolatedCommand = interpolatedCommands[i];
-
-	      var _iterator = _createForOfIteratorHelper(typeMap[interpolatedCommand.type]),
-	          _step;
-
-	      try {
-	        for (_iterator.s(); !(_step = _iterator.n()).done;) {
-	          var arg = _step.value;
-	          interpolatedCommand[arg] = (1 - t) * aCommand[arg] + t * bCommand[arg]; // do not use floats for flags (#27), round to integer
-
-	          if (arg === 'largeArcFlag' || arg === 'sweepFlag') {
-	            interpolatedCommand[arg] = Math.round(interpolatedCommand[arg]);
-	          }
-	        }
-	      } catch (err) {
-	        _iterator.e(err);
-	      } finally {
-	        _iterator.f();
-	      }
-	    }
-
-	    return interpolatedCommands;
-	  };
-	}
-	/** @typedef InterpolateOptions  */
-
-	/**
-	 * Interpolate from A to B by extending A and B during interpolation to have
-	 * the same number of points. This allows for a smooth transition when they
-	 * have a different number of points.
-	 *
-	 * Ignores the `Z` character in paths unless both A and B end with it.
-	 *
-	 * @param {String} a The `d` attribute for a path
-	 * @param {String} b The `d` attribute for a path
-	 * @param {((command1, command2) => boolean|{
-	 *   excludeSegment?: (command1, command2) => boolean;
-	 *   snapEndsToInput?: boolean
-	 * })} interpolateOptions The excludeSegment function or an options object
-	 *    - interpolateOptions.excludeSegment a function that takes a start command object and
-	 *      end command object and returns true if the segment should be excluded from splitting.
-	 *    - interpolateOptions.snapEndsToInput a boolean indicating whether end of input should
-	 *      be sourced from input argument or computed.
-	 * @returns {Function} Interpolation function that maps t ([0, 1]) to a path `d` string.
-	 */
-
-	function interpolatePath(a, b, interpolateOptions) {
-	  var aCommands = pathCommandsFromString(a);
-	  var bCommands = pathCommandsFromString(b);
-
-	  var _ref2 = _typeof(interpolateOptions) === 'object' ? interpolateOptions : {
-	    excludeSegment: interpolateOptions,
-	    snapEndsToInput: true
-	  },
-	      excludeSegment = _ref2.excludeSegment,
-	      snapEndsToInput = _ref2.snapEndsToInput;
-
-	  if (!aCommands.length && !bCommands.length) {
-	    return function nullInterpolator() {
-	      return '';
-	    };
-	  }
-
-	  var commandInterpolator = interpolatePathCommands(aCommands, bCommands, {
-	    excludeSegment: excludeSegment,
-	    snapEndsToInput: snapEndsToInput
-	  });
-	  return function pathStringInterpolator(t) {
-	    // at 1 return the final value without the extensions used during interpolation
-	    if (t === 1 && snapEndsToInput) {
-	      return b == null ? '' : b;
-	    }
-
-	    var interpolatedCommands = commandInterpolator(t); // convert to a string (fastest concat: https://jsperf.com/join-concat/150)
-
-	    var interpolatedString = '';
-
-	    var _iterator2 = _createForOfIteratorHelper(interpolatedCommands),
-	        _step2;
-
-	    try {
-	      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-	        var interpolatedCommand = _step2.value;
-	        interpolatedString += commandToString(interpolatedCommand);
-	      }
-	    } catch (err) {
-	      _iterator2.e(err);
-	    } finally {
-	      _iterator2.f();
-	    }
-
-	    return interpolatedString;
-	  };
-	}
-
-	exports.interpolatePath = interpolatePath;
-	exports.interpolatePathCommands = interpolatePathCommands;
-	exports.pathCommandsFromString = pathCommandsFromString;
-
-	Object.defineProperty(exports, '__esModule', { value: true });
-
-	})));
-} (d3InterpolatePath, d3InterpolatePathExports));
-
 function getArrowBottomCursor() {
     return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 5"><path fill="white" stroke="black" stroke-width="0.5" d="M 1 0 L 7 0 L 4 5 z"/></svg>';
 }
@@ -5172,496 +3534,80 @@ function getMouseCoords(event, targetContainer = document.body) {
         return [event.clientX - rect.left, event.clientY - rect.top];
     }
 }
-/*export function getMouseCoords(event, targetContainer = document.body) {
-    if (targetContainer === document.body) {
-        return [event.clientX + window.scrollX, event.clientY + window.scrollY];
-    } else {
-        const rect = targetContainer.getBoundingClientRect();
-        return [event.clientX - rect.left, event.clientY - rect.top];
-    }
-}*/
 
-function brushDown(cleanDimensionName, event, d, parcoords, active, tooltipValues, window) {
-    const yPosBottom = Number(select$1('#triangle_up_' + cleanDimensionName).attr('y'));
-    let yPosTop;
-    let yPosRect;
-    if (event.y < 70) {
-        yPosTop = 70;
-        yPosRect = 80;
-    }
-    else if (event.y > yPosBottom - 10) {
-        yPosTop = yPosBottom - 10;
-        yPosRect = 320;
-    }
-    else if (event.y == yPosBottom - 10) {
-        yPosTop = yPosBottom - 10;
-        yPosRect = yPosTop + 10;
-    }
-    else {
-        yPosTop = event.y;
-        event.y;
-        yPosRect = event.y + 10;
-    }
-    addPosition(yPosRect, parcoords.currentPosOfDims, d.name, 'top');
-    if (yPosTop == 70 && yPosBottom == 320) {
-        select$1('#rect_' + cleanDimensionName)
-            .style('cursor', 'default');
-    }
-    else {
-        select$1('#rect_' + cleanDimensionName).style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopAndBottom()), 20)}') 8 8, auto`);
-    }
-    select$1('#triangle_down_' + cleanDimensionName).attr('y', yPosTop);
-    const heightTopRect = yPosRect - 80;
-    const heightBottomRect = 320 - yPosBottom;
-    select$1('#rect_' + cleanDimensionName)
-        .attr('y', yPosRect)
-        .attr('height', 240 - heightTopRect - heightBottomRect);
-    if (!isNaN(parcoords.yScales[d.name].domain()[0])) {
-        setToolTipBrush(tooltipValues, d, event, parcoords, window, true);
-    }
-    updateLines(parcoords, d.name, cleanDimensionName);
+let padding;
+let paddingXaxis;
+let width;
+let height;
+let yAxis;
+let parcoords = {
+    xScales: {},
+    yScales: {},
+    dragging: {},
+    dragPosStart: {},
+    currentPosOfDims: [],
+    newFeatures: null,
+    features: [],
+    newDataset: null,
+    data: null,
+};
+let active;
+let key;
+let svg;
+let hoverlabel;
+let refreshData;
+let initDimension;
+function setHoverLabel(label) {
+    hoverlabel = label;
 }
-function brushUp(cleanDimensionName, event, d, parcoords, active, tooltipValues, window) {
-    const yPosTop = Number(select$1('#triangle_down_' + cleanDimensionName).attr('y'));
-    let yPosBottom;
-    if (event.y < yPosTop + 10) {
-        yPosBottom = yPosTop + 10;
-    }
-    else if (event.y > 320) {
-        yPosBottom = 320;
-    }
-    else if (event.y == yPosTop + 10) {
-        yPosBottom = yPosTop;
-    }
-    else {
-        yPosBottom = event.y;
-    }
-    addPosition(yPosBottom, parcoords.currentPosOfDims, d.name, 'bottom');
-    if (yPosTop == 70 && yPosBottom == 320) {
-        select$1('#rect_' + cleanDimensionName)
-            .style('cursor', 'default');
-    }
-    else {
-        select$1('#rect_' + cleanDimensionName).style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopAndBottom()), 20)}') 8 8, auto`);
-    }
-    select$1('#triangle_up_' + cleanDimensionName).attr('y', yPosBottom);
-    const heightTopRect = yPosTop - 70;
-    const heightBottomRect = 320 - yPosBottom;
-    select$1('#rect_' + cleanDimensionName)
-        .attr('height', 240 - heightTopRect - heightBottomRect);
-    if (!isNaN(parcoords.yScales[d.name].domain()[0])) {
-        setToolTipBrush(tooltipValues, d, event, parcoords, window, false);
-    }
-    updateLines(parcoords, d.name, cleanDimensionName);
+function setYaxis(axis) {
+    yAxis = axis;
 }
-function dragAndBrush(cleanDimensionName, d, svg, event, parcoords, active, delta, tooltipValuesTop, tooltipValuesDown, window) {
-    let yPosTop;
-    let yPosRect;
-    const yPosBottom = select$1('#triangle_up_' + cleanDimensionName).attr('y');
-    const yPosTopNew = select$1('#triangle_down_' + cleanDimensionName).attr('y');
-    const heightTopRect = yPosTopNew - 70;
-    const heightBottomRect = 320 - yPosBottom;
-    const rectHeight = 240 - heightTopRect - heightBottomRect;
-    if (event.y + delta - 10 <= 70) {
-        yPosTop = 70;
-        yPosRect = 80;
-    }
-    else if (event.y + delta + rectHeight >= 320) {
-        yPosTop = 320 - rectHeight - 10;
-        yPosRect = 320 - rectHeight;
-    }
-    else {
-        yPosTop = event.y + delta - 10;
-        event.y + delta - 10;
-        yPosRect = yPosTop + 10;
-    }
-    addPosition(yPosRect, parcoords.currentPosOfDims, d.name, 'top');
-    addPosition(yPosRect + rectHeight, parcoords.currentPosOfDims, d.name, 'bottom');
-    if (rectHeight < 240) {
-        select$1('#rect_' + cleanDimensionName)
-            .attr('y', yPosRect);
-        select$1('#triangle_down_' + cleanDimensionName)
-            .attr('y', yPosTop);
-        select$1('#triangle_up_' + cleanDimensionName)
-            .attr('y', yPosRect + rectHeight);
-        if (!isNaN(parcoords.yScales[d.name].domain()[0])) {
-            setToolTipDragAndBrush(tooltipValuesTop, tooltipValuesDown, d, parcoords, window, true, yPosTop, yPosRect + rectHeight);
-        }
-        updateLines(parcoords, d.name, cleanDimensionName);
-    }
+function setRefreshData(data) {
+    refreshData = data;
 }
-function filter(dimensionName, min, max, parcoords) {
-    const cleanDimensionName = cleanString(dimensionName);
-    const invertStatus = getInvertStatus(dimensionName, parcoords.currentPosOfDims);
-    const yScale = parcoords.yScales[dimensionName];
-    let topPosition = yScale(min);
-    let bottomPosition = yScale(max);
-    if (invertStatus) {
-        [topPosition, bottomPosition] = [bottomPosition, topPosition];
-    }
-    const rectY = Math.min(topPosition, bottomPosition);
-    const rectHeight = Math.abs(bottomPosition - topPosition);
-    addPosition(topPosition, parcoords.currentPosOfDims, dimensionName, 'top');
-    addPosition(bottomPosition, parcoords.currentPosOfDims, dimensionName, 'bottom');
-    select$1('#rect_' + cleanDimensionName)
-        .transition()
-        .duration(1000)
-        .attr('y', rectY)
-        .attr('height', rectHeight)
-        .style('opacity', 0.3);
-    select$1('#triangle_down_' + cleanDimensionName)
-        .transition()
-        .duration(1000)
-        .attr('y', rectY - 10);
-    select$1('#triangle_up_' + cleanDimensionName)
-        .transition()
-        .duration(1000)
-        .attr('y', rectY + rectHeight);
-    let active = select$1('g.active').selectAll('path');
-    const rectTop = Math.min(topPosition, bottomPosition);
-    const rectBottom = Math.max(topPosition, bottomPosition);
-    if (isDimensionCategorical(dimensionName)) {
-        const selectedCategories = yScale.domain().filter(cat => {
-            const pos = yScale(cat);
-            return pos >= rectTop && pos <= rectBottom;
-        });
-        addRange$1(selectedCategories, parcoords.currentPosOfDims, dimensionName, "currentFilterCategories");
-    }
-    else {
-        addRange$1(yScale.invert(rectBottom), parcoords.currentPosOfDims, dimensionName, "currentFilterBottom");
-        addRange$1(yScale.invert(rectTop), parcoords.currentPosOfDims, dimensionName, "currentFilterTop");
-    }
-    active.each(function (d) {
-        const value = yScale(d[dimensionName]);
-        const currentLine = getLineName(d);
-        const dimNameToCheck = select$1('.' + currentLine).text();
-        const emptyString = '';
-        if (value < rectTop || value > rectBottom) {
-            if (dimNameToCheck === emptyString) {
-                makeInactive(currentLine, dimensionName, 1000);
-            }
-        }
-        else if (dimNameToCheck === dimensionName && dimNameToCheck !== emptyString) {
-            let checkedLines = [];
-            parcoords.currentPosOfDims.forEach(function (item) {
-                if (item.top != yScale.range()[1] || item.bottom != yScale.range()[0]) {
-                    checkAllPositionsTop(item, dimensionName, parcoords, d, checkedLines, currentLine);
-                    checkAllPositionsBottom(item, dimensionName, parcoords, d, checkedLines, currentLine);
-                }
-            });
-            if (!checkedLines.includes(currentLine)) {
-                makeActive(currentLine, 1000);
-            }
-        }
-    });
+function setSvg(svgData) {
+    svg = svgData;
 }
-function getLineName(d) {
-    const keys = Object.keys(d);
-    const key = keys[0];
-    return cleanString(d[key]);
+function setWidth(value) {
+    width = value;
 }
-function addPosition(yPosTop, currentPosOfDims, dimensionName, key) {
-    let newObject = {};
-    newObject[key] = yPosTop;
-    const target = currentPosOfDims.find((obj) => obj.key == dimensionName);
-    Object.assign(target, newObject);
+function setHeight(value) {
+    height = value;
 }
-function setToolTipBrush(tooltipValues, d, event, parcoords, window, direction) {
-    const range = parcoords.yScales[d.name].domain();
-    const invertStatus = getInvertStatus(d.name, parcoords.currentPosOfDims);
-    const maxValue = invertStatus == false ? range[1] : range[0];
-    const minValue = invertStatus == false ? range[0] : range[1];
-    const scale = maxValue - minValue;
-    let tooltipValue;
-    if (invertStatus) {
-        tooltipValue = direction == true ? ((event.y - 70) / (240 / (scale)) + minValue) :
-            ((event.y - 80) / (240 / (scale)) + minValue);
-    }
-    else {
-        tooltipValue = direction == true ? maxValue - ((event.y - 70) / (240 / (scale))) :
-            maxValue - ((event.y - 80) / (240 / (scale)));
-    }
-    if (!invertStatus) {
-        if (tooltipValue > range[1]) {
-            tooltipValue = range[1];
-        }
-        if (tooltipValue < range[0]) {
-            tooltipValue = range[0];
-        }
-    }
-    else {
-        if (tooltipValue > range[0]) {
-            tooltipValue = range[0];
-        }
-        if (tooltipValue < range[1]) {
-            tooltipValue = range[1];
-        }
-    }
-    const digs = getSigDig(d.name, parcoords.currentPosOfDims);
-    tooltipValues.text(Math.round(tooltipValue.toPrecision(digs).toLocaleString('en-GB') * 10) / 10);
-    tooltipValues.style('visibility', 'visible');
-    tooltipValues.style('top', window.event.pageY + 'px').style('left', window.event.pageX + 'px');
-    tooltipValues.style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
-        .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
-        .style('padding', 0.12 + 'rem').style('white-space', 'pre-line')
-        .style('background-color', 'LightGray').style('margin-left', 0.5 + 'rem');
+function setPadding(value) {
+    padding = value;
 }
-function setToolTipDragAndBrush(tooltipValuesTop, tooltipValuesDown, d, parcoords, window, direction, yPosTop, yPosBottom) {
-    const range = parcoords.yScales[d.name].domain();
-    const invertStatus = getInvertStatus(d.name, parcoords.currentPosOfDims);
-    const maxValue = invertStatus == false ? range[1] : range[0];
-    const minValue = invertStatus == false ? range[0] : range[1];
-    const scale = maxValue - minValue;
-    let tooltipValueTop;
-    let tooltipValueBottom;
-    if (invertStatus) {
-        tooltipValueTop = direction == true ? ((yPosTop - 70) / (240 / (scale)) + minValue) :
-            ((yPosTop - 80) / (240 / (scale)) + minValue);
-        tooltipValueBottom = direction == true ? ((yPosBottom - 80) / (240 / (scale)) + minValue) :
-            ((yPosBottom - 70) / (240 / (scale)) + minValue);
-    }
-    else {
-        tooltipValueTop = direction == true ? maxValue - ((yPosTop - 70) / (240 / (scale))) :
-            maxValue - ((yPosTop - 80) / (240 / (scale)));
-        tooltipValueBottom = direction == true ? maxValue - ((yPosBottom - 80) / (240 / (scale))) :
-            maxValue - ((yPosBottom - 70) / (240 / (scale)));
-    }
-    if ((!invertStatus && tooltipValueTop == maxValue) || (invertStatus && tooltipValueTop == minValue)) {
-        tooltipValuesTop.style('visibility', 'hidden');
-    }
-    else {
-        tooltipValuesTop.text(Math.round(tooltipValueTop));
-        tooltipValuesTop.style('visibility', 'visible');
-        tooltipValuesTop.style('top', Number(yPosTop + 180) + 'px').style('left', window.event.pageX + 'px');
-        tooltipValuesTop.style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
-            .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
-            .style('padding', 0.12 + 'rem').style('white-space', 'pre-line')
-            .style('background-color', 'LightGray').style('margin-left', 0.5 + 'rem');
-    }
-    if ((!invertStatus && tooltipValueBottom == minValue) || (invertStatus && tooltipValueBottom == maxValue)) {
-        tooltipValuesDown.style('visibility', 'hidden');
-    }
-    else {
-        tooltipValuesDown.text(Math.round(tooltipValueBottom));
-        tooltipValuesDown.style('visibility', 'visible');
-        tooltipValuesDown.style('top', Number(yPosBottom + 180) + 'px').style('left', window.event.pageX + 'px');
-        tooltipValuesDown.style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
-            .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
-            .style('padding', 0.12 + 'rem').style('white-space', 'pre-line')
-            .style('background-color', 'LightGray').style('margin-left', 0.5 + 'rem');
-    }
+function setPaddingXaxis(value) {
+    paddingXaxis = value;
 }
-function updateLines(parcoords, dimensionName, cleanDimensionName) {
-    const rangeTop = Number(select$1('#triangle_down_' + cleanDimensionName).attr('y'));
-    const rangeBottom = Number(select$1('#triangle_up_' + cleanDimensionName).attr('y'));
-    const invertStatus = getInvertStatus(dimensionName, parcoords.currentPosOfDims);
-    const maxValue = invertStatus == false ? parcoords.yScales[dimensionName].domain()[1] :
-        parcoords.yScales[dimensionName].domain()[0];
-    const minValue = invertStatus == false ? parcoords.yScales[dimensionName].domain()[0] :
-        parcoords.yScales[dimensionName].domain()[1];
-    const range = maxValue - minValue;
-    if (isDimensionCategorical(dimensionName)) {
-        const selectedCategories = parcoords.yScales[dimensionName].domain().filter(cat => {
-            const pos = parcoords.yScales[dimensionName](cat);
-            return pos >= rangeTop && pos <= rangeBottom;
-        });
-        addRange$1(selectedCategories, parcoords.currentPosOfDims, dimensionName, "currentFilterCategories");
-    }
-    else {
-        addRange$1(parcoords.yScales[dimensionName].invert(rangeBottom), parcoords.currentPosOfDims, dimensionName, "currentFilterBottom");
-        addRange$1(parcoords.yScales[dimensionName].invert(rangeTop), parcoords.currentPosOfDims, dimensionName, "currentFilterTop");
-    }
-    let active = select$1('g.active').selectAll('path');
-    active.each(function (d) {
-        let value;
-        if (invertStatus) {
-            value = isNaN(maxValue) ? parcoords.yScales[dimensionName](d[dimensionName]) :
-                240 / range * (d[dimensionName] - minValue) + 80;
-        }
-        else {
-            value = isNaN(maxValue) ? parcoords.yScales[dimensionName](d[dimensionName]) :
-                240 / range * (maxValue - d[dimensionName]) + 80;
-        }
-        const currentLine = getLineName(d);
-        const dimNameToCheck = select$1('.' + currentLine).text();
-        const emptyString = '';
-        if (value < rangeTop + 10 || value > rangeBottom) {
-            if (dimNameToCheck == emptyString) {
-                makeInactive(currentLine, dimensionName, 100);
-            }
-        }
-        else if (value == 320 && value == rangeTop + 10 && value == rangeBottom) {
-            if (dimNameToCheck == emptyString) {
-                makeInactive(currentLine, dimensionName, 100);
-            }
-        }
-        else if (value == 80 && value == rangeTop + 10 && value == rangeBottom) {
-            if (dimNameToCheck == emptyString) {
-                makeInactive(currentLine, dimensionName, 100);
-            }
-        }
-        else if (dimNameToCheck == dimensionName && dimNameToCheck != emptyString) {
-            let checkedLines = [];
-            parcoords.currentPosOfDims.forEach(function (item) {
-                if (item.top != 80 || item.bottom != 320) {
-                    checkAllPositionsTop(item, dimensionName, parcoords, d, checkedLines, currentLine);
-                    checkAllPositionsBottom(item, dimensionName, parcoords, d, checkedLines, currentLine);
-                }
-            });
-            if (!checkedLines.includes(currentLine)) {
-                makeActive(currentLine, 300);
-            }
-        }
-        else ;
-    });
+function setInitDimension(dimensions) {
+    initDimension = dimensions;
 }
-function addRange$1(value, dims, dimensionName, property) {
-    const dimSettings = dims.find(d => d.key === dimensionName);
-    if (!dimSettings)
-        return;
-    const yScale = parcoords.yScales[dimensionName];
-    const domain = yScale.domain();
-    if (typeof domain[0] === "number") {
-        dimSettings.type = "numeric";
-        if (property === "currentFilterTop" || property === "currentFilterBottom") {
-            dimSettings[property] = value;
-        }
-    }
-    else {
-        dimSettings.type = "categorical";
-        if (property === "currentFilterCategories") {
-            dimSettings.currentFilterCategories = value;
-        }
-    }
+function setActive(paths) {
+    active = paths;
 }
-function checkAllPositionsTop(positionItem, dimensionName, parcoords, d, checkedLines, currentLine) {
-    if (positionItem.key != dimensionName && positionItem.top != 70) {
-        const invertStatus = getInvertStatus(positionItem.key, parcoords.currentPosOfDims);
-        const maxValue = invertStatus == false ? parcoords.yScales[positionItem.key].domain()[1] :
-            parcoords.yScales[positionItem.key].domain()[0];
-        const minValue = invertStatus == false ? parcoords.yScales[positionItem.key].domain()[0] :
-            parcoords.yScales[positionItem.key].domain()[1];
-        const scale = maxValue - minValue;
-        let value;
-        if (!isNaN(maxValue)) {
-            value = invertStatus == false ? 240 / scale * (maxValue - d[positionItem.key]) + 80 :
-                240 / scale * (d[positionItem.key] - minValue) + 80;
-        }
-        else {
-            value = parcoords.yScales[positionItem.key](d[positionItem.key]);
-        }
-        if (value < positionItem.top) {
-            checkedLines.push(currentLine);
-            select$1('.' + currentLine).text(positionItem.key);
-        }
-    }
+function setXScales(value) {
+    parcoords.xScales = value;
 }
-function checkAllPositionsBottom(positionItem, dimensionName, parcoords, d, checkedLines, currentLine) {
-    if (positionItem.key != dimensionName && positionItem.bottom != 320) {
-        const invertStatus = getInvertStatus(positionItem.key, parcoords.currentPosOfDims);
-        const maxValue = invertStatus == false ? parcoords.yScales[positionItem.key].domain()[1] :
-            parcoords.yScales[positionItem.key].domain()[0];
-        const minValue = invertStatus == false ? parcoords.yScales[positionItem.key].domain()[0] :
-            parcoords.yScales[positionItem.key].domain()[1];
-        const scale = maxValue - minValue;
-        let value;
-        if (!isNaN(maxValue)) {
-            value = invertStatus == false ? 240 / scale * (maxValue - d[positionItem.key]) + 80 :
-                240 / scale * (d[positionItem.key] - minValue) + 80;
-        }
-        else {
-            value = parcoords.yScales[positionItem.key](d[positionItem.key]);
-        }
-        if (value >= positionItem.bottom) {
-            checkedLines.push(currentLine);
-            select$1('.' + currentLine).text(positionItem.key);
-        }
-    }
+function setYScales(value) {
+    parcoords.yScales = value;
 }
-function makeActive(currentLineName, duration) {
-    if (select$1('.' + currentLineName).classed('selected')) {
-        select$1('.' + currentLineName)
-            .style('pointer-events', 'stroke')
-            .text('')
-            .transition()
-            .duration(duration)
-            .style('stroke', 'rgba(255, 165, 0, 1)');
-    }
-    else {
-        select$1('.' + currentLineName)
-            .style('pointer-events', 'stroke')
-            .text('')
-            .transition()
-            .duration(duration)
-            .style('stroke', 'rgba(0, 129, 175, 0.5)');
-    }
+function setNewFeatures(value) {
+    parcoords.newFeatures = value;
 }
-function makeInactive(currentLineName, dimensionName, duration) {
-    const line = select$1('.' + currentLineName);
-    line
-        .text(dimensionName)
-        .transition()
-        .duration(duration)
-        .style('stroke', 'rgba(211, 211, 211, 0.4')
-        .on('end', function () {
-        select$1(this).style('pointer-events', 'none');
-    });
+function setFeatures(value) {
+    parcoords.features = value;
 }
-function addSettingsForBrushing(dimensionName, parcoords, invertStatus, filter) {
-    const processedName = cleanString(dimensionName);
-    const yScale = parcoords.yScales[processedName];
-    const dimensionSettings = parcoords.currentPosOfDims.find((d) => d.key === processedName);
-    let top, bottom;
-    if (isDimensionCategorical(dimensionName)) {
-        let categories = dimensionSettings.currentFilterCategories;
-        let positions = categories.map(cat => yScale(cat));
-        top = undefined(positions);
-        bottom = undefined(positions);
-    }
-    else {
-        top = yScale(dimensionSettings.currentFilterTop);
-        bottom = yScale(dimensionSettings.currentFilterBottom);
-    }
-    if (invertStatus) {
-        [top, bottom] = [bottom, top];
-    }
-    const rectY = Math.min(top, bottom);
-    const rectH = Math.abs(bottom - top);
-    const rect = select$1('#rect_' + processedName);
-    const triDown = select$1('#triangle_down_' + processedName);
-    const triUp = select$1('#triangle_up_' + processedName);
-    rect.transition()
-        .duration(300)
-        .attr('y', rectY)
-        .attr('height', rectH)
-        .style('opacity', 0.3);
-    triDown.transition()
-        .duration(300)
-        .attr('y', rectY - 10);
-    triUp.transition()
-        .duration(300)
-        .attr('y', rectY + rectH);
-    addPosition(top, parcoords.currentPosOfDims, dimensionName, 'top');
-    addPosition(bottom, parcoords.currentPosOfDims, dimensionName, 'bottom');
+function setNewDataset(value) {
+    parcoords.newDataset = value;
 }
-function getInvertStatus(key, currentPosOfDims) {
-    const item = currentPosOfDims.find((object) => object.key == key);
-    return item.isInverted;
+function setData(value) {
+    parcoords.data = value;
 }
-function getSigDig(key, currentPosOfDims) {
-    const item = currentPosOfDims.find((object) => object.key == key);
-    return item.sigDig;
+function setKey(value) {
+    key = value;
 }
-function addInvertStatus(status, currentPosOfDims, dimensionName, key) {
-    let newObject = {};
-    newObject[key] = status;
-    const target = currentPosOfDims.find((obj) => obj.key == dimensionName);
-    Object.assign(target, newObject);
-}
-const delay = 50;
-const throttleBrushDown = throttle(brushDown, delay);
-const throttleBrushUp = throttle(brushUp, delay);
-const throttleDragAndBrush = throttle(dragAndBrush, delay);
 
 function ascending(a, b) {
   return a == null || b == null ? NaN : a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
@@ -5999,7 +3945,7 @@ function pointish(scale) {
   return scale;
 }
 
-function point() {
+function point$4() {
   return pointish(band.apply(null, arguments).paddingInner(1));
 }
 
@@ -7611,7 +5557,7 @@ var top = 1,
     right = 2,
     bottom = 3,
     left = 4,
-    epsilon = 1e-6;
+    epsilon$2 = 1e-6;
 
 function translateX(x) {
   return "translate(" + x + ",0)";
@@ -7685,11 +5631,11 @@ function axis(orient, scale) {
       text = text.transition(context);
 
       tickExit = tickExit.transition(context)
-          .attr("opacity", epsilon)
+          .attr("opacity", epsilon$2)
           .attr("transform", function(d) { return isFinite(d = position(d)) ? transform(d + offset) : this.getAttribute("transform"); });
 
       tickEnter
-          .attr("opacity", epsilon)
+          .attr("opacity", epsilon$2)
           .attr("transform", function(d) { var p = this.parentNode.__axis; return transform((p && isFinite(p = p(d)) ? p : position(d)) + offset); });
     }
 
@@ -7768,36 +5714,881 @@ function axisLeft(scale) {
   return axis(left, scale);
 }
 
-function prepareData(data, newFeatures) {
-    let newDataset = [];
-    data.forEach(obj => {
-        let newdata = {};
-        newFeatures.forEach(feature => {
-            newdata[feature] = obj[feature];
-        });
-        newDataset.push(newdata);
-    });
-    let features = [];
-    Object.keys(newDataset[0]).forEach(element => features.push({ 'name': element }));
-    return [features, newDataset];
+function constant(x) {
+  return function constant() {
+    return x;
+  };
 }
-function setupYScales(height, padding, features, newDataset) {
+
+const epsilon$1 = 1e-12;
+
+const pi = Math.PI,
+    tau = 2 * pi,
+    epsilon = 1e-6,
+    tauEpsilon = tau - epsilon;
+
+function append(strings) {
+  this._ += strings[0];
+  for (let i = 1, n = strings.length; i < n; ++i) {
+    this._ += arguments[i] + strings[i];
+  }
+}
+
+function appendRound(digits) {
+  let d = Math.floor(digits);
+  if (!(d >= 0)) throw new Error(`invalid digits: ${digits}`);
+  if (d > 15) return append;
+  const k = 10 ** d;
+  return function(strings) {
+    this._ += strings[0];
+    for (let i = 1, n = strings.length; i < n; ++i) {
+      this._ += Math.round(arguments[i] * k) / k + strings[i];
+    }
+  };
+}
+
+class Path {
+  constructor(digits) {
+    this._x0 = this._y0 = // start of current subpath
+    this._x1 = this._y1 = null; // end of current subpath
+    this._ = "";
+    this._append = digits == null ? append : appendRound(digits);
+  }
+  moveTo(x, y) {
+    this._append`M${this._x0 = this._x1 = +x},${this._y0 = this._y1 = +y}`;
+  }
+  closePath() {
+    if (this._x1 !== null) {
+      this._x1 = this._x0, this._y1 = this._y0;
+      this._append`Z`;
+    }
+  }
+  lineTo(x, y) {
+    this._append`L${this._x1 = +x},${this._y1 = +y}`;
+  }
+  quadraticCurveTo(x1, y1, x, y) {
+    this._append`Q${+x1},${+y1},${this._x1 = +x},${this._y1 = +y}`;
+  }
+  bezierCurveTo(x1, y1, x2, y2, x, y) {
+    this._append`C${+x1},${+y1},${+x2},${+y2},${this._x1 = +x},${this._y1 = +y}`;
+  }
+  arcTo(x1, y1, x2, y2, r) {
+    x1 = +x1, y1 = +y1, x2 = +x2, y2 = +y2, r = +r;
+
+    // Is the radius negative? Error.
+    if (r < 0) throw new Error(`negative radius: ${r}`);
+
+    let x0 = this._x1,
+        y0 = this._y1,
+        x21 = x2 - x1,
+        y21 = y2 - y1,
+        x01 = x0 - x1,
+        y01 = y0 - y1,
+        l01_2 = x01 * x01 + y01 * y01;
+
+    // Is this path empty? Move to (x1,y1).
+    if (this._x1 === null) {
+      this._append`M${this._x1 = x1},${this._y1 = y1}`;
+    }
+
+    // Or, is (x1,y1) coincident with (x0,y0)? Do nothing.
+    else if (!(l01_2 > epsilon));
+
+    // Or, are (x0,y0), (x1,y1) and (x2,y2) collinear?
+    // Equivalently, is (x1,y1) coincident with (x2,y2)?
+    // Or, is the radius zero? Line to (x1,y1).
+    else if (!(Math.abs(y01 * x21 - y21 * x01) > epsilon) || !r) {
+      this._append`L${this._x1 = x1},${this._y1 = y1}`;
+    }
+
+    // Otherwise, draw an arc!
+    else {
+      let x20 = x2 - x0,
+          y20 = y2 - y0,
+          l21_2 = x21 * x21 + y21 * y21,
+          l20_2 = x20 * x20 + y20 * y20,
+          l21 = Math.sqrt(l21_2),
+          l01 = Math.sqrt(l01_2),
+          l = r * Math.tan((pi - Math.acos((l21_2 + l01_2 - l20_2) / (2 * l21 * l01))) / 2),
+          t01 = l / l01,
+          t21 = l / l21;
+
+      // If the start tangent is not coincident with (x0,y0), line to.
+      if (Math.abs(t01 - 1) > epsilon) {
+        this._append`L${x1 + t01 * x01},${y1 + t01 * y01}`;
+      }
+
+      this._append`A${r},${r},0,0,${+(y01 * x20 > x01 * y20)},${this._x1 = x1 + t21 * x21},${this._y1 = y1 + t21 * y21}`;
+    }
+  }
+  arc(x, y, r, a0, a1, ccw) {
+    x = +x, y = +y, r = +r, ccw = !!ccw;
+
+    // Is the radius negative? Error.
+    if (r < 0) throw new Error(`negative radius: ${r}`);
+
+    let dx = r * Math.cos(a0),
+        dy = r * Math.sin(a0),
+        x0 = x + dx,
+        y0 = y + dy,
+        cw = 1 ^ ccw,
+        da = ccw ? a0 - a1 : a1 - a0;
+
+    // Is this path empty? Move to (x0,y0).
+    if (this._x1 === null) {
+      this._append`M${x0},${y0}`;
+    }
+
+    // Or, is (x0,y0) not coincident with the previous point? Line to (x0,y0).
+    else if (Math.abs(this._x1 - x0) > epsilon || Math.abs(this._y1 - y0) > epsilon) {
+      this._append`L${x0},${y0}`;
+    }
+
+    // Is this arc empty? We’re done.
+    if (!r) return;
+
+    // Does the angle go the wrong way? Flip the direction.
+    if (da < 0) da = da % tau + tau;
+
+    // Is this a complete circle? Draw two arcs to complete the circle.
+    if (da > tauEpsilon) {
+      this._append`A${r},${r},0,1,${cw},${x - dx},${y - dy}A${r},${r},0,1,${cw},${this._x1 = x0},${this._y1 = y0}`;
+    }
+
+    // Is this arc non-empty? Draw an arc!
+    else if (da > epsilon) {
+      this._append`A${r},${r},0,${+(da >= pi)},${cw},${this._x1 = x + r * Math.cos(a1)},${this._y1 = y + r * Math.sin(a1)}`;
+    }
+  }
+  rect(x, y, w, h) {
+    this._append`M${this._x0 = this._x1 = +x},${this._y0 = this._y1 = +y}h${w = +w}v${+h}h${-w}Z`;
+  }
+  toString() {
+    return this._;
+  }
+}
+
+function withPath(shape) {
+  let digits = 3;
+
+  shape.digits = function(_) {
+    if (!arguments.length) return digits;
+    if (_ == null) {
+      digits = null;
+    } else {
+      const d = Math.floor(_);
+      if (!(d >= 0)) throw new RangeError(`invalid digits: ${_}`);
+      digits = d;
+    }
+    return shape;
+  };
+
+  return () => new Path(digits);
+}
+
+function array(x) {
+  return typeof x === "object" && "length" in x
+    ? x // Array, TypedArray, NodeList, array-like
+    : Array.from(x); // Map, Set, iterable, string, or anything else
+}
+
+function Linear(context) {
+  this._context = context;
+}
+
+Linear.prototype = {
+  areaStart: function() {
+    this._line = 0;
+  },
+  areaEnd: function() {
+    this._line = NaN;
+  },
+  lineStart: function() {
+    this._point = 0;
+  },
+  lineEnd: function() {
+    if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
+    this._line = 1 - this._line;
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+    switch (this._point) {
+      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
+      case 1: this._point = 2; // falls through
+      default: this._context.lineTo(x, y); break;
+    }
+  }
+};
+
+function curveLinear(context) {
+  return new Linear(context);
+}
+
+function x(p) {
+  return p[0];
+}
+
+function y(p) {
+  return p[1];
+}
+
+function line(x$1, y$1) {
+  var defined = constant(true),
+      context = null,
+      curve = curveLinear,
+      output = null,
+      path = withPath(line);
+
+  x$1 = typeof x$1 === "function" ? x$1 : (x$1 === undefined) ? x : constant(x$1);
+  y$1 = typeof y$1 === "function" ? y$1 : (y$1 === undefined) ? y : constant(y$1);
+
+  function line(data) {
+    var i,
+        n = (data = array(data)).length,
+        d,
+        defined0 = false,
+        buffer;
+
+    if (context == null) output = curve(buffer = path());
+
+    for (i = 0; i <= n; ++i) {
+      if (!(i < n && defined(d = data[i], i, data)) === defined0) {
+        if (defined0 = !defined0) output.lineStart();
+        else output.lineEnd();
+      }
+      if (defined0) output.point(+x$1(d, i, data), +y$1(d, i, data));
+    }
+
+    if (buffer) return output = null, buffer + "" || null;
+  }
+
+  line.x = function(_) {
+    return arguments.length ? (x$1 = typeof _ === "function" ? _ : constant(+_), line) : x$1;
+  };
+
+  line.y = function(_) {
+    return arguments.length ? (y$1 = typeof _ === "function" ? _ : constant(+_), line) : y$1;
+  };
+
+  line.defined = function(_) {
+    return arguments.length ? (defined = typeof _ === "function" ? _ : constant(!!_), line) : defined;
+  };
+
+  line.curve = function(_) {
+    return arguments.length ? (curve = _, context != null && (output = curve(context)), line) : curve;
+  };
+
+  line.context = function(_) {
+    return arguments.length ? (_ == null ? context = output = null : output = curve(context = _), line) : context;
+  };
+
+  return line;
+}
+
+function noop() {}
+
+function point$3(that, x, y) {
+  that._context.bezierCurveTo(
+    (2 * that._x0 + that._x1) / 3,
+    (2 * that._y0 + that._y1) / 3,
+    (that._x0 + 2 * that._x1) / 3,
+    (that._y0 + 2 * that._y1) / 3,
+    (that._x0 + 4 * that._x1 + x) / 6,
+    (that._y0 + 4 * that._y1 + y) / 6
+  );
+}
+
+function Basis(context) {
+  this._context = context;
+}
+
+Basis.prototype = {
+  areaStart: function() {
+    this._line = 0;
+  },
+  areaEnd: function() {
+    this._line = NaN;
+  },
+  lineStart: function() {
+    this._x0 = this._x1 =
+    this._y0 = this._y1 = NaN;
+    this._point = 0;
+  },
+  lineEnd: function() {
+    switch (this._point) {
+      case 3: point$3(this, this._x1, this._y1); // falls through
+      case 2: this._context.lineTo(this._x1, this._y1); break;
+    }
+    if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
+    this._line = 1 - this._line;
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+    switch (this._point) {
+      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
+      case 1: this._point = 2; break;
+      case 2: this._point = 3; this._context.lineTo((5 * this._x0 + this._x1) / 6, (5 * this._y0 + this._y1) / 6); // falls through
+      default: point$3(this, x, y); break;
+    }
+    this._x0 = this._x1, this._x1 = x;
+    this._y0 = this._y1, this._y1 = y;
+  }
+};
+
+function Bundle(context, beta) {
+  this._basis = new Basis(context);
+  this._beta = beta;
+}
+
+Bundle.prototype = {
+  lineStart: function() {
+    this._x = [];
+    this._y = [];
+    this._basis.lineStart();
+  },
+  lineEnd: function() {
+    var x = this._x,
+        y = this._y,
+        j = x.length - 1;
+
+    if (j > 0) {
+      var x0 = x[0],
+          y0 = y[0],
+          dx = x[j] - x0,
+          dy = y[j] - y0,
+          i = -1,
+          t;
+
+      while (++i <= j) {
+        t = i / j;
+        this._basis.point(
+          this._beta * x[i] + (1 - this._beta) * (x0 + t * dx),
+          this._beta * y[i] + (1 - this._beta) * (y0 + t * dy)
+        );
+      }
+    }
+
+    this._x = this._y = null;
+    this._basis.lineEnd();
+  },
+  point: function(x, y) {
+    this._x.push(+x);
+    this._y.push(+y);
+  }
+};
+
+((function custom(beta) {
+
+  function bundle(context) {
+    return beta === 1 ? new Basis(context) : new Bundle(context, beta);
+  }
+
+  bundle.beta = function(beta) {
+    return custom(+beta);
+  };
+
+  return bundle;
+}))(0.85);
+
+function point$2(that, x, y) {
+  that._context.bezierCurveTo(
+    that._x1 + that._k * (that._x2 - that._x0),
+    that._y1 + that._k * (that._y2 - that._y0),
+    that._x2 + that._k * (that._x1 - x),
+    that._y2 + that._k * (that._y1 - y),
+    that._x2,
+    that._y2
+  );
+}
+
+function Cardinal(context, tension) {
+  this._context = context;
+  this._k = (1 - tension) / 6;
+}
+
+Cardinal.prototype = {
+  areaStart: function() {
+    this._line = 0;
+  },
+  areaEnd: function() {
+    this._line = NaN;
+  },
+  lineStart: function() {
+    this._x0 = this._x1 = this._x2 =
+    this._y0 = this._y1 = this._y2 = NaN;
+    this._point = 0;
+  },
+  lineEnd: function() {
+    switch (this._point) {
+      case 2: this._context.lineTo(this._x2, this._y2); break;
+      case 3: point$2(this, this._x1, this._y1); break;
+    }
+    if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
+    this._line = 1 - this._line;
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+    switch (this._point) {
+      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
+      case 1: this._point = 2; this._x1 = x, this._y1 = y; break;
+      case 2: this._point = 3; // falls through
+      default: point$2(this, x, y); break;
+    }
+    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
+    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
+  }
+};
+
+((function custom(tension) {
+
+  function cardinal(context) {
+    return new Cardinal(context, tension);
+  }
+
+  cardinal.tension = function(tension) {
+    return custom(+tension);
+  };
+
+  return cardinal;
+}))(0);
+
+function CardinalClosed(context, tension) {
+  this._context = context;
+  this._k = (1 - tension) / 6;
+}
+
+CardinalClosed.prototype = {
+  areaStart: noop,
+  areaEnd: noop,
+  lineStart: function() {
+    this._x0 = this._x1 = this._x2 = this._x3 = this._x4 = this._x5 =
+    this._y0 = this._y1 = this._y2 = this._y3 = this._y4 = this._y5 = NaN;
+    this._point = 0;
+  },
+  lineEnd: function() {
+    switch (this._point) {
+      case 1: {
+        this._context.moveTo(this._x3, this._y3);
+        this._context.closePath();
+        break;
+      }
+      case 2: {
+        this._context.lineTo(this._x3, this._y3);
+        this._context.closePath();
+        break;
+      }
+      case 3: {
+        this.point(this._x3, this._y3);
+        this.point(this._x4, this._y4);
+        this.point(this._x5, this._y5);
+        break;
+      }
+    }
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+    switch (this._point) {
+      case 0: this._point = 1; this._x3 = x, this._y3 = y; break;
+      case 1: this._point = 2; this._context.moveTo(this._x4 = x, this._y4 = y); break;
+      case 2: this._point = 3; this._x5 = x, this._y5 = y; break;
+      default: point$2(this, x, y); break;
+    }
+    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
+    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
+  }
+};
+
+((function custom(tension) {
+
+  function cardinal(context) {
+    return new CardinalClosed(context, tension);
+  }
+
+  cardinal.tension = function(tension) {
+    return custom(+tension);
+  };
+
+  return cardinal;
+}))(0);
+
+function CardinalOpen(context, tension) {
+  this._context = context;
+  this._k = (1 - tension) / 6;
+}
+
+CardinalOpen.prototype = {
+  areaStart: function() {
+    this._line = 0;
+  },
+  areaEnd: function() {
+    this._line = NaN;
+  },
+  lineStart: function() {
+    this._x0 = this._x1 = this._x2 =
+    this._y0 = this._y1 = this._y2 = NaN;
+    this._point = 0;
+  },
+  lineEnd: function() {
+    if (this._line || (this._line !== 0 && this._point === 3)) this._context.closePath();
+    this._line = 1 - this._line;
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+    switch (this._point) {
+      case 0: this._point = 1; break;
+      case 1: this._point = 2; break;
+      case 2: this._point = 3; this._line ? this._context.lineTo(this._x2, this._y2) : this._context.moveTo(this._x2, this._y2); break;
+      case 3: this._point = 4; // falls through
+      default: point$2(this, x, y); break;
+    }
+    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
+    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
+  }
+};
+
+((function custom(tension) {
+
+  function cardinal(context) {
+    return new CardinalOpen(context, tension);
+  }
+
+  cardinal.tension = function(tension) {
+    return custom(+tension);
+  };
+
+  return cardinal;
+}))(0);
+
+function point$1(that, x, y) {
+  var x1 = that._x1,
+      y1 = that._y1,
+      x2 = that._x2,
+      y2 = that._y2;
+
+  if (that._l01_a > epsilon$1) {
+    var a = 2 * that._l01_2a + 3 * that._l01_a * that._l12_a + that._l12_2a,
+        n = 3 * that._l01_a * (that._l01_a + that._l12_a);
+    x1 = (x1 * a - that._x0 * that._l12_2a + that._x2 * that._l01_2a) / n;
+    y1 = (y1 * a - that._y0 * that._l12_2a + that._y2 * that._l01_2a) / n;
+  }
+
+  if (that._l23_a > epsilon$1) {
+    var b = 2 * that._l23_2a + 3 * that._l23_a * that._l12_a + that._l12_2a,
+        m = 3 * that._l23_a * (that._l23_a + that._l12_a);
+    x2 = (x2 * b + that._x1 * that._l23_2a - x * that._l12_2a) / m;
+    y2 = (y2 * b + that._y1 * that._l23_2a - y * that._l12_2a) / m;
+  }
+
+  that._context.bezierCurveTo(x1, y1, x2, y2, that._x2, that._y2);
+}
+
+function CatmullRom(context, alpha) {
+  this._context = context;
+  this._alpha = alpha;
+}
+
+CatmullRom.prototype = {
+  areaStart: function() {
+    this._line = 0;
+  },
+  areaEnd: function() {
+    this._line = NaN;
+  },
+  lineStart: function() {
+    this._x0 = this._x1 = this._x2 =
+    this._y0 = this._y1 = this._y2 = NaN;
+    this._l01_a = this._l12_a = this._l23_a =
+    this._l01_2a = this._l12_2a = this._l23_2a =
+    this._point = 0;
+  },
+  lineEnd: function() {
+    switch (this._point) {
+      case 2: this._context.lineTo(this._x2, this._y2); break;
+      case 3: this.point(this._x2, this._y2); break;
+    }
+    if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
+    this._line = 1 - this._line;
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+
+    if (this._point) {
+      var x23 = this._x2 - x,
+          y23 = this._y2 - y;
+      this._l23_a = Math.sqrt(this._l23_2a = Math.pow(x23 * x23 + y23 * y23, this._alpha));
+    }
+
+    switch (this._point) {
+      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
+      case 1: this._point = 2; break;
+      case 2: this._point = 3; // falls through
+      default: point$1(this, x, y); break;
+    }
+
+    this._l01_a = this._l12_a, this._l12_a = this._l23_a;
+    this._l01_2a = this._l12_2a, this._l12_2a = this._l23_2a;
+    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
+    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
+  }
+};
+
+((function custom(alpha) {
+
+  function catmullRom(context) {
+    return alpha ? new CatmullRom(context, alpha) : new Cardinal(context, 0);
+  }
+
+  catmullRom.alpha = function(alpha) {
+    return custom(+alpha);
+  };
+
+  return catmullRom;
+}))(0.5);
+
+function CatmullRomClosed(context, alpha) {
+  this._context = context;
+  this._alpha = alpha;
+}
+
+CatmullRomClosed.prototype = {
+  areaStart: noop,
+  areaEnd: noop,
+  lineStart: function() {
+    this._x0 = this._x1 = this._x2 = this._x3 = this._x4 = this._x5 =
+    this._y0 = this._y1 = this._y2 = this._y3 = this._y4 = this._y5 = NaN;
+    this._l01_a = this._l12_a = this._l23_a =
+    this._l01_2a = this._l12_2a = this._l23_2a =
+    this._point = 0;
+  },
+  lineEnd: function() {
+    switch (this._point) {
+      case 1: {
+        this._context.moveTo(this._x3, this._y3);
+        this._context.closePath();
+        break;
+      }
+      case 2: {
+        this._context.lineTo(this._x3, this._y3);
+        this._context.closePath();
+        break;
+      }
+      case 3: {
+        this.point(this._x3, this._y3);
+        this.point(this._x4, this._y4);
+        this.point(this._x5, this._y5);
+        break;
+      }
+    }
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+
+    if (this._point) {
+      var x23 = this._x2 - x,
+          y23 = this._y2 - y;
+      this._l23_a = Math.sqrt(this._l23_2a = Math.pow(x23 * x23 + y23 * y23, this._alpha));
+    }
+
+    switch (this._point) {
+      case 0: this._point = 1; this._x3 = x, this._y3 = y; break;
+      case 1: this._point = 2; this._context.moveTo(this._x4 = x, this._y4 = y); break;
+      case 2: this._point = 3; this._x5 = x, this._y5 = y; break;
+      default: point$1(this, x, y); break;
+    }
+
+    this._l01_a = this._l12_a, this._l12_a = this._l23_a;
+    this._l01_2a = this._l12_2a, this._l12_2a = this._l23_2a;
+    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
+    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
+  }
+};
+
+((function custom(alpha) {
+
+  function catmullRom(context) {
+    return alpha ? new CatmullRomClosed(context, alpha) : new CardinalClosed(context, 0);
+  }
+
+  catmullRom.alpha = function(alpha) {
+    return custom(+alpha);
+  };
+
+  return catmullRom;
+}))(0.5);
+
+function CatmullRomOpen(context, alpha) {
+  this._context = context;
+  this._alpha = alpha;
+}
+
+CatmullRomOpen.prototype = {
+  areaStart: function() {
+    this._line = 0;
+  },
+  areaEnd: function() {
+    this._line = NaN;
+  },
+  lineStart: function() {
+    this._x0 = this._x1 = this._x2 =
+    this._y0 = this._y1 = this._y2 = NaN;
+    this._l01_a = this._l12_a = this._l23_a =
+    this._l01_2a = this._l12_2a = this._l23_2a =
+    this._point = 0;
+  },
+  lineEnd: function() {
+    if (this._line || (this._line !== 0 && this._point === 3)) this._context.closePath();
+    this._line = 1 - this._line;
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+
+    if (this._point) {
+      var x23 = this._x2 - x,
+          y23 = this._y2 - y;
+      this._l23_a = Math.sqrt(this._l23_2a = Math.pow(x23 * x23 + y23 * y23, this._alpha));
+    }
+
+    switch (this._point) {
+      case 0: this._point = 1; break;
+      case 1: this._point = 2; break;
+      case 2: this._point = 3; this._line ? this._context.lineTo(this._x2, this._y2) : this._context.moveTo(this._x2, this._y2); break;
+      case 3: this._point = 4; // falls through
+      default: point$1(this, x, y); break;
+    }
+
+    this._l01_a = this._l12_a, this._l12_a = this._l23_a;
+    this._l01_2a = this._l12_2a, this._l12_2a = this._l23_2a;
+    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
+    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
+  }
+};
+
+((function custom(alpha) {
+
+  function catmullRom(context) {
+    return alpha ? new CatmullRomOpen(context, alpha) : new CardinalOpen(context, 0);
+  }
+
+  catmullRom.alpha = function(alpha) {
+    return custom(+alpha);
+  };
+
+  return catmullRom;
+}))(0.5);
+
+function sign(x) {
+  return x < 0 ? -1 : 1;
+}
+
+// Calculate the slopes of the tangents (Hermite-type interpolation) based on
+// the following paper: Steffen, M. 1990. A Simple Method for Monotonic
+// Interpolation in One Dimension. Astronomy and Astrophysics, Vol. 239, NO.
+// NOV(II), P. 443, 1990.
+function slope3(that, x2, y2) {
+  var h0 = that._x1 - that._x0,
+      h1 = x2 - that._x1,
+      s0 = (that._y1 - that._y0) / (h0 || h1 < 0 && -0),
+      s1 = (y2 - that._y1) / (h1 || h0 < 0 && -0),
+      p = (s0 * h1 + s1 * h0) / (h0 + h1);
+  return (sign(s0) + sign(s1)) * Math.min(Math.abs(s0), Math.abs(s1), 0.5 * Math.abs(p)) || 0;
+}
+
+// Calculate a one-sided slope.
+function slope2(that, t) {
+  var h = that._x1 - that._x0;
+  return h ? (3 * (that._y1 - that._y0) / h - t) / 2 : t;
+}
+
+// According to https://en.wikipedia.org/wiki/Cubic_Hermite_spline#Representations
+// "you can express cubic Hermite interpolation in terms of cubic Bézier curves
+// with respect to the four values p0, p0 + m0 / 3, p1 - m1 / 3, p1".
+function point(that, t0, t1) {
+  var x0 = that._x0,
+      y0 = that._y0,
+      x1 = that._x1,
+      y1 = that._y1,
+      dx = (x1 - x0) / 3;
+  that._context.bezierCurveTo(x0 + dx, y0 + dx * t0, x1 - dx, y1 - dx * t1, x1, y1);
+}
+
+function MonotoneX(context) {
+  this._context = context;
+}
+
+MonotoneX.prototype = {
+  areaStart: function() {
+    this._line = 0;
+  },
+  areaEnd: function() {
+    this._line = NaN;
+  },
+  lineStart: function() {
+    this._x0 = this._x1 =
+    this._y0 = this._y1 =
+    this._t0 = NaN;
+    this._point = 0;
+  },
+  lineEnd: function() {
+    switch (this._point) {
+      case 2: this._context.lineTo(this._x1, this._y1); break;
+      case 3: point(this, this._t0, slope2(this, this._t0)); break;
+    }
+    if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
+    this._line = 1 - this._line;
+  },
+  point: function(x, y) {
+    var t1 = NaN;
+
+    x = +x, y = +y;
+    if (x === this._x1 && y === this._y1) return; // Ignore coincident points.
+    switch (this._point) {
+      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
+      case 1: this._point = 2; break;
+      case 2: this._point = 3; point(this, slope2(this, t1 = slope3(this, x, y)), t1); break;
+      default: point(this, this._t0, t1 = slope3(this, x, y)); break;
+    }
+
+    this._x0 = this._x1, this._x1 = x;
+    this._y0 = this._y1, this._y1 = y;
+    this._t0 = t1;
+  }
+};
+
+(Object.create(MonotoneX.prototype)).point = function(x, y) {
+  MonotoneX.prototype.point.call(this, y, x);
+};
+
+function prepareData(data, dimensions) {
+    let dataset = [];
+    data.forEach((item) => {
+        let row = {};
+        dimensions.forEach((dimension) => {
+            row[dimension] = item[dimension];
+        });
+        dataset.push(row);
+    });
+    let header = [];
+    Object.keys(dataset[0]).forEach(element => header.push({ 'name': element }));
+    return [header, dataset];
+}
+function setupYScales(header, dataset) {
     let yScales = {};
-    features.map(x => {
-        const values = newDataset.map(o => o[x.name]);
+    header.map((x) => {
+        const values = dataset.map((o) => o[x.name]);
         let labels = [];
         if (isNaN(values[0]) !== false) {
             values.forEach(function (element) {
-                labels.push(element.length > 10 ? element.substr(0, 10) + '...' : element);
+                labels.push(element.length > 10 ? element.substr(0, 10) + '...' :
+                    element);
             });
-            yScales[x.name] = point()
+            yScales[x.name] = point$4()
                 .domain(labels)
                 .range([padding, height - padding])
                 .padding(0.2);
         }
         else {
-            const max = Math.max(...newDataset.map(o => o[x.name]));
-            const min = Math.min(...newDataset.map(o => o[x.name]));
+            const max = Math.max(...dataset.map((o) => o[x.name]));
+            const min = Math.min(...dataset.map((o) => o[x.name]));
             if (min === max) {
                 const epsilon = min === 0 ? 1 : Math.abs(min) * 0.01;
                 yScales[x.name] = linear()
@@ -7813,30 +6604,31 @@ function setupYScales(height, padding, features, newDataset) {
     });
     return yScales;
 }
-function setupXScales(width, padding, features) {
-    return point()
-        .domain(features.map(x => x.name))
+function setupXScales(header) {
+    return point$4()
+        .domain(header.map((x) => x.name))
         .range([width - padding, padding]);
 }
 function isLinearScale(scale) {
     return typeof scale.ticks === 'function';
 }
-function setupYAxis(yScales, newDataset, hiddenDims) {
+function setupYAxis(yScales, dataset, hiddenDims) {
     const limit = 30;
     const yAxis = {};
     Object.entries(yScales).forEach(([key, scale]) => {
         if (hiddenDims.includes(key))
             return;
-        const sample = newDataset[0][key];
+        const sample = dataset[0][key];
         const isNumeric = !isNaN(+sample);
         if (!isNumeric) {
-            const rawLabels = newDataset.map(d => d[key]);
-            const shortenedLabels = rawLabels.map(val => typeof val === 'string' && val.length > 10 ? val.substr(0, 10) + '...' : val);
+            const rawLabels = dataset.map((d) => d[key]);
+            const shortenedLabels = rawLabels.map((val) => typeof val === 'string' && val.length > 10 ? val.substr(0, 10) +
+                '...' : val);
             const uniqueLabels = Array.from(new Set(shortenedLabels));
             const ticks = uniqueLabels.length > limit
                 ? uniqueLabels.filter((_, i) => i % 4 === 0)
                 : uniqueLabels;
-            yAxis[key] = axisLeft(scale).tickValues(ticks).tickFormat(d => d);
+            yAxis[key] = axisLeft(scale).tickValues(ticks).tickFormat((d) => d);
         }
         else if (isLinearScale(scale)) {
             const ticks = scale.ticks(5).concat(scale.domain());
@@ -7854,16 +6646,16 @@ function setupYAxis(yScales, newDataset, hiddenDims) {
                     sorted.splice(len - 2, 1);
                 }
             }
-            yAxis[key] = axisLeft(scale).tickValues(sorted).tickFormat(d => d);
+            yAxis[key] = axisLeft(scale).tickValues(sorted).tickFormat((d) => d);
         }
     });
     return yAxis;
 }
-function linePath(d, newFeatures, parcoords) {
+function linePath(d, newFeatures) {
     const lineGenerator = line();
     const tempdata = Object.entries(d).filter(x => x[0]);
     const points = [];
-    newFeatures.forEach(newFeature => {
+    newFeatures.forEach((newFeature) => {
         const valueEntry = tempdata.find(x => x[0] === newFeature);
         if (valueEntry) {
             const name = newFeature;
@@ -7879,7 +6671,7 @@ function linePath(d, newFeatures, parcoords) {
 }
 function isInverted(dimension) {
     const invertId = '#dimension_invert_' + cleanString(dimension);
-    const element = select$1(invertId);
+    const element = select(invertId);
     const arrowStatus = element.text();
     return arrowStatus == 'down' ? true : false;
 }
@@ -7887,20 +6679,20 @@ function getAllVisibleDimensionNames$1() {
     let listOfDimensions = parcoords.newFeatures.slice();
     return listOfDimensions.reverse();
 }
-function createToolTipForValues(recordData) {
+function createToolTipForValues(records) {
     const dimensions = getAllVisibleDimensionNames$1();
-    const svg = select$1('#pc_svg').node();
+    const svg = select('#pc_svg').node();
     dimensions.forEach(dimension => {
         const cleanString$1 = cleanString(dimension);
-        if (isElementVisible(select$1('#rect_' + cleanString$1))) {
+        if (isElementVisible(select('#rect_' + cleanString$1))) {
             const yScale = parcoords.yScales[dimension];
             const x = parcoords.xScales(dimension);
-            const y = yScale(recordData[dimension]);
+            const y = yScale(records[dimension]);
             const pt = svg.createSVGPoint();
             pt.x = x;
             pt.y = y;
             const screenPoint = pt.matrixTransform(svg.getScreenCTM());
-            select$1('body')
+            select('body')
                 .append('div')
                 .attr('class', 'tooltip-div')
                 .style('position', 'absolute')
@@ -7913,19 +6705,21 @@ function createToolTipForValues(recordData) {
                 .style('font-weight', 'bold')
                 .style('padding', '0.12rem')
                 .style('white-space', 'nowrap')
-                .text(recordData[dimension].toString());
+                .text(records[dimension].toString());
         }
     });
 }
-function getAllPointerEventsData(event, hoverlabel) {
+function getAllPointerEventsData(event) {
     const selection = selectAll(document.elementsFromPoint(event.clientX, event.clientY)).filter('path');
     if (selection == null)
         return;
     const object = selection._groups;
     const data = [];
     for (let i = 0; i < object[0].length; i++) {
-        const items = object.map(item => item[i]);
+        const items = object.map((item) => item[i]);
         const itemsdata = items[0].__data__;
+        if (!itemsdata || !itemsdata[hoverlabel])
+            continue;
         const text = itemsdata[hoverlabel];
         data.push(text);
     }
@@ -7946,19 +6740,1633 @@ function createTooltipForPathLine(tooltipText, tooltipPath, event) {
 function trans(g) {
     return g.transition().duration(50);
 }
-function position(dimensionName, dragging, xScales) {
-    const value = dragging[dimensionName];
-    return value == null ? xScales(dimensionName) : value;
+function position(dimension, dragging, xScales) {
+    const value = dragging[dimension];
+    return value == null ? xScales(dimension) : value;
 }
 function cleanTooltip() {
     selectAll('.tooltip-div').remove();
 }
 
-function setContextMenu(featureAxis, padding, parcoords, width) {
+var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+
+function getDefaultExportFromCjs (x) {
+	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
+}
+
+var d3InterpolatePathExports = {};
+var d3InterpolatePath = {
+  get exports(){ return d3InterpolatePathExports; },
+  set exports(v){ d3InterpolatePathExports = v; },
+};
+
+(function (module, exports) {
+	(function (global, factory) {
+	factory(exports) ;
+	}(commonjsGlobal, (function (exports) {
+	function ownKeys(object, enumerableOnly) {
+	  var keys = Object.keys(object);
+
+	  if (Object.getOwnPropertySymbols) {
+	    var symbols = Object.getOwnPropertySymbols(object);
+
+	    if (enumerableOnly) {
+	      symbols = symbols.filter(function (sym) {
+	        return Object.getOwnPropertyDescriptor(object, sym).enumerable;
+	      });
+	    }
+
+	    keys.push.apply(keys, symbols);
+	  }
+
+	  return keys;
+	}
+
+	function _objectSpread2(target) {
+	  for (var i = 1; i < arguments.length; i++) {
+	    var source = arguments[i] != null ? arguments[i] : {};
+
+	    if (i % 2) {
+	      ownKeys(Object(source), true).forEach(function (key) {
+	        _defineProperty(target, key, source[key]);
+	      });
+	    } else if (Object.getOwnPropertyDescriptors) {
+	      Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
+	    } else {
+	      ownKeys(Object(source)).forEach(function (key) {
+	        Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
+	      });
+	    }
+	  }
+
+	  return target;
+	}
+
+	function _typeof(obj) {
+	  "@babel/helpers - typeof";
+
+	  if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
+	    _typeof = function (obj) {
+	      return typeof obj;
+	    };
+	  } else {
+	    _typeof = function (obj) {
+	      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+	    };
+	  }
+
+	  return _typeof(obj);
+	}
+
+	function _defineProperty(obj, key, value) {
+	  if (key in obj) {
+	    Object.defineProperty(obj, key, {
+	      value: value,
+	      enumerable: true,
+	      configurable: true,
+	      writable: true
+	    });
+	  } else {
+	    obj[key] = value;
+	  }
+
+	  return obj;
+	}
+
+	function _extends() {
+	  _extends = Object.assign || function (target) {
+	    for (var i = 1; i < arguments.length; i++) {
+	      var source = arguments[i];
+
+	      for (var key in source) {
+	        if (Object.prototype.hasOwnProperty.call(source, key)) {
+	          target[key] = source[key];
+	        }
+	      }
+	    }
+
+	    return target;
+	  };
+
+	  return _extends.apply(this, arguments);
+	}
+
+	function _unsupportedIterableToArray(o, minLen) {
+	  if (!o) return;
+	  if (typeof o === "string") return _arrayLikeToArray(o, minLen);
+	  var n = Object.prototype.toString.call(o).slice(8, -1);
+	  if (n === "Object" && o.constructor) n = o.constructor.name;
+	  if (n === "Map" || n === "Set") return Array.from(o);
+	  if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
+	}
+
+	function _arrayLikeToArray(arr, len) {
+	  if (len == null || len > arr.length) len = arr.length;
+
+	  for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
+
+	  return arr2;
+	}
+
+	function _createForOfIteratorHelper(o, allowArrayLike) {
+	  var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"];
+
+	  if (!it) {
+	    if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {
+	      if (it) o = it;
+	      var i = 0;
+
+	      var F = function () {};
+
+	      return {
+	        s: F,
+	        n: function () {
+	          if (i >= o.length) return {
+	            done: true
+	          };
+	          return {
+	            done: false,
+	            value: o[i++]
+	          };
+	        },
+	        e: function (e) {
+	          throw e;
+	        },
+	        f: F
+	      };
+	    }
+
+	    throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+	  }
+
+	  var normalCompletion = true,
+	      didErr = false,
+	      err;
+	  return {
+	    s: function () {
+	      it = it.call(o);
+	    },
+	    n: function () {
+	      var step = it.next();
+	      normalCompletion = step.done;
+	      return step;
+	    },
+	    e: function (e) {
+	      didErr = true;
+	      err = e;
+	    },
+	    f: function () {
+	      try {
+	        if (!normalCompletion && it.return != null) it.return();
+	      } finally {
+	        if (didErr) throw err;
+	      }
+	    }
+	  };
+	}
+
+	/**
+	 * de Casteljau's algorithm for drawing and splitting bezier curves.
+	 * Inspired by https://pomax.github.io/bezierinfo/
+	 *
+	 * @param {Number[][]} points Array of [x,y] points: [start, control1, control2, ..., end]
+	 *   The original segment to split.
+	 * @param {Number} t Where to split the curve (value between [0, 1])
+	 * @return {Object} An object { left, right } where left is the segment from 0..t and
+	 *   right is the segment from t..1.
+	 */
+	function decasteljau(points, t) {
+	  var left = [];
+	  var right = [];
+
+	  function decasteljauRecurse(points, t) {
+	    if (points.length === 1) {
+	      left.push(points[0]);
+	      right.push(points[0]);
+	    } else {
+	      var newPoints = Array(points.length - 1);
+
+	      for (var i = 0; i < newPoints.length; i++) {
+	        if (i === 0) {
+	          left.push(points[0]);
+	        }
+
+	        if (i === newPoints.length - 1) {
+	          right.push(points[i + 1]);
+	        }
+
+	        newPoints[i] = [(1 - t) * points[i][0] + t * points[i + 1][0], (1 - t) * points[i][1] + t * points[i + 1][1]];
+	      }
+
+	      decasteljauRecurse(newPoints, t);
+	    }
+	  }
+
+	  if (points.length) {
+	    decasteljauRecurse(points, t);
+	  }
+
+	  return {
+	    left: left,
+	    right: right.reverse()
+	  };
+	}
+	/**
+	 * Convert segments represented as points back into a command object
+	 *
+	 * @param {Number[][]} points Array of [x,y] points: [start, control1, control2, ..., end]
+	 *   Represents a segment
+	 * @return {Object} A command object representing the segment.
+	 */
+
+
+	function pointsToCommand(points) {
+	  var command = {};
+
+	  if (points.length === 4) {
+	    command.x2 = points[2][0];
+	    command.y2 = points[2][1];
+	  }
+
+	  if (points.length >= 3) {
+	    command.x1 = points[1][0];
+	    command.y1 = points[1][1];
+	  }
+
+	  command.x = points[points.length - 1][0];
+	  command.y = points[points.length - 1][1];
+
+	  if (points.length === 4) {
+	    // start, control1, control2, end
+	    command.type = 'C';
+	  } else if (points.length === 3) {
+	    // start, control, end
+	    command.type = 'Q';
+	  } else {
+	    // start, end
+	    command.type = 'L';
+	  }
+
+	  return command;
+	}
+	/**
+	 * Runs de Casteljau's algorithm enough times to produce the desired number of segments.
+	 *
+	 * @param {Number[][]} points Array of [x,y] points for de Casteljau (the initial segment to split)
+	 * @param {Number} segmentCount Number of segments to split the original into
+	 * @return {Number[][][]} Array of segments
+	 */
+
+
+	function splitCurveAsPoints(points, segmentCount) {
+	  segmentCount = segmentCount || 2;
+	  var segments = [];
+	  var remainingCurve = points;
+	  var tIncrement = 1 / segmentCount; // x-----x-----x-----x
+	  // t=  0.33   0.66   1
+	  // x-----o-----------x
+	  // r=  0.33
+	  //       x-----o-----x
+	  // r=         0.5  (0.33 / (1 - 0.33))  === tIncrement / (1 - (tIncrement * (i - 1))
+	  // x-----x-----x-----x----x
+	  // t=  0.25   0.5   0.75  1
+	  // x-----o----------------x
+	  // r=  0.25
+	  //       x-----o----------x
+	  // r=         0.33  (0.25 / (1 - 0.25))
+	  //             x-----o----x
+	  // r=         0.5  (0.25 / (1 - 0.5))
+
+	  for (var i = 0; i < segmentCount - 1; i++) {
+	    var tRelative = tIncrement / (1 - tIncrement * i);
+	    var split = decasteljau(remainingCurve, tRelative);
+	    segments.push(split.left);
+	    remainingCurve = split.right;
+	  } // last segment is just to the end from the last point
+
+
+	  segments.push(remainingCurve);
+	  return segments;
+	}
+	/**
+	 * Convert command objects to arrays of points, run de Casteljau's algorithm on it
+	 * to split into to the desired number of segments.
+	 *
+	 * @param {Object} commandStart The start command object
+	 * @param {Object} commandEnd The end command object
+	 * @param {Number} segmentCount The number of segments to create
+	 * @return {Object[]} An array of commands representing the segments in sequence
+	 */
+
+
+	function splitCurve(commandStart, commandEnd, segmentCount) {
+	  var points = [[commandStart.x, commandStart.y]];
+
+	  if (commandEnd.x1 != null) {
+	    points.push([commandEnd.x1, commandEnd.y1]);
+	  }
+
+	  if (commandEnd.x2 != null) {
+	    points.push([commandEnd.x2, commandEnd.y2]);
+	  }
+
+	  points.push([commandEnd.x, commandEnd.y]);
+	  return splitCurveAsPoints(points, segmentCount).map(pointsToCommand);
+	}
+
+	var commandTokenRegex = /[MLCSTQAHVZmlcstqahv]|-?[\d.e+-]+/g;
+	/**
+	 * List of params for each command type in a path `d` attribute
+	 */
+
+	var typeMap = {
+	  M: ['x', 'y'],
+	  L: ['x', 'y'],
+	  H: ['x'],
+	  V: ['y'],
+	  C: ['x1', 'y1', 'x2', 'y2', 'x', 'y'],
+	  S: ['x2', 'y2', 'x', 'y'],
+	  Q: ['x1', 'y1', 'x', 'y'],
+	  T: ['x', 'y'],
+	  A: ['rx', 'ry', 'xAxisRotation', 'largeArcFlag', 'sweepFlag', 'x', 'y'],
+	  Z: []
+	}; // Add lower case entries too matching uppercase (e.g. 'm' == 'M')
+
+	Object.keys(typeMap).forEach(function (key) {
+	  typeMap[key.toLowerCase()] = typeMap[key];
+	});
+
+	function arrayOfLength(length, value) {
+	  var array = Array(length);
+
+	  for (var i = 0; i < length; i++) {
+	    array[i] = value;
+	  }
+
+	  return array;
+	}
+	/**
+	 * Converts a command object to a string to be used in a `d` attribute
+	 * @param {Object} command A command object
+	 * @return {String} The string for the `d` attribute
+	 */
+
+
+	function commandToString(command) {
+	  return "".concat(command.type).concat(typeMap[command.type].map(function (p) {
+	    return command[p];
+	  }).join(','));
+	}
+	/**
+	 * Converts command A to have the same type as command B.
+	 *
+	 * e.g., L0,5 -> C0,5,0,5,0,5
+	 *
+	 * Uses these rules:
+	 * x1 <- x
+	 * x2 <- x
+	 * y1 <- y
+	 * y2 <- y
+	 * rx <- 0
+	 * ry <- 0
+	 * xAxisRotation <- read from B
+	 * largeArcFlag <- read from B
+	 * sweepflag <- read from B
+	 *
+	 * @param {Object} aCommand Command object from path `d` attribute
+	 * @param {Object} bCommand Command object from path `d` attribute to match against
+	 * @return {Object} aCommand converted to type of bCommand
+	 */
+
+
+	function convertToSameType(aCommand, bCommand) {
+	  var conversionMap = {
+	    x1: 'x',
+	    y1: 'y',
+	    x2: 'x',
+	    y2: 'y'
+	  };
+	  var readFromBKeys = ['xAxisRotation', 'largeArcFlag', 'sweepFlag']; // convert (but ignore M types)
+
+	  if (aCommand.type !== bCommand.type && bCommand.type.toUpperCase() !== 'M') {
+	    var aConverted = {};
+	    Object.keys(bCommand).forEach(function (bKey) {
+	      var bValue = bCommand[bKey]; // first read from the A command
+
+	      var aValue = aCommand[bKey]; // if it is one of these values, read from B no matter what
+
+	      if (aValue === undefined) {
+	        if (readFromBKeys.includes(bKey)) {
+	          aValue = bValue;
+	        } else {
+	          // if it wasn't in the A command, see if an equivalent was
+	          if (aValue === undefined && conversionMap[bKey]) {
+	            aValue = aCommand[conversionMap[bKey]];
+	          } // if it doesn't have a converted value, use 0
+
+
+	          if (aValue === undefined) {
+	            aValue = 0;
+	          }
+	        }
+	      }
+
+	      aConverted[bKey] = aValue;
+	    }); // update the type to match B
+
+	    aConverted.type = bCommand.type;
+	    aCommand = aConverted;
+	  }
+
+	  return aCommand;
+	}
+	/**
+	 * Interpolate between command objects commandStart and commandEnd segmentCount times.
+	 * If the types are L, Q, or C then the curves are split as per de Casteljau's algorithm.
+	 * Otherwise we just copy commandStart segmentCount - 1 times, finally ending with commandEnd.
+	 *
+	 * @param {Object} commandStart Command object at the beginning of the segment
+	 * @param {Object} commandEnd Command object at the end of the segment
+	 * @param {Number} segmentCount The number of segments to split this into. If only 1
+	 *   Then [commandEnd] is returned.
+	 * @return {Object[]} Array of ~segmentCount command objects between commandStart and
+	 *   commandEnd. (Can be segmentCount+1 objects if commandStart is type M).
+	 */
+
+
+	function splitSegment(commandStart, commandEnd, segmentCount) {
+	  var segments = []; // line, quadratic bezier, or cubic bezier
+
+	  if (commandEnd.type === 'L' || commandEnd.type === 'Q' || commandEnd.type === 'C') {
+	    segments = segments.concat(splitCurve(commandStart, commandEnd, segmentCount)); // general case - just copy the same point
+	  } else {
+	    var copyCommand = _extends({}, commandStart); // convert M to L
+
+
+	    if (copyCommand.type === 'M') {
+	      copyCommand.type = 'L';
+	    }
+
+	    segments = segments.concat(arrayOfLength(segmentCount - 1).map(function () {
+	      return copyCommand;
+	    }));
+	    segments.push(commandEnd);
+	  }
+
+	  return segments;
+	}
+	/**
+	 * Extends an array of commandsToExtend to the length of the referenceCommands by
+	 * splitting segments until the number of commands match. Ensures all the actual
+	 * points of commandsToExtend are in the extended array.
+	 *
+	 * @param {Object[]} commandsToExtend The command object array to extend
+	 * @param {Object[]} referenceCommands The command object array to match in length
+	 * @param {Function} excludeSegment a function that takes a start command object and
+	 *   end command object and returns true if the segment should be excluded from splitting.
+	 * @return {Object[]} The extended commandsToExtend array
+	 */
+
+
+	function extend(commandsToExtend, referenceCommands, excludeSegment) {
+	  // compute insertion points:
+	  // number of segments in the path to extend
+	  var numSegmentsToExtend = commandsToExtend.length - 1; // number of segments in the reference path.
+
+	  var numReferenceSegments = referenceCommands.length - 1; // this value is always between [0, 1].
+
+	  var segmentRatio = numSegmentsToExtend / numReferenceSegments; // create a map, mapping segments in referenceCommands to how many points
+	  // should be added in that segment (should always be >= 1 since we need each
+	  // point itself).
+	  // 0 = segment 0-1, 1 = segment 1-2, n-1 = last vertex
+
+	  var countPointsPerSegment = arrayOfLength(numReferenceSegments).reduce(function (accum, d, i) {
+	    var insertIndex = Math.floor(segmentRatio * i); // handle excluding segments
+
+	    if (excludeSegment && insertIndex < commandsToExtend.length - 1 && excludeSegment(commandsToExtend[insertIndex], commandsToExtend[insertIndex + 1])) {
+	      // set the insertIndex to the segment that this point should be added to:
+	      // round the insertIndex essentially so we split half and half on
+	      // neighbouring segments. hence the segmentRatio * i < 0.5
+	      var addToPriorSegment = segmentRatio * i % 1 < 0.5; // only skip segment if we already have 1 point in it (can't entirely remove a segment)
+
+	      if (accum[insertIndex]) {
+	        // TODO - Note this is a naive algorithm that should work for most d3-area use cases
+	        // but if two adjacent segments are supposed to be skipped, this will not perform as
+	        // expected. Could be updated to search for nearest segment to place the point in, but
+	        // will only do that if necessary.
+	        // add to the prior segment
+	        if (addToPriorSegment) {
+	          if (insertIndex > 0) {
+	            insertIndex -= 1; // not possible to add to previous so adding to next
+	          } else if (insertIndex < commandsToExtend.length - 1) {
+	            insertIndex += 1;
+	          } // add to next segment
+
+	        } else if (insertIndex < commandsToExtend.length - 1) {
+	          insertIndex += 1; // not possible to add to next so adding to previous
+	        } else if (insertIndex > 0) {
+	          insertIndex -= 1;
+	        }
+	      }
+	    }
+
+	    accum[insertIndex] = (accum[insertIndex] || 0) + 1;
+	    return accum;
+	  }, []); // extend each segment to have the correct number of points for a smooth interpolation
+
+	  var extended = countPointsPerSegment.reduce(function (extended, segmentCount, i) {
+	    // if last command, just add `segmentCount` number of times
+	    if (i === commandsToExtend.length - 1) {
+	      var lastCommandCopies = arrayOfLength(segmentCount, _extends({}, commandsToExtend[commandsToExtend.length - 1])); // convert M to L
+
+	      if (lastCommandCopies[0].type === 'M') {
+	        lastCommandCopies.forEach(function (d) {
+	          d.type = 'L';
+	        });
+	      }
+
+	      return extended.concat(lastCommandCopies);
+	    } // otherwise, split the segment segmentCount times.
+
+
+	    return extended.concat(splitSegment(commandsToExtend[i], commandsToExtend[i + 1], segmentCount));
+	  }, []); // add in the very first point since splitSegment only adds in the ones after it
+
+	  extended.unshift(commandsToExtend[0]);
+	  return extended;
+	}
+	/**
+	 * Takes a path `d` string and converts it into an array of command
+	 * objects. Drops the `Z` character.
+	 *
+	 * @param {String|null} d A path `d` string
+	 */
+
+
+	function pathCommandsFromString(d) {
+	  // split into valid tokens
+	  var tokens = (d || '').match(commandTokenRegex) || [];
+	  var commands = [];
+	  var commandArgs;
+	  var command; // iterate over each token, checking if we are at a new command
+	  // by presence in the typeMap
+
+	  for (var i = 0; i < tokens.length; ++i) {
+	    commandArgs = typeMap[tokens[i]]; // new command found:
+
+	    if (commandArgs) {
+	      command = {
+	        type: tokens[i]
+	      }; // add each of the expected args for this command:
+
+	      for (var a = 0; a < commandArgs.length; ++a) {
+	        command[commandArgs[a]] = +tokens[i + a + 1];
+	      } // need to increment our token index appropriately since
+	      // we consumed token args
+
+
+	      i += commandArgs.length;
+	      commands.push(command);
+	    }
+	  }
+
+	  return commands;
+	}
+	/**
+	 * Interpolate from A to B by extending A and B during interpolation to have
+	 * the same number of points. This allows for a smooth transition when they
+	 * have a different number of points.
+	 *
+	 * Ignores the `Z` command in paths unless both A and B end with it.
+	 *
+	 * This function works directly with arrays of command objects instead of with
+	 * path `d` strings (see interpolatePath for working with `d` strings).
+	 *
+	 * @param {Object[]} aCommandsInput Array of path commands
+	 * @param {Object[]} bCommandsInput Array of path commands
+	 * @param {(Function|Object)} interpolateOptions
+	 * @param {Function} interpolateOptions.excludeSegment a function that takes a start command object and
+	 *   end command object and returns true if the segment should be excluded from splitting.
+	 * @param {Boolean} interpolateOptions.snapEndsToInput a boolean indicating whether end of input should
+	 *   be sourced from input argument or computed.
+	 * @returns {Function} Interpolation function that maps t ([0, 1]) to an array of path commands.
+	 */
+
+	function interpolatePathCommands(aCommandsInput, bCommandsInput, interpolateOptions) {
+	  // make a copy so we don't mess with the input arrays
+	  var aCommands = aCommandsInput == null ? [] : aCommandsInput.slice();
+	  var bCommands = bCommandsInput == null ? [] : bCommandsInput.slice();
+
+	  var _ref = _typeof(interpolateOptions) === 'object' ? interpolateOptions : {
+	    excludeSegment: interpolateOptions,
+	    snapEndsToInput: true
+	  },
+	      excludeSegment = _ref.excludeSegment,
+	      snapEndsToInput = _ref.snapEndsToInput; // both input sets are empty, so we don't interpolate
+
+
+	  if (!aCommands.length && !bCommands.length) {
+	    return function nullInterpolator() {
+	      return [];
+	    };
+	  } // do we add Z during interpolation? yes if both have it. (we'd expect both to have it or not)
+
+
+	  var addZ = (aCommands.length === 0 || aCommands[aCommands.length - 1].type === 'Z') && (bCommands.length === 0 || bCommands[bCommands.length - 1].type === 'Z'); // we temporarily remove Z
+
+	  if (aCommands.length > 0 && aCommands[aCommands.length - 1].type === 'Z') {
+	    aCommands.pop();
+	  }
+
+	  if (bCommands.length > 0 && bCommands[bCommands.length - 1].type === 'Z') {
+	    bCommands.pop();
+	  } // if A is empty, treat it as if it used to contain just the first point
+	  // of B. This makes it so the line extends out of from that first point.
+
+
+	  if (!aCommands.length) {
+	    aCommands.push(bCommands[0]); // otherwise if B is empty, treat it as if it contains the first point
+	    // of A. This makes it so the line retracts into the first point.
+	  } else if (!bCommands.length) {
+	    bCommands.push(aCommands[0]);
+	  } // extend to match equal size
+
+
+	  var numPointsToExtend = Math.abs(bCommands.length - aCommands.length);
+
+	  if (numPointsToExtend !== 0) {
+	    // B has more points than A, so add points to A before interpolating
+	    if (bCommands.length > aCommands.length) {
+	      aCommands = extend(aCommands, bCommands, excludeSegment); // else if A has more points than B, add more points to B
+	    } else if (bCommands.length < aCommands.length) {
+	      bCommands = extend(bCommands, aCommands, excludeSegment);
+	    }
+	  } // commands have same length now.
+	  // convert commands in A to the same type as those in B
+
+
+	  aCommands = aCommands.map(function (aCommand, i) {
+	    return convertToSameType(aCommand, bCommands[i]);
+	  }); // create mutable interpolated command objects
+
+	  var interpolatedCommands = aCommands.map(function (aCommand) {
+	    return _objectSpread2({}, aCommand);
+	  });
+
+	  if (addZ) {
+	    interpolatedCommands.push({
+	      type: 'Z'
+	    });
+	    aCommands.push({
+	      type: 'Z'
+	    }); // required for when returning at t == 0
+	  }
+
+	  return function pathCommandInterpolator(t) {
+	    // at 1 return the final value without the extensions used during interpolation
+	    if (t === 1 && snapEndsToInput) {
+	      return bCommandsInput == null ? [] : bCommandsInput;
+	    } // work with aCommands directly since interpolatedCommands are mutated
+
+
+	    if (t === 0) {
+	      return aCommands;
+	    } // interpolate the commands using the mutable interpolated command objs
+
+
+	    for (var i = 0; i < interpolatedCommands.length; ++i) {
+	      // if (interpolatedCommands[i].type === 'Z') continue;
+	      var aCommand = aCommands[i];
+	      var bCommand = bCommands[i];
+	      var interpolatedCommand = interpolatedCommands[i];
+
+	      var _iterator = _createForOfIteratorHelper(typeMap[interpolatedCommand.type]),
+	          _step;
+
+	      try {
+	        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+	          var arg = _step.value;
+	          interpolatedCommand[arg] = (1 - t) * aCommand[arg] + t * bCommand[arg]; // do not use floats for flags (#27), round to integer
+
+	          if (arg === 'largeArcFlag' || arg === 'sweepFlag') {
+	            interpolatedCommand[arg] = Math.round(interpolatedCommand[arg]);
+	          }
+	        }
+	      } catch (err) {
+	        _iterator.e(err);
+	      } finally {
+	        _iterator.f();
+	      }
+	    }
+
+	    return interpolatedCommands;
+	  };
+	}
+	/** @typedef InterpolateOptions  */
+
+	/**
+	 * Interpolate from A to B by extending A and B during interpolation to have
+	 * the same number of points. This allows for a smooth transition when they
+	 * have a different number of points.
+	 *
+	 * Ignores the `Z` character in paths unless both A and B end with it.
+	 *
+	 * @param {String} a The `d` attribute for a path
+	 * @param {String} b The `d` attribute for a path
+	 * @param {((command1, command2) => boolean|{
+	 *   excludeSegment?: (command1, command2) => boolean;
+	 *   snapEndsToInput?: boolean
+	 * })} interpolateOptions The excludeSegment function or an options object
+	 *    - interpolateOptions.excludeSegment a function that takes a start command object and
+	 *      end command object and returns true if the segment should be excluded from splitting.
+	 *    - interpolateOptions.snapEndsToInput a boolean indicating whether end of input should
+	 *      be sourced from input argument or computed.
+	 * @returns {Function} Interpolation function that maps t ([0, 1]) to a path `d` string.
+	 */
+
+	function interpolatePath(a, b, interpolateOptions) {
+	  var aCommands = pathCommandsFromString(a);
+	  var bCommands = pathCommandsFromString(b);
+
+	  var _ref2 = _typeof(interpolateOptions) === 'object' ? interpolateOptions : {
+	    excludeSegment: interpolateOptions,
+	    snapEndsToInput: true
+	  },
+	      excludeSegment = _ref2.excludeSegment,
+	      snapEndsToInput = _ref2.snapEndsToInput;
+
+	  if (!aCommands.length && !bCommands.length) {
+	    return function nullInterpolator() {
+	      return '';
+	    };
+	  }
+
+	  var commandInterpolator = interpolatePathCommands(aCommands, bCommands, {
+	    excludeSegment: excludeSegment,
+	    snapEndsToInput: snapEndsToInput
+	  });
+	  return function pathStringInterpolator(t) {
+	    // at 1 return the final value without the extensions used during interpolation
+	    if (t === 1 && snapEndsToInput) {
+	      return b == null ? '' : b;
+	    }
+
+	    var interpolatedCommands = commandInterpolator(t); // convert to a string (fastest concat: https://jsperf.com/join-concat/150)
+
+	    var interpolatedString = '';
+
+	    var _iterator2 = _createForOfIteratorHelper(interpolatedCommands),
+	        _step2;
+
+	    try {
+	      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+	        var interpolatedCommand = _step2.value;
+	        interpolatedString += commandToString(interpolatedCommand);
+	      }
+	    } catch (err) {
+	      _iterator2.e(err);
+	    } finally {
+	      _iterator2.f();
+	    }
+
+	    return interpolatedString;
+	  };
+	}
+
+	exports.interpolatePath = interpolatePath;
+	exports.interpolatePathCommands = interpolatePathCommands;
+	exports.pathCommandsFromString = pathCommandsFromString;
+
+	Object.defineProperty(exports, '__esModule', { value: true });
+
+	})));
+} (d3InterpolatePath, d3InterpolatePathExports));
+
+//---------- Show and Hide Functions ----------
+function hide(dimension) {
+    const newDimensions = parcoords.newFeatures.filter((d) => d !== dimension);
+    const featureSet = parcoords.features.filter((d) => d.name !== dimension);
+    parcoords.features = featureSet;
+    parcoords.newFeatures = newDimensions;
+    const oldxScales = parcoords.xScales.copy();
+    parcoords.xScales.domain(newDimensions);
+    selectAll('.dimensions')
+        .filter((d) => newDimensions.includes(d.name || d))
+        .transition()
+        .duration(1500)
+        .attr('transform', (d) => 'translate(' + position(d.name || d, parcoords.dragging, parcoords.xScales) + ')');
+    selectAll('.dimensions')
+        .filter((d) => d.name === dimension)
+        .transition()
+        .duration(1500)
+        .style('opacity', 0)
+        .on('end', function () {
+        select(this).attr('visibility', 'hidden');
+    });
+    select('g.active').selectAll('path')
+        .transition()
+        .duration(1500)
+        .attrTween('d', (d) => generateLineTween(oldxScales, parcoords.xScales, newDimensions, parcoords.yScales)(d));
+}
+function generateLineTween(oldXscales, newXscales, newDimensions, yScales) {
+    const path = line().defined((d) => d != null);
+    return function (d) {
+        const oldPoints = newDimensions.map((dim) => [oldXscales(dim), yScales[dim](d[dim])]);
+        const newPoints = newDimensions.map((dim) => [newXscales(dim), yScales[dim](d[dim])]);
+        return d3InterpolatePathExports.interpolatePath(path(oldPoints), path(newPoints));
+    };
+}
+function show(dimension) {
+    if (parcoords.newFeatures.includes(dimension))
+        return;
+    const existingIndex = initDimension.indexOf(dimension);
+    if (existingIndex !== -1) {
+        parcoords.newFeatures.splice(existingIndex, 0, dimension);
+        const removedItem = { name: dimension };
+        parcoords.features.splice(existingIndex, 0, removedItem);
+    }
+    parcoords.xScales.domain(parcoords.newFeatures);
+    selectAll('.dimensions')
+        .filter((d) => (typeof d === "object" ? d.name : d) === dimension)
+        .style('opacity', 0)
+        .transition()
+        .attr('visibility', 'visible')
+        .duration(1500)
+        .style('opacity', 1);
+    selectAll('.dimensions')
+        .filter((d) => parcoords.newFeatures.includes(typeof d === "object" ? d.name : d))
+        .transition()
+        .duration(1500)
+        .attr('transform', (d) => 'translate(' + position(d.name || d, parcoords.dragging, parcoords.xScales) + ')')
+        .style('opacity', 1);
+    select('g.active').selectAll('path')
+        .attr('d', function (d) {
+        const points = parcoords.newFeatures.map((p) => {
+            const x = parcoords.xScales(p);
+            const y = parcoords.yScales[p](d[p]);
+            return [x, y];
+        });
+        return line()(points);
+    });
+}
+function getAllRecords() {
+    const selection = active;
+    const object = selection._groups;
+    const data = [];
+    for (let i = 0; i < object[0].length; i++) {
+        const items = object.map((item) => item[i]);
+        const keys = Object.keys(items);
+        const text = items[keys[0]].id;
+        data.push(text);
+    }
+    return data;
+}
+function getAllVisibleDimensionNames() {
+    let listOfDimensions = parcoords.newFeatures.slice();
+    return listOfDimensions.reverse();
+}
+function getAllDimensionNames() {
+    return parcoords.data['columns'];
+}
+function getAllHiddenDimensionNames() {
+    const dimensions = getAllDimensionNames();
+    const hiddenDimensions = [];
+    for (let i = 0; i < dimensions.length; i++) {
+        if (getHiddenStatus(dimensions[i]) == 'hidden') {
+            hiddenDimensions.push(dimensions[i]);
+        }
+    }
+    return hiddenDimensions;
+}
+function getHiddenStatus(dimension) {
+    const index = parcoords.newFeatures.indexOf(dimension);
+    if (index != -1) {
+        return "shown";
+    }
+    else {
+        return "hidden";
+    }
+}
+function getInversionStatus(dimension) {
+    const invertId = '#dimension_invert_' + cleanString(dimension);
+    const element = select(invertId);
+    const arrowStatus = element.text();
+    return arrowStatus == 'up' ? 'ascending' : 'descending';
+}
+function getNumberOfDimensions() {
+    return parcoords.newFeatures.length;
+}
+function getDimensionPosition(dimension) {
+    return parcoords.newFeatures.indexOf(dimension);
+}
+function isDimensionCategorical(dimension) {
+    let values = parcoords.newDataset.map((o) => o[dimension]);
+    if (isNaN(values[0])) {
+        return true;
+    }
+    return false;
+}
+//---------- Filter Functions ----------
+function getFilter(dimension) {
+    const yScale = parcoords.yScales[dimension];
+    const dimensionSettings = parcoords.currentPosOfDims.find((d) => d.key === dimension);
+    if (!dimensionSettings || !yScale || typeof yScale.invert !== 'function')
+        return [0, 0];
+    const valueTop = Math.round(yScale.invert(dimensionSettings.top));
+    const valueBottom = Math.round(yScale.invert(dimensionSettings.bottom));
+    const min = Math.min(valueTop, valueBottom);
+    const max = Math.max(valueTop, valueBottom);
+    return [min, max];
+}
+function setFilter(dimension, min, max) {
+    const filterTop = Math.max(min, max);
+    const filterBottom = Math.min(min, max);
+    addRange$1(filterBottom, parcoords.currentPosOfDims, dimension, 'currentFilterBottom');
+    addRange$1(filterTop, parcoords.currentPosOfDims, dimension, 'currentFilterTop');
+    filter(dimension, min, max);
+}
+//---------- Range Functions ----------
+function getDimensionRange(dimension) {
+    return parcoords.yScales[dimension].domain();
+}
+function setDimensionRange(dimension, min, max) {
+    const inverted = isInverted(dimension);
+    const hiddenDims = getAllHiddenDimensionNames();
+    if (inverted) {
+        parcoords.yScales[dimension].domain([max, min]);
+        setYaxis(setupYAxis(parcoords.yScales, parcoords.newDataset, hiddenDims));
+    }
+    else {
+        parcoords.yScales[dimension].domain([min, max]);
+        setYaxis(setupYAxis(parcoords.yScales, parcoords.newDataset, hiddenDims));
+    }
+    addRange$1(min, parcoords.currentPosOfDims, dimension, 'currentRangeBottom');
+    addRange$1(max, parcoords.currentPosOfDims, dimension, 'currentRangeTop');
+    select('#dimension_axis_' + cleanString(dimension))
+        .call(yAxis[dimension])
+        .transition()
+        .duration(1000)
+        .ease(cubicInOut);
+    let active = select('g.active')
+        .selectAll('path')
+        .transition()
+        .duration(1000)
+        .attr('d', (d) => {
+        return linePath(d, parcoords.newFeatures);
+    })
+        .ease(cubicInOut);
+    active.each(function (d) {
+        select(this)
+            .transition()
+            .duration(1000)
+            .attr('d', linePath(d, parcoords.newFeatures))
+            .ease(cubicInOut);
+    });
+    setFilterAfterSettingRanges(dimension, inverted);
+}
+function setFilterAfterSettingRanges(dimension, inverted) {
+    const rect = select('#rect_' + dimension);
+    const triDown = select('#triangle_down_' + dimension);
+    const triUp = select('#triangle_up_' + dimension);
+    const dimensionSettings = parcoords.currentPosOfDims.find((d) => d.key === dimension);
+    const yScale = parcoords.yScales[dimension];
+    const newMin = Math.max(dimensionSettings.currentRangeBottom, dimensionSettings.currentFilterBottom);
+    const newMax = Math.min(dimensionSettings.currentRangeTop, dimensionSettings.currentFilterTop);
+    let top = yScale(newMax);
+    let bottom = yScale(newMin);
+    if (inverted) {
+        [top, bottom] = [bottom, top];
+    }
+    const rectY = Math.min(top, bottom);
+    const rectH = Math.abs(bottom - top);
+    const storeBottom = Math.min(newMin, newMax);
+    const storeTop = Math.max(newMin, newMax);
+    addRange$1(storeBottom, parcoords.currentPosOfDims, dimension, 'currentFilterBottom');
+    addRange$1(storeTop, parcoords.currentPosOfDims, dimension, 'currentFilterTop');
+    rect.transition()
+        .duration(300)
+        .attr('y', rectY)
+        .attr('height', rectH)
+        .style('opacity', 0.3);
+    triDown.transition()
+        .duration(300)
+        .attr('y', rectY - 10);
+    triUp.transition()
+        .duration(300)
+        .attr('y', rectY + rectH);
+}
+function setDimensionRangeRounded(dimension, min, max) {
+    const inverted = isInverted(dimension);
+    const hiddenDims = getAllHiddenDimensionNames();
+    if (inverted) {
+        parcoords.yScales[dimension].domain([max, min]).nice();
+        setYaxis(setupYAxis(parcoords.yScales, parcoords.newDataset, hiddenDims));
+    }
+    else {
+        parcoords.yScales[dimension].domain([min, max]).nice();
+        setYaxis(setupYAxis(parcoords.yScales, parcoords.newDataset, hiddenDims));
+    }
+    const roundedRanges = parcoords.yScales[dimension].domain();
+    addRange$1(roundedRanges[0], parcoords.currentPosOfDims, dimension, 'currentRangeBottom');
+    addRange$1(roundedRanges[1], parcoords.currentPosOfDims, dimension, 'currentRangeTop');
+    select('#dimension_axis_' + cleanString(dimension))
+        .call(yAxis[dimension])
+        .transition()
+        .duration(1000)
+        .ease(cubicInOut);
+    let active = select('g.active')
+        .selectAll('path')
+        .transition()
+        .duration(1000)
+        .attr('d', (d) => {
+        return linePath(d, parcoords.newFeatures);
+    })
+        .ease(cubicInOut);
+    active.each(function (d) {
+        select(this)
+            .transition()
+            .duration(1000)
+            .attr('d', linePath(d, parcoords.newFeatures))
+            .ease(cubicInOut);
+    });
+    setFilterAfterSettingRanges(dimension, inverted);
+}
+function addRange$1(value, currentPosOfDims, dimension, key) {
+    let newObject = {};
+    newObject[key] = Number(value);
+    const target = currentPosOfDims.find((obj) => obj.key == dimension);
+    Object.assign(target, newObject);
+}
+function getMinValue(dimension) {
+    const item = parcoords.currentPosOfDims.find((object) => object.key == dimension);
+    return item.min;
+}
+function getMaxValue(dimension) {
+    const item = parcoords.currentPosOfDims.find((object) => object.key == dimension);
+    return item.max;
+}
+function getCurrentMinRange(dimension) {
+    const item = parcoords.currentPosOfDims.find((object) => object.key == dimension);
+    return item.currentRangeBottom;
+}
+function getCurrentMaxRange(dimension) {
+    const item = parcoords.currentPosOfDims.find((object) => object.key == dimension);
+    return item.currentRangeTop;
+}
+function isSelected(record) {
+    return select('#' + cleanString(record)).classed('selected');
+}
+function setDimensionForHovering(dimension) {
+    setHoverLabel(dimension);
+}
+function invert(dimension) {
+    const cleanDimensionName = cleanString(dimension);
+    const invertId = '#dimension_invert_' + cleanDimensionName;
+    const dimensionId = '#dimension_axis_' + cleanDimensionName;
+    const textElement = select(invertId);
+    const currentArrowStatus = textElement.text();
+    const arrow = currentArrowStatus === 'down' ? '#arrow_image_up' : '#arrow_image_down';
+    const arrowStyle = currentArrowStatus === 'down' ? setSize(getArrowDownCursor(), 12) : setSize(getArrowUpCursor(), 12);
+    textElement.text(currentArrowStatus === 'down' ? 'up' : 'down');
+    textElement.attr('href', arrow);
+    textElement.style('cursor', `url('data:image/svg+xml,${encodeURIComponent(arrowStyle)}') 8 8 , auto`);
+    select(dimensionId)
+        .transition()
+        .duration(1000)
+        .call(yAxis[dimension]
+        .scale(parcoords.yScales[dimension]
+        .domain(parcoords.yScales[dimension]
+        .domain().reverse())))
+        .ease(cubicInOut);
+    trans(active).each(function (d) {
+        select(this)
+            .transition()
+            .duration(1000)
+            .attr('d', (d) => {
+            return linePath(d, parcoords.newFeatures);
+        })
+            .ease(cubicInOut);
+    });
+    getFilter(dimension);
+    addSettingsForBrushing(dimension, isInverted(dimension));
+    if (isInverted(dimension)) {
+        addInvertStatus(true, dimension, "isInverted");
+    }
+    else {
+        addInvertStatus(false, dimension, "isInverted");
+    }
+}
+
+function brushDown(cleanDimensionName, event, d, tooltipValues, window) {
+    const yPosBottom = Number(select('#triangle_up_' + cleanDimensionName).attr('y'));
+    let yPosTop;
+    let yPosRect;
+    if (event.y < 70) {
+        yPosTop = 70;
+        yPosRect = 80;
+    }
+    else if (event.y > yPosBottom - 10) {
+        yPosTop = yPosBottom - 10;
+        yPosRect = 320;
+    }
+    else if (event.y == yPosBottom - 10) {
+        yPosTop = yPosBottom - 10;
+        yPosRect = yPosTop + 10;
+    }
+    else {
+        yPosTop = event.y;
+        event.y;
+        yPosRect = event.y + 10;
+    }
+    addPosition(yPosRect, d.name, 'top');
+    if (yPosTop == 70 && yPosBottom == 320) {
+        select('#rect_' + cleanDimensionName)
+            .style('cursor', 'default');
+    }
+    else {
+        select('#rect_' + cleanDimensionName).style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopAndBottom()), 20)}') 8 8, auto`);
+    }
+    select('#triangle_down_' + cleanDimensionName).attr('y', yPosTop);
+    const heightTopRect = yPosRect - 80;
+    const heightBottomRect = 320 - yPosBottom;
+    select('#rect_' + cleanDimensionName)
+        .attr('y', yPosRect)
+        .attr('height', 240 - heightTopRect - heightBottomRect);
+    if (!isNaN(parcoords.yScales[d.name].domain()[0])) {
+        setToolTipBrush(tooltipValues, d, event, window, true);
+    }
+    updateLines(d.name, cleanDimensionName);
+}
+function brushUp(cleanDimensionName, event, d, tooltipValues, window) {
+    const yPosTop = Number(select('#triangle_down_' + cleanDimensionName).attr('y'));
+    let yPosBottom;
+    if (event.y < yPosTop + 10) {
+        yPosBottom = yPosTop + 10;
+    }
+    else if (event.y > 320) {
+        yPosBottom = 320;
+    }
+    else if (event.y == yPosTop + 10) {
+        yPosBottom = yPosTop;
+    }
+    else {
+        yPosBottom = event.y;
+    }
+    addPosition(yPosBottom, d.name, 'bottom');
+    if (yPosTop == 70 && yPosBottom == 320) {
+        select('#rect_' + cleanDimensionName)
+            .style('cursor', 'default');
+    }
+    else {
+        select('#rect_' + cleanDimensionName).style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopAndBottom()), 20)}') 8 8, auto`);
+    }
+    select('#triangle_up_' + cleanDimensionName).attr('y', yPosBottom);
+    const heightTopRect = yPosTop - 70;
+    const heightBottomRect = 320 - yPosBottom;
+    select('#rect_' + cleanDimensionName)
+        .attr('height', 240 - heightTopRect - heightBottomRect);
+    if (!isNaN(parcoords.yScales[d.name].domain()[0])) {
+        setToolTipBrush(tooltipValues, d, event, window, false);
+    }
+    updateLines(d.name, cleanDimensionName);
+}
+function dragAndBrush(cleanDimensionName, d, event, delta, tooltipValuesTop, tooltipValuesDown, window) {
+    let yPosTop;
+    let yPosRect;
+    const yPosBottom = select('#triangle_up_' + cleanDimensionName).attr('y');
+    const yPosTopNew = select('#triangle_down_' + cleanDimensionName).attr('y');
+    const heightTopRect = yPosTopNew - 70;
+    const heightBottomRect = 320 - yPosBottom;
+    const rectHeight = 240 - heightTopRect - heightBottomRect;
+    if (event.y + delta - 10 <= 70) {
+        yPosTop = 70;
+        yPosRect = 80;
+    }
+    else if (event.y + delta + rectHeight >= 320) {
+        yPosTop = 320 - rectHeight - 10;
+        yPosRect = 320 - rectHeight;
+    }
+    else {
+        yPosTop = event.y + delta - 10;
+        event.y + delta - 10;
+        yPosRect = yPosTop + 10;
+    }
+    addPosition(yPosRect, d.name, 'top');
+    addPosition(yPosRect + rectHeight, d.name, 'bottom');
+    if (rectHeight < 240) {
+        select('#rect_' + cleanDimensionName)
+            .attr('y', yPosRect);
+        select('#triangle_down_' + cleanDimensionName)
+            .attr('y', yPosTop);
+        select('#triangle_up_' + cleanDimensionName)
+            .attr('y', yPosRect + rectHeight);
+        if (!isNaN(parcoords.yScales[d.name].domain()[0])) {
+            setToolTipDragAndBrush(tooltipValuesTop, tooltipValuesDown, d, window, true, yPosTop, yPosRect + rectHeight);
+        }
+        updateLines(d.name, cleanDimensionName);
+    }
+}
+function filter(dimensionName, min, max) {
+    const cleanDimensionName = cleanString(dimensionName);
+    const invertStatus = getInvertStatus(dimensionName);
+    const yScale = parcoords.yScales[dimensionName];
+    let topPosition = yScale(min);
+    let bottomPosition = yScale(max);
+    if (invertStatus) {
+        [topPosition, bottomPosition] = [bottomPosition, topPosition];
+    }
+    const rectY = Math.min(topPosition, bottomPosition);
+    const rectHeight = Math.abs(bottomPosition - topPosition);
+    addPosition(topPosition, dimensionName, 'top');
+    addPosition(bottomPosition, dimensionName, 'bottom');
+    select('#rect_' + cleanDimensionName)
+        .transition()
+        .duration(1000)
+        .attr('y', rectY)
+        .attr('height', rectHeight)
+        .style('opacity', 0.3);
+    select('#triangle_down_' + cleanDimensionName)
+        .transition()
+        .duration(1000)
+        .attr('y', rectY - 10);
+    select('#triangle_up_' + cleanDimensionName)
+        .transition()
+        .duration(1000)
+        .attr('y', rectY + rectHeight);
+    let active = select('g.active').selectAll('path');
+    const rectTop = Math.min(topPosition, bottomPosition);
+    const rectBottom = Math.max(topPosition, bottomPosition);
+    if (isDimensionCategorical(dimensionName)) {
+        const selectedCategories = yScale.domain().filter((cat) => {
+            const pos = yScale(cat);
+            return pos >= rectTop && pos <= rectBottom;
+        });
+        addRange(selectedCategories, parcoords.currentPosOfDims, dimensionName, "currentFilterCategories");
+    }
+    else {
+        addRange(yScale.invert(rectBottom), parcoords.currentPosOfDims, dimensionName, "currentFilterBottom");
+        addRange(yScale.invert(rectTop), parcoords.currentPosOfDims, dimensionName, "currentFilterTop");
+    }
+    active.each(function (d) {
+        const value = yScale(d[dimensionName]);
+        const currentLine = getLineName(d);
+        const dimNameToCheck = select('.' + currentLine).text();
+        const emptyString = '';
+        if (value < rectTop || value > rectBottom) {
+            if (dimNameToCheck === emptyString) {
+                makeInactive(currentLine, dimensionName, 1000);
+            }
+        }
+        else if (dimNameToCheck === dimensionName && dimNameToCheck !== emptyString) {
+            let checkedLines = [];
+            parcoords.currentPosOfDims.forEach(function (item) {
+                if (item.top != yScale.range()[1] || item.bottom != yScale.range()[0]) {
+                    checkAllPositionsTop(item, dimensionName, d, checkedLines, currentLine);
+                    checkAllPositionsBottom(item, dimensionName, d, checkedLines, currentLine);
+                }
+            });
+            if (!checkedLines.includes(currentLine)) {
+                makeActive(currentLine, 1000);
+            }
+        }
+    });
+}
+function getLineName(d) {
+    const keys = Object.keys(d);
+    const key = keys[0];
+    return cleanString(d[key]);
+}
+function addPosition(yPosTop, dimension, key) {
+    let newObject = {};
+    newObject[key] = yPosTop;
+    const target = parcoords.currentPosOfDims.find((obj) => obj.key == dimension);
+    Object.assign(target, newObject);
+}
+function setToolTipBrush(tooltipValues, d, event, window, direction) {
+    const range = parcoords.yScales[d.name].domain();
+    const invertStatus = getInvertStatus(d.name);
+    const maxValue = invertStatus == false ? range[1] : range[0];
+    const minValue = invertStatus == false ? range[0] : range[1];
+    const scale = maxValue - minValue;
+    let tooltipValue;
+    if (invertStatus) {
+        tooltipValue = direction == true ? ((event.y - 70) / (240 / (scale)) + minValue) :
+            ((event.y - 80) / (240 / (scale)) + minValue);
+    }
+    else {
+        tooltipValue = direction == true ? maxValue - ((event.y - 70) / (240 / (scale))) :
+            maxValue - ((event.y - 80) / (240 / (scale)));
+    }
+    if (!invertStatus) {
+        if (tooltipValue > range[1]) {
+            tooltipValue = range[1];
+        }
+        if (tooltipValue < range[0]) {
+            tooltipValue = range[0];
+        }
+    }
+    else {
+        if (tooltipValue > range[0]) {
+            tooltipValue = range[0];
+        }
+        if (tooltipValue < range[1]) {
+            tooltipValue = range[1];
+        }
+    }
+    const digs = getSigDig(d.name);
+    tooltipValues.text(Math.round(tooltipValue.toPrecision(digs).toLocaleString('en-GB') * 10) / 10);
+    tooltipValues.style('visibility', 'visible');
+    tooltipValues.style('top', window.event.pageY + 'px').style('left', window.event.pageX + 'px');
+    tooltipValues.style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
+        .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
+        .style('padding', 0.12 + 'rem').style('white-space', 'pre-line')
+        .style('background-color', 'LightGray').style('margin-left', 0.5 + 'rem');
+}
+function setToolTipDragAndBrush(tooltipValuesTop, tooltipValuesDown, d, window, direction, yPosTop, yPosBottom) {
+    const range = parcoords.yScales[d.name].domain();
+    const invertStatus = getInvertStatus(d.name);
+    const maxValue = invertStatus == false ? range[1] : range[0];
+    const minValue = invertStatus == false ? range[0] : range[1];
+    const scale = maxValue - minValue;
+    let tooltipValueTop;
+    let tooltipValueBottom;
+    if (invertStatus) {
+        tooltipValueTop = direction == true ? ((yPosTop - 70) / (240 / (scale)) + minValue) :
+            ((yPosTop - 80) / (240 / (scale)) + minValue);
+        tooltipValueBottom = direction == true ? ((yPosBottom - 80) / (240 / (scale)) + minValue) :
+            ((yPosBottom - 70) / (240 / (scale)) + minValue);
+    }
+    else {
+        tooltipValueTop = direction == true ? maxValue - ((yPosTop - 70) / (240 / (scale))) :
+            maxValue - ((yPosTop - 80) / (240 / (scale)));
+        tooltipValueBottom = direction == true ? maxValue - ((yPosBottom - 80) / (240 / (scale))) :
+            maxValue - ((yPosBottom - 70) / (240 / (scale)));
+    }
+    if ((!invertStatus && tooltipValueTop == maxValue) || (invertStatus && tooltipValueTop == minValue)) {
+        tooltipValuesTop.style('visibility', 'hidden');
+    }
+    else {
+        tooltipValuesTop.text(Math.round(tooltipValueTop));
+        tooltipValuesTop.style('visibility', 'visible');
+        tooltipValuesTop.style('top', Number(yPosTop + 180) + 'px').style('left', window.event.pageX + 'px');
+        tooltipValuesTop.style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
+            .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
+            .style('padding', 0.12 + 'rem').style('white-space', 'pre-line')
+            .style('background-color', 'LightGray').style('margin-left', 0.5 + 'rem');
+    }
+    if ((!invertStatus && tooltipValueBottom == minValue) || (invertStatus && tooltipValueBottom == maxValue)) {
+        tooltipValuesDown.style('visibility', 'hidden');
+    }
+    else {
+        tooltipValuesDown.text(Math.round(tooltipValueBottom));
+        tooltipValuesDown.style('visibility', 'visible');
+        tooltipValuesDown.style('top', Number(yPosBottom + 180) + 'px').style('left', window.event.pageX + 'px');
+        tooltipValuesDown.style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
+            .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
+            .style('padding', 0.12 + 'rem').style('white-space', 'pre-line')
+            .style('background-color', 'LightGray').style('margin-left', 0.5 + 'rem');
+    }
+}
+function updateLines(dimension, cleanDimensionName) {
+    const rangeTop = Number(select('#triangle_down_' + cleanDimensionName).attr('y'));
+    const rangeBottom = Number(select('#triangle_up_' + cleanDimensionName).attr('y'));
+    const invertStatus = getInvertStatus(dimension);
+    const maxValue = invertStatus == false ? parcoords.yScales[dimension].domain()[1] : parcoords.yScales[dimension].domain()[0];
+    const minValue = invertStatus == false ? parcoords.yScales[dimension].domain()[0] : parcoords.yScales[dimension].domain()[1];
+    const range = maxValue - minValue;
+    let currentFilters = getFilter(dimension);
+    if (isDimensionCategorical(dimension)) {
+        const selectedCategories = parcoords.yScales[dimension].domain().filter((cat) => {
+            const pos = parcoords.yScales[dimension](cat);
+            return pos >= rangeTop && pos <= rangeBottom;
+        });
+        addRange(selectedCategories, parcoords.currentPosOfDims, dimension, "currentFilterCategories");
+    }
+    else {
+        addRange(currentFilters[0], parcoords.currentPosOfDims, dimension, "currentFilterBottom");
+        addRange(currentFilters[1], parcoords.currentPosOfDims, dimension, "currentFilterTop");
+    }
+    let active = select('g.active').selectAll('path');
+    active.each(function (d) {
+        let value;
+        if (invertStatus) {
+            value = isNaN(maxValue) ? parcoords.yScales[dimension](d[dimension]) :
+                240 / range * (d[dimension] - minValue) + 80;
+        }
+        else {
+            value = isNaN(maxValue) ? parcoords.yScales[dimension](d[dimension]) :
+                240 / range * (maxValue - d[dimension]) + 80;
+        }
+        const currentLine = getLineName(d);
+        const dimNameToCheck = select('.' + currentLine).text();
+        const emptyString = '';
+        if (value < rangeTop + 10 || value > rangeBottom) {
+            if (dimNameToCheck == emptyString) {
+                makeInactive(currentLine, dimension, 100);
+            }
+        }
+        else if (value == 320 && value == rangeTop + 10 && value == rangeBottom) {
+            if (dimNameToCheck == emptyString) {
+                makeInactive(currentLine, dimension, 100);
+            }
+        }
+        else if (value == 80 && value == rangeTop + 10 && value == rangeBottom) {
+            if (dimNameToCheck == emptyString) {
+                makeInactive(currentLine, dimension, 100);
+            }
+        }
+        else if (dimNameToCheck == dimension && dimNameToCheck != emptyString) {
+            let checkedLines = [];
+            parcoords.currentPosOfDims.forEach(function (item) {
+                if (item.top != 80 || item.bottom != 320) {
+                    checkAllPositionsTop(item, dimension, d, checkedLines, currentLine);
+                    checkAllPositionsBottom(item, dimension, d, checkedLines, currentLine);
+                }
+            });
+            if (!checkedLines.includes(currentLine)) {
+                makeActive(currentLine, 300);
+            }
+        }
+        else ;
+    });
+}
+function addRange(value, dims, dimension, property) {
+    const dimSettings = dims.find(d => d.key === dimension);
+    if (!dimSettings)
+        return;
+    const yScale = parcoords.yScales[dimension];
+    const domain = yScale.domain();
+    if (typeof domain[0] === "number") {
+        dimSettings.type = "numeric";
+        if (property === "currentFilterTop" || property === "currentFilterBottom") {
+            dimSettings[property] = value;
+        }
+    }
+    else {
+        dimSettings.type = "categorical";
+        if (property === "currentFilterCategories") {
+            dimSettings.currentFilterCategories = value;
+        }
+    }
+}
+function checkAllPositionsTop(positionItem, dimension, d, checkedLines, currentLine) {
+    if (positionItem.key != dimension && positionItem.top != 70) {
+        const invertStatus = getInvertStatus(positionItem.key);
+        const maxValue = invertStatus == false ? parcoords.yScales[positionItem.key].domain()[1] :
+            parcoords.yScales[positionItem.key].domain()[0];
+        const minValue = invertStatus == false ? parcoords.yScales[positionItem.key].domain()[0] :
+            parcoords.yScales[positionItem.key].domain()[1];
+        const scale = maxValue - minValue;
+        let value;
+        if (!isNaN(maxValue)) {
+            value = invertStatus == false ? 240 / scale * (maxValue - d[positionItem.key]) + 80 :
+                240 / scale * (d[positionItem.key] - minValue) + 80;
+        }
+        else {
+            value = parcoords.yScales[positionItem.key](d[positionItem.key]);
+        }
+        if (value < positionItem.top) {
+            checkedLines.push(currentLine);
+            select('.' + currentLine).text(positionItem.key);
+        }
+    }
+}
+function checkAllPositionsBottom(positionItem, dimension, d, checkedLines, currentLine) {
+    if (positionItem.key != dimension && positionItem.bottom != 320) {
+        const invertStatus = getInvertStatus(positionItem.key);
+        const maxValue = invertStatus == false ? parcoords.yScales[positionItem.key].domain()[1] :
+            parcoords.yScales[positionItem.key].domain()[0];
+        const minValue = invertStatus == false ? parcoords.yScales[positionItem.key].domain()[0] :
+            parcoords.yScales[positionItem.key].domain()[1];
+        const scale = maxValue - minValue;
+        let value;
+        if (!isNaN(maxValue)) {
+            value = invertStatus == false ? 240 / scale * (maxValue - d[positionItem.key]) + 80 :
+                240 / scale * (d[positionItem.key] - minValue) + 80;
+        }
+        else {
+            value = parcoords.yScales[positionItem.key](d[positionItem.key]);
+        }
+        if (value >= positionItem.bottom) {
+            checkedLines.push(currentLine);
+            select('.' + currentLine).text(positionItem.key);
+        }
+    }
+}
+function makeActive(currentLineName, duration) {
+    if (select('.' + currentLineName).classed('selected')) {
+        select('.' + currentLineName)
+            .style('pointer-events', 'stroke')
+            .text('')
+            .transition()
+            .duration(duration)
+            .style('stroke', 'rgba(255, 165, 0, 1)');
+    }
+    else {
+        select('.' + currentLineName)
+            .style('pointer-events', 'stroke')
+            .text('')
+            .transition()
+            .duration(duration)
+            .style('stroke', 'rgba(0, 129, 175, 0.5)');
+    }
+}
+function makeInactive(currentLineName, dimension, duration) {
+    const line = select('.' + currentLineName);
+    line
+        .text(dimension)
+        .transition()
+        .duration(duration)
+        .style('stroke', 'rgba(211, 211, 211, 0.4')
+        .on('end', function () {
+        select(this).style('pointer-events', 'none');
+    });
+}
+function addSettingsForBrushing(dimension, invertStatus) {
+    const processedName = cleanString(dimension);
+    const yScale = parcoords.yScales[processedName];
+    const dimensionSettings = parcoords.currentPosOfDims.find((d) => d.key === dimension);
+    let top, bottom;
+    console.log(parcoords.currentPosOfDims);
+    if (isDimensionCategorical(dimension)) {
+        const domain = yScale.domain();
+        const sorted = domain.slice().sort((a, b) => yScale(a) - yScale(b));
+        const topCategory = sorted[0];
+        const bottomCategory = sorted[sorted.length - 1];
+        top = yScale(topCategory);
+        bottom = yScale(bottomCategory);
+    }
+    else {
+        top = yScale(dimensionSettings.currentFilterTop);
+        bottom = yScale(dimensionSettings.currentFilterBottom);
+    }
+    if (invertStatus) {
+        [top, bottom] = [bottom, top];
+    }
+    const rectY = Math.min(top, bottom);
+    const rectH = Math.abs(bottom - top);
+    const rect = select('#rect_' + processedName);
+    const triDown = select('#triangle_down_' + processedName);
+    const triUp = select('#triangle_up_' + processedName);
+    rect.transition()
+        .duration(300)
+        .attr('y', rectY)
+        .attr('height', rectH)
+        .style('opacity', 0.3);
+    triDown.transition()
+        .duration(300)
+        .attr('y', rectY - 10);
+    triUp.transition()
+        .duration(300)
+        .attr('y', rectY + rectH);
+    addPosition(top, dimension, 'top');
+    addPosition(bottom, dimension, 'bottom');
+    console.log(parcoords.currentPosOfDims);
+}
+function getInvertStatus(key) {
+    const item = parcoords.currentPosOfDims.find((object) => object.key == key);
+    return item.isInverted;
+}
+function getSigDig(key) {
+    const item = parcoords.currentPosOfDims.find((object) => object.key == key);
+    return item.sigDig;
+}
+function addInvertStatus(status, dimensionName, key) {
+    let newObject = {};
+    newObject[key] = status;
+    const target = parcoords.currentPosOfDims.find((obj) => obj.key == dimensionName);
+    Object.assign(target, newObject);
+}
+const delay = 50;
+const throttleBrushDown = throttle(brushDown, delay);
+const throttleBrushUp = throttle(brushUp, delay);
+const throttleDragAndBrush = throttle(dragAndBrush, delay);
+
+let scrollXPos;
+let timer;
+function setContextMenu(featureAxis) {
     createContextMenu();
     createModalToSetRange();
     createModalToFilter();
-    let tooltipFeatures = select$1('body')
+    setToolTipsOnFeatureAxis(featureAxis);
+    featureAxis
+        .on('contextmenu', function (event, d) {
+        const dimension = d.name;
+        styleContextMenu(event);
+        hideDimensionMenu(dimension);
+        invertDimensionMenu(dimension);
+        setRangeMenu(dimension);
+        resetRangeMenu(dimension);
+        resetRoundRangeMenu(dimension);
+        filterMenu(dimension);
+        resetFilterMenu(dimension);
+        showAllMenu();
+        copyDimensionName(dimension);
+        event.preventDefault();
+    });
+}
+function setToolTipsOnFeatureAxis(featureAxis) {
+    let tooltipFeatures = select('body')
         .append('div')
         .attr('id', 'tooltip')
         .style('position', 'absolute')
@@ -7969,17 +8377,18 @@ function setContextMenu(featureAxis, padding, parcoords, width) {
         .attr('class', 'dimension')
         .attr('text-anchor', 'middle')
         .attr('y', (padding / 1.7).toFixed(4))
-        .text(d => d.name.length > 10 ? d.name.substr(0, 10) + '...' : d.name)
+        .text((d) => d.name.length > 10 ?
+        d.name.substr(0, 10) + '...' : d.name)
         .style('font-size', '0.7rem')
         .call(drag()
-        .on('start', onDragStartEventHandler(parcoords))
-        .on('drag', onDragEventHandler(parcoords, featureAxis, width))
-        .on('end', onDragEndEventHandler(parcoords, featureAxis)))
+        .on('start', onDragStartEventHandler())
+        .on('drag', onDragEventHandler(featureAxis))
+        .on('end', onDragEndEventHandler(featureAxis)))
         .on('mouseover', function () {
         return tooltipFeatures.style('visibility', 'visible');
     })
         .on('mousemove', (event, d) => {
-        setCursorForDimensions(d, featureAxis, parcoords);
+        setCursorForDimensions(d, featureAxis);
         const [x, y] = getMouseCoords(event);
         tooltipFeatures.text(d.name);
         tooltipFeatures
@@ -7996,306 +8405,281 @@ function setContextMenu(featureAxis, padding, parcoords, width) {
     })
         .on('mouseout', function () {
         return tooltipFeatures.style('visibility', 'hidden');
-    })
-        .on('contextmenu', function (event, d) {
-        const dimension = d.name;
-        const values = parcoords.newDataset.map(o => o[dimension]);
-        styleContextMenu(event);
-        hideDimensionMenu(dimension);
-        invertDimensionMenu(dimension);
-        setRangeMenu(values, dimension);
-        resetRangeMenu(values, dimension);
-        resetRoundRangeMenu(values, dimension);
-        filterMenu(values, dimension);
-        resetFilterMenu(values, dimension);
-        showAllMenu();
-        copyDimensionName(dimension);
-        event.preventDefault();
     });
 }
-let scrollXPos;
-let timer;
-const paddingXaxis = 60;
 function copyDimensionName(dimension) {
-    select$1('#copyDimensionName')
+    select('#copyDimensionName')
         .style('visibility', 'visible')
         .on('click', async (event) => {
         await navigator.clipboard.writeText(dimension);
-        select$1('#contextmenu').style('display', 'none');
+        select('#contextmenu').style('display', 'none');
         event.stopPropagation();
     });
 }
 function showAllMenu() {
-    select$1('#showAllMenu')
+    select('#showAllMenu')
         .style('visibility', 'visible')
         .style('border-top', '0.08rem lightgrey solid')
         .on('click', (event) => {
         const hiddenDimensions = getAllHiddenDimensionNames();
         for (let i = 0; i < hiddenDimensions.length; i++) {
             show(hiddenDimensions[i]);
-            select$1('#contextmenu').style('display', 'none');
         }
+        select('#contextmenu').style('display', 'none');
         event.stopPropagation();
     });
 }
-function resetFilterMenu(values, dimension) {
-    if (!isNaN(values[0])) {
-        select$1('#resetfilterMenu')
-            .style('visibility', 'visible')
-            .style('color', 'black')
-            .on('click', (event) => {
-            const range = getDimensionRange(dimension);
-            const inverted = isInverted(dimension);
-            if (inverted) {
-                setFilter(dimension, range[0], range[1]);
-            }
-            else {
-                setFilter(dimension, range[1], range[0]);
-            }
-            select$1('#contextmenu').style('display', 'none');
+function resetFilterMenu(dimension) {
+    if (isDimensionCategorical(dimension)) {
+        select('#resetfilterMenu')
+            .style('color', 'lightgrey');
+        return;
+    }
+    select('#resetfilterMenu')
+        .style('visibility', 'visible')
+        .style('color', 'black')
+        .on('click', (event) => {
+        const range = getDimensionRange(dimension);
+        const inverted = isInverted(dimension);
+        if (inverted) {
+            setFilter(dimension, Number(range[0]), Number(range[1]));
+        }
+        else {
+            setFilter(dimension, Number(range[1]), Number(range[0]));
+        }
+        select('#contextmenu').style('display', 'none');
+        event.stopPropagation();
+    });
+}
+function filterMenu(dimension) {
+    let filterMenu = select('#filterMenu');
+    filterMenu.style('border-top', '0.08rem lightgrey solid');
+    if (isDimensionCategorical(dimension)) {
+        filterMenu.style('color', 'lightgrey');
+        return;
+    }
+    let currentFilters = getFilter(dimension);
+    let minFilterValue = select('#minFilterValue');
+    let maxFilterValue = select('#maxFilterValue');
+    minFilterValue.property('value', currentFilters[0]);
+    maxFilterValue.property('value', currentFilters[1]);
+    minFilterValue.on('keypress', (event) => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            document.getElementById("buttonFilter").click();
+        }
+    });
+    maxFilterValue.on('keypress', (event) => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            document.getElementById("buttonFilter").click();
+        }
+    });
+    filterMenu.style('visibility', 'visible')
+        .style('color', 'black');
+    filterMenu.on('click', (event) => {
+        select('#modalOverlayFilter').style('display', 'block');
+        select('#modalFilter').style('display', 'block');
+        select('#contextmenu').style('display', 'none');
+        const header = dimension.length > 25 ? dimension.substr(0, 25) + '...' :
+            dimension;
+        select('#headerDimensionFilter').text(header);
+        select('#closeButtonFilter').on('click', () => {
+            select('#errorFilter').style('display', 'none');
+            select('#modalFilter').style('display', 'none');
+            select('#modalOverlayFilter').style('display', 'none');
+        });
+        select('#buttonFilter').on('click', () => {
+            handleFilterButton(dimension);
+            select('#contextmenu').style('display', 'none');
             event.stopPropagation();
         });
+    });
+}
+function handleFilterButton(dimension) {
+    let isOk = false;
+    let minFilterValue = select('#minFilterValue');
+    let maxFilterValue = select('#maxFilterValue');
+    let errorMessage = select('#errorFilter').style('display', 'block');
+    let min = Number(minFilterValue.node().value);
+    let max = Number(maxFilterValue.node().value);
+    const inverted = isInverted(dimension);
+    const ranges = getDimensionRange(dimension);
+    const minRange = Number(inverted ? ranges[1] : ranges[0]);
+    const maxRange = Number(inverted ? ranges[0] : ranges[1]);
+    if (max < min) {
+        max = maxRange;
+        errorMessage.text(`Max value is smaller than min value, filter is set to 
+      min.`);
+    }
+    else if (min < minRange) {
+        min = minRange;
+        errorMessage.text(`Min value is smaller than ${getMinValue(dimension)},
+     filter is set to min.`);
+    }
+    else if (min > maxRange) {
+        min = maxRange;
+        errorMessage.text(`Min value is bigger than max range value, filter is set
+      to max.`);
+    }
+    else if (max > maxRange) {
+        max = maxRange;
+        errorMessage.text(`Max value is bigger than ${getMaxValue(dimension)},
+     filter is set to max.`);
+    }
+    else if (max < minRange) {
+        max = minRange;
+        select('#errorFilter').text(`Max value is smaller than min range value, 
+      filter is set to min.`);
     }
     else {
-        select$1('#resetfilterMenu')
-            .style('display', 'false')
-            .style('color', 'lightgrey');
+        isOk = true;
+    }
+    setFilter(dimension, max, min);
+    if (isOk) {
+        select('#errorFilter').style('display', 'none');
+        select('#modalFilter').style('display', 'none');
+        select('#modalOverlayFilter').style('display', 'none');
     }
 }
-function filterMenu(values, dimension) {
-    if (!isNaN(values[0])) {
-        let currentFilters = getFilter(dimension);
+function resetRoundRangeMenu(dimension) {
+    if (isDimensionCategorical(dimension)) {
+        select('#resetRoundRangeMenu')
+            .style('color', 'lightgrey');
+        return;
+    }
+    select('#resetRoundRangeMenu')
+        .style('visibility', 'visible')
+        .style('color', 'black')
+        .on('click', (event) => {
+        setDimensionRangeRounded(dimension, getMinValue(dimension), getMaxValue(dimension));
+        select('#contextmenu').style('display', 'none');
+        event.stopPropagation();
+    });
+}
+function resetRangeMenu(dimension) {
+    if (isDimensionCategorical(dimension)) {
+        select('#resetRangeMenu')
+            .style('display', 'false')
+            .style('color', 'lightgrey');
+        return;
+    }
+    select('#resetRangeMenu')
+        .style('visibility', 'visible')
+        .style('color', 'black')
+        .on('click', (event) => {
+        setDimensionRange(dimension, getMinValue(dimension), getMaxValue(dimension));
+        select('#contextmenu').style('display', 'none');
+        event.stopPropagation();
+    });
+}
+function setRangeMenu(dimension) {
+    let rangeMenu = select('#rangeMenu');
+    rangeMenu.style('border-top', '0.08rem lightgrey solid');
+    if (isDimensionCategorical(dimension)) {
+        rangeMenu.style('color', 'lightgrey');
+        return;
+    }
+    rangeMenu.style('visibility', 'visible')
+        .style('color', 'black')
+        .on('click', (event) => {
+        handleRangeButton(dimension);
+        select('#closeButtonRange').on('click', () => {
+            select('#modalSetRange').style('display', 'none');
+            select('#modalOverlaySetRange').style('display', 'none');
+        });
+        select('#contextmenu').style('display', 'none');
+        event.stopPropagation();
+    });
+}
+function handleRangeButton(dimension) {
+    let minRange = getCurrentMinRange(dimension);
+    let maxRange = getCurrentMaxRange(dimension);
+    let resultMin = (minRange - Math.floor(minRange)) !== 0;
+    let resultMax = (maxRange - Math.floor(maxRange)) !== 0;
+    let minValue = String(minRange);
+    let maxValue = String(maxRange);
+    if (resultMin && !resultMax) {
+        const count = minValue.split('.')[1].length;
+        maxValue = maxRange.toFixed(count);
+    }
+    else if (!resultMin && resultMax) {
+        const count = maxValue.split('.')[1].length;
+        minValue = minRange.toFixed(count);
+    }
+    select('#minRangeValue').property('value', minValue);
+    select('#maxRangeValue').property('value', maxValue);
+    select('#contextmenu').style('display', 'none');
+    select('#modalOverlaySetRange').style('display', 'block');
+    select('#modalSetRange').style('display', 'block');
+    const newText = dimension.length > 25 ? dimension.substr(0, 25) + '...' :
+        dimension;
+    select('#headerDimensionRange').text(newText);
+    select('#infoRange').text('The current range of ' + dimension + ' is between ' + minValue + ' and ' + maxValue + '.');
+    select('#infoRange2').text('The original range of ' + dimension + ' is between ' + getMinValue(dimension) + ' and ' + getMaxValue(dimension) + '.');
+    select('#buttonRange').on('click', () => {
+        let min = select('#minRangeValue').node().value;
+        let max = select('#maxRangeValue').node().value;
         const inverted = isInverted(dimension);
-        select$1('#minFilterValue').property('value', currentFilters[0]);
-        select$1('#maxFilterValue').property('value', currentFilters[1]);
-        select$1('#filterMenu')
-            .style('border-top', '0.08rem lightgrey solid')
-            .style('visibility', 'visible')
-            .style('color', 'black')
-            .on('click', (event) => {
-            select$1('#modalOverlayFilter').style('display', 'block');
-            select$1('#modalFilter').style('display', 'block');
-            select$1('#contextmenu').style('display', 'none');
-            const header = dimension.length > 25 ? dimension.substr(0, 25) + '...' : dimension;
-            select$1('#headerDimensionFilter').text(header);
-            select$1('#buttonFilter').on('click', () => {
-                let min = Number(select$1('#minFilterValue').node().value);
-                let max = Number(select$1('#maxFilterValue').node().value);
-                const ranges = getDimensionRange(dimension);
-                let isOk = false;
-                let errorMessage = select$1('#errorFilter')
+        let isOk = true;
+        if (inverted) {
+            if (max < getMinValue(dimension) ||
+                min > getMaxValue(dimension)) {
+                select('#errorRange').text(`The range has to be bigger than ${minValue} and ${maxValue}.`)
                     .style('display', 'block')
                     .style('padding-left', 0.5 + 'rem')
                     .style('padding-top', 0.5 + 'rem')
                     .style('color', 'red')
                     .style('font-size', 'x-small');
-                const minRange = inverted ? ranges[1] : ranges[0];
-                const maxRange = inverted ? ranges[0] : ranges[1];
-                if (max < min) {
-                    max = maxRange;
-                    errorMessage.text(`Max value is smaller than min value, filter is set to min.`);
-                }
-                else if (min < minRange) {
-                    min = minRange;
-                    errorMessage.text(`Min value is smaller than ${getMinValue(dimension)}, filter is set to min.`);
-                }
-                else if (min > maxRange) {
-                    min = maxRange;
-                    errorMessage.text(`Min value is bigger than max range value, filter is set to max.`);
-                }
-                else if (max > maxRange) {
-                    max = maxRange;
-                    errorMessage.text(`Max value is bigger than ${getMaxValue(dimension)}, filter is set to max.`);
-                }
-                else if (max < minRange) {
-                    max = minRange;
-                    select$1('#errorFilter').text(`Max value is smaller than min range value, filter is set to min.`);
-                }
-                else {
-                    isOk = true;
-                }
-                setFilter(dimension, max, min);
-                if (isOk) {
-                    select$1('#errorFilter').style('display', 'none');
-                    select$1('#modalFilter').style('display', 'none');
-                    select$1('#modalOverlayFilter').style('display', 'none');
-                }
-            });
-            select$1('#maxFilterValue').on('keypress', (event) => {
-                if (event.key === "Enter") {
-                    event.preventDefault();
-                    document.getElementById("buttonFilter").click();
-                }
-            });
-            select$1('#minFilterValue').on('keypress', (event) => {
-                if (event.key === "Enter") {
-                    event.preventDefault();
-                    document.getElementById("buttonFilter").click();
-                }
-            });
-            select$1('#closeButtonFilter').on('click', () => {
-                select$1('#errorFilter').style('display', 'none');
-                select$1('#modalFilter').style('display', 'none');
-                select$1('#modalOverlayFilter').style('display', 'none');
-            });
-            select$1('#contextmenu').style('display', 'none');
-            event.stopPropagation();
-        });
-    }
-    else {
-        select$1('#filterMenu').style('display', 'false')
-            .style('color', 'lightgrey')
-            .style('border-top', '0.08rem lightgrey solid');
-    }
-}
-function resetRoundRangeMenu(values, dimension) {
-    if (!isNaN(values[0])) {
-        select$1('#resetRoundRangeMenu')
-            .style('visibility', 'visible')
-            .style('color', 'black')
-            .on('click', (event) => {
-            setDimensionRangeRounded(dimension, getMinValue(dimension), getMaxValue(dimension));
-            select$1('#contextmenu').style('display', 'none');
-            event.stopPropagation();
-        });
-    }
-    else {
-        select$1('#resetRoundRangeMenu')
-            .style('display', 'false')
-            .style('color', 'lightgrey');
-    }
-}
-function resetRangeMenu(values, dimension) {
-    if (!isNaN(values[0])) {
-        select$1('#resetRangeMenu')
-            .style('visibility', 'visible')
-            .style('color', 'black')
-            .on('click', (event) => {
-            setDimensionRange(dimension, getMinValue(dimension), getMaxValue(dimension));
-            setFilter(dimension, getMinValue(dimension), getMaxValue(dimension));
-            select$1('#contextmenu').style('display', 'none');
-            event.stopPropagation();
-        });
-    }
-    else {
-        select$1('#resetRangeMenu').style('display', 'false')
-            .style('color', 'lightgrey');
-    }
-}
-function setRangeMenu(values, dimension) {
-    if (!isNaN(values[0])) {
-        select$1('#rangeMenu')
-            .style('border-top', '0.08rem lightgrey solid')
-            .style('visibility', 'visible')
-            .style('color', 'black')
-            .on('click', (event) => {
-            let minRange = getCurrentMinRange(dimension);
-            let maxRange = getCurrentMaxRange(dimension);
-            var resultMin = (minRange - Math.floor(minRange)) !== 0;
-            var resultMax = (maxRange - Math.floor(maxRange)) !== 0;
-            let minValue = String(minRange);
-            let maxValue = String(maxRange);
-            if (resultMin && !resultMax) {
-                const count = minValue.split('.')[1].length;
-                maxValue = maxRange.toFixed(count);
+                isOk = false;
             }
-            else if (!resultMin && resultMax) {
-                const count = maxValue.split('.')[1].length;
-                minValue = minRange.toFixed(count);
+        }
+        else {
+            if (min > getMinValue(dimension) ||
+                max < getMaxValue(dimension)) {
+                select('#errorRange').text(`The range has to be bigger than ${minValue} and ${maxValue}.`)
+                    .style('display', 'block')
+                    .style('padding-left', 0.5 + 'rem')
+                    .style('padding-top', 0.5 + 'rem')
+                    .style('color', 'red')
+                    .style('font-size', 'x-small');
+                isOk = false;
             }
-            select$1('#minRangeValue').property('value', minValue);
-            select$1('#maxRangeValue').property('value', maxValue);
-            select$1('#contextmenu').style('display', 'none');
-            select$1('#modalOverlaySetRange').style('display', 'block');
-            select$1('#modalSetRange').style('display', 'block');
-            const newText = dimension.length > 25 ? dimension.substr(0, 25) + '...' : dimension;
-            select$1('#headerDimensionRange').text(newText);
-            select$1('#infoRange').text('The current range of ' + dimension + ' is between ' +
-                minValue + ' and ' +
-                maxValue + '.');
-            select$1('#infoRange2').text('The original range of ' + dimension + ' is between ' +
-                getMinValue(dimension) + ' and ' +
-                getMaxValue(dimension) + '.');
-            select$1('#buttonRange').on('click', () => {
-                let min = select$1('#minRangeValue').node().value;
-                let max = select$1('#maxRangeValue').node().value;
-                const inverted = isInverted(dimension);
-                let isOk = true;
-                if (inverted) {
-                    if (max < getMinValue(dimension) ||
-                        min > getMaxValue(dimension)) {
-                        select$1('#errorRange').text(`The range has to be bigger than 
-                                ${minValue} and 
-                                ${maxValue}.`)
-                            .style('display', 'block')
-                            .style('padding-left', 0.5 + 'rem')
-                            .style('padding-top', 0.5 + 'rem')
-                            .style('color', 'red')
-                            .style('font-size', 'x-small');
-                        isOk = false;
-                    }
-                }
-                else {
-                    if (min > getMinValue(dimension) ||
-                        max < getMaxValue(dimension)) {
-                        select$1('#errorRange').text(`The range has to be bigger than 
-                                ${minValue} and 
-                                ${maxValue}.`)
-                            .style('display', 'block')
-                            .style('padding-left', 0.5 + 'rem')
-                            .style('padding-top', 0.5 + 'rem')
-                            .style('color', 'red')
-                            .style('font-size', 'x-small');
-                        isOk = false;
-                    }
-                }
-                if (isOk) {
-                    select$1('#errorRange').style('display', 'none');
-                    setDimensionRange(dimension, min, max);
-                    select$1('#modalSetRange').style('display', 'none');
-                    select$1('#modalOverlaySetRange').style('display', 'none');
-                }
-            });
-            select$1('#maxRangeValue').on('keypress', (event) => {
-                if (event.key === "Enter") {
-                    event.preventDefault();
-                    document.getElementById("buttonRange").click();
-                }
-            });
-            select$1('#minRangeValue').on('keypress', (event) => {
-                if (event.key === "Enter") {
-                    event.preventDefault();
-                    document.getElementById("buttonRange").click();
-                }
-            });
-            select$1('#closeButtonRange').on('click', () => {
-                select$1('#modalSetRange').style('display', 'none');
-                select$1('#modalOverlaySetRange').style('display', 'none');
-            });
-            select$1('#contextmenu').style('display', 'none');
-            event.stopPropagation();
-        });
-    }
-    else {
-        select$1('#rangeMenu').style('display', 'false')
-            .style('color', 'lightgrey')
-            .style('border-top', '0.08rem lightgrey solid');
-    }
+        }
+        if (isOk) {
+            select('#errorRange').style('display', 'none');
+            setDimensionRange(dimension, min, max);
+            select('#modalSetRange').style('display', 'none');
+            select('#modalOverlaySetRange').style('display', 'none');
+        }
+    });
+    select('#maxRangeValue').on('keypress', (event) => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            document.getElementById("buttonRange").click();
+        }
+    });
+    select('#minRangeValue').on('keypress', (event) => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            document.getElementById("buttonRange").click();
+        }
+    });
 }
 function invertDimensionMenu(dimension) {
-    select$1('#invertMenu')
+    select('#invertMenu')
         .on('click', (event) => {
         invert(dimension);
-        select$1('#contextmenu').style('display', 'none');
+        select('#contextmenu').style('display', 'none');
         event.stopPropagation();
     });
 }
 function hideDimensionMenu(dimension) {
-    select$1('#hideMenu')
+    select('#hideMenu')
         .style('border-top', '0.08rem lightgrey solid')
         .on('click', (event) => {
         hide(dimension);
-        select$1('#contextmenu').style('display', 'none');
+        select('#contextmenu').style('display', 'none');
         event.stopPropagation();
     });
 }
@@ -8304,7 +8688,7 @@ function styleContextMenu(event) {
     const rect = container.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    select$1('#contextmenu')
+    select('#contextmenu')
         .style('left', x + 'px')
         .style('top', y + 'px')
         .style('display', 'block')
@@ -8318,7 +8702,7 @@ function styleContextMenu(event) {
     });
     selectAll('.contextmenu').style('padding', 0.35 + 'rem');
 }
-function setCursorForDimensions(d, featureAxis, parcoords, event) {
+function setCursorForDimensions(d, featureAxis) {
     if (getDimensionPosition(d.name) == 0) {
         featureAxis
             .select('.dimension')
@@ -8335,7 +8719,7 @@ function setCursorForDimensions(d, featureAxis, parcoords, event) {
             .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowLeftAndRight()), 12)}') 8 8, auto`);
     }
 }
-function onDragStartEventHandler(parcoords) {
+function onDragStartEventHandler() {
     {
         return function onDragStart(d) {
             this.__origin__ = parcoords.xScales((d.subject).name);
@@ -8346,19 +8730,18 @@ function onDragStartEventHandler(parcoords) {
         };
     }
 }
-function onDragEventHandler(parcoords, featureAxis, width) {
+function onDragEventHandler(featureAxis) {
     {
         return function onDrag(d) {
             if (timer !== null) {
                 clearInterval(timer);
                 timer = null;
             }
-            timer = setInterval(() => { scroll(parcoords, d); });
+            timer = setInterval(() => { scroll(d); });
             parcoords.dragging[(d.subject).name] = Math.min(width - paddingXaxis, Math.max(paddingXaxis, this.__origin__ += d.x));
-            let active = select$1('g.active').selectAll('path');
             active.each(function (d) {
-                select$1(this)
-                    .attr('d', linePath(d, parcoords.newFeatures, parcoords));
+                select(this)
+                    .attr('d', linePath(d, parcoords.newFeatures));
             });
             parcoords.newFeatures.sort((a, b) => {
                 return position(b, parcoords.dragging, parcoords.xScales)
@@ -8371,36 +8754,36 @@ function onDragEventHandler(parcoords, featureAxis, width) {
         };
     }
 }
-function onDragEndEventHandler(parcoords, featureAxis) {
+function onDragEndEventHandler(featureAxis) {
     {
         return function onDragEnd(d) {
-            const width = parcoords.width;
             const distance = (width - 80) / parcoords.newFeatures.length;
             const init = parcoords.dragPosStart[(d.subject).name];
-            if (parcoords.dragPosStart[(d.subject).name] > parcoords.dragging[(d.subject).name]) {
+            if (parcoords.dragPosStart[(d.subject).name] > parcoords.dragging[(d.
+                subject).name]) {
                 featureAxis.attr('transform', (d) => {
                     return 'translate(' + position(d.name, init - distance, parcoords.xScales) + ')';
                 });
             }
             else {
                 featureAxis.attr('transform', (d) => {
-                    return 'translate(' + position(d.name, init + distance, parcoords.xScales) + ')';
+                    return 'translate(' + position(d.name, init - distance, parcoords.xScales) + ')';
                 });
             }
             delete this.__origin__;
             delete parcoords.dragging[(d.subject).name];
             delete parcoords.dragPosStart[(d.subject).name];
-            let active = select$1('g.active').selectAll('path');
             trans(active).each(function (d) {
-                select$1(this)
-                    .attr('d', linePath(d, parcoords.newFeatures, parcoords));
+                select(this)
+                    .attr('d', linePath(d, parcoords.newFeatures));
             });
         };
     }
 }
-function scroll(parcoords, d) {
+function scroll(d) {
     const element = document.getElementById("parallelcoords");
-    if (parcoords.dragPosStart[(d.subject).name] < parcoords.dragging[(d.subject).name]) {
+    if (parcoords.dragPosStart[(d.subject).name] < parcoords.dragging[(d.subject).
+        name]) {
         element.scrollLeft += 5;
     }
     else if (scrollXPos + 20 > parcoords.dragging[(d.subject).name]) {
@@ -8408,7 +8791,7 @@ function scroll(parcoords, d) {
     }
 }
 function createContextMenu() {
-    let contextMenu = select$1('#parallelcoords')
+    let contextMenu = select('#parallelcoords')
         .append('g')
         .attr('id', 'contextmenu')
         .style('position', 'absolute')
@@ -8451,7 +8834,7 @@ function createContextMenu() {
         .text('Show All');
 }
 function createModalToSetRange() {
-    select$1('body')
+    select('body')
         .append('div')
         .attr('id', 'modalOverlaySetRange')
         .style('position', 'fixed')
@@ -8462,11 +8845,11 @@ function createModalToSetRange() {
         .style('background-color', 'rgba(0, 0, 0, 0.5)')
         .style('display', 'none')
         .style('z-index', '999');
-    select$1('#modalOverlaySetRange').on('click', () => {
-        select$1('#modalSetRange').style('display', 'none');
-        select$1('#modalOverlaySetRange').style('display', 'none');
+    select('#modalOverlaySetRange').on('click', () => {
+        select('#modalSetRange').style('display', 'none');
+        select('#modalOverlaySetRange').style('display', 'none');
     });
-    const modalSetRange = select$1('body')
+    const modalSetRange = select('body')
         .append('div')
         .attr('id', 'modalSetRange')
         .style('position', 'fixed')
@@ -8490,7 +8873,7 @@ function createModalToSetRange() {
     createErrorMessage(modalSetRange, 'errorRange');
 }
 function createModalToFilter() {
-    select$1('body')
+    select('body')
         .append('div')
         .attr('id', 'modalOverlayFilter')
         .style('position', 'fixed')
@@ -8501,11 +8884,11 @@ function createModalToFilter() {
         .style('background-color', 'rgba(0, 0, 0, 0.5)')
         .style('display', 'none')
         .style('z-index', '999');
-    select$1('#modalOverlayFilter').on('click', () => {
-        select$1('#modalFilter').style('display', 'none');
-        select$1('#modalOverlayFilter').style('display', 'none');
+    select('#modalOverlayFilter').on('click', () => {
+        select('#modalFilter').style('display', 'none');
+        select('#modalOverlayFilter').style('display', 'none');
     });
-    const modalFilter = select$1('body')
+    const modalFilter = select('body')
         .append('div')
         .attr('id', 'modalFilter')
         .style('position', 'fixed')
@@ -8558,7 +8941,7 @@ function createInputFieldWithLabel(modal, text, inputId) {
     const input = document.createElement('input');
     input.type = 'number';
     input.id = inputId;
-    input.style.width = '6rem';
+    input.style.width = '3rem';
     input.style.border = '0.1rem solid lightgrey';
     input.style.borderRadius = "5%";
     modal.append(() => input);
@@ -8589,170 +8972,11 @@ function createErrorMessage(modal, id) {
     errorMessage.id = id;
     errorMessage.style.position = 'relative';
     errorMessage.style.display = 'none';
+    errorMessage.style.paddingLeft = 0.5 + 'rem';
+    errorMessage.style.paddingTop = 0.5 + 'rem';
+    errorMessage.style.color = 'red';
+    errorMessage.style.fontSize = 'x-small';
     modal.append(() => errorMessage);
-}
-
-function setActivePathLinesToDownload(svg, parcoords, key) {
-    svg.append('g')
-        .attr('class', 'active')
-        .style('opacity', '0.5')
-        .style('stroke', 'rgba(0, 129, 175, 0.5)')
-        .style('stroke-width', '0.1rem')
-        .style('fill', 'none')
-        .selectAll('path')
-        .data(parcoords.data)
-        .enter()
-        .append('path')
-        .attr('id', (d) => {
-        return cleanString(d[key]);
-    })
-        .each(function (d) {
-        select$1(this)
-            .attr('d', linePath(d, parcoords.newFeatures, parcoords));
-    });
-    const records = getAllRecords();
-    records.forEach(element => {
-        const cleanRecord = cleanString(element);
-        const isSelected$1 = isSelected(cleanRecord);
-        if (isSelected$1) {
-            svg.select('#' + cleanRecord)
-                .style('stroke', 'rgb(255, 165, 0)')
-                .style('opacity', '1');
-        }
-        const dimNameToCheck = select$1('#' + cleanRecord).text();
-        if (dimNameToCheck != '') {
-            svg.select('#' + cleanRecord)
-                .style('stroke', 'lightgrey')
-                .style('stroke-opacity', '0.4');
-        }
-    });
-}
-function setFeatureAxisToDownload(svg, yAxis, yScales, parcoords, padding, xScales) {
-    const orderedFeatures = parcoords.newFeatures.map(name => ({ name }));
-    const hiddenDims = getAllHiddenDimensionNames();
-    let featureAxis = svg.selectAll('g.feature')
-        .data(orderedFeatures)
-        .enter()
-        .append('g')
-        .attr('transform', d => ('translate(' + xScales(d.name)) + ')');
-    featureAxis
-        .append('g')
-        .each(function (d) {
-        const processedDimensionName = cleanString(d.name);
-        const max = getCurrentMaxRange(d.name);
-        const min = getCurrentMinRange(d.name);
-        if (!isDimensionCategorical(d.name)) {
-            const status = getInversionStatus(d.name);
-            if (status == 'ascending') {
-                yScales[d.name].domain([min, max]);
-                yAxis = setupYAxis(yScales, parcoords.newDataset, hiddenDims);
-                select$1(this)
-                    .attr('id', 'dimension_axis_' + processedDimensionName)
-                    .call(yAxis[d.name]
-                    .scale(yScales[d.name]
-                    .domain(yScales[d.name]
-                    .domain())));
-            }
-            else {
-                yScales[d.name].domain([max, min]);
-                yAxis = setupYAxis(yScales, parcoords.newDataset, hiddenDims);
-                select$1(this)
-                    .attr('id', 'dimension_axis_' + processedDimensionName)
-                    .call(yAxis[d.name]
-                    .scale(yScales[d.name]
-                    .domain(yScales[d.name]
-                    .domain().reverse())));
-            }
-        }
-        else {
-            select$1(this)
-                .attr('id', 'dimension_axis_' + processedDimensionName)
-                .call(yAxis[d.name]);
-        }
-    });
-    featureAxis
-        .append('text')
-        .attr('text-anchor', 'middle')
-        .attr('y', (padding / 1.7).toFixed(4))
-        .text(d => d.name.length > 10 ? d.name.substr(0, 10) + '...' : d.name)
-        .style('font-size', '0.7rem');
-    setBrushDownToDownload(featureAxis, parcoords);
-    setBrushUpToDownload(featureAxis, parcoords);
-    setRectToDragToDownload(featureAxis, parcoords);
-    setInvertIconToDownload(featureAxis, padding);
-}
-function setBrushDownToDownload(featureAxis, parcoords) {
-    featureAxis
-        .each(function (d) {
-        const processedDimensionName = cleanString(d.name);
-        const item = parcoords.currentPosOfDims.find((object) => object.key == d.name);
-        select$1(this)
-            .append('g')
-            .append('use')
-            .attr('id', 'triangle_down_' + processedDimensionName)
-            .attr('y', item.top == 80 ? 70 : item.top - 10)
-            .attr('x', -6)
-            .attr('width', 14)
-            .attr('height', 10)
-            .attr('href', '#brush_image_bottom');
-    });
-}
-function setBrushUpToDownload(featureAxis, parcoords) {
-    featureAxis
-        .each(function (d) {
-        const processedDimensionName = cleanString(d.name);
-        const item = parcoords.currentPosOfDims.find((object) => object.key == d.name);
-        select$1(this)
-            .append('g')
-            .append('use')
-            .attr('id', 'triangle_up_' + processedDimensionName)
-            .attr('y', item.bottom)
-            .attr('x', -6)
-            .attr('width', 14)
-            .attr('height', 10)
-            .attr('href', '#brush_image_top');
-    });
-}
-function setRectToDragToDownload(featureAxis, parcoords) {
-    featureAxis
-        .each(function (d) {
-        const processedDimensionName = cleanString(d.name);
-        const item = parcoords.currentPosOfDims.find((object) => object.key == d.name);
-        let height = item.bottom - item.top;
-        select$1(this)
-            .append('g')
-            .append('rect')
-            .attr('id', 'rect_' + processedDimensionName)
-            .attr('width', 12)
-            .attr('height', height)
-            .attr('x', -6)
-            .attr('y', item.top)
-            .attr('fill', 'rgb(255, 255, 0)')
-            .attr('opacity', '0.4');
-    });
-}
-function setInvertIconToDownload(featureAxis, padding) {
-    let value = (padding / 1.5).toFixed(4);
-    featureAxis
-        .append('svg')
-        .attr('y', value)
-        .attr('x', -6)
-        .append('use')
-        .attr('width', 12)
-        .attr('height', 12)
-        .attr('y', 0)
-        .attr('x', 0)
-        .each(function (d) {
-        const processedDimensionName = cleanString(d.name);
-        if (getInversionStatus(processedDimensionName) == 'descending') {
-            select$1(this)
-                .attr('href', '#arrow_image_down');
-        }
-        else {
-            select$1(this)
-                .attr('href', '#arrow_image_up');
-        }
-    });
 }
 
 var cjsExports$1 = {};
@@ -9200,6 +9424,207 @@ var cjs = {
 
 var xmlFormat = /*@__PURE__*/getDefaultExportFromCjs(cjsExports$1);
 
+function setActivePathLinesToDownload(svg) {
+    svg.append('g')
+        .attr('class', 'active')
+        .style('opacity', '0.5')
+        .style('stroke', 'rgba(0, 129, 175, 0.8)')
+        .style('stroke-width', '0.1rem')
+        .style('fill', 'none')
+        .selectAll('path')
+        .data(parcoords.data)
+        .enter()
+        .append('path')
+        .attr('id', (d) => {
+        return cleanString(d[key]);
+    })
+        .each(function (d) {
+        select(this)
+            .attr('d', linePath(d, parcoords.newFeatures));
+    });
+    const records = getAllRecords();
+    records.forEach(element => {
+        const cleanRecord = cleanString(element);
+        const isSelected$1 = isSelected(cleanRecord);
+        if (isSelected$1) {
+            svg.select('#' + cleanRecord)
+                .style('stroke', 'rgb(255, 165, 0)')
+                .style('opacity', '1');
+        }
+        const dimNameToCheck = select('#' + cleanRecord).text();
+        if (dimNameToCheck != '') {
+            svg.select('#' + cleanRecord)
+                .style('stroke', 'lightgrey')
+                .style('stroke-opacity', '0.4');
+        }
+    });
+}
+function setFeatureAxisToDownload(svg, yAxis, yScales, xScales) {
+    const orderedFeatures = parcoords.newFeatures.map((name) => ({ name }));
+    const hiddenDims = getAllHiddenDimensionNames();
+    let featureAxis = svg.selectAll('g.feature')
+        .data(orderedFeatures)
+        .enter()
+        .append('g')
+        .attr('transform', (d) => ('translate(' + xScales(d.name)) + ')');
+    featureAxis
+        .append('g')
+        .each(function (d) {
+        const processedDimensionName = cleanString(d.name);
+        const max = getCurrentMaxRange(d.name);
+        const min = getCurrentMinRange(d.name);
+        if (!isDimensionCategorical(d.name)) {
+            const inversionStatus = getInversionStatus(d.name);
+            console.log(d.name);
+            console.log(inversionStatus);
+            if (inversionStatus === 'ascending') {
+                yScales[d.name].domain([min, max]);
+                yAxis = setupYAxis(yScales, parcoords.newDataset, hiddenDims);
+                select(this)
+                    .attr('id', 'dimension_axis_' + processedDimensionName)
+                    .call(yAxis[d.name]
+                    .scale(yScales[d.name]
+                    .domain(yScales[d.name]
+                    .domain())));
+            }
+            else {
+                yScales[d.name].domain([min, max]);
+                yAxis = setupYAxis(yScales, parcoords.newDataset, hiddenDims);
+                select(this)
+                    .attr('id', 'dimension_axis_' + processedDimensionName)
+                    .call(yAxis[d.name]
+                    .scale(yScales[d.name]
+                    .domain(yScales[d.name]
+                    .domain().reverse())));
+            }
+        }
+        else {
+            select(this)
+                .attr('id', 'dimension_axis_' + processedDimensionName)
+                .call(yAxis[d.name]);
+        }
+    });
+    featureAxis
+        .append('text')
+        .attr('text-anchor', 'middle')
+        .attr('y', (padding / 1.7).toFixed(4))
+        .text((d) => d.name.length > 10 ? d.name.substr(0, 10) + '...' : d.name)
+        .style('font-size', '0.7rem');
+    setBrushDownToDownload(featureAxis);
+    setBrushUpToDownload(featureAxis);
+    setRectToDragToDownload(featureAxis);
+    setInvertIconToDownload(featureAxis);
+}
+function setBrushDownToDownload(featureAxis) {
+    featureAxis
+        .each(function (d) {
+        const processedDimensionName = cleanString(d.name);
+        const item = parcoords.currentPosOfDims.find((object) => object.key == d.name);
+        select(this)
+            .append('g')
+            .append('use')
+            .attr('id', 'triangle_down_' + processedDimensionName)
+            .attr('y', item.top == 80 ? 70 : item.top - 10)
+            .attr('x', -6)
+            .attr('width', 14)
+            .attr('height', 10)
+            .attr('href', '#brush_image_bottom');
+    });
+}
+function setBrushUpToDownload(featureAxis) {
+    featureAxis
+        .each(function (d) {
+        const processedDimensionName = cleanString(d.name);
+        const item = parcoords.currentPosOfDims.find((object) => object.key == d.name);
+        select(this)
+            .append('g')
+            .append('use')
+            .attr('id', 'triangle_up_' + processedDimensionName)
+            .attr('y', item.bottom)
+            .attr('x', -6)
+            .attr('width', 14)
+            .attr('height', 10)
+            .attr('href', '#brush_image_top');
+    });
+}
+function setRectToDragToDownload(featureAxis) {
+    featureAxis
+        .each(function (d) {
+        const processedDimensionName = cleanString(d.name);
+        const item = parcoords.currentPosOfDims.find((object) => object.key == d.name);
+        let height = item.bottom - item.top;
+        select(this)
+            .append('g')
+            .append('rect')
+            .attr('id', 'rect_' + processedDimensionName)
+            .attr('width', 12)
+            .attr('height', height)
+            .attr('x', -6)
+            .attr('y', item.top)
+            .attr('fill', 'rgb(255, 255, 0)')
+            .attr('opacity', '0.4');
+    });
+}
+function setInvertIconToDownload(featureAxis) {
+    let value = (padding / 1.5).toFixed(4);
+    featureAxis
+        .append('svg')
+        .attr('y', value)
+        .attr('x', -6)
+        .append('use')
+        .attr('width', 12)
+        .attr('height', 12)
+        .attr('y', 0)
+        .attr('x', 0)
+        .each(function (d) {
+        const processedDimensionName = cleanString(d.name);
+        if (getInversionStatus(processedDimensionName) == 'descending') {
+            select(this)
+                .attr('href', '#arrow_image_down');
+        }
+        else {
+            select(this)
+                .attr('href', '#arrow_image_up');
+        }
+    });
+}
+
+function createSvgString() {
+    const orderedFeatures = parcoords.newFeatures.map((name) => ({ name }));
+    const hiddenDims = getAllHiddenDimensionNames();
+    let yScalesForDownload = setupYScales(parcoords.features, parcoords.newDataset);
+    let yAxisForDownload = setupYAxis(yScalesForDownload, parcoords.newDataset, hiddenDims);
+    let xScalesForDownload = setupXScales(orderedFeatures);
+    let svg = create$1('svg')
+        .attr("xmlns", "http://www.w3.org/2000/svg")
+        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
+        .attr('viewBox', [0, 0, width, height])
+        .attr('font-family', 'Verdana, sans-serif');
+    let defs = svg.append('defs');
+    defs.append('image')
+        .attr('id', 'arrow_image_up')
+        .attr('width', 12)
+        .attr('height', 12)
+        .attr('href', 'data:image/svg+xml;,' + getArrowUp());
+    defs.append('image')
+        .attr('id', 'arrow_image_down')
+        .attr('width', 12)
+        .attr('height', 12)
+        .attr('href', 'data:image/svg+xml;,' + getArrowDown());
+    defs.append('image')
+        .attr('id', 'brush_image_top')
+        .attr('width', 14)
+        .attr('height', 10)
+        .attr('href', 'data:image/svg+xml;,' + getArrowTop());
+    defs.append('image')
+        .attr('id', 'brush_image_bottom')
+        .attr('width', 14)
+        .attr('height', 10)
+        .attr('href', 'data:image/svg+xml;,' + getArrowBottom());
+    setFeatureAxisToDownload(svg, yAxisForDownload, yScalesForDownload, xScalesForDownload);
+    setActivePathLinesToDownload(svg);
+    return svg.node().outerHTML;
+}
 function saveAsSvg() {
     let svgString = createSvgString();
     let svgArrowUp = encodeURIComponent(getArrowUp());
@@ -9361,7 +9786,7 @@ function removeClasses(svgString) {
 }
 
 function createToolbar(dataset) {
-    const toolbarRow = select$1('#toolbarRow')
+    const toolbarRow = select('#toolbarRow')
         .style('display', 'flex')
         .style('flex-wrap', 'wrap')
         .style('align-items', 'center')
@@ -9443,7 +9868,7 @@ function createToolbar(dataset) {
     });
 }
 function showModalWithData(dataset) {
-    const overlay = select$1('body')
+    const overlay = select('body')
         .append('div')
         .attr('id', 'modalTableOverlay')
         .style('position', 'fixed')
@@ -9458,7 +9883,7 @@ function showModalWithData(dataset) {
         overlay.style('display', 'none');
         modal.style('display', 'none');
     });
-    const modal = select$1('body')
+    const modal = select('body')
         .append('div')
         .attr('id', 'dataModal')
         .style('top', '50%')
@@ -9485,7 +9910,7 @@ function showModalWithData(dataset) {
     saveAsCSV.style.display = 'inline-block';
     modal.append(() => saveAsCSV);
     saveAsCSV.addEventListener('click', () => {
-        const reservedArray = dataset.map(entry => {
+        const reservedArray = dataset.map((entry) => {
             const entries = Object.entries(entry).reverse();
             return Object.fromEntries(entries);
         });
@@ -9518,11 +9943,11 @@ function showModalWithData(dataset) {
         overlay.style('display', 'none');
     });
 }
-function generateTable(dataArray, table) {
+function generateTable(dataset, table) {
     table.innerHTML = '';
     table.style.borderCollapse = 'collapse';
     table.style.width = '100%';
-    const reservedArray = dataArray.map(entry => {
+    const reservedArray = dataset.map((entry) => {
         const entries = Object.entries(entry).reverse();
         return Object.fromEntries(entries);
     });
@@ -9541,7 +9966,7 @@ function generateTable(dataArray, table) {
         th.style.whiteSpace = 'nowrap';
         th.style.overflow = 'hidden';
         th.style.textOverflow = 'ellipsis';
-        const isNumericCol = reservedArray.every(row => {
+        const isNumericCol = reservedArray.every((row) => {
             const val = row[header];
             return !isNaN(parseFloat(val)) && isFinite(val);
         });
@@ -9551,7 +9976,7 @@ function generateTable(dataArray, table) {
     thead.appendChild(headRow);
     table.appendChild(thead);
     const tbody = document.createElement('tbody');
-    reservedArray.forEach(obj => {
+    reservedArray.forEach((obj) => {
         const row = document.createElement('tr');
         headers.forEach(key => {
             const td = document.createElement('td');
@@ -9571,13 +9996,13 @@ function generateTable(dataArray, table) {
     });
     table.appendChild(tbody);
 }
-function downloadCSV(dataArray, filename = 'data.csv') {
-    if (!dataArray || !dataArray.length)
+function downloadCSV(dataset, filename = 'data.csv') {
+    if (!dataset || !dataset.length)
         return;
-    const keys = Object.keys(dataArray[0]);
+    const keys = Object.keys(dataset[0]);
     const csvRows = [];
     csvRows.push(keys.join(','));
-    dataArray.forEach(row => {
+    dataset.forEach((row) => {
         const values = keys.map(k => {
             const value = row[k];
             return typeof value === 'string' && value.includes(',')
@@ -9597,168 +10022,49 @@ function downloadCSV(dataArray, filename = 'data.csv') {
 }
 
 //******** API ********//
-//---------- Show and Hide Functions ----------
-function hide(dimension) {
-    const newDimensions = window.parcoords.newFeatures.filter((d) => d !== dimension);
-    const featureSet = window.parcoords.features.filter((d) => d.name !== dimension);
-    window.parcoords.features = featureSet;
-    window.parcoords.newFeatures = newDimensions;
-    const oldxScales = window.parcoords.xScales.copy();
-    window.parcoords.xScales.domain(newDimensions);
-    selectAll('.dimensions')
-        .filter((d) => newDimensions.includes(d.name || d))
-        .transition()
-        .duration(1500)
-        .attr('transform', (d) => 'translate(' + position(d.name || d, parcoords.dragging, parcoords.xScales) + ')');
-    selectAll('.dimensions')
-        .filter((d) => d.name === dimension)
-        .transition()
-        .duration(1500)
-        .style('opacity', 0)
-        .on('end', function () {
-        select$1(this).attr('visibility', 'hidden');
-    });
-    select$1('g.active').selectAll('path')
-        .transition()
-        .duration(1500)
-        .attrTween('d', (d) => generateLineTween(oldxScales, window.parcoords.xScales, newDimensions, window.parcoords.yScales)(d));
-}
-function generateLineTween(oldXscales, newXscales, newDimensions, yScales) {
-    const line$1 = line().defined(d => d != null);
-    return function (d) {
-        const oldPoints = newDimensions.map((dim) => [oldXscales(dim), yScales[dim](d[dim])]);
-        const newPoints = newDimensions.map((dim) => [newXscales(dim), yScales[dim](d[dim])]);
-        return d3InterpolatePathExports.interpolatePath(line$1(oldPoints), line$1(newPoints));
-    };
-}
-function show(dimension) {
-    if (window.parcoords.newFeatures.includes(dimension))
-        return;
-    const existingIndex = window.initDimension.indexOf(dimension);
-    if (existingIndex !== -1) {
-        window.parcoords.newFeatures.splice(existingIndex, 0, dimension);
-        const removedItem = { name: dimension };
-        window.parcoords.features.splice(existingIndex, 0, removedItem);
-    }
-    window.parcoords.xScales.domain(window.parcoords.newFeatures);
-    selectAll('.dimensions')
-        .filter((d) => (typeof d === "object" ? d.name : d) === dimension)
-        .style('opacity', 0)
-        .transition()
-        .attr('visibility', 'visible')
-        .duration(1500)
-        .style('opacity', 1);
-    selectAll('.dimensions')
-        .filter((d) => window.parcoords.newFeatures.includes(typeof d === "object" ? d.name : d))
-        .transition()
-        .duration(1500)
-        .attr('transform', (d) => 'translate(' + position(d.name || d, parcoords.dragging, parcoords.xScales) + ')')
-        .style('opacity', 1);
-    select$1('g.active').selectAll('path')
-        .attr('d', function (d) {
-        const points = window.parcoords.newFeatures.map(p => {
-            const x = window.parcoords.xScales(p);
-            const y = window.parcoords.yScales[p](d[p]);
-            return [x, y];
-        });
-        return line()(points);
-    });
-}
-function getHiddenStatus(dimension) {
-    const index = parcoords.newFeatures.indexOf(dimension);
-    if (index != -1) {
-        return "shown";
-    }
-    else {
-        return "hidden";
-    }
-}
 //---------- Invert Functions ----------
-function invert(dimension) {
-    const cleanDimensionName = cleanString(dimension);
-    const invertId = '#dimension_invert_' + cleanDimensionName;
-    const dimensionId = '#dimension_axis_' + cleanDimensionName;
-    const textElement = select$1(invertId);
-    const currentArrowStatus = textElement.text();
-    const arrow = currentArrowStatus === 'down' ? '#arrow_image_up' : '#arrow_image_down';
-    const arrowStyle = currentArrowStatus === 'down' ? setSize(getArrowDownCursor(), 12) : setSize(getArrowUpCursor(), 12);
-    textElement.text(currentArrowStatus === 'down' ? 'up' : 'down');
-    textElement.attr('href', arrow);
-    textElement.style('cursor', `url('data:image/svg+xml,${encodeURIComponent(arrowStyle)}') 8 8 , auto`);
-    select$1(dimensionId)
-        .transition()
-        .duration(1000)
-        .call(yAxis[dimension]
-        .scale(parcoords.yScales[dimension]
-        .domain(parcoords.yScales[dimension]
-        .domain().reverse())))
-        .ease(cubicInOut);
-    trans(window.active).each(function (d) {
-        select$1(this)
-            .transition()
-            .duration(1000)
-            .attr('d', (d) => {
-            return linePath(d, parcoords.newFeatures, parcoords);
-        })
-            .ease(cubicInOut);
-    });
-    getFilter(dimension);
-    addSettingsForBrushing(dimension, parcoords, isInverted(dimension));
-    if (isInverted(dimension)) {
-        addInvertStatus(true, parcoords.currentPosOfDims, dimension, "isInverted");
-    }
-    else {
-        addInvertStatus(false, parcoords.currentPosOfDims, dimension, "isInverted");
-    }
-}
 function invertWoTransition(dimension) {
     const cleanDimensionName = cleanString(dimension);
     const invertId = '#dimension_invert_' + cleanDimensionName;
     const dimensionId = '#dimension_axis_' + cleanDimensionName;
-    const textElement = select$1(invertId);
+    const textElement = select(invertId);
     const currentArrowStatus = textElement.text();
     const arrow = currentArrowStatus === 'down' ? '#arrow_image_up' : '#arrow_image_down';
     const arrowStyle = currentArrowStatus === 'down' ? setSize(getArrowDownCursor(), 12) : setSize(getArrowUpCursor(), 12);
     textElement.text(currentArrowStatus === 'down' ? 'up' : 'down');
     textElement.attr('href', arrow);
     textElement.style('cursor', `url('data:image/svg+xml,${encodeURIComponent(arrowStyle)}') 8 8 , auto`);
-    select$1(dimensionId)
+    select(dimensionId)
         .call(yAxis[dimension]
         .scale(parcoords.yScales[dimension]
         .domain(parcoords.yScales[dimension]
         .domain().reverse())));
-    trans(window.active).each(function (d) {
-        select$1(this)
+    trans(active).each(function (d) {
+        select(this)
             .attr('d', (d) => {
-            return linePath(d, parcoords.newFeatures, parcoords);
+            return linePath(d, parcoords.newFeatures);
         });
     });
     getFilter(dimension);
-    addSettingsForBrushing(dimension, parcoords, isInverted(dimension));
+    addSettingsForBrushing(dimension, isInverted(dimension));
     if (isInverted(dimension)) {
-        addInvertStatus(true, parcoords.currentPosOfDims, dimension, "isInverted");
+        addInvertStatus(true, dimension, "isInverted");
     }
     else {
-        addInvertStatus(false, parcoords.currentPosOfDims, dimension, "isInverted");
+        addInvertStatus(false, dimension, "isInverted");
     }
-}
-function getInversionStatus(dimension) {
-    const invertId = '#dimension_invert_' + cleanString(dimension);
-    const element = select$1(invertId);
-    const arrowStatus = element.text();
-    return arrowStatus == 'up' ? 'ascending' : 'descending';
 }
 function setInversionStatus(dimension, status) {
     const cleanDimensionName = cleanString(dimension);
     const invertId = '#dimension_invert_' + cleanDimensionName;
     const dimensionId = '#dimension_axis_' + cleanDimensionName;
-    const textElement = select$1(invertId);
+    const textElement = select(invertId);
     const arrow = status === 'ascending' ? '#arrow_image_up' : '#arrow_image_down';
     const arrowStyle = status === 'ascending' ? setSize(getArrowDownCursor(), 12) : setSize(getArrowUpCursor(), 12);
     textElement.text(status === 'ascending' ? 'up' : 'down');
     textElement.attr('href', arrow);
     textElement.style('cursor', `url('data:image/svg+xml,${encodeURIComponent(arrowStyle)}') 8 8 , auto`);
-    select$1(dimensionId)
+    select(dimensionId)
         .transition()
         .duration(1000)
         .call(yAxis[dimension]
@@ -9766,27 +10072,26 @@ function setInversionStatus(dimension, status) {
         .domain(parcoords.yScales[dimension]
         .domain().reverse())))
         .ease(cubicInOut);
-    trans(window.active).each(function (d) {
-        select$1(this)
+    trans(active).each(function (d) {
+        select(this)
             .transition()
             .duration(1000)
             .attr('d', (d) => {
-            return linePath(d, parcoords.newFeatures, parcoords);
+            return linePath(d, parcoords.newFeatures);
         })
             .ease(cubicInOut);
     });
     getFilter(dimension);
-    addSettingsForBrushing(dimension, parcoords, isInverted(dimension));
+    addSettingsForBrushing(dimension, isInverted(dimension));
     if (isInverted(dimension)) {
-        addInvertStatus(true, parcoords.currentPosOfDims, dimension, "isInverted");
+        addInvertStatus(true, dimension, "isInverted");
     }
     else {
-        addInvertStatus(false, parcoords.currentPosOfDims, dimension, "isInverted");
+        addInvertStatus(false, dimension, "isInverted");
     }
 }
 //---------- Move Functions ----------
 function moveByOne(dimension, direction) {
-    let parcoords = window.parcoords;
     const indexOfDimension = parcoords.newFeatures.indexOf(dimension);
     const indexOfNeighbor = direction == 'right' ? indexOfDimension - 1
         : indexOfDimension + 1;
@@ -9807,12 +10112,12 @@ function moveByOne(dimension, direction) {
             [parcoords.newFeatures[indexOfDimension], parcoords.newFeatures[indexOfDimension + 1]];
     }
     parcoords.xScales.domain(parcoords.newFeatures);
-    let active = select$1('g.active').selectAll('path');
+    let active = select('g.active').selectAll('path');
     let featureAxis = selectAll('.dimensions');
     active.transition()
         .duration(1000)
         .attr('d', function (d) {
-        return linePath(d, parcoords.newFeatures, parcoords);
+        return linePath(d, parcoords.newFeatures);
     })
         .ease(cubicInOut);
     featureAxis.transition()
@@ -9825,7 +10130,6 @@ function moveByOne(dimension, direction) {
     delete parcoords.dragging[neighbour];
 }
 function move(dimensionA, toRightOf, dimensionB) {
-    let parcoords = window.parcoords;
     const indexOfDimensionA = getDimensionPosition(dimensionA);
     const indexOfDimensionB = getDimensionPosition(dimensionB);
     if (toRightOf) {
@@ -9860,7 +10164,6 @@ function move(dimensionA, toRightOf, dimensionB) {
     }
 }
 function swap(dimensionA, dimensionB) {
-    let parcoords = window.parcoords;
     const positionA = parcoords.xScales(dimensionA);
     const positionB = parcoords.xScales(dimensionB);
     parcoords.dragging[dimensionA] = positionB;
@@ -9870,12 +10173,12 @@ function swap(dimensionA, dimensionB) {
     [parcoords.newFeatures[indexOfDimensionA], parcoords.newFeatures[indexOfDimensionB]] =
         [parcoords.newFeatures[indexOfDimensionB], parcoords.newFeatures[indexOfDimensionA]];
     parcoords.xScales.domain(parcoords.newFeatures);
-    let active = select$1('g.active').selectAll('path');
+    let active = select('g.active').selectAll('path');
     let featureAxis = selectAll('.dimensions');
     active.transition()
         .duration(1000)
         .attr('d', (d) => {
-        return linePath(d, parcoords.newFeatures, parcoords);
+        return linePath(d, parcoords.newFeatures);
     });
     featureAxis.transition()
         .duration(1000)
@@ -9885,153 +10188,6 @@ function swap(dimensionA, dimensionB) {
         .ease(cubicInOut);
     delete parcoords.dragging[dimensionA];
     delete parcoords.dragging[dimensionB];
-}
-//---------- Range Functions ----------
-function getDimensionRange(dimension) {
-    return parcoords.yScales[dimension].domain();
-}
-function setDimensionRange(dimension, min, max) {
-    const inverted = isInverted(dimension);
-    const hiddenDims = getAllHiddenDimensionNames();
-    if (inverted) {
-        window.parcoords.yScales[dimension].domain([max, min]);
-        window.yAxis = setupYAxis(window.parcoords.yScales, window.parcoords.newDataset, hiddenDims);
-    }
-    else {
-        window.parcoords.yScales[dimension].domain([min, max]);
-        window.yAxis = setupYAxis(window.parcoords.yScales, window.parcoords.newDataset, hiddenDims);
-    }
-    addRange(min, window.parcoords.currentPosOfDims, dimension, 'currentRangeBottom');
-    addRange(max, window.parcoords.currentPosOfDims, dimension, 'currentRangeTop');
-    select$1('#dimension_axis_' + cleanString(dimension))
-        .call(yAxis[dimension])
-        .transition()
-        .duration(1000)
-        .ease(cubicInOut);
-    let active = select$1('g.active')
-        .selectAll('path')
-        .transition()
-        .duration(1000)
-        .attr('d', (d) => {
-        return linePath(d, window.parcoords.newFeatures, window.parcoords);
-    })
-        .ease(cubicInOut);
-    active.each(function (d) {
-        select$1(this)
-            .transition()
-            .duration(1000)
-            .attr('d', linePath(d, window.parcoords.newFeatures, window.parcoords))
-            .ease(cubicInOut);
-    });
-    setFilterAfterSettingRanges(dimension, inverted);
-}
-function setFilterAfterSettingRanges(dimension, inverted) {
-    const rect = select$1('#rect_' + dimension);
-    const triDown = select$1('#triangle_down_' + dimension);
-    const triUp = select$1('#triangle_up_' + dimension);
-    const dimensionSettings = parcoords.currentPosOfDims.find((d) => d.key === dimension);
-    const yScale = parcoords.yScales[dimension];
-    const newMin = Math.max(dimensionSettings.currentRangeBottom, dimensionSettings.currentFilterBottom);
-    const newMax = Math.min(dimensionSettings.currentRangeTop, dimensionSettings.currentFilterTop);
-    let top = yScale(newMax);
-    let bottom = yScale(newMin);
-    if (inverted) {
-        [top, bottom] = [bottom, top];
-    }
-    const rectY = Math.min(top, bottom);
-    const rectH = Math.abs(bottom - top);
-    const storeBottom = Math.min(newMin, newMax);
-    const storeTop = Math.max(newMin, newMax);
-    addRange(storeBottom, parcoords.currentPosOfDims, dimension, 'currentFilterBottom');
-    addRange(storeTop, parcoords.currentPosOfDims, dimension, 'currentFilterTop');
-    rect.transition()
-        .duration(300)
-        .attr('y', rectY)
-        .attr('height', rectH)
-        .style('opacity', 0.3);
-    triDown.transition()
-        .duration(300)
-        .attr('y', rectY - 10);
-    triUp.transition()
-        .duration(300)
-        .attr('y', rectY + rectH);
-}
-function setDimensionRangeRounded(dimension, min, max) {
-    const inverted = isInverted(dimension);
-    const hiddenDims = getAllHiddenDimensionNames();
-    if (inverted) {
-        window.parcoords.yScales[dimension].domain([max, min]).nice();
-        window.yAxis = setupYAxis(window.parcoords.yScales, window.parcoords.newDataset, hiddenDims);
-    }
-    else {
-        window.parcoords.yScales[dimension].domain([min, max]).nice();
-        window.yAxis = setupYAxis(window.parcoords.yScales, window.parcoords.newDataset, hiddenDims);
-    }
-    const roundedRanges = window.parcoords.yScales[dimension].domain();
-    addRange(roundedRanges[0], window.parcoords.currentPosOfDims, dimension, 'currentRangeBottom');
-    addRange(roundedRanges[1], window.parcoords.currentPosOfDims, dimension, 'currentRangeTop');
-    select$1('#dimension_axis_' + cleanString(dimension))
-        .call(yAxis[dimension])
-        .transition()
-        .duration(1000)
-        .ease(cubicInOut);
-    let active = select$1('g.active')
-        .selectAll('path')
-        .transition()
-        .duration(1000)
-        .attr('d', (d) => {
-        return linePath(d, window.parcoords.newFeatures, window.parcoords);
-    })
-        .ease(cubicInOut);
-    active.each(function (d) {
-        select$1(this)
-            .transition()
-            .duration(1000)
-            .attr('d', linePath(d, window.parcoords.newFeatures, window.parcoords))
-            .ease(cubicInOut);
-    });
-    setFilterAfterSettingRanges(dimension, inverted);
-}
-function getMinValue(dimension) {
-    const item = window.parcoords.currentPosOfDims.find((object) => object.key == dimension);
-    return item.min;
-}
-function getMaxValue(dimension) {
-    const item = window.parcoords.currentPosOfDims.find((object) => object.key == dimension);
-    return item.max;
-}
-function getCurrentMinRange(dimension) {
-    const item = window.parcoords.currentPosOfDims.find((object) => object.key == dimension);
-    return item.currentRangeBottom;
-}
-function getCurrentMaxRange(dimension) {
-    const item = window.parcoords.currentPosOfDims.find((object) => object.key == dimension);
-    return item.currentRangeTop;
-}
-function addRange(value, currentPosOfDims, dimensionName, key) {
-    let newObject = {};
-    newObject[key] = Number(value);
-    const target = currentPosOfDims.find((obj) => obj.key == dimensionName);
-    Object.assign(target, newObject);
-}
-//---------- Filter Functions ----------
-function getFilter(dimension) {
-    const yScale = parcoords.yScales[dimension];
-    const dimensionSettings = parcoords.currentPosOfDims.find((d) => d.key === dimension);
-    if (!dimensionSettings || !yScale || typeof yScale.invert !== 'function')
-        return [0, 0];
-    const valueTop = Math.round(yScale.invert(dimensionSettings.top));
-    const valueBottom = Math.round(yScale.invert(dimensionSettings.bottom));
-    const min = Math.min(valueTop, valueBottom);
-    const max = Math.max(valueTop, valueBottom);
-    return [min, max];
-}
-function setFilter(dimension, min, max) {
-    const filterTop = Math.max(min, max);
-    const filterBottom = Math.min(min, max);
-    addRange(filterBottom, window.parcoords.currentPosOfDims, dimension, 'currentFilterBottom');
-    addRange(filterTop, window.parcoords.currentPosOfDims, dimension, 'currentFilterTop');
-    filter(dimension, min, max, parcoords);
 }
 //---------- Selection Functions ----------
 function getSelected() {
@@ -10047,17 +10203,14 @@ function getSelected() {
 }
 function setSelection(records) {
     for (let i = 0; i < records.length; i++) {
-        let stroke = select$1('#' + cleanString(records[i])).style('stroke');
+        let stroke = select('#' + cleanString(records[i])).style('stroke');
         if (stroke !== 'lightgrey') {
-            select$1('#' + cleanString(records[i]))
+            select('#' + cleanString(records[i]))
                 .classed('selected', true)
                 .transition()
                 .style('stroke', 'rgba(255, 165, 0, 1)');
         }
     }
-}
-function isSelected(record) {
-    return select$1('#' + cleanString(record)).classed('selected');
 }
 function toggleSelection(record) {
     const selected = isSelected(record);
@@ -10080,7 +10233,7 @@ function setUnselected(record) {
         .style('stroke', 'rgba(0, 129, 175, 0.5)');
 }
 function isRecordInactive(record) {
-    const stroke = select$1('#' + cleanString(record));
+    const stroke = select('#' + cleanString(record));
     let node = stroke.node();
     let style = node.style.stroke;
     return style === 'rgba(211, 211, 211, 0.4)' ? true : false;
@@ -10099,7 +10252,7 @@ function isSelectedWithRecordId(recordId) {
     return isSelected(record);
 }
 function getRecordWithId(recordId) {
-    const item = window.parcoords.currentPosOfDims.find((object) => object.recordId == recordId);
+    const item = parcoords.currentPosOfDims.find((object) => object.recordId == recordId);
     return item.key;
 }
 function toggleSelectionWithId(recordId) {
@@ -10116,12 +10269,17 @@ function setUnselectedWithId(recordId) {
 }
 //---------- IO Functions ----------
 function drawChart(content) {
-    window.refreshData = structuredClone(content);
+    setRefreshData(structuredClone(content));
     deleteChart();
     let newFeatures = content['columns'].reverse();
     setUpParcoordData(content, newFeatures);
     const height = 360;
-    const wrapper = select$1('#parallelcoords')
+    let wrapper = select('#parallelcoords');
+    if (wrapper === null)
+        wrapper = select(document.body)
+            .append("div")
+            .attr('id', 'parallelcoords');
+    wrapper
         .style('display', 'block')
         .style('width', '100%')
         .style('margin', '0')
@@ -10145,15 +10303,15 @@ function drawChart(content) {
         .style('margin-top', '1.2rem')
         .style('margin-left', '1rem')
         .style('margin-bottom', 0);
-    createToolbar(window.parcoords.newDataset);
-    window.svg = chartWrapper.append('svg')
+    createToolbar(parcoords.newDataset);
+    setSvg(chartWrapper.append('svg')
         .attr('id', 'pc_svg')
-        .attr('viewBox', [0, 0, window.width, height])
-        .attr('font-family', 'Verdana, sans-serif');
+        .attr('viewBox', [0, 0, width, height])
+        .attr('font-family', 'Verdana, sans-serif'));
     setDefsForIcons();
-    setFeatureAxis(svg, yAxis, window.active, window.parcoords, width, window.padding);
-    window.active = setActivePathLines(svg, content, window.parcoords);
-    window.svg
+    setFeatureAxis(svg, yAxis, parcoords, width, padding);
+    setActive(setActivePathLines(svg, content, parcoords));
+    svg
         .on("contextmenu", function (event) {
         event.stopPropagation();
         event.preventDefault();
@@ -10167,18 +10325,18 @@ function drawChart(content) {
         .on("mousedown.selection", function (event) {
         event.preventDefault();
     });
-    window.onclick = (event) => {
-        select$1('#contextmenu').style('display', 'none');
-        select$1('#contextmenuRecords').style('display', 'none');
+    window.onclick = () => {
+        select('#contextmenu').style('display', 'none');
+        select('#contextmenuRecords').style('display', 'none');
     };
 }
 function reset() {
-    drawChart(window.refreshData);
-    let toolbar = select$1('#toolbar');
+    drawChart(refreshData);
+    let toolbar = select('#toolbar');
     toolbar.style('max-width', '12.5rem')
         .style('opacity', '1')
         .style('pointer-events', 'auto');
-    let toggleButton = select$1('#toggleButton');
+    let toggleButton = select('#toggleButton');
     toggleButton.attr('title', 'Collapse toolbar');
     toggleButton.html(getCollapseToolbarIcon());
 }
@@ -10189,68 +10347,24 @@ function refresh() {
     }
 }
 function deleteChart() {
-    select$1('#pc_svg').remove();
-    select$1('#contextmenu').remove();
-    select$1('#contextmenuRecords').remove();
-    select$1('#modalFilter').remove();
-    select$1('#modalRange').remove();
-    select$1('#refreshButton').remove();
-    select$1('#showData').remove();
-    select$1('#toolbarRow').remove();
+    select('#pc_svg').remove();
+    select('#contextmenu').remove();
+    select('#contextmenuRecords').remove();
+    select('#modalFilter').remove();
+    select('#modalRange').remove();
+    select('#refreshButton').remove();
+    select('#showData').remove();
+    select('#toolbarRow').remove();
+    parcoords.currentPosOfDims.length = 0;
 }
 //---------- Helper Functions ----------
-function getAllRecords() {
-    const selection = window.active;
-    const object = selection._groups;
-    const data = [];
-    for (let i = 0; i < object[0].length; i++) {
-        const items = object.map(item => item[i]);
-        const keys = Object.keys(items);
-        const text = items[keys[0]].id;
-        data.push(text);
-    }
-    return data;
-}
-function getAllVisibleDimensionNames() {
-    let listOfDimensions = parcoords.newFeatures.slice();
-    return listOfDimensions.reverse();
-}
-function getAllDimensionNames() {
-    return window.parcoords.data['columns'];
-}
-function getAllHiddenDimensionNames() {
-    const dimensions = getAllDimensionNames();
-    const hiddenDimensions = [];
-    for (let i = 0; i < dimensions.length; i++) {
-        if (getHiddenStatus(dimensions[i]) == 'hidden') {
-            hiddenDimensions.push(dimensions[i]);
-        }
-    }
-    return hiddenDimensions;
-}
-function getNumberOfDimensions() {
-    return parcoords.newFeatures.length;
-}
-function getDimensionPosition(dimension) {
-    return parcoords.newFeatures.indexOf(dimension);
-}
-function isDimensionCategorical(dimension) {
-    let values = window.parcoords.newDataset.map(o => o[dimension]);
-    if (isNaN(values[0])) {
-        return true;
-    }
-    return false;
-}
-function setDimensionForHovering(dimension) {
-    window.hoverlabel = dimension;
-}
 // ---------- Needed for Built-In Interactivity Functions ---------- //
 function setUpParcoordData(data, newFeatures) {
-    window.padding = 80;
-    window.paddingXaxis = 60;
-    window.width = newFeatures.length * 100;
-    window.height = 400;
-    window.initDimension = newFeatures;
+    setPadding(80);
+    setPaddingXaxis(60);
+    setWidth(newFeatures.length * 100);
+    setHeight(400);
+    setInitDimension(newFeatures);
     const label = newFeatures[newFeatures.length - 1];
     data.sort((a, b) => {
         const item1 = a[label];
@@ -10266,41 +10380,36 @@ function setUpParcoordData(data, newFeatures) {
         }
     });
     let dataset = prepareData(data, newFeatures);
-    window.parcoords = {};
-    window.parcoords.features = dataset[0];
-    window.parcoords.newDataset = dataset[1];
-    window.parcoords.xScales = setupXScales(window.width, window.paddingXaxis, dataset[0]);
-    window.parcoords.yScales = setupYScales(window.height, window.padding, dataset[0], dataset[1]);
-    window.parcoords.dragging = {};
-    window.parcoords.dragPosStart = {};
-    window.parcoords.currentPosOfDims = [];
-    window.parcoords.newFeatures = newFeatures;
-    window.parcoords.data = data;
+    setFeatures(dataset[0]);
+    setNewDataset(dataset[1]);
+    setXScales(setupXScales(dataset[0]));
+    setYScales(setupYScales(dataset[0], dataset[1]));
+    setNewFeatures(newFeatures);
+    setData(data);
     for (let i = 0; i < newFeatures.length; i++) {
         let max;
         let min;
-        if (isNaN(Math.max(...window.parcoords.newDataset.map(o => o[newFeatures[i]])))) {
-            const sorted = [...window.parcoords.newDataset.map(o => o[newFeatures[i]])].sort((a, b) => a.localeCompare(b));
+        if (isNaN(Math.max(...parcoords.newDataset.map((o) => o[newFeatures[i]])))) {
+            const sorted = [...parcoords.newDataset.map((o) => o[newFeatures[i]])].sort((a, b) => a.localeCompare(b));
             min = sorted[sorted.length - 1];
             max = sorted[0];
         }
         else {
-            max = Math.max(...window.parcoords.newDataset.map(o => o[newFeatures[i]]));
-            min = Math.min(...window.parcoords.newDataset.map(o => o[newFeatures[i]]));
+            max = Math.max(...parcoords.newDataset.map((o) => o[newFeatures[i]]));
+            min = Math.min(...parcoords.newDataset.map((o) => o[newFeatures[i]]));
         }
         const ranges = getDimensionRange(newFeatures[i]);
-        window.parcoords.currentPosOfDims.push({
+        parcoords.currentPosOfDims.push({
             key: newFeatures[i], top: 80, bottom: 320, isInverted: false, index: i,
             min: min, max: max, sigDig: 0, currentRangeTop: ranges[1], currentRangeBottom: ranges[0], currentFilterBottom: ranges[0], currentFilterTop: ranges[1]
         });
     }
     const hiddenDims = getAllHiddenDimensionNames();
-    window.yAxis = {};
-    window.yAxis = setupYAxis(parcoords.yScales, parcoords.newDataset, hiddenDims);
+    setYaxis(setupYAxis(parcoords.yScales, parcoords.newDataset, hiddenDims));
     let counter = 0;
-    window.parcoords.features.map(x => {
+    parcoords.features.map((x) => {
         let numberOfDigs = 0;
-        let values = window.parcoords.newDataset.map(o => o[x.name]);
+        let values = parcoords.newDataset.map((o) => o[x.name]);
         for (let i = 0; i < values.length; i++) {
             if (!isNaN(values[i])) {
                 const tempNumberOfDigs = digits(Number(values[i]));
@@ -10312,62 +10421,24 @@ function setUpParcoordData(data, newFeatures) {
                 continue;
             }
         }
-        addNumberOfDigs(numberOfDigs, window.parcoords.currentPosOfDims, x.name, 'sigDig');
-        addNumberOfDigs(counter, window.parcoords.currentPosOfDims, x.name, 'recordId');
+        addNumberOfDigs(numberOfDigs, parcoords.currentPosOfDims, x.name, 'sigDig');
+        addNumberOfDigs(counter, parcoords.currentPosOfDims, x.name, 'recordId');
         counter = counter + 1;
     });
-    window.hoverlabel = getAllVisibleDimensionNames()[0];
+    setHoverLabel(getAllVisibleDimensionNames()[0]);
 }
-function createSvgString() {
-    let height = window.height;
-    let width = window.width;
-    const orderedFeatures = window.parcoords.newFeatures.map(name => ({ name }));
-    const hiddenDims = getAllHiddenDimensionNames();
-    let yScalesForDownload = setupYScales(window.height, window.padding, window.window.parcoords.features, window.parcoords.newDataset);
-    let yAxisForDownload = setupYAxis(yScalesForDownload, window.parcoords.newDataset, hiddenDims);
-    let xScalesForDownload = setupXScales(window.width, window.paddingXaxis, orderedFeatures);
-    let svg = create$1('svg')
-        .attr("xmlns", "http://www.w3.org/2000/svg")
-        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
-        .attr('viewBox', [0, 0, width, height])
-        .attr('font-family', 'Verdana, sans-serif');
-    let defs = svg.append('defs');
-    defs.append('image')
-        .attr('id', 'arrow_image_up')
-        .attr('width', 12)
-        .attr('height', 12)
-        .attr('href', 'data:image/svg+xml;,' + getArrowUp());
-    defs.append('image')
-        .attr('id', 'arrow_image_down')
-        .attr('width', 12)
-        .attr('height', 12)
-        .attr('href', 'data:image/svg+xml;,' + getArrowDown());
-    defs.append('image')
-        .attr('id', 'brush_image_top')
-        .attr('width', 14)
-        .attr('height', 10)
-        .attr('href', 'data:image/svg+xml;,' + getArrowTop());
-    defs.append('image')
-        .attr('id', 'brush_image_bottom')
-        .attr('width', 14)
-        .attr('height', 10)
-        .attr('href', 'data:image/svg+xml;,' + getArrowBottom());
-    setActivePathLinesToDownload(svg, window.parcoords, window.key);
-    setFeatureAxisToDownload(svg, yAxisForDownload, yScalesForDownload, window.parcoords, window.padding, xScalesForDownload);
-    return svg.node().outerHTML;
-}
-const tooltipPath = select$1('body')
+const tooltipPath = select('body')
     .append('div')
     .style('position', 'absolute')
     .style('visibility', 'hidden')
     .style('pointer-events', 'none')
-    .style('background', 'rgba(0,0,0,0.8)')
-    .style('color', '#fff')
+    .style('background', 'yellow')
+    .style('color', 'green')
     .style('padding', '0.5rem')
     .style('border-radius', '0.25rem')
     .style('font-size', '0.75rem')
     .style('z-index', '1000');
-const tooltipTest = select$1('body')
+const tooltipTest = select('body')
     .append('div')
     .attr('id', 'tooltipTest')
     .style('position', 'absolute')
@@ -10383,12 +10454,12 @@ const tooltipTest = select$1('body')
 let cleanupTimeout = null;
 const handlePointerEnter = (event, d) => {
     doNotHighlight();
-    const data = getAllPointerEventsData(event, window.hoverlabel);
+    const data = getAllPointerEventsData(event);
     highlight(data);
     createTooltipForPathLine(data, tooltipTest, event);
     const datasetMap = new Map();
     parcoords.newDataset.forEach((record) => {
-        datasetMap.set(record[window.hoverlabel], record);
+        datasetMap.set(record[hoverlabel], record);
     });
     data.forEach((item) => {
         const matchingRecord = datasetMap.get(item);
@@ -10400,16 +10471,16 @@ const handlePointerEnter = (event, d) => {
 const handlePointerLeaveOrOut = () => {
     doNotHighlight();
     tooltipPath.style('visibility', 'hidden');
-    select$1('#tooltipTest').style('visibility', 'hidden');
+    select('#tooltipTest').style('visibility', 'hidden');
     cleanTooltip();
 };
-select$1('#pc_svg').on('mouseleave', () => {
+select('#pc_svg').on('mouseleave', () => {
     if (cleanupTimeout)
         clearTimeout(cleanupTimeout);
     cleanupTimeout = setTimeout(() => {
         doNotHighlight();
         tooltipPath.style('visibility', 'hidden');
-        select$1('#tooltipTest').style('visibility', 'hidden');
+        select('#tooltipTest').style('visibility', 'hidden');
         cleanTooltip();
     }, 100);
 });
@@ -10423,7 +10494,7 @@ document.addEventListener('mousemove', (e) => {
     }
 });
 function setActivePathLines(svg, content, parcoords) {
-    let contextMenu = select$1('#parallelcoords')
+    let contextMenu = select('#parallelcoords')
         .append('g')
         .attr('id', 'contextmenuRecords')
         .style('position', 'absolute')
@@ -10456,16 +10527,16 @@ function setActivePathLines(svg, content, parcoords) {
         .append('path')
         .attr('class', (d) => {
         const keys = Object.keys(d);
-        window.key = keys[0];
-        const selected_value = cleanString(d[window.key]);
+        setKey(keys[0]);
+        const selected_value = cleanString(d[key]);
         return 'line ' + selected_value;
     })
         .attr('id', (d) => {
-        return cleanString(d[window.key]);
+        return cleanString(d[key]);
     })
         .each(function (d) {
-        select$1(this)
-            .attr('d', linePath(d, parcoords.newFeatures, parcoords));
+        select(this)
+            .attr('d', linePath(d, parcoords.newFeatures));
     })
         .style('pointer-events', 'stroke')
         .style('stroke', 'rgba(0, 129, 175, 0.5)')
@@ -10478,26 +10549,26 @@ function setActivePathLines(svg, content, parcoords) {
         .on('mouseout', handlePointerLeaveOrOut)
         .on('mouseleave', handlePointerLeaveOrOut)
         .on('click', function (event, d) {
-        const data = getAllPointerEventsData(event, window.hoverlabel);
+        const data = getAllPointerEventsData(event);
         const selectedRecords = getSelected();
         if (event.metaKey || event.shiftKey) {
-            data.forEach(record => {
+            data.forEach((record) => {
                 if (selectedRecords.includes(record)) {
                     setUnselected(record);
                 }
                 else {
-                    select([record]);
+                    selectRecord([record]);
                 }
             });
         }
         else if (event.ctrlKey) {
-            data.forEach(record => {
+            data.forEach((record) => {
                 toggleSelection(record);
             });
         }
         else {
             clearSelection();
-            select(data);
+            selectRecord(data);
         }
         event.stopPropagation();
     })
@@ -10524,52 +10595,52 @@ function setContextMenuForActiceRecords(contextMenu, event, d) {
         .on('click', (event) => {
         event.stopPropagation();
     });
-    select$1('#selectRecord')
+    select('#selectRecord')
         .on('click', (event) => {
-        setSelected(d[window.hoverlabel]);
+        setSelected(d[hoverlabel]);
         event.stopPropagation();
-        select$1('#contextmenuRecords').style('display', 'none');
+        select('#contextmenuRecords').style('display', 'none');
     });
-    select$1('#unSelectRecord')
+    select('#unSelectRecord')
         .on('click', (event) => {
-        setUnselected(d[window.hoverlabel]);
+        setUnselected(d[hoverlabel]);
         event.stopPropagation();
-        select$1('#contextmenuRecords').style('display', 'none');
+        select('#contextmenuRecords').style('display', 'none');
     });
-    select$1('#toggleRecord')
+    select('#toggleRecord')
         .style('border-top', '0.08rem lightgrey solid')
         .on('click', (event) => {
-        toggleSelection(d[window.hoverlabel]);
+        toggleSelection(d[hoverlabel]);
         event.stopPropagation();
-        select$1('#contextmenuRecords').style('display', 'none');
+        select('#contextmenuRecords').style('display', 'none');
     });
-    select$1('#addSelection')
+    select('#addSelection')
         .style('border-top', '0.08rem lightgrey solid')
         .on('click', (event) => {
         let selectedRecords = [];
         selectedRecords = getSelected();
-        selectedRecords.push(d[window.hoverlabel]);
+        selectedRecords.push(d[hoverlabel]);
         setSelection(selectedRecords);
         event.stopPropagation();
-        select$1('#contextmenuRecords').style('display', 'none');
+        select('#contextmenuRecords').style('display', 'none');
     });
-    select$1('#removeSelection')
+    select('#removeSelection')
         .on('click', (event) => {
-        setUnselected(d[window.hoverlabel]);
+        setUnselected(d[hoverlabel]);
         event.stopPropagation();
-        select$1('#contextmenuRecords').style('display', 'none');
+        select('#contextmenuRecords').style('display', 'none');
     });
     selectAll('.contextmenu').style('padding', 0.35 + 'rem');
     event.preventDefault();
 }
-function setFeatureAxis(svg, yAxis, active, parcoords, width, padding) {
+function setFeatureAxis(svg, yAxis, parcoords, width, padding) {
     let featureAxis = svg.selectAll('g.feature')
         .data(parcoords.features)
         .enter()
         .append('g')
         .attr('class', 'dimensions')
-        .attr('transform', d => ('translate(' + parcoords.xScales(d.name) + ')'));
-    select$1('body')
+        .attr('transform', (d) => ('translate(' + parcoords.xScales(d.name) + ')'));
+    select('body')
         .append('g')
         .style('position', 'absolute')
         .style('visibility', 'hidden');
@@ -10577,7 +10648,7 @@ function setFeatureAxis(svg, yAxis, active, parcoords, width, padding) {
         .append('g')
         .each(function (d) {
         const processedDimensionName = cleanString(d.name);
-        select$1(this)
+        select(this)
             .attr('id', 'dimension_axis_' + processedDimensionName)
             .call(yAxis[d.name]);
     });
@@ -10591,22 +10662,22 @@ function setFeatureAxis(svg, yAxis, active, parcoords, width, padding) {
             gElement.setAttribute('transform', `translate(0,${shortenedValue})`);
         }
     });
-    let tooltipValues = select$1('body')
+    let tooltipValues = select('body')
         .append('div')
         .style('position', 'absolute')
         .style('visibility', 'hidden');
-    let tooltipValuesTop = select$1('#parallelcoords')
+    let tooltipValuesTop = select('#parallelcoords')
         .append('div')
         .style('position', 'absolute')
         .style('visibility', 'hidden');
-    let tooltipValuesDown = select$1('#parallelcoords')
+    let tooltipValuesDown = select('#parallelcoords')
         .append('div')
         .style('position', 'absolute')
         .style('visibility', 'hidden');
-    const brushOverlay = window.svg.append("rect")
+    const brushOverlay = svg.append("rect")
         .attr("x", 0)
         .attr("y", 0)
-        .attr("width", window.width)
+        .attr("width", width)
         .attr("height", height)
         .style("fill", "transparent")
         .style("pointer-events", "none");
@@ -10614,19 +10685,19 @@ function setFeatureAxis(svg, yAxis, active, parcoords, width, padding) {
     setBrushUp(featureAxis, parcoords, tooltipValues, brushOverlay);
     setRectToDrag(featureAxis, svg, parcoords, tooltipValuesTop, tooltipValuesDown);
     setMarker(featureAxis);
-    setContextMenu(featureAxis, padding, parcoords, width);
+    setContextMenu(featureAxis);
     setInvertIcon(featureAxis, padding);
 }
 function showMarker(dimension) {
     const cleanDimensionName = cleanString(dimension);
-    select$1('#marker_' + cleanDimensionName).attr('opacity', 1);
+    select('#marker_' + cleanDimensionName).attr('opacity', 1);
 }
 function hideMarker(dimension) {
     const cleanDimensionName = cleanString(dimension);
-    select$1('#marker_' + cleanDimensionName).attr('opacity', 0);
+    select('#marker_' + cleanDimensionName).attr('opacity', 0);
 }
 function setDefsForIcons() {
-    const svgContainer = window.svg;
+    const svgContainer = svg;
     let defs = svgContainer.select('defs');
     defs = svgContainer.append('defs');
     defs.append('image')
@@ -10653,10 +10724,10 @@ function setDefsForIcons() {
 // Hovering
 let currentlyHighlightedItems = [];
 function highlight(data) {
-    const cleanedItems = data.map(item => cleanString(item).replace(/[.,]/g, ''));
+    const cleanedItems = data.map((item) => cleanString(item).replace(/[.,]/g, ''));
     currentlyHighlightedItems = [...cleanedItems];
-    cleanedItems.forEach(item => {
-        select$1('#' + item)
+    cleanedItems.forEach((item) => {
+        select('#' + item)
             .transition()
             .duration(5)
             .style('stroke', 'rgba(200, 28, 38, 0.7)');
@@ -10666,7 +10737,7 @@ function doNotHighlight() {
     if (!currentlyHighlightedItems.length)
         return;
     currentlyHighlightedItems.forEach(item => {
-        const line = select$1('#' + item);
+        const line = select('#' + item);
         if (line.classed('selected')) {
             line.transition()
                 .style('stroke', 'rgba(255, 165, 0, 1)');
@@ -10679,7 +10750,7 @@ function doNotHighlight() {
     currentlyHighlightedItems = [];
 }
 // Selecting
-function select(linePaths) {
+function selectRecord(linePaths) {
     for (let i = 0; i < linePaths.length; i++) {
         setSelected(linePaths[i]);
     }
@@ -10687,7 +10758,7 @@ function select(linePaths) {
 function clearSelection() {
     const selectedRecords = getSelected();
     selectedRecords.forEach(element => {
-        select$1('#' + cleanString(element))
+        select('#' + cleanString(element))
             .classed('selected', false)
             .transition()
             .style('stroke', 'rgba(0, 129, 175, 0.5)');
@@ -10707,7 +10778,7 @@ function setInvertIcon(featureAxis, padding) {
         .attr('href', '#arrow_image_up')
         .each(function (d) {
         const processedDimensionName = cleanString(d.name);
-        select$1(this)
+        select(this)
             .attr('id', 'dimension_invert_' + processedDimensionName)
             .text('up')
             .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowDownCursor()), 12)}') 8 8, auto`);
@@ -10721,7 +10792,7 @@ function setMarker(featureAxis) {
     featureAxis
         .each(function (d) {
         const processedDimensionName = cleanString(d.name);
-        select$1(this)
+        select(this)
             .append('g')
             .attr('class', 'marker')
             .append('rect')
@@ -10742,7 +10813,7 @@ function setRectToDrag(featureAxis, svg, parcoords, tooltipValuesTop, tooltipVal
     featureAxis
         .each(function (d) {
         const processedDimensionName = cleanString(d.name);
-        select$1(this)
+        select(this)
             .append('g')
             .attr('class', 'rect')
             .append('rect')
@@ -10760,14 +10831,14 @@ function setRectToDrag(featureAxis, svg, parcoords, tooltipValuesTop, tooltipVal
             .call(drag()
             .on('drag', (event, d) => {
             if (parcoords.newFeatures.length > 25) {
-                throttleDragAndBrush(processedDimensionName, d, svg, event, parcoords, active, delta, tooltipValuesTop, tooltipValuesDown, window);
+                throttleDragAndBrush(processedDimensionName, d, event, delta, tooltipValuesTop, tooltipValuesDown, window);
             }
             else {
-                dragAndBrush(processedDimensionName, d, svg, event, parcoords, active, delta, tooltipValuesTop, tooltipValuesDown, window);
+                dragAndBrush(processedDimensionName, d, event, delta, tooltipValuesTop, tooltipValuesDown, window);
             }
         })
             .on('start', (event, d) => {
-            let current = select$1("#rect_" + processedDimensionName);
+            let current = select("#rect_" + processedDimensionName);
             delta = current.attr("y") - event.y;
         })
             .on('end', () => {
@@ -10780,7 +10851,7 @@ function setBrushUp(featureAxis, parcoords, tooltipValues, brushOverlay) {
     featureAxis
         .each(function (d) {
         const processedDimensionName = cleanString(d.name);
-        select$1(this)
+        select(this)
             .append('g')
             .attr('class', 'brush_' + processedDimensionName)
             .append('use')
@@ -10798,10 +10869,10 @@ function setBrushUp(featureAxis, parcoords, tooltipValues, brushOverlay) {
             .on('drag', (event, d) => {
             brushOverlay.raise().style("pointer-events", "all");
             if (parcoords.newFeatures.length > 25) {
-                throttleBrushUp(processedDimensionName, event, d, parcoords, active, tooltipValues, window);
+                throttleBrushUp(processedDimensionName, event, d, tooltipValues, window);
             }
             else {
-                brushUp(processedDimensionName, event, d, parcoords, active, tooltipValues, window);
+                brushUp(processedDimensionName, event, d, tooltipValues, window);
             }
         })
             .on('end', () => {
@@ -10814,7 +10885,7 @@ function setBrushDown(featureAxis, parcoords, tooltipValues, brushOverlay) {
     featureAxis
         .each(function (d) {
         const processedDimensionName = cleanString(d.name);
-        select$1(this)
+        select(this)
             .append('g')
             .attr('class', 'brush_' + processedDimensionName)
             .append('use')
@@ -10832,10 +10903,10 @@ function setBrushDown(featureAxis, parcoords, tooltipValues, brushOverlay) {
             .on('drag', (event, d) => {
             brushOverlay.raise().style("pointer-events", "all");
             if (parcoords.newFeatures.length > 25) {
-                throttleBrushDown(processedDimensionName, event, d, parcoords, active, tooltipValues, window);
+                throttleBrushDown(processedDimensionName, event, d, tooltipValues, window);
             }
             else {
-                brushDown(processedDimensionName, event, d, parcoords, active, tooltipValues, window);
+                brushDown(processedDimensionName, event, d, tooltipValues, window);
             }
         })
             .on('end', () => {
@@ -11025,7 +11096,24 @@ function loadCSV(csv) {
         csv = removeDuplicateColumnNames(csv);
     }
     let tempData = csvParse(csv);
+    let isComplete = checkDatasetCompleteness(tempData);
+    if (!isComplete)
+        return;
     return tempData.sort((a, b) => a.Name > b.Name ? 1 : -1);
+}
+function checkDatasetCompleteness(tempData) {
+    const invalidRows = tempData.filter(d => tempData.columns.some(col => d[col] === "" || d[col] == null || d[col].trim() === ""));
+    const box = document.getElementById("parallelcoords");
+    if (invalidRows.length > 0) {
+        box.innerHTML = `Dataset is incomplete!<br>
+      <strong style="color:#e74c3c;">⚠️ ${invalidRows.length} row(s) affected:</strong>
+      <pre>${JSON.stringify(invalidRows.slice(0, 5), null, 2)}</pre>
+    `;
+        box.style.marginLeft = "2em";
+        box.style.paddingTop = "2em";
+        return false;
+    }
+    return true;
 }
 function removeDuplicateColumnNames(value) {
     let completeArray = value.split(/\r?\n/);
