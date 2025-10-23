@@ -1,4 +1,4 @@
-Patient,Age,Blood Pressure,Heart Rate,BMI,Cholesterol,Fitness Score
+Patient,Age,Blood Pressure (mmHg),Heart Rate (bpm),Body Mass Index (BMI),Cholesterol (mg/dl),Fitness Score (0-100)
 Patient A,45,120,72,25,200,90
 Patient B,48,125,75,26,210,85
 Patient C,51,130,78,27,220,80

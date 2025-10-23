@@ -3428,6 +3428,9 @@ function getArrowBottomCursor() {
 function getArrowBottom() {
     return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="yellow" fill-opacity="0.4" stroke="black" stroke-width="0.2" d="M 0 0 L 6 0 L 3 5 z"/></svg>';
 }
+function getArrowBottomActive() {
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="red" fill-opacity="0.4" stroke="black" stroke-width="0.2" d="M 0 0 L 6 0 L 3 5 z"/></svg>';
+}
 function getArrowDown() {
     return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 10"><path d="M 0 6 L 2 6 L 2 0 L 4 0 L 4 6 L 6 6 L 3 10 z"/></svg>';
 }
@@ -3451,6 +3454,9 @@ function getArrowTopCursor() {
 }
 function getArrowTop() {
     return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="yellow" fill-opacity="0.4" stroke="black" stroke-width="0.2" d="M 0 5 L 3 0 L 6 5 z"/></svg>';
+}
+function getArrowTopActive() {
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="red" fill-opacity="0.4" stroke="black" stroke-width="0.2" d="M 0 5 L 3 0 L 6 5 z"/></svg>';
 }
 function getArrowUp() {
     return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 10"><path d="M 0 4 L 3 0 L 6 4 L 4 4 L 4 10 L 2 10 L 2 4 z"/></svg>';
@@ -7884,7 +7890,16 @@ function brushDown(cleanDimensionName, event, d, tooltipValues, window) {
             .style('cursor', 'default');
     }
     else {
-        select('#rect_' + cleanDimensionName).style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopAndBottom()), 20)}') 8 8, auto`);
+        select('#rect_' + cleanDimensionName)
+            .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopAndBottom()), 20)}') 8 8, auto`);
+    }
+    if (yPosTop == 70) {
+        select('#triangle_down_' + cleanDimensionName)
+            .attr('href', '#brush_image_bottom');
+    }
+    else {
+        select('#triangle_down_' + cleanDimensionName)
+            .attr('href', '#brush_image_bottom_active');
     }
     select('#triangle_down_' + cleanDimensionName).attr('y', yPosTop);
     const heightTopRect = yPosRect - 80;
@@ -7915,10 +7930,21 @@ function brushUp(cleanDimensionName, event, d, tooltipValues, window) {
     addPosition(yPosBottom, d.name, 'bottom');
     if (yPosTop == 70 && yPosBottom == 320) {
         select('#rect_' + cleanDimensionName)
+            .attr('href', '#brush_image_top_active')
             .style('cursor', 'default');
     }
     else {
-        select('#rect_' + cleanDimensionName).style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopAndBottom()), 20)}') 8 8, auto`);
+        select('#rect_' + cleanDimensionName)
+            .attr('href', '#brush_image_top_active')
+            .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopAndBottom()), 20)}') 8 8, auto`);
+    }
+    if (yPosBottom == 320) {
+        select('#triangle_up_' + cleanDimensionName)
+            .attr('href', '#brush_image_top');
+    }
+    else {
+        select('#triangle_up_' + cleanDimensionName)
+            .attr('href', '#brush_image_top_active');
     }
     select('#triangle_up_' + cleanDimensionName).attr('y', yPosBottom);
     const heightTopRect = yPosTop - 70;
@@ -7953,6 +7979,22 @@ function dragAndBrush(cleanDimensionName, d, event, delta, tooltipValuesTop, too
     }
     addPosition(yPosRect, d.name, 'top');
     addPosition(yPosRect + rectHeight, d.name, 'bottom');
+    if (yPosTop == 70) {
+        select('#triangle_down_' + cleanDimensionName)
+            .attr('href', '#brush_image_bottom');
+    }
+    else {
+        select('#triangle_down_' + cleanDimensionName)
+            .attr('href', '#brush_image_bottom_active');
+    }
+    if (yPosBottom == 320) {
+        select('#triangle_up_' + cleanDimensionName)
+            .attr('href', '#brush_image_top');
+    }
+    else {
+        select('#triangle_up_' + cleanDimensionName)
+            .attr('href', '#brush_image_top_active');
+    }
     if (rectHeight < 240) {
         select('#rect_' + cleanDimensionName)
             .attr('y', yPosRect);
@@ -7993,6 +8035,22 @@ function filter(dimensionName, min, max) {
         .transition()
         .duration(1000)
         .attr('y', rectY + rectHeight);
+    if (topPosition == 80) {
+        select('#triangle_down_' + cleanDimensionName)
+            .attr('href', '#brush_image_bottom');
+    }
+    else {
+        select('#triangle_down_' + cleanDimensionName)
+            .attr('href', '#brush_image_bottom_active');
+    }
+    if (bottomPosition == 320) {
+        select('#triangle_up_' + cleanDimensionName)
+            .attr('href', '#brush_image_top');
+    }
+    else {
+        select('#triangle_up_' + cleanDimensionName)
+            .attr('href', '#brush_image_top_active');
+    }
     let active = select('g.active').selectAll('path');
     const rectTop = Math.min(topPosition, bottomPosition);
     const rectBottom = Math.max(topPosition, bottomPosition);
@@ -8615,6 +8673,7 @@ function handleRangeButton(dimension) {
     const newText = dimension.length > 25 ? dimension.substr(0, 25) + '...' :
         dimension;
     select('#headerDimensionRange').text(newText);
+    select('#infoRange3').text('Range values must be below the minimum and above the maximum data value.');
     select('#infoRange').text('The current range of ' + dimension + ' is between ' + minValue + ' and ' + maxValue + '.');
     select('#infoRange2').text('The original range of ' + dimension + ' is between ' + getMinValue(dimension) + ' and ' + getMaxValue(dimension) + '.');
     select('#buttonRange').on('click', () => {
@@ -8865,6 +8924,7 @@ function createModalToSetRange() {
     createModalTitle(modalSetRange, 'Set Range for ');
     createCloseButton(modalSetRange, 'closeButtonRange');
     createHeader(modalSetRange, 'headerDimensionRange');
+    createInfoMessage(modalSetRange, 'infoRange3');
     createInfoMessage(modalSetRange, 'infoRange');
     createInfoMessage(modalSetRange, 'infoRange2');
     createInputFieldWithLabel(modalSetRange, 'Min', 'minRangeValue');
@@ -10432,8 +10492,8 @@ const tooltipPath = select('body')
     .style('position', 'absolute')
     .style('visibility', 'hidden')
     .style('pointer-events', 'none')
-    .style('background', 'yellow')
-    .style('color', 'green')
+    .style('background', 'rgba(0,0,0,0.8)')
+    .style('color', '#fff')
     .style('padding', '0.5rem')
     .style('border-radius', '0.25rem')
     .style('font-size', '0.75rem')
@@ -10720,6 +10780,16 @@ function setDefsForIcons() {
         .attr('width', 14)
         .attr('height', 10)
         .attr('href', 'data:image/svg+xml;,' + getArrowBottom());
+    defs.append('image')
+        .attr('id', 'brush_image_top_active')
+        .attr('width', 14)
+        .attr('height', 10)
+        .attr('href', 'data:image/svg+xml;,' + getArrowTopActive());
+    defs.append('image')
+        .attr('id', 'brush_image_bottom_active')
+        .attr('width', 14)
+        .attr('height', 10)
+        .attr('href', 'data:image/svg+xml;,' + getArrowBottomActive());
 }
 // Hovering
 let currentlyHighlightedItems = [];

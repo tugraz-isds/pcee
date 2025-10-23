@@ -58,6 +58,7 @@
                     type="text"
                     placeholder="Column name"
                     class="header-input"
+                    :title="column.label"
                   >
                   <button
                     class="header-button"
@@ -136,7 +137,6 @@
         </table>
       </div>
 
-      <div v-html="interactiveOperationsText" />
       <div v-html="recordOperationsText" />
       <div v-html="dimensionOperationsText" />
       <div v-html="healthDatasetText" />
@@ -145,16 +145,8 @@
         v-html="usageText" 
       />
       <div class="stepper">
-        <div 
-          id="study-button"
-          style="display: flex; align-items: center; gap: 0.5rem;"
-        >
-          <h2>Case Study: Student Marks</h2>
-          <button
-            id="activate-button"
-          >
-            Interact Directly
-          </button>
+        <div>
+          <h2>7. Case Study: Student Marks</h2>
         </div>
         <p 
           class="step"
@@ -170,6 +162,13 @@
             :class="{ active: index === currentStep }"
           >
             {{ step.title }}
+          </li>
+          <li> 
+            <button
+              id="activate-button"
+            >
+              Interact Directly
+            </button>
           </li>
         </ol>
 
@@ -273,13 +272,9 @@ interface Column {
 type Row = Record<string, unknown>;
 
 const introText = ref('');
-const dataText = ref('');
-const interactivityText = ref('');
-const interactiveOperationsText = ref('');
 const recordOperationsText = ref('');
 const dimensionOperationsText = ref('');
 const usageText = ref('');
-const caseStudy2Text = ref('');
 const healthDatasetText = ref('');
 const studentDatasetText = ref('');
 const multipleViewsText = ref('');
@@ -391,48 +386,58 @@ const triggerSkip = async (): Promise<void> => {
   currentStep.value = 6;
 }
 
-const triggerNext = (currentStep: number): void => {
+const triggerNext = async (currentStep: number): Promise<void> => {
   switch(currentStep) {
     case 0:
       break;
     case 1:
       setRangeNext();
+      await wait(800);
       break;
     case 2:
       selectRecordNext();
+      await wait(800);
       break;
     case 3:
       filterRecordsNext();
+      await wait(800);
       break;
     case 4:
       moveDimensionNext();
+      await wait(800);
       break;
     case 5:
       invertDimensionNext();
+      await wait(800);
       break;
     default:
       break;
   }
 }
 
-const triggerBack = (currentStep: number): void => {
+const triggerBack = async (currentStep: number): Promise<void> => {
   switch(currentStep) {
     case 0:
       break;
     case 1:
       setRangeBack();
+      await wait(800);
       break;
     case 2:
       selectRecordBack();
+      await wait(800);
       break;
     case 3:
       filterRecordsBack();
+      await wait(800);
       break;
     case 4:
       moveDimensionBack();
+      await wait(800);
       break;
     case 5:
       invertDimensionBack();
+      await wait(800);
       break;
     default:
       break;
@@ -466,7 +471,7 @@ const addClickEvent = (): void => {
   if (negCorrelationButton) {
     negCorrelationButton.addEventListener('click', showNegativeCorrelation);
   }
-  const activateButton = document.getElementById('study-button');
+  const activateButton = document.getElementById('activate-button');
   if (activateButton) {
     activateButton.addEventListener('click', activateChart);
   }
@@ -496,6 +501,7 @@ const activateChart = async (): Promise<void> => {
     });
     status = true;
     (document.getElementById('activate-button') as HTMLButtonElement).textContent = "Step through";
+    currentStep.value = 0;
   }
   else {
     const dataset = getDatasetForStep(currentStepIndex);
@@ -759,7 +765,6 @@ const redrawChart = (): void => {
 const resetTable = (): void => {
   columns.value = structuredClone(columnsFinance);
   rows.value = structuredClone(rowsFinance);
-  redrawChart();
 }
 
 const isFormValid = computed<boolean>(() => {
@@ -856,7 +861,7 @@ const writeTitleToDataset = (step: number): void => {
     titleElement.textContent = "Heart Health Dataset";
   }
   else if (step == 2) {
-    titleElement.textContent = "Student Marks Dataset";
+    titleElement.textContent = "Case Study: Student Marks";
   }
   else if (step == 3) {
     titleElement.textContent = "Coordinated Multiple Views";
@@ -921,9 +926,9 @@ window.addEventListener('scroll', () => {
         activateButton.disabled = false;
         activateButton.textContent = 'Interact Directly';
       }
-
-      document.querySelectorAll<HTMLButtonElement>('.stepper-button').forEach(btn => {
-        btn.disabled = btn.id === 'start-button' || btn.id === 'reset-button';
+      const stepperButtons = document.querySelectorAll<HTMLButtonElement>('.stepper-button');
+      stepperButtons.forEach(button => {
+        button.disabled = false;
       });
 
       status = false;
@@ -959,8 +964,12 @@ window.addEventListener('scroll', () => {
       (document.getElementById('outlier-button') as HTMLButtonElement | null)?.removeAttribute('disabled');
       (document.getElementById('correlation-button') as HTMLButtonElement | null)?.removeAttribute('disabled');
       (document.getElementById('correlation-neg-button') as HTMLButtonElement | null)?.removeAttribute('disabled');
-      const act = document.getElementById('activate-button') as HTMLButtonElement | null;
-      if (act) act.disabled = true;
+      const activateButton = document.getElementById('activate-button') as HTMLButtonElement | null;
+      if (activateButton) activateButton.disabled = true;
+      const stepperButtons = document.querySelectorAll<HTMLButtonElement>('.stepper-button');
+      stepperButtons.forEach(button => {
+        button.disabled = true;
+      });
     }
     if (chart.style.visibility !== 'hidden') {
       chart.style.opacity = '1';
@@ -976,29 +985,26 @@ onBeforeUnmount(() => {
 })
 
 onMounted(async (): Promise<void> => {
-  healthDataset.value = await loadDataset('data/healthdata.csv');
-  financeDataset.value = await loadDataset('data/finance.csv');
-  studentDataset.value = await loadDataset('data/student-marks.csv');
+  healthDataset.value = await loadDataset('data/health-data.csv');
+  financeDataset.value = await loadDataset('data/finance-data.csv');
+  studentDataset.value = await loadDataset('data/student-marks-data.csv');
   drawChart(financeDataset.value);
   loadContent(introText, 'content/introduction.html');
-  loadContent(dataText, 'content/data.html');
-  loadContent(interactivityText, 'content/interactivity.html');
-  loadContent(interactiveOperationsText, 'content/interactiveoperations.html');
-  loadContent(recordOperationsText, 'content/recordoperations.html');
-  loadContent(dimensionOperationsText, 'content/dimensionoperations.html');
+  loadContent(financeDatasetText, 'content/data-finance.html');
+  loadContent(recordOperationsText, 'content/operations-records.html');
+  loadContent(dimensionOperationsText, 'content/operations-dimensions.html');
+  loadContent(healthDatasetText, 'content/data-health.html');
   loadContent(usageText, 'content/usage.html');
-  loadContent(caseStudy2Text, 'content/casestudy2.html');
-  loadContent(healthDatasetText, 'content/healthdata.html');
-  loadContent(multipleViewsText, 'content/multipleviews.html');
-  loadContent(financeDatasetText, 'content/personalfinances.html');
-  loadContent(referencesDatasetText, 'content/references.html');
-  loadContent(studentDatasetText, 'content/stepper/studentmarks.html');
+  loadContent(studentDatasetText, 'content/stepper/data-student.html');
   loadContent(moveText, 'content/stepper/move.html');
   loadContent(selectText, 'content/stepper/select.html');
   loadContent(filterText, 'content/stepper/filter.html');
   loadContent(rangeText, 'content/stepper/range.html');
   loadContent(invertText, 'content/stepper/invert.html');
   loadContent(summaryText, 'content/stepper/summary.html');
+  loadContent(multipleViewsText, 'content/multipleviews.html');
+  loadContent(referencesDatasetText, 'content/resources.html');
+  
 
   const container = usageContainer.value;
   if(container) {
@@ -1499,6 +1505,10 @@ h2 {
   padding-top: 1rem;
   padding-bottom: 0.5rem;
   padding-left: 1rem;
+  text-wrap: balance;
+  text-align: left;
+  letter-spacing: normal;
+  word-spacing: normal;
 }
 
 h3 {
@@ -1506,18 +1516,30 @@ h3 {
   margin-bottom: 0;
   padding-top: 0.5rem;
   padding-bottom: 0.25rem;
+  text-wrap: balance;
+  text-align: left;
+  letter-spacing: normal;
+  word-spacing: normal;
 }
 
 h4 {
   padding-left: 1rem;
   padding-top: 0.5rem;
   margin-bottom: 0;
+  text-wrap: balance;
+  text-align: left;
+  letter-spacing: normal;
+  word-spacing: normal;
 }
 
 p {
   border-left: 1rem solid transparent;
   margin-bottom: 0.25rem;
   font-size: 1em;
+  hyphens: auto;
+  word-wrap: break-word;
+  letter-spacing: normal;
+  word-spacing: normal;
 }
 
 p + p {
