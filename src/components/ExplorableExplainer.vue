@@ -425,26 +425,26 @@ const triggerNext = async (currentStep: number): Promise<void> => {
 const triggerBack = async (currentStep: number): Promise<void> => {
   switch(currentStep) {
     case 0:
-      break;
-    case 1:
       setRangeBack();
       await wait(800);
       break;
-    case 2:
+    case 1:
       selectRecordBack();
       await wait(800);
       break;
-    case 3:
+    case 2:
       filterRecordsBack();
       await wait(800);
       break;
-    case 4:
+    case 3:
       moveDimensionBack();
       await wait(800);
       break;
-    case 5:
+    case 4:
       invertDimensionBack();
       await wait(800);
+      break;
+    case 5:
       break;
     default:
       break;
