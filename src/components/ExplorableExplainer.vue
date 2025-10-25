@@ -29,14 +29,16 @@
     v-else
     class="header-spacer-polyfill"
   />
-
   <div class="explorable-explainer">
     <div
       ref="textArea"
       class="chart-container flex-1 basis-[30rem] relative justify-center"
     >
       <div class="main-chart">
-        <h3 id="chart-title">Personal Finances Dataset</h3>
+        <StatusDropdown :offset="60" />
+        <h3 id="chart-title">
+          Personal Finances Dataset
+        </h3>
         <div id="parallelcoords" />
       </div>
     </div>
@@ -99,6 +101,7 @@
                     'text-right': column.type === 'number',
                     'text-left': column.type === 'string'
                   }"
+                  @blur="recomputeColumnType(column)"
                 >
               </td>
               <td class="narrow-column">
@@ -144,7 +147,10 @@
         ref="usageContainer" 
         v-html="usageText" 
       />
-      <div class="stepper">
+      <div 
+        class="stepper"
+        content-section
+      >
         <div>
           <h2>7. Case Study: Student Marks</h2>
         </div>
@@ -183,7 +189,7 @@
               src="/svg/reset-button.svg"
               width="16" 
               height="16"
-            />
+            >
           </button>
           <button
             id="start-button"
@@ -195,7 +201,7 @@
               src="/svg/back-button.svg"
               width="16" 
               height="16"
-            />
+            >
           </button>
           <button
             class="stepper-button"
@@ -206,7 +212,7 @@
               src="/svg/next-button.svg"
               width="16" 
               height="16"
-            />
+            >
           </button>
           <button
             class="stepper-button"
@@ -217,7 +223,7 @@
               src="/svg/skip-button.svg"
               width="16" 
               height="16"
-            />
+            >
           </button>
         </div>
 
@@ -260,13 +266,14 @@ import * as spcd3 from '../spcd3.js';
 import { columnsFinance, rowsFinance } from '../data.js';
 import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
+import StatusDropdown from './StatusDropdown.vue';
 
 gsap.registerPlugin(ScrollTrigger);
 
 interface Column {
   key: string
   label: string
-  type: string
+  type?: number | string
 }
 
 type Row = Record<string, unknown>;
@@ -726,11 +733,35 @@ const deleteRow = (index: number): void => {
   }
 };
 
+const isNumericString = (value: unknown): boolean => {
+  if (value == null) return false;
+  const stringValue = String(value).trim();
+  if (!stringValue) return false;
+  const normalized = stringValue
+    .replace(/\s/g, '')
+    .replace(/\.(?=\d{3}\b)/g, '')
+    .replace(/,(?=\d{3}\b)/g, '')
+    .replace(',', '.');
+  return !isNaN(Number(normalized));
+};
+
+const detectColumnTypeFromRows = (rows: Record<string, unknown>[], colKey: string): 'string' | 'number'  => {
+  const values = rows.map(r => r[colKey]);
+  const nonEmpty = values.filter(v => String(v ?? '').trim() !== '');
+  if (nonEmpty.length === 0) return 'string';
+  const numericCount = nonEmpty.filter(isNumericString).length;
+  return numericCount >= Math.ceil((2 * nonEmpty.length) / 3) ? 'number' : 'string';
+};
+
+const recomputeColumnType = (col: Column) => {
+  col.type = detectColumnTypeFromRows(rows.value, col.key);
+};
+
 let colCounter = 0;
 const addColumn = (): void => {
   const trimmed = newColumn.value.trim();
   const label = trimmed;
-  const newCol: Column = { key: `col_${colCounter++}`, label, type: 'number' };
+  const newCol: Column = { key: `col_${colCounter++}`, label };
   columns.value.push(newCol);
   rows.value.forEach(row => {
     row[newCol.key] = '';

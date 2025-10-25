@@ -7834,6 +7834,7 @@ function invert(dimension) {
     const arrow = currentArrowStatus === 'down' ? '#arrow_image_up' : '#arrow_image_down';
     const arrowStyle = currentArrowStatus === 'down' ? setSize(getArrowDownCursor(), 12) : setSize(getArrowUpCursor(), 12);
     textElement.text(currentArrowStatus === 'down' ? 'up' : 'down');
+    textElement.title('Invert');
     textElement.attr('href', arrow);
     textElement.style('cursor', `url('data:image/svg+xml,${encodeURIComponent(arrowStyle)}') 8 8 , auto`);
     select(dimensionId)
@@ -10851,7 +10852,9 @@ function setInvertIcon(featureAxis, padding) {
         select(this)
             .attr('id', 'dimension_invert_' + processedDimensionName)
             .text('up')
-            .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowDownCursor()), 12)}') 8 8, auto`);
+            .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowDownCursor()), 12)}') 8 8, auto`)
+            .append("title")
+            .text("Invert");
     })
         .on('click', (event, d) => {
         invert(d.name);
@@ -10949,6 +10952,9 @@ function setBrushUp(featureAxis, parcoords, tooltipValues, brushOverlay) {
             brushOverlay.style("pointer-events", "none");
             tooltipValues.style('visibility', 'hidden');
         }));
+        select('#triangle_up_' + processedDimensionName)
+            .append('title')
+            .text('Filter');
     });
 }
 function setBrushDown(featureAxis, parcoords, tooltipValues, brushOverlay) {
@@ -10966,6 +10972,8 @@ function setBrushDown(featureAxis, parcoords, tooltipValues, brushOverlay) {
             .attr('height', 10)
             .attr('href', '#brush_image_bottom')
             .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowBottomCursor()), 13)}') 8 8, auto`)
+            .append("title")
+            .text("Filter")
             .on('mousedown.selection', function (event) {
             event.preventDefault();
         })
