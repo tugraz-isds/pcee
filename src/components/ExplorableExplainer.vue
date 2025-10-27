@@ -34,8 +34,8 @@
       ref="textArea"
       class="chart-container flex-1 basis-[30rem] relative justify-center"
     >
+      <StatusDropdown :offset="60" />
       <div class="main-chart">
-        <StatusDropdown :offset="60" />
         <h3 id="chart-title">
           Personal Finances Dataset
         </h3>
@@ -1317,14 +1317,14 @@ onMounted(async (): Promise<void> => {
 .main-chart {
   position: sticky;
   top: calc(10vh + 1rem);
-  padding-bottom: 1.5rem;
+  border: 0.01rem solid black;
+  border-radius: 0.3rem;
 }
 
 #parallelcoords {
   display: flex;
   justify-content: center;
   align-items: center;
-  opacity: 1;
   transition: opacity 0.5s ease;
 }
 
@@ -1499,10 +1499,10 @@ onMounted(async (): Promise<void> => {
 
 /* Sections in Textcontainer with animation */
 section {
-  text-align: justify;
   width: calc(100% - 0.5rem);
   max-width: 100%;
-  background: rgb(229, 229, 220);
+  background: oklch(0.99 0.011 91.69);  /* rgb(229, 229, 220); */
+  border: 0.01rem solid black;
   border-radius: 0.3rem;
   margin-top: 1rem;
   opacity: 0;
@@ -1567,6 +1567,7 @@ p {
   border-left: 1rem solid transparent;
   margin-bottom: 0.25rem;
   font-size: 1em;
+  text-align: justify;
   hyphens: auto;
   word-wrap: break-word;
   letter-spacing: normal;
@@ -1611,7 +1612,7 @@ li {
 .liinstruction {
   border-left: 0 solid transparent;
   font-style: italic;
-  color: black;
+  color: #00356B;  /* black; */
   text-indent: 0;
   font-size: 1em;
 }
