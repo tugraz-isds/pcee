@@ -158,7 +158,6 @@
           class="step"
           data-step="2"
         >
-          By using the interactions described above, interesting observations can be made within a dataset.
         </p>
 
         <ol>
@@ -317,11 +316,11 @@ let status = false;
 
 const steps = [
   { title: 'Student Marks Dataset', content: studentDatasetText},
-  { title: 'Adjust Dimension Range', content: rangeText },
-  { title: 'Select Record', content: selectText },
-  { title: 'Filter Record', content: filterText },
-  { title: 'Move Dimension', content: moveText },
-  { title: 'Invert Dimension', content: invertText },
+  { title: 'Adjusting Dimension Ranges', content: rangeText },
+  { title: 'Selecting Records', content: selectText },
+  { title: 'Filtering Records', content: filterText },
+  { title: 'Moving Dimensions', content: moveText },
+  { title: 'Inverting Dimensions', content: invertText },
   { title: 'Summary', content: summaryText}
 ];
 

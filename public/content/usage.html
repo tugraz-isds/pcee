@@ -1,100 +1,106 @@
 <section content-section>
 <h2>6. Usage</h2>
 
-<p>Parallel coordinates are used for:</p>
-<ul>
-<li>Discovering clusters and outliers among records.</li>
-<li>Finding correlations between dimensions.</li>
-</ul>
-
-<h3>Identifying Outliers and Clusters of Records</h3>
-
 <p>
-Outliers stand out clearly because their polylines follow a different path 
-to those of other records. Clusters are groups of data records which have 
-similar characteristics, so their polylines follow similar paths.
+Parallel coordinates are used for identifying outliers and clusters
+among records, and discovering correlations between dimensions.
 </p>
 
-<h4>Example Outlier</h4>
+<h3>6.1 Identifying Outliers Among Records</h3>
 
 <p>
-The Heart Health Dataset contains one obvious outlier:
+An outlier is a record whose data points differ significantly from
+other records. Outliers stand out clearly, because their polylines
+follow a different path to those of other records.
+</p>
+
+<p>
+The Heart Health Dataset contains one obvious outlier, Patient F, with
+significantly higher blood pressure and cholesterol, lower heart rate,
+high BMI, and advanced age.
 </p>
 
 <button class="usage-button" id="outlier-button">Show Outlier</button>
 <p class="error" id="show-error"></p>
 
-<p style="text-indent: 0;">
-Patient F stands out as a clear outlier, with:
-</p>
-<ul>
-<li>significantly higher blood pressure and cholesterol,</li>
-<li>lower heart rate,</li>
-<li>high BMI, and</li>
-<li>advanced age.</li>
-</ul>
 
-<p style="margin-top: 0.25em;">
-This patient could be flagged for potential cardiovascular risk.
+
+<h3>6.2 Identifying Clusters of Records</h3>
+
+<p>
+Clusters are groups of data records which have similar
+characteristics, so their polylines follow similar paths.
 </p>
 
 
 
-<h3>Looking for Correlations Between Dimensions</h3>
+
+<h3>6.3 Discovering Correlations Between Dimensions</h3>
 
 <p>
 If two dimensions are positively correlated, high values in one
 dimension correspond to high values in the other. Low values in one
 dimension correspond to low values in the other. In a parallel
 coordinates chart, this can be seen only when the two dimensions are
-adjacent to one another. Parallel, non-crossing straight line segments
-run betwen the two dimensions, as shown in <a href="#fig1a">Figure 1a</a>. In a scatterplot,
-this corresponds to points falling along straight line, as shown in
-<a href="#fig1b">Figure 1b</a>.
+adjacent to one another.
+</p>
+<p>
+A perfect positive correlation is characterised by parallel,
+non-crossing straight line segments running betwen the two dimensions,
+as shown in Figure <a href="#fig1a">1a</a>. In a scatterplot, this
+corresponds to points falling along a straight line, as shown in
+Figure <a href="#fig1b">1b</a>. In real life, data is typically
+messier, and a positive correlation can be less obvious in parallel
+coordinates than in a scatterplot, as shown in
+Figures <a href="#fig2a">2a</a> and <a href="#fig2b">2b</a>.
 </p>
 
 <div class="figure-row">
 <figure id="fig1a">
 <img src="images/correlation-pos-pc.svg" alt="pos-corr-pc"/>
-<figcaption>Figure 1a: Parallel coordinates show a perfect positive correlation.</figcaption>
+<figcaption>Figure 1a: A perfect positive correlation in parallel coordinates.</figcaption>
 </figure>
-  
+
 <figure>
 <img id="fig1b" src="images/correlation-pos-sp.svg" alt="pos-corr-sp"/>
-<figcaption>Figure 1b: Scattersplot show a perfect positive correlation.</figcaption>
+<figcaption>Figure 1b: A perfect positive correlation in a scatterplot.</figcaption>
 </figure>
 </div>
 
 <div class="figure-row">
 <figure id="fig2a">
 <img src="images/correlation-pos-np-pc.svg" alt="pos-corr-np-pc"/>
-<figcaption>Figure 2a: Parallel coordinates show a nearly perfect positive correlation.</figcaption>
+<figcaption>Figure 2a: A not quite perfect positive correlation in
+parallel coordinates.</figcaption>
 </figure>
       
 <figure>
 <img id="fig2b" src="images/correlation-pos-np-sp.svg" alt="pos-corr-np-sp"/>
-<figcaption>Figure 2b: Scattersplot show a nearly perfect positive correlation.</figcaption>
+<figcaption>Figure 2b: A not quite perfect positive correlation in a
+scatterplot.</figcaption>
 </figure>
 </div>
 
+
 <p>
 If two dimensions are negatively correlated, low values in one
-correspond to high values in the other and vice versa. In a parallel
-coordinates chart, the line segments between the adjacent dimensions
-all cross in the middle, as shown in <a href="#fig3a">Figure 3a</a>. In the equivalent
-scatterplot, the points fall along a negatively inclined straight
-line, as shown in <a href="#fig3b">Figure 3b</a>.
+correspond to high values in the other and vice versa. A perfect
+negative correlation is characterised by line segments between
+adjacent dimensions which all cross in the middle, as shown
+in Figure <a href="#fig3a">3a</a>. In the equivalent scatterplot, the
+points fall along a negatively inclined straight line, as shown
+in Figure <a href="#fig3b">3b</a>.
 </p>
 
 <div class="figure-row">
 <figure id="fig3a">
 <img src="images/correlation-neg-pc.svg" alt="neg-corr-pc"/>
-<figcaption>Figure 3a: Parallel coordinates show a perfect negative correlation.</figcaption>
+<figcaption>Figure 3a: A perfect negative correlation in parallel coordinates.</figcaption>
 </figure>
     
 <figure>
 <img id="fig3b" src="images/correlation-neg-sp.svg" alt="neg-corr-sp"/>
-<figcaption>Figure 3b: Scatterplot show a perfect negative correlation.</figcaption>
+<figcaption>Figure 3b: A perfect negative correlation in a scatterplot.</figcaption>
 </figure>
 </div>
 
@@ -102,16 +108,26 @@ line, as shown in <a href="#fig3b">Figure 3b</a>.
 <div class="figure-row">
 <figure id="fig4a">
 <img src="images/correlation-neg-np-pc.svg" alt="neg-corr-np-pc"/>
-<figcaption>Figure 4a: Parallel coordinates show a nearly perfect negative correlation.</figcaption>
+<figcaption>Figure 4a: A not quite perfect negative correlation in
+parallel coordinates.</figcaption>
 </figure>
         
 <figure>
 <img id="fig4b" src="images/correlation-neg-np-sp.svg" alt="neg-corr-np-sp"/>
-<figcaption>Figure 4b: Scatterplot show a nearly perfect negative correlation.</figcaption>
+<figcaption>Figure 4b: A not quite perfect negative correlation in a
+scatterplot.</figcaption>
 </figure>
 </div>
 
-<h4>Example of a Positive Correlation</h4>
+
+<p>
+In the Heart Health Dataset, the dimensions Age and Fitness Score are
+negatively correlated. Generally, the fitness score tends to decrease
+with increasing age. This can be seen by moving the Fitness Score
+dimension next to the Age dimension:
+</p>
+<button class="usage-button" id="correlation-neg-button">Move Fitness Score Dimension</button>
+<p class="error" id="move-error"></p>
 
 <p>
 In the Heart Health Dataset, the dimensions Age and Blood Pressure are
@@ -120,20 +136,7 @@ age. With real data, parallel non-crossing line segments are rare. It
 often makes sense to invert one of the two dimensions to check for the
 visual cross pattern. This can be seen by inverting the Age dimension:
 </p>
-
 <button class="usage-button" id="correlation-button">Invert Age Dimension</button>
 <p class="error" id="invert-error"></p>
 
-
-<h4>Example of a Negative Correlation</h4>
-
-<p>
-In the Heart Health Dataset, the dimensions Age and Fitness Score are
-negatively correlated. Generally, the fitness score tends to decrease with
-increasing age. This can be seen by moving the Fitness Score dimension next to the Age dimension:
-</p>
-
-<button class="usage-button" id="correlation-neg-button">Move Fitness Score Dimension</button>
-
-<p class="error" id="move-error"></p>
 </section>
