@@ -10923,69 +10923,108 @@ function setRectToDrag(featureAxis, svg, parcoords, tooltipValuesTop, tooltipVal
     });
 }
 function setBrushUp(featureAxis, parcoords, tooltipValues, brushOverlay) {
-    featureAxis
-        .each(function (d) {
+    featureAxis.each(function (d) {
         const processedDimensionName = cleanString(d.name);
-        select(this)
+        const g = select(this)
             .append('g')
-            .attr('class', 'brush_' + processedDimensionName)
-            .append('use')
+            .attr('class', 'brush_' + processedDimensionName);
+        g.append('use')
             .attr('id', 'triangle_up_' + processedDimensionName)
-            .attr('y', 320)
             .attr('x', -7)
+            .attr('y', 320)
             .attr('width', 14)
             .attr('height', 10)
             .attr('href', '#brush_image_top')
-            .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopCursor()), 13)}') 8 8, auto`)
-            .on('mousedown.selection', function (event) {
-            event.preventDefault();
+            .attr('pointer-events', 'none')
+            .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopCursor()), 13)}') 8 8, auto`);
+        const handle = g.append('rect')
+            .attr('x', -7)
+            .attr('y', 320)
+            .attr('width', 14)
+            .attr('height', 10)
+            .style('fill', 'transparent')
+            .style('pointer-events', 'all')
+            .style('touch-action', 'none')
+            .style('-webkit-user-select', 'none')
+            .style('user-select', 'none')
+            .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopCursor()), 13)}') 8 8, auto`);
+        handle.call(drag()
+            .container(function () { return this.ownerSVGElement || this; })
+            .on('start', (event) => {
+            brushOverlay
+                .raise()
+                .style('pointer-events', 'all')
+                .style('touch-action', 'none')
+                .style('-webkit-user-select', 'none')
+                .style('user-select', 'none');
+            try {
+                event.sourceEvent?.preventDefault?.();
+            }
+            catch { }
         })
-            .call(drag()
-            .on('drag', (event, d) => {
-            brushOverlay.raise().style("pointer-events", "all");
+            .on('drag', (event, dd) => {
             if (parcoords.newFeatures.length > 25) {
-                throttleBrushUp(processedDimensionName, event, d, tooltipValues, window);
+                throttleBrushUp(processedDimensionName, event, dd, tooltipValues, window);
             }
             else {
-                brushUp(processedDimensionName, event, d, tooltipValues, window);
+                brushUp(processedDimensionName, event, dd, tooltipValues, window);
             }
         })
             .on('end', () => {
-            brushOverlay.style("pointer-events", "none");
+            brushOverlay.style('pointer-events', 'none');
             tooltipValues.style('visibility', 'hidden');
         }));
     });
 }
 function setBrushDown(featureAxis, parcoords, tooltipValues, brushOverlay) {
-    featureAxis
-        .each(function (d) {
+    featureAxis.each(function (d) {
         const processedDimensionName = cleanString(d.name);
-        select(this)
+        const g = select(this)
             .append('g')
-            .attr('class', 'brush_' + processedDimensionName)
-            .append('use')
+            .attr('class', 'brush_' + processedDimensionName);
+        g.append('use')
             .attr('id', 'triangle_down_' + processedDimensionName)
-            .attr('y', 70)
             .attr('x', -7)
+            .attr('y', 70)
             .attr('width', 14)
             .attr('height', 10)
             .attr('href', '#brush_image_bottom')
-            .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowBottomCursor()), 13)}') 8 8, auto`)
-            .on('mousedown.selection', function (event) {
-            event.preventDefault();
+            .attr('pointer-events', 'none');
+        const handle = g.append('rect')
+            .attr('x', -7)
+            .attr('y', 70)
+            .attr('width', 14)
+            .attr('height', 10)
+            .style('fill', 'transparent')
+            .style('pointer-events', 'all')
+            .style('touch-action', 'none')
+            .style('-webkit-user-select', 'none')
+            .style('user-select', 'none')
+            .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowBottomCursor()), 13)}') 8 8, auto`);
+        handle.call(drag()
+            .container(function () { return this.ownerSVGElement || this; })
+            .on('start', (event, dd) => {
+            brushOverlay
+                .raise()
+                .style('pointer-events', 'all')
+                .style('touch-action', 'none')
+                .style('-webkit-user-select', 'none')
+                .style('user-select', 'none');
+            try {
+                event.sourceEvent?.preventDefault?.();
+            }
+            catch { }
         })
-            .call(drag()
-            .on('drag', (event, d) => {
-            brushOverlay.raise().style("pointer-events", "all");
+            .on('drag', (event, dd) => {
             if (parcoords.newFeatures.length > 25) {
-                throttleBrushDown(processedDimensionName, event, d, tooltipValues, window);
+                throttleBrushDown(processedDimensionName, event, dd, tooltipValues, window);
             }
             else {
-                brushDown(processedDimensionName, event, d, tooltipValues, window);
+                brushDown(processedDimensionName, event, dd, tooltipValues, window);
             }
         })
             .on('end', () => {
-            brushOverlay.style("pointer-events", "none");
+            brushOverlay.style('pointer-events', 'none');
             tooltipValues.style('visibility', 'hidden');
         }));
     });
