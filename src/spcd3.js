@@ -3426,10 +3426,10 @@ function getArrowBottomCursor() {
     return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 5"><path fill="white" stroke="black" stroke-width="0.5" d="M 1 0 L 7 0 L 4 5 z"/></svg>';
 }
 function getArrowBottom() {
-    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="yellow" fill-opacity="0.4" stroke="black" stroke-width="0.2" d="M 0 0 L 6 0 L 3 5 z"/></svg>';
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="rgb(255, 255, 0)" fill-opacity="0.5" stroke="black" stroke-width="0.2" d="M 0 0 L 6 0 L 3 5 z"/></svg>';
 }
 function getArrowBottomActive() {
-    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="red" fill-opacity="0.4" stroke="black" stroke-width="0.2" d="M 0 0 L 6 0 L 3 5 z"/></svg>';
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="rgb(234, 234, 40)" fill-opacity="0.5" stroke="black" stroke-width="0.5" d="M 0 0 L 6 0 L 3 5 z"/></svg>';
 }
 function getArrowDown() {
     return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 10"><path d="M 0 6 L 2 6 L 2 0 L 4 0 L 4 6 L 6 6 L 3 10 z"/></svg>';
@@ -3453,10 +3453,10 @@ function getArrowTopCursor() {
     return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 5"><path fill="white" stroke="black" stroke-width="0.5" d="M 1 5 L 4 0 L 7 5 z"/></svg>';
 }
 function getArrowTop() {
-    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="yellow" fill-opacity="0.4" stroke="black" stroke-width="0.2" d="M 0 5 L 3 0 L 6 5 z"/></svg>';
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="rgb(255, 255, 0)" fill-opacity="0.5" stroke="black" stroke-width="0.2" d="M 0 5 L 3 0 L 6 5 z"/></svg>';
 }
 function getArrowTopActive() {
-    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="red" fill-opacity="0.4" stroke="black" stroke-width="0.2" d="M 0 5 L 3 0 L 6 5 z"/></svg>';
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="rgb(234, 234, 40)" fill-opacity="0.5" stroke="black" stroke-width="0.5" d="M 0 5 L 3 0 L 6 5 z"/></svg>';
 }
 function getArrowUp() {
     return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 10"><path d="M 0 4 L 3 0 L 6 4 L 4 4 L 4 10 L 2 10 L 2 4 z"/></svg>';
@@ -6589,7 +6589,7 @@ function setupYScales(header, dataset) {
             });
             yScales[x.name] = point$4()
                 .domain(labels)
-                .range([padding, height - padding])
+                .range([80, height - 80])
                 .padding(0.2);
         }
         else {
@@ -6599,12 +6599,12 @@ function setupYScales(header, dataset) {
                 const epsilon = min === 0 ? 1 : Math.abs(min) * 0.01;
                 yScales[x.name] = linear()
                     .domain([min - epsilon, max + epsilon])
-                    .range([height - padding, padding]);
+                    .range([height - 80, 80]);
             }
             else {
                 yScales[x.name] = linear()
                     .domain([min, max])
-                    .range([height - padding, padding]);
+                    .range([height - 80, 80]);
             }
         }
     });
@@ -7896,10 +7896,16 @@ function brushDown(cleanDimensionName, event, d, tooltipValues, window) {
     if (yPosTop == 70) {
         select('#triangle_down_' + cleanDimensionName)
             .attr('href', '#brush_image_bottom');
+        select('#rect_' + cleanDimensionName)
+            .attr('fill', 'rgb(255, 255, 0)')
+            .attr('opacity', '0.5');
     }
     else {
         select('#triangle_down_' + cleanDimensionName)
             .attr('href', '#brush_image_bottom_active');
+        select('#rect_' + cleanDimensionName)
+            .attr('fill', 'rgb(234, 234, 40)')
+            .attr('opacity', '0.5');
     }
     select('#triangle_down_' + cleanDimensionName).attr('y', yPosTop);
     const heightTopRect = yPosRect - 80;
@@ -8434,7 +8440,7 @@ function setToolTipsOnFeatureAxis(featureAxis) {
         .append('text')
         .attr('class', 'dimension')
         .attr('text-anchor', 'middle')
-        .attr('y', (padding / 1.7).toFixed(4))
+        .attr('y', (80 / 1.7).toFixed(4))
         .text((d) => d.name.length > 10 ?
         d.name.substr(0, 10) + '...' : d.name)
         .style('font-size', '0.7rem')
@@ -9852,7 +9858,6 @@ function createToolbar(dataset) {
         .style('align-items', 'center')
         .style('font-size', '0.8vw')
         .style('margin-top', '1rem')
-        .style('margin-left', '1rem')
         .style('margin-bottom', '0');
     const toggleButton = toolbarRow.append('button')
         .attr('id', 'toggleButton')
@@ -10369,7 +10374,7 @@ function drawChart(content) {
         .attr('viewBox', [0, 0, width, height])
         .attr('font-family', 'Verdana, sans-serif'));
     setDefsForIcons();
-    setFeatureAxis(svg, yAxis, parcoords, width, padding);
+    setFeatureAxis(svg, yAxis, parcoords, width);
     setActive(setActivePathLines(svg, content, parcoords));
     svg
         .on("contextmenu", function (event) {
@@ -10420,7 +10425,7 @@ function deleteChart() {
 //---------- Helper Functions ----------
 // ---------- Needed for Built-In Interactivity Functions ---------- //
 function setUpParcoordData(data, newFeatures) {
-    setPadding(80);
+    setPadding(60);
     setPaddingXaxis(60);
     setWidth(newFeatures.length * 100);
     setHeight(400);
@@ -10746,7 +10751,7 @@ function setFeatureAxis(svg, yAxis, parcoords, width, padding) {
     setRectToDrag(featureAxis, svg, parcoords, tooltipValuesTop, tooltipValuesDown);
     setMarker(featureAxis);
     setContextMenu(featureAxis);
-    setInvertIcon(featureAxis, padding);
+    setInvertIcon(featureAxis);
 }
 function showMarker(dimension) {
     const cleanDimensionName = cleanString(dimension);
@@ -10835,7 +10840,7 @@ function clearSelection() {
     });
 }
 function setInvertIcon(featureAxis, padding) {
-    let value = (padding / 1.5).toFixed(4);
+    let value = (80 / 1.5).toFixed(4);
     featureAxis
         .append('svg')
         .attr('y', value)
@@ -10893,7 +10898,7 @@ function setRectToDrag(featureAxis, svg, parcoords, tooltipValuesTop, tooltipVal
             .attr('x', -6)
             .attr('y', 80)
             .attr('fill', 'rgb(255, 255, 0)')
-            .attr('opacity', '0.4')
+            .attr('opacity', '0.5')
             .style('cursor', 'default')
             .on('mousedown.selection', function (event) {
             event.preventDefault();

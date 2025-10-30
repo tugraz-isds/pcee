@@ -1,6 +1,6 @@
 <template>
   <select
-    class="mx-2 w-auto rounded-md border border-gray-200 bg-[rgb(229,229,220)] px-2.5 py-1.5 text-sm text-gray-800 shadow-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+    class="mb-4 mt-4 w-auto rounded-md border border-gray-200 bg-[rgb(253,252,250)] px-2.5 py-1.5 text-sm text-gray-800 shadow-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
     :value="activeId"
     @change="onChange"
   >

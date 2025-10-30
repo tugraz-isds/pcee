@@ -2,7 +2,7 @@
 
 <svg
   xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 9 7">
-  <path fill="none" stroke="black" stroke-width="0.5" d="M 7 1 L 2.25 3.5 L 7 6 z"/>
-  <path stroke="black" stroke-width="0.5" d="M 1 0.75 L 1.25 0.75 L 1.25 6.25 L 1 6.25 z"/>
+  viewBox="0 0 24 24">
+  <path fill="none" stroke="black" stroke-width="1.5" d="M 16 6 L 8 12 L 16 18 z"/>
+  <path stroke="black" stroke-width="1.5" d="M 6.75 5.5 L 7.5 5.5 L 7.5 18.5 L 6.75 18.5 z"/>
 </svg>

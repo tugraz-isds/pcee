@@ -34,12 +34,14 @@
       ref="textArea"
       class="chart-container flex-1 basis-[30rem] relative justify-center"
     >
-      <StatusDropdown :offset="60" />
       <div class="main-chart">
-        <h3 id="chart-title">
-          Personal Finances Dataset
-        </h3>
-        <div id="parallelcoords" />
+        <StatusDropdown :offset="60" />
+        <div class="chart-wrapper">
+          <h3 id="chart-title">
+            Personal Finances Dataset
+          </h3>
+          <div id="parallelcoords" />
+        </div>
       </div>
     </div>
     <div class="text-container flex-1 basis-[23rem] min-w-[23rem] flex flex-col w-full">
@@ -158,22 +160,43 @@
           class="step"
           data-step="2"
         >
+          The Student Marks Dataset is a fictitious dataset of student marks,
+          consisting of 30 rows of data (records), and 9 columns (dimensions),
+          including the name of the student. Each row represents one student and
+          their marks between 0 and 100 in 8 subjects.
         </p>
 
-        <ol>
+        <ol class="steps">
           <li
             v-for="(step, index) in steps"
             :key="step.title"
             :class="{ active: index === currentStep }"
           >
-            {{ step.title }}
-          </li>
-          <li> 
-            <button
-              id="activate-button"
+            <div
+              class="li-header"
+              :style="{ cursor: status ? 'default' : 'pointer' }"
+              :aria-expanded="index === currentStep ? 'true' : 'false'"
+              @click="status === false && goToStep(index)"
             >
-              Interact Directly
-            </button>
+              {{ step.title }}
+            </div>
+            <transition name="expand">
+              <div
+                v-show="index === currentStep"
+                class="step-panel"
+              >
+                <p class="step-text">
+                  {{ step.content }}
+                </p>
+
+                <button
+                  v-if="step.title === '6. Play with the Data'"
+                  id="activate-button"
+                >
+                  Enable Interactivity
+                </button>
+              </div>
+            </transition>
           </li>
         </ol>
 
@@ -186,8 +209,6 @@
           >
             <img 
               src="/svg/reset-button.svg"
-              width="16" 
-              height="16"
             >
           </button>
           <button
@@ -198,8 +219,6 @@
           >
             <img 
               src="/svg/back-button.svg"
-              width="16" 
-              height="16"
             >
           </button>
           <button
@@ -209,8 +228,6 @@
           >
             <img 
               src="/svg/next-button.svg"
-              width="16" 
-              height="16"
             >
           </button>
           <button
@@ -220,8 +237,6 @@
           >
             <img 
               src="/svg/skip-button.svg"
-              width="16" 
-              height="16"
             >
           </button>
         </div>
@@ -230,17 +245,17 @@
           <span
             v-for="(step, index) in steps"
             :key="index"
+            :style="{ cursor: status ? 'default' : 'pointer' }"
             :class="{ active: index === currentStep }"
+            @click="status === false && goToStep(index)"
           >
             {{ index + 1 }}
           </span>
         </div>
-
-        <h3>{{ steps[currentStep].title }}</h3>
-
         <p>
-          {{ steps[currentStep].content }}
-        </p>
+          In summary, interactive parallel coordinates are helpful to identify
+          outliers, clusters, and correlations within a multidimensional
+          dataset, as demonstrated in this case study.</p>
       </div>
       <div v-html="multipleViewsText" />
       <div
@@ -291,7 +306,7 @@ const filterText = ref('');
 const moveText = ref('');
 const rangeText = ref('');
 const selectText = ref('');
-const summaryText = ref('');
+const interactiveText = ref('');
 const textArea = ref(null);
 const healthDataset = ref('');
 const studentDataset = ref('');
@@ -315,16 +330,33 @@ let lastStep = -1;
 let status = false;
 
 const steps = [
-  { title: 'Student Marks Dataset', content: studentDatasetText},
-  { title: 'Adjusting Dimension Ranges', content: rangeText },
-  { title: 'Selecting Records', content: selectText },
-  { title: 'Filtering Records', content: filterText },
-  { title: 'Moving Dimensions', content: moveText },
-  { title: 'Inverting Dimensions', content: invertText },
-  { title: 'Summary', content: summaryText}
+  { title: '1. Adjusting Dimension Ranges', content: rangeText },
+  { title: '2. Selecting Records', content: selectText },
+  { title: '3. Filtering Records', content: filterText },
+  { title: '4. Moving Dimensions', content: moveText },
+  { title: '5. Inverting Dimensions', content: invertText },
+  { title: '6. Play with the Data', content: interactiveText }
 ];
 
 const currentStep = ref(0);
+
+const goToStep = async(index: number): Promise<void> => {
+  if (index > currentStep.value) {
+    index = index + 1;
+    for (let i = currentStep.value; i < index; i++) {
+      currentStep.value = i;
+      console.log(i);
+      runForward(i);
+      await wait(800);
+    }
+  } else {
+    for (let i = currentStep.value; i >= index; i--) {
+      currentStep.value = i;
+      runBackward(i);
+      await wait(800);
+    }
+  }  
+}
 
 const next = (): void => {
   if (currentStep.value < steps.length - 1) {
@@ -341,12 +373,10 @@ const back = (): void => {
 }
 
 const reset = (): void => {
-  currentStep.value = 0;
   triggerReset();
 }
 
 const skip = (): void => {
-  currentStep.value = 6;
   triggerSkip();
 }
 
@@ -354,42 +384,170 @@ function wait(ms: number) {
   return new Promise<void>(resolve => window.setTimeout(resolve, ms));
 }
 
-const triggerReset = async (): Promise<void> => {
-  invertDimensionBack();
-  currentStep.value = 5;
-  await wait(800);
-  moveDimensionBack();
-  currentStep.value = 4;
-  await wait(800);
-  filterRecordsBack();
-  currentStep.value = 3;
-  await wait(800);
-  selectRecordBack();
-  currentStep.value = 2;
-  await wait(800);
+function runForward(i: number) {
+  switch (i) {
+    case 1: step1Forward(); break
+    case 2: step2Forward(); break
+    case 3: step3Forward(); break
+    case 4: step4Forward(); break
+    case 5: step5Forward(); break
+  }
+}
+
+function runBackward(i: number) {
+  switch (i) {
+    case 0: step1Backward(); break
+    case 1: step2Backward(); break
+    case 2: step3Backward(); break
+    case 3: step4Backward(); break
+    case 4: step5Backward(); break
+  }
+}
+
+const step1Forward = (): void => {
+  setRangeNext();
+}
+
+const step2Forward = (): void => {
+  selectRecordNext();
+}
+
+const step3Forward = (): void => {
+  filterRecordsNext();
+}
+
+const step4Forward = (): void => {
+  moveDimensionNext();
+}
+
+const step5Forward = (): void => {
+  invertDimensionNext();
+}
+
+const step1Backward = (): void => {
   setRangeBack();
-  currentStep.value = 1;
-  await wait(800);
-  currentStep.value = 0;
+}
+
+const step2Backward = (): void => {
+  selectRecordBack();
+}
+
+const step3Backward = (): void => {
+  filterRecordsBack();
+}
+
+const step4Backward = (): void => {
+  moveDimensionBack();
+}
+
+const step5Backward = (): void => {
+  invertDimensionBack();
+}
+
+const triggerReset = async (): Promise<void> => {
+  if (currentStep.value === 1) {
+    setRangeBack();
+    currentStep.value = 0;
+  }
+  else if (currentStep.value === 2) {
+    selectRecordBack();
+    currentStep.value = 1;
+    await wait(800);
+    setRangeBack();
+    currentStep.value = 0;
+  }
+  else if (currentStep.value === 3) {
+    filterRecordsBack();
+    currentStep.value = 2;
+    await wait(800);
+    selectRecordBack();
+    currentStep.value = 1;
+    await wait(800);
+    setRangeBack();
+    currentStep.value = 0;
+  }
+  else if (currentStep.value === 4) {
+    moveDimensionBack();
+    currentStep.value = 3;
+    await wait(800);
+    filterRecordsBack();
+    currentStep.value = 2;
+    await wait(800);
+    selectRecordBack();
+    currentStep.value = 1;
+    await wait(800);
+    setRangeBack();
+    currentStep.value = 0;
+  }
+  else if (currentStep.value === 5) {
+    invertDimensionBack();
+    currentStep.value = 4;
+    await wait(800);
+    moveDimensionBack();
+    currentStep.value = 3;
+    await wait(800);
+    filterRecordsBack();
+    currentStep.value = 2;
+    await wait(800);
+    selectRecordBack();
+    currentStep.value = 1;
+    await wait(800);
+    setRangeBack();
+    currentStep.value = 0;
+  }
 }
 
 const triggerSkip = async (): Promise<void> => {
-  setRangeNext();
-  currentStep.value = 1;
-  await wait(800);
-  selectRecordNext();
-  currentStep.value = 2;  
-  await wait(800);
-  moveDimensionNext();
-  currentStep.value = 3;
-  await wait(800);
-  filterRecordsNext();
-  currentStep.value = 4;
-  await wait(800);
-  invertDimensionNext();
-  currentStep.value = 5;
-  await wait(800);
-  currentStep.value = 6;
+  if (currentStep.value === 4) {
+    invertDimensionNext();
+    currentStep.value = 5;
+  }
+  else if (currentStep.value === 3) {
+    filterRecordsNext();
+    currentStep.value = 4;
+    await wait(800);
+    invertDimensionNext();
+    currentStep.value = 5;
+  }
+  else if (currentStep.value === 2) {
+    moveDimensionNext();
+    currentStep.value = 3;
+    await wait(800);
+    filterRecordsNext();
+    currentStep.value = 4;
+    await wait(800);
+    invertDimensionNext();
+    currentStep.value = 5;
+  }
+  else if (currentStep.value === 1) {
+    selectRecordNext();
+    currentStep.value = 2;  
+    await wait(800);
+    moveDimensionNext();
+    currentStep.value = 3;
+    await wait(800);
+    filterRecordsNext();
+    currentStep.value = 4;
+    await wait(800);
+    invertDimensionNext();
+    currentStep.value = 5;
+  }
+  else if (currentStep.value === 0) {
+    setRangeNext();
+    currentStep.value = 1;
+    await wait(800);
+    selectRecordNext();
+    currentStep.value = 2;  
+    await wait(800);
+    moveDimensionNext();
+    currentStep.value = 3;
+    await wait(800);
+    filterRecordsNext();
+    currentStep.value = 4;
+    await wait(800);
+    invertDimensionNext();
+    currentStep.value = 5;
+  }
 }
 
 const triggerNext = async (currentStep: number): Promise<void> => {
@@ -487,6 +645,7 @@ const activateChart = async (): Promise<void> => {
   const buttons = document.querySelectorAll<HTMLButtonElement>('.stepper-button');
   const currentStepIndex = getCurrentStepIndex();
   if (currentStepIndex !== 2) return;
+  console.log(status);
   if (!status) {
   // eslint-disable-next-line no-undef
     const chart = document.getElementById("parallelcoords") as HTMLDivElement | null;
@@ -502,17 +661,17 @@ const activateChart = async (): Promise<void> => {
     document.querySelectorAll<SVGPathElement>("path").forEach(p => {
       p.style.pointerEvents = "stroke";
     });
-    buttons.forEach(btn => {
+        buttons.forEach(btn => {
       btn.disabled = true;
     });
     status = true;
-    (document.getElementById('activate-button') as HTMLButtonElement).textContent = "Step through";
-    currentStep.value = 0;
+    (document.getElementById('activate-button') as HTMLButtonElement).textContent = "Disable Interactivity";
   }
   else {
     const dataset = getDatasetForStep(currentStepIndex);
     writeTitleToDataset(currentStepIndex);
     drawChart(dataset);
+    currentStep.value = 0;
     // eslint-disable-next-line no-undef
     const chart = document.getElementById("parallelcoords") as HTMLDivElement | null;
     if (chart != null) {
@@ -537,7 +696,7 @@ const activateChart = async (): Promise<void> => {
     });
 
     status = false;
-    (document.getElementById('activate-button') as HTMLButtonElement).textContent = "Interact Directly";
+    (document.getElementById('activate-button') as HTMLButtonElement).textContent = "Enable Interactivity";
   }
 }
 
@@ -618,7 +777,7 @@ const showPositiveCorrelation = (): void => {
 
 const showNegativeCorrelation = (): void => {
   const hiddenDimensions = spcd3.getAllHiddenDimensionNames();
-  const isHiddenFitness = hiddenDimensions.includes("Fitness Score");
+  const isHiddenFitness = hiddenDimensions.includes("Fitness Score (0-100)");
   const isHiddenAge = hiddenDimensions.includes("Age");
   // eslint-disable-next-line no-undef
   const moveError = document.getElementById("move-error") as HTMLParagraphElement | null;
@@ -634,16 +793,16 @@ const showNegativeCorrelation = (): void => {
     }
   }
 
-  const posFitness = spcd3.getDimensionPosition('Fitness Score');
+  const posFitness = spcd3.getDimensionPosition('Fitness Score (0-100)');
   const posAge = spcd3.getDimensionPosition('Age');
   const diff = posAge - posFitness;
   if (diff === 1) {
     (document.getElementById('correlation-neg-button') as HTMLButtonElement).textContent = 'Move Fitness Score Dimension';
-    spcd3.move('Fitness Score', true, 'Cholesterol');
+    spcd3.move('Fitness Score (0-100)', true, 'Cholesterol (mg/dl)');
   }
   else {
     (document.getElementById('correlation-neg-button') as HTMLButtonElement).textContent = 'Move Fitness Score Dimension';
-    spcd3.move('Fitness Score', true, 'Age');
+    spcd3.move('Fitness Score (0-100)', true, 'Age');
   }
 }
 
@@ -951,11 +1110,11 @@ window.addEventListener('scroll', () => {
       (document.getElementById('outlier-button') as HTMLButtonElement | null)?.setAttribute('disabled', '');
       (document.getElementById('correlation-button') as HTMLButtonElement | null)?.setAttribute('disabled', '');
       (document.getElementById('correlation-neg-button') as HTMLButtonElement | null)?.setAttribute('disabled', '');
-      const activateButton = document.getElementById('activate-button') as HTMLButtonElement | null;
+      /*const activateButton = document.getElementById('activate-button') as HTMLButtonElement | null;
       if (activateButton) {
         activateButton.disabled = false;
         activateButton.textContent = 'Interact Directly';
-      }
+      }*/
       const stepperButtons = document.querySelectorAll<HTMLButtonElement>('.stepper-button');
       stepperButtons.forEach(button => {
         button.disabled = false;
@@ -994,8 +1153,8 @@ window.addEventListener('scroll', () => {
       (document.getElementById('outlier-button') as HTMLButtonElement | null)?.removeAttribute('disabled');
       (document.getElementById('correlation-button') as HTMLButtonElement | null)?.removeAttribute('disabled');
       (document.getElementById('correlation-neg-button') as HTMLButtonElement | null)?.removeAttribute('disabled');
-      const activateButton = document.getElementById('activate-button') as HTMLButtonElement | null;
-      if (activateButton) activateButton.disabled = true;
+      /*const activateButton = document.getElementById('activate-button') as HTMLButtonElement | null;
+      if (activateButton) activateButton.disabled = true;*/
       const stepperButtons = document.querySelectorAll<HTMLButtonElement>('.stepper-button');
       stepperButtons.forEach(button => {
         button.disabled = true;
@@ -1031,7 +1190,7 @@ onMounted(async (): Promise<void> => {
   loadContent(filterText, 'content/stepper/filter.html');
   loadContent(rangeText, 'content/stepper/range.html');
   loadContent(invertText, 'content/stepper/invert.html');
-  loadContent(summaryText, 'content/stepper/summary.html');
+  loadContent(interactiveText, 'content/stepper/interactive.html');
   loadContent(multipleViewsText, 'content/multipleviews.html');
   loadContent(referencesDatasetText, 'content/resources.html');
   
@@ -1041,6 +1200,7 @@ onMounted(async (): Promise<void> => {
     container.addEventListener('click', handleClick);
   }
 
+  console.log('step', currentStep.value, typeof currentStep.value)
   await nextTick();
 
   if (!supportsScrollDrivenAnimations) {
@@ -1303,7 +1463,7 @@ onMounted(async (): Promise<void> => {
   display: block;
   height: auto;
   max-height: 30rem;
-  width: 100%;;
+  width: 100%;
 }
 
 #chart-title {
@@ -1316,14 +1476,15 @@ onMounted(async (): Promise<void> => {
 .main-chart {
   position: sticky;
   top: calc(10vh + 1rem);
+  margin-left: 1rem;
+}
+
+.chart-wrapper {
   border: 0.01rem solid black;
   border-radius: 0.3rem;
 }
 
 #parallelcoords {
-  display: flex;
-  justify-content: center;
-  align-items: center;
   transition: opacity 0.5s ease;
 }
 
@@ -1333,7 +1494,7 @@ onMounted(async (): Promise<void> => {
 
 .pic {
   margin-left: 2rem;
-  padding-right: 2rem;
+  padding-right: 4rem;
 }
 
 
@@ -1354,6 +1515,7 @@ onMounted(async (): Promise<void> => {
     width: 100%;
     background: white;
     z-index: 100;
+    margin-left: 0;
   }
 
   .chart-container {
@@ -1387,6 +1549,7 @@ onMounted(async (): Promise<void> => {
     width: 100%;
     background: white;
     z-index: 100;
+    margin-left: 0;
   }
 
   .chart-container {
@@ -1398,9 +1561,6 @@ onMounted(async (): Promise<void> => {
     min-width: 100%;
   }
 
-  #pc_svg {
-    height: 16rem;
-  }
 }
 
 /* Mobile portrait (chart and text column) */
@@ -1415,11 +1575,12 @@ onMounted(async (): Promise<void> => {
 
   .main-chart {
     position: fixed;
-    top: 2rem;
+    top: 2.7rem;
     left: 0;
     width: 100%;
     background: white;
     z-index: 100;
+    margin-left: 0;
   }
 
   .chart-container {
@@ -1432,9 +1593,6 @@ onMounted(async (): Promise<void> => {
     min-width: 100%;
   }
 
-  #pc_svg {
-    height: 18rem;
-  }
 }
 
 /* Mobile portrait (chart and text column) */
@@ -1455,6 +1613,7 @@ onMounted(async (): Promise<void> => {
     z-index: 100;
     justify-content: left !important;
     align-items: left !important;
+    margin-left: 0;
   }
 
   .chart-container {
@@ -1490,9 +1649,6 @@ onMounted(async (): Promise<void> => {
     min-width: 40%;
   }
 
-  #pc_svg {
-    height: 16rem;
-  }
 }
 
 
@@ -1643,7 +1799,7 @@ th, td {
 }
 
 td {
-  background-color: rgb(229, 229, 220);
+  background-color: oklch(0.99 0.011 91.69);;
   padding: 0.2rem;
   z-index: 0
 }
@@ -1702,7 +1858,7 @@ th .delete-button,
 th .add-button,
 td .delete-button,
 td .add-button {
-  border: none;
+  border: 0.01rem solid black;
   background: white;
   border-radius: 75%;
   width: 1.2rem;
@@ -1711,11 +1867,11 @@ td .add-button {
   text-align: center;
   cursor: pointer;
   padding: 0;
-  margin-top: 0.5rem;
+  margin-top: 0.4rem;
   margin-right: 0.2rem;
   color: black;
   font-weight: bold;
-  font-size: 0.9em;
+  font-size: 1em;
   top: 0.2rem;
   right: 0.4rem;
   position: absolute;
@@ -1787,7 +1943,7 @@ figcaption {
   text-align: justify;
   width: calc(100% - 0.5rem);
   max-width: 100%;
-  background: rgb(229, 229, 220);
+  background: oklch(0.99 0.011 91.69);
   border-radius: 0.3rem;
   margin-top: 1rem;
   opacity: 0;
@@ -1796,6 +1952,7 @@ figcaption {
   margin-left: 0.5rem;
   margin-right: 0.5rem;
   padding-bottom: 0.5rem;
+  border: 0.01rem solid black;
 
   animation: slide-in-from-bottom 1s ease-out forwards;
   animation-timeline: scroll();
@@ -1810,17 +1967,10 @@ figcaption {
   display: flex;
 }
 
-li.active {
-  background: rgba(0, 129, 175, 1) no-repeat center left;
-  color: white;
-  font-weight: bold;
-  border-radius: 0.25rem;
-  padding-left: 0.5rem;
-}
-
-li.active::marker {
-  color: black;
-  font-weight: normal;
+.stepper-button {
+  width: 1.7rem;
+  height: 1.7rem;
+  display: block;
 }
 
 .step-indicator {
@@ -1834,6 +1984,7 @@ li.active::marker {
 .step-indicator span {
   position: relative;
   padding: 0 0.3rem;
+  cursor: pointer;
 }
 
 .step-indicator span.active::after {
@@ -1844,6 +1995,60 @@ li.active::marker {
   bottom: -0.1em;
   height: 0.1em;
   background: grey;
+}
+
+.steps {
+  padding: 0;
+}
+
+.steps > li {
+  padding: 0;
+  margin: 0 0 0.1rem 0;
+  overflow: hidden;
+}
+
+.li-header {
+  background: oklch(0.99 0.011 91.69);
+  padding-top: 0.2rem;
+  padding-bottom: 0.2rem;
+  padding-left: 1rem;
+  cursor: pointer;
+}
+
+.steps > li.active .li-header {
+  background: rgba(0, 129, 175, 1);
+  display: inline;
+  color: rgb(255,255,255);
+  font-weight: 590;
+  margin-left: 1rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.step-panel {
+  margin-left: 1rem;
+  padding-right: 1rem;
+  border: 0.01rem solid black;
+}
+
+.expand-enter-active,
+.expand-leave-active {
+  transition: max-height .5s ease-in, opacity .5s ease-out;
+}
+.expand-enter-from,
+.expand-leave-to {
+  max-height: 0;
+  opacity: 0;
+}
+.expand-enter-to,
+.expand-leave-from {
+  max-height: 10rem;
+  opacity: 1;
+}
+
+#activate-button {
+  margin-left: 1rem;
+  margin-bottom: 0.5rem;
 }
 /* References section */
 
