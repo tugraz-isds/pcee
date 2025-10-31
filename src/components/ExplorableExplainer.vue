@@ -154,16 +154,7 @@
           class="stepper"
           content-section
         >
-          <h2>7. Case Study: Student Marks</h2>
-          <p 
-            class="step"
-            data-step="2"
-          >
-            The Student Marks Dataset is a fictitious dataset of student marks,
-            consisting of 30 rows of data (records), and 9 columns (dimensions),
-            including the name of the student. Each row represents one student 
-            and their marks between 0 and 100 in 8 subjects.
-          </p>
+          <div v-html="studentDatasetText" />
 
           <ol class="steps">
             <li
@@ -1182,7 +1173,7 @@ onMounted(async (): Promise<void> => {
   loadContent(dimensionOperationsText, 'content/operations-dimensions.html');
   loadContent(healthDatasetText, 'content/data-health.html');
   loadContent(usageText, 'content/usage.html');
-  loadContent(studentDatasetText, 'content/stepper/data-student.html');
+  loadContent(studentDatasetText, 'content/data-student.html');
   loadContent(moveText, 'content/stepper/move.html');
   loadContent(selectText, 'content/stepper/select.html');
   loadContent(filterText, 'content/stepper/filter.html');
@@ -1216,6 +1207,7 @@ onMounted(async (): Promise<void> => {
 
     gsap.to(multiLine.value, {
       opacity: 0,
+      fontSize: 'small',
       scrollTrigger: {
         trigger: document.body,
         start: 'top top',
@@ -1233,6 +1225,7 @@ onMounted(async (): Promise<void> => {
 
     gsap.to(singleLine.value, {
       opacity: 1,
+      fontSize: 'medium',
       scrollTrigger: {
         trigger: document.body,
         start: '+=80vh',
@@ -1269,7 +1262,7 @@ onMounted(async (): Promise<void> => {
   color: white;
   background: rgba(0, 129, 175, 1);
   pointer-events: none;
-  font-size: xx-large;
+  font-size: x-large;
 
   z-index: 1000;
 
@@ -1288,9 +1281,12 @@ onMounted(async (): Promise<void> => {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  width: 100%;
-  max-width: 90vw;
+  width: auto;
+  max-width: min(65ch, 100% - 2rem);;
   word-wrap: break-word;
+  overflow-wrap: anywhere;
+  box-sizing: border-box;
+  padding-inline: 1rem;
 }
 
 .multi-line {
@@ -1381,7 +1377,7 @@ onMounted(async (): Promise<void> => {
     background-position: 50% 100%;
     height: 6.5vh;
     width: 100%;
-    font-size: larger;
+    font-size: medium;
   }
 }
 
@@ -1398,7 +1394,7 @@ onMounted(async (): Promise<void> => {
       background-position: 50% 100%;
       height: 6vh;
       width: 100%;
-      font-size: larger;
+      font-size: medium;
     }
   }
 }
@@ -1416,7 +1412,7 @@ onMounted(async (): Promise<void> => {
       background-position: 50% 100%;
       height: 6vh;
       width: 100%;
-      font-size: large;
+      font-size: medium;
     }
   }
 }
@@ -1427,7 +1423,7 @@ onMounted(async (): Promise<void> => {
       background-position: 50% 0%;
       height: 100vh;
       width: 100%;
-      font-size: x-large;
+      font-size: xx-large;
     }
 
     to {
@@ -1486,6 +1482,7 @@ onMounted(async (): Promise<void> => {
 
 .text-container {
   margin-right: 1rem;
+  max-width: 100%;
 }
 
 .pic {
@@ -1516,11 +1513,18 @@ onMounted(async (): Promise<void> => {
 
   .chart-container {
     flex: 1 1 20rem;
-    min-width: 100%;
   }
 
-  .text-container {
-    min-width: 100%;
+  section {
+    margin-right: 0.5rem;
+  }
+
+  .stepper {
+    margin-right: 0.5rem;
+  }
+
+  .table-container {
+    margin-right: 0.5rem;
   }
 
   #pc_svg {
@@ -1550,11 +1554,18 @@ onMounted(async (): Promise<void> => {
 
   .chart-container {
     flex: 1 1 18rem;
-    min-width: 100%;
+  }
+  
+  section {
+    margin-right: 0.5rem;
   }
 
-  .text-container {
-    min-width: 100%;
+  .stepper {
+    margin-right: 0.5rem;
+  }
+
+  .table-container {
+    margin-right: 0.5rem;
   }
 
 }
@@ -1581,12 +1592,19 @@ onMounted(async (): Promise<void> => {
 
   .chart-container {
     flex: 1 1 20rem;
-    min-width: 100%;
     padding-bottom: 0;
   }
+  
+  section {
+    margin-right: 0.5rem;
+  }
 
-  .text-container {
-    min-width: 100%;
+  .stepper {
+    margin-right: 0.5rem;
+  }
+
+  .table-container {
+    margin-right: 0.5rem;
   }
 
 }
@@ -1617,6 +1635,19 @@ onMounted(async (): Promise<void> => {
     min-width: 100%;
     padding-bottom: 0;
   }
+  
+  section {
+    margin-right: 0.5rem;
+  }
+
+  .stepper {
+    margin-right: 0.5rem;
+  }
+
+  .table-container {
+    margin-right: 0.5rem;
+  }
+
 }
 
 /* Mobile landscape (chart and text row) */
@@ -1650,8 +1681,7 @@ onMounted(async (): Promise<void> => {
 
 /* Sections in Textcontainer with animation */
 section {
-  width: calc(100% - 0.5rem);
-  max-width: 100%;
+  width: auto;
   background: oklch(0.99 0.011 91.69);  /* rgb(229, 229, 220); */
   border: 0.01rem solid black;
   border-radius: 0.3rem;
@@ -1660,7 +1690,6 @@ section {
   transform: translateY(100px);
   padding-right: 1rem;
   margin-left: 0.5rem;
-  margin-right: 0.5rem;
   padding-bottom: 0.5rem;
 
   animation: slide-in-from-bottom 1s ease-out forwards;
@@ -1937,8 +1966,7 @@ figcaption {
   display: flex;
   flex-direction: column;
   text-align: justify;
-  width: calc(100% - 0.5rem);
-  max-width: 100%;
+  width: auto;
   background: oklch(0.99 0.011 91.69);
   border-radius: 0.3rem;
   margin-top: 1rem;
@@ -1946,7 +1974,6 @@ figcaption {
   transform: translateY(100px);
   padding-right: 1rem;
   margin-left: 0.5rem;
-  margin-right: 0.5rem;
   padding-bottom: 0.5rem;
   border: 0.01rem solid black;
 
@@ -2059,5 +2086,6 @@ figcaption {
   margin-top: 1rem;
   margin-left: 1rem;
   margin-right: 1rem;
+  width: auto;
 }
 </style>
