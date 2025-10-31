@@ -149,113 +149,113 @@
         ref="usageContainer" 
         v-html="usageText" 
       />
-      <div 
-        class="stepper"
-        content-section
-      >
-        <div>
-          <h2>7. Case Study: Student Marks</h2>
-        </div>
-        <p 
-          class="step"
-          data-step="2"
+      <div>
+        <section 
+          class="stepper"
+          content-section
         >
-          The Student Marks Dataset is a fictitious dataset of student marks,
-          consisting of 30 rows of data (records), and 9 columns (dimensions),
-          including the name of the student. Each row represents one student and
-          their marks between 0 and 100 in 8 subjects.
-        </p>
-
-        <ol class="steps">
-          <li
-            v-for="(step, index) in steps"
-            :key="step.title"
-            :class="{ active: index === currentStep }"
+          <h2>7. Case Study: Student Marks</h2>
+          <p 
+            class="step"
+            data-step="2"
           >
-            <div
-              class="li-header"
+            The Student Marks Dataset is a fictitious dataset of student marks,
+            consisting of 30 rows of data (records), and 9 columns (dimensions),
+            including the name of the student. Each row represents one student 
+            and their marks between 0 and 100 in 8 subjects.
+          </p>
+
+          <ol class="steps">
+            <li
+              v-for="(step, index) in steps"
+              :key="step.title"
+              :class="{ active: index === currentStep }"
+            >
+              <div
+                class="li-header"
+                :style="{ cursor: status ? 'default' : 'pointer' }"
+                :aria-expanded="index === currentStep ? 'true' : 'false'"
+                @click="status === false && goToStep(index)"
+              >
+                {{ step.title }}
+              </div>
+              <transition name="expand">
+                <div
+                  v-show="index === currentStep"
+                  class="step-panel"
+                >
+                  <p class="step-text">
+                    {{ step.content }}
+                  </p>
+
+                  <button
+                    v-if="step.title === '6. Play with the Data'"
+                    id="activate-button"
+                  >
+                    Enable Interactivity
+                  </button>
+                </div>
+              </transition>
+            </li>
+          </ol>
+
+          <div class="buttons">
+            <button
+              id="reset-button"
+              class="stepper-button"
+              :disabled="currentStep === 0"
+              @click="reset"
+            >
+              <img 
+                src="/svg/reset-button.svg"
+              >
+            </button>
+            <button
+              id="start-button"
+              class="stepper-button"
+              :disabled="currentStep === 0"
+              @click="back"
+            >
+              <img 
+                src="/svg/back-button.svg"
+              >
+            </button>
+            <button
+              class="stepper-button"
+              :disabled="currentStep === steps.length - 1"
+              @click="next"
+            >
+              <img 
+                src="/svg/next-button.svg"
+              >
+            </button>
+            <button
+              class="stepper-button"
+              :disabled="currentStep === steps.length - 1"
+              @click="skip"
+            >
+              <img 
+                src="/svg/skip-button.svg"
+              >
+            </button>
+          </div>
+
+          <div class="step-indicator">
+            <span
+              v-for="(step, index) in steps"
+              :key="index"
               :style="{ cursor: status ? 'default' : 'pointer' }"
-              :aria-expanded="index === currentStep ? 'true' : 'false'"
+              :class="{ active: index === currentStep }"
               @click="status === false && goToStep(index)"
             >
-              {{ step.title }}
-            </div>
-            <transition name="expand">
-              <div
-                v-show="index === currentStep"
-                class="step-panel"
-              >
-                <p class="step-text">
-                  {{ step.content }}
-                </p>
-
-                <button
-                  v-if="step.title === '6. Play with the Data'"
-                  id="activate-button"
-                >
-                  Enable Interactivity
-                </button>
-              </div>
-            </transition>
-          </li>
-        </ol>
-
-        <div class="buttons">
-          <button
-            id="reset-button"
-            class="stepper-button"
-            :disabled="currentStep === 0"
-            @click="reset"
-          >
-            <img 
-              src="/svg/reset-button.svg"
-            >
-          </button>
-          <button
-            id="start-button"
-            class="stepper-button"
-            :disabled="currentStep === 0"
-            @click="back"
-          >
-            <img 
-              src="/svg/back-button.svg"
-            >
-          </button>
-          <button
-            class="stepper-button"
-            :disabled="currentStep === steps.length - 1"
-            @click="next"
-          >
-            <img 
-              src="/svg/next-button.svg"
-            >
-          </button>
-          <button
-            class="stepper-button"
-            :disabled="currentStep === steps.length - 1"
-            @click="skip"
-          >
-            <img 
-              src="/svg/skip-button.svg"
-            >
-          </button>
-        </div>
-
-        <div class="step-indicator">
-          <span
-            v-for="(step, index) in steps"
-            :key="index"
-            :style="{ cursor: status ? 'default' : 'pointer' }"
-            :class="{ active: index === currentStep }"
-            @click="status === false && goToStep(index)"
-          >
-            {{ index + 1 }}
-          </span>
-        </div>
-        <p>
-          In summary, interactive parallel coordinates are helpful to identify
-          outliers, clusters, and correlations within a multidimensional
-          dataset, as demonstrated in this case study.</p>
+              {{ index + 1 }}
+            </span>
+          </div>
+          <p>
+            In summary, interactive parallel coordinates are helpful to identify
+            outliers, clusters, and correlations within a multidimensional
+            dataset, as demonstrated in this case study.</p>
+        </section>
       </div>
       <div v-html="multipleViewsText" />
       <div
@@ -345,7 +345,6 @@ const goToStep = async(index: number): Promise<void> => {
     index = index + 1;
     for (let i = currentStep.value; i < index; i++) {
       currentStep.value = i;
-      console.log(i);
       runForward(i);
       await wait(800);
     }
@@ -645,7 +644,6 @@ const activateChart = async (): Promise<void> => {
   const buttons = document.querySelectorAll<HTMLButtonElement>('.stepper-button');
   const currentStepIndex = getCurrentStepIndex();
   if (currentStepIndex !== 2) return;
-  console.log(status);
   if (!status) {
   // eslint-disable-next-line no-undef
     const chart = document.getElementById("parallelcoords") as HTMLDivElement | null;
@@ -1199,8 +1197,6 @@ onMounted(async (): Promise<void> => {
   if(container) {
     container.addEventListener('click', handleClick);
   }
-
-  console.log('step', currentStep.value, typeof currentStep.value)
   await nextTick();
 
   if (!supportsScrollDrivenAnimations) {
