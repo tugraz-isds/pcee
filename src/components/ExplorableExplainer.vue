@@ -1412,7 +1412,7 @@ onMounted(async (): Promise<void> => {
       background-position: 50% 100%;
       height: 6vh;
       width: 100%;
-      font-size: medium;
+      font-size: small;
     }
   }
 }
@@ -1453,13 +1453,13 @@ onMounted(async (): Promise<void> => {
 
 #pc_svg {
   display: block;
-  height: auto;
+  height: 100%;
   max-height: 30rem;
   width: 100%;
 }
 
 #chart-title {
-  font-size: x-large;
+  font-size: larger;
   font-weight: bold;
   text-align: center;
   margin-top: 1rem;
@@ -1498,7 +1498,7 @@ onMounted(async (): Promise<void> => {
   }
 
   #chart-title {
-    font-size: x-large;
+    font-size: large;
   }
 
   .main-chart {
@@ -1526,16 +1526,13 @@ onMounted(async (): Promise<void> => {
   .table-container {
     margin-right: 0.5rem;
   }
-
-  #pc_svg {
-    height: 18rem;
-  }
 }
 
 /* Mini tablet (chart and text column)*/
 @media (max-width: 800px) and (orientation: portrait) {
   #chart-title {
-    font-size: larger;
+    font-size: large;
+    margin-top: 0.5rem;
   }
 
   .explorable-explainer {
@@ -1577,7 +1574,8 @@ onMounted(async (): Promise<void> => {
   }
 
   #chart-title {
-    font-size: large;
+    font-size: small;
+    margin-top: 0.25rem;
   }
 
   .main-chart {
@@ -1616,7 +1614,8 @@ onMounted(async (): Promise<void> => {
   }
 
   #chart-title {
-    font-size: large;
+    font-size: small;
+    margin-top: 0.15rem;
   }
 
   .main-chart {
@@ -1657,7 +1656,7 @@ onMounted(async (): Promise<void> => {
   }
 
   #chart-title {
-    font-size: large;
+    font-size: small;
   }
 
   .main-chart {
