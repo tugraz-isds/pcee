@@ -6611,9 +6611,13 @@ function setupYScales(header, dataset) {
     return yScales;
 }
 function setupXScales(header) {
+    const n = header.length;
+    const pad = (n <= 2) ? 0 : 0.2;
     return point$4()
         .domain(header.map((x) => x.name))
-        .range([width - padding, padding]);
+        .range([width - padding, padding])
+        .padding(pad)
+        .align(0.5);
 }
 function isLinearScale(scale) {
     return typeof scale.ticks === 'function';
@@ -8359,7 +8363,6 @@ function addSettingsForBrushing(dimension, invertStatus) {
     const yScale = parcoords.yScales[processedName];
     const dimensionSettings = parcoords.currentPosOfDims.find((d) => d.key === dimension);
     let top, bottom;
-    console.log(parcoords.currentPosOfDims);
     if (isDimensionCategorical(dimension)) {
         const domain = yScale.domain();
         const sorted = domain.slice().sort((a, b) => yScale(a) - yScale(b));
@@ -8393,7 +8396,6 @@ function addSettingsForBrushing(dimension, invertStatus) {
         .attr('y', rectY + rectH);
     addPosition(top, dimension, 'top');
     addPosition(bottom, dimension, 'bottom');
-    console.log(parcoords.currentPosOfDims);
 }
 function getInvertStatus(key) {
     const item = parcoords.currentPosOfDims.find((object) => object.key == key);
@@ -9015,7 +9017,7 @@ function createInputFieldWithLabel(modal, text, inputId) {
     const input = document.createElement('input');
     input.type = 'number';
     input.id = inputId;
-    input.style.width = '3rem';
+    input.style.width = '4.5rem';
     input.style.border = '0.1rem solid lightgrey';
     input.style.borderRadius = "5%";
     modal.append(() => input);
@@ -10339,6 +10341,16 @@ function setUnselectedWithId(recordId) {
     setUnselected(record);
 }
 //---------- IO Functions ----------
+function computeMargins(labels = [], { font = '12px Verdana, sans-serif', top = 15, bottom = 36, extraLeft = 0, extraRight = 8 } = {}) {
+    const ctx = document.createElement('canvas').getContext('2d');
+    ctx.font = font;
+    let maxWidth = ctx.measureText(String(labels[labels.length - 1])).width;
+    if (labels.length < 5)
+        maxWidth = maxWidth + 180;
+    const left = Math.ceil(maxWidth) + extraLeft;
+    const right = Math.ceil(maxWidth / 2) + extraRight;
+    return { top, right, bottom, left };
+}
 function drawChart(content) {
     setRefreshData(structuredClone(content));
     deleteChart();
@@ -10355,16 +10367,13 @@ function drawChart(content) {
         .style('width', '100%')
         .style('margin', '0')
         .style('padding', '0')
-        .style('text-align', 'left')
-        .style('justify-content', 'center')
-        .style('align-items', 'center');
+        .style('text-align', 'left');
     const chartWrapper = wrapper.append('div')
         .attr('id', 'chartWrapper')
         .style('display', 'block')
         .style('width', '100%')
         .style('margin', '0')
-        .style('padding', '0')
-        .style('text-align', 'left');
+        .style('padding', '0');
     chartWrapper.append('div')
         .attr('id', 'toolbarRow')
         .style('display', 'flex')
@@ -10379,6 +10388,14 @@ function drawChart(content) {
         .attr('id', 'pc_svg')
         .attr('viewBox', [0, 0, width, height])
         .attr('font-family', 'Verdana, sans-serif'));
+    const margin = computeMargins(parcoords.newFeatures);
+    select('#chartWrapper')
+        .style('--ml', `${margin.left}px`)
+        .style('--mr', `${margin.right}px`);
+    select('#toolbarRow')
+        .style('margin-left', 'var(--ml)')
+        .style('margin-right', 'var(--mr)')
+        .style('width', 'calc(100% - var(--ml) - var(--mr))');
     setDefsForIcons();
     setFeatureAxis(svg, yAxis, parcoords, width);
     setActive(setActivePathLines(svg, content, parcoords));
