@@ -8037,7 +8037,15 @@ function filter(dimensionName, min, max) {
         .transition()
         .duration(1000)
         .attr('y', rectY - 10);
+    select('#triangle_down_hit' + cleanDimensionName)
+        .transition()
+        .duration(1000)
+        .attr('y', rectY - 10);
     select('#triangle_up_' + cleanDimensionName)
+        .transition()
+        .duration(1000)
+        .attr('y', rectY + rectHeight);
+    select('#triangle_up_hit' + cleanDimensionName)
         .transition()
         .duration(1000)
         .attr('y', rectY + rectHeight);
@@ -9541,8 +9549,6 @@ function setFeatureAxisToDownload(svg, yAxis, yScales, xScales) {
         const min = getCurrentMinRange(d.name);
         if (!isDimensionCategorical(d.name)) {
             const inversionStatus = getInversionStatus(d.name);
-            console.log(d.name);
-            console.log(inversionStatus);
             if (inversionStatus === 'ascending') {
                 yScales[d.name].domain([min, max]);
                 yAxis = setupYAxis(yScales, parcoords.newDataset, hiddenDims);
@@ -9573,7 +9579,7 @@ function setFeatureAxisToDownload(svg, yAxis, yScales, xScales) {
     featureAxis
         .append('text')
         .attr('text-anchor', 'middle')
-        .attr('y', (padding / 1.7).toFixed(4))
+        .attr('y', (80 / 1.7).toFixed(4))
         .text((d) => d.name.length > 10 ? d.name.substr(0, 10) + '...' : d.name)
         .style('font-size', '0.7rem');
     setBrushDownToDownload(featureAxis);
@@ -9632,7 +9638,7 @@ function setRectToDragToDownload(featureAxis) {
     });
 }
 function setInvertIconToDownload(featureAxis) {
-    let value = (padding / 1.5).toFixed(4);
+    let value = (80 / 1.5).toFixed(4);
     featureAxis
         .append('svg')
         .attr('y', value)
@@ -10935,6 +10941,7 @@ function setBrushUp(featureAxis, parcoords, tooltipValues, brushOverlay) {
             .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopCursor()), 13)}') 8 8, auto`);
         const hit = g.append('rect')
             .attr('class', 'handle-hitbox')
+            .attr('id', 'triangle_up_hit' + processedDimensionName)
             .attr('x', iconX)
             .attr('y', iconY)
             .attr('width', iconW)
@@ -10996,6 +11003,7 @@ function setBrushDown(featureAxis, parcoords, tooltipValues, brushOverlay) {
             .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowBottomCursor()), 13)}') 8 8, auto`);
         const hit = g.append('rect')
             .attr('class', 'handle-hitbox')
+            .attr('id', 'triangle_down_hit' + processedDimensionName)
             .attr('x', iconX)
             .attr('y', iconY)
             .attr('width', iconW)
