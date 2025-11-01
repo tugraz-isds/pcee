@@ -3426,10 +3426,10 @@ function getArrowBottomCursor() {
     return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 5"><path fill="white" stroke="black" stroke-width="0.5" d="M 1 0 L 7 0 L 4 5 z"/></svg>';
 }
 function getArrowBottom() {
-    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="rgb(255, 255, 0)" fill-opacity="0.5" stroke="black" stroke-width="0.2" d="M 0 0 L 6 0 L 3 5 z"/></svg>';
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="rgb(234, 234, 40)" fill-opacity="0.5" stroke="black" stroke-width="0.2" d="M 0 0 L 6 0 L 3 5 z"/></svg>';
 }
 function getArrowBottomActive() {
-    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="rgb(234, 234, 40)" fill-opacity="0.5" stroke="black" stroke-width="0.5" d="M 0 0 L 6 0 L 3 5 z"/></svg>';
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="rgb(255, 255, 0)" fill-opacity="0.5" stroke="black" stroke-width="0.5" d="M 0 0 L 6 0 L 3 5 z"/></svg>';
 }
 function getArrowDown() {
     return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 10"><path d="M 0 6 L 2 6 L 2 0 L 4 0 L 4 6 L 6 6 L 3 10 z"/></svg>';
@@ -3453,10 +3453,10 @@ function getArrowTopCursor() {
     return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 5"><path fill="white" stroke="black" stroke-width="0.5" d="M 1 5 L 4 0 L 7 5 z"/></svg>';
 }
 function getArrowTop() {
-    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="rgb(255, 255, 0)" fill-opacity="0.5" stroke="black" stroke-width="0.2" d="M 0 5 L 3 0 L 6 5 z"/></svg>';
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="rgb(234, 234, 40)" fill-opacity="0.5" stroke="black" stroke-width="0.2" d="M 0 5 L 3 0 L 6 5 z"/></svg>';
 }
 function getArrowTopActive() {
-    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="rgb(234, 234, 40)" fill-opacity="0.5" stroke="black" stroke-width="0.5" d="M 0 5 L 3 0 L 6 5 z"/></svg>';
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="rgb(255, 255, 0)" fill-opacity="0.5" stroke="black" stroke-width="0.5" d="M 0 5 L 3 0 L 6 5 z"/></svg>';
 }
 function getArrowUp() {
     return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 10"><path d="M 0 4 L 3 0 L 6 4 L 4 4 L 4 10 L 2 10 L 2 4 z"/></svg>';
@@ -7931,14 +7931,14 @@ function brushDown(cleanDimensionName, event, d, tooltipValues, window) {
         select('#triangle_down_' + cleanDimensionName)
             .attr('href', '#brush_image_bottom');
         select('#rect_' + cleanDimensionName)
-            .attr('fill', 'rgb(255, 255, 0)')
+            .attr('fill', 'rgb(234, 234, 40)')
             .attr('opacity', '0.5');
     }
     else {
         select('#triangle_down_' + cleanDimensionName)
             .attr('href', '#brush_image_bottom_active');
         select('#rect_' + cleanDimensionName)
-            .attr('fill', 'rgb(234, 234, 40)')
+            .attr('fill', 'rgb(255, 255, 0)')
             .attr('opacity', '0.5');
     }
     select('#triangle_down_' + cleanDimensionName).attr('y', yPosTop);
@@ -10376,9 +10376,7 @@ function computeMargins(labels = [], { font = '12px Verdana, sans-serif', top = 
     ctx.font = font;
     let maxWidth = ctx.measureText(String(labels[labels.length - 1])).width;
     if (labels.length < 5)
-        maxWidth = maxWidth + 180;
-    /*if (labels.length >= 4 && labels.length < 7)
-      maxWidth = maxWidth + (260 - 20 * labels.length);*/
+        maxWidth = maxWidth + 100;
     const left = Math.ceil(maxWidth) + extraLeft;
     const right = Math.ceil(maxWidth / 2) + extraRight;
     return { top, right, bottom, left };
@@ -10952,7 +10950,7 @@ function setRectToDrag(featureAxis, svg, parcoords, tooltipValuesTop, tooltipVal
             .attr('height', 240)
             .attr('x', -6)
             .attr('y', 80)
-            .attr('fill', 'rgb(255, 255, 0)')
+            .attr('fill', 'rgb(234, 234, 40)')
             .attr('opacity', '0.5')
             .style('cursor', 'default')
             .call(drag()
@@ -10993,8 +10991,8 @@ function setBrushUp(featureAxis, parcoords, tooltipValues, brushOverlay) {
             .attr('id', 'triangle_up_hit' + processedDimensionName)
             .attr('x', iconX)
             .attr('y', iconY)
-            .attr('width', iconW)
-            .attr('height', iconH)
+            .attr('width', 20)
+            .attr('height', 16)
             .style('fill', 'transparent')
             .style('pointer-events', 'all')
             .style('touch-action', 'none')
@@ -11055,8 +11053,8 @@ function setBrushDown(featureAxis, parcoords, tooltipValues, brushOverlay) {
             .attr('id', 'triangle_down_hit' + processedDimensionName)
             .attr('x', iconX)
             .attr('y', iconY)
-            .attr('width', iconW)
-            .attr('height', iconH)
+            .attr('width', 20)
+            .attr('height', 16)
             .style('fill', 'transparent')
             .style('pointer-events', 'all')
             .style('touch-action', 'none')
