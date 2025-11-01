@@ -6689,35 +6689,65 @@ function getAllVisibleDimensionNames$1() {
     let listOfDimensions = parcoords.newFeatures.slice();
     return listOfDimensions.reverse();
 }
-function createToolTipForValues(records) {
+function recordIdOf(rec, fallback) {
+    return rec.id ?? rec._id ?? rec.key ?? fallback;
+}
+function createToolTipForValues(records, recKey) {
     const dimensions = getAllVisibleDimensionNames$1();
     const svg = select('#pc_svg').node();
-    dimensions.forEach(dimension => {
-        const cleanString$1 = cleanString(dimension);
-        if (isElementVisible(select('#rect_' + cleanString$1))) {
-            const yScale = parcoords.yScales[dimension];
-            const x = parcoords.xScales(dimension);
-            const y = yScale(records[dimension]);
-            const pt = svg.createSVGPoint();
-            pt.x = x;
-            pt.y = y;
-            const screenPoint = pt.matrixTransform(svg.getScreenCTM());
-            select('body')
-                .append('div')
-                .attr('class', 'tooltip-div')
-                .style('position', 'absolute')
-                .style('left', `${screenPoint.x}px`)
-                .style('top', `${screenPoint.y}px`)
-                .style('font-size', '0.65rem')
-                .style('margin', '0.5rem')
-                .style('color', 'red')
-                .style('background-color', '#d3d3d3ad')
-                .style('font-weight', 'bold')
-                .style('padding', '0.12rem')
-                .style('white-space', 'nowrap')
-                .text(records[dimension].toString());
-        }
+    const plotG = (document.querySelector('#pc_svg g.plot') ?? svg);
+    const ctm = plotG.getScreenCTM();
+    if (!ctm)
+        return;
+    const recordId = recordIdOf(records, String(recKey ?? Math.random()));
+    const layer = select('body')
+        .selectAll(`div.tip-layer[data-record="${recordId}"]`)
+        .data([recordId])
+        .join('div')
+        .attr('class', 'tip-layer')
+        .attr('data-record', recordId)
+        .style('position', 'absolute')
+        .style('left', '0px')
+        .style('top', '0px')
+        .style('pointer-events', 'none');
+    const data = dimensions
+        .filter(dim => isElementVisible(select('#rect_' + cleanString(dim))))
+        .map(dim => {
+        const yScale = parcoords.yScales[dim];
+        const x = parcoords.xScales(dim);
+        const y = yScale(records[dim]);
+        const pt = svg.createSVGPoint();
+        pt.x = x;
+        pt.y = y;
+        const sp = pt.matrixTransform(ctm);
+        return {
+            dim,
+            pageX: sp.x + window.scrollX + 8,
+            pageY: sp.y + window.scrollY + 8,
+            text: String(records[dim]),
+        };
     });
+    const tips = layer
+        .selectAll('div.tooltip-div')
+        .data(data, (d) => d.dim);
+    tips.join(enter => enter.append('div')
+        .attr('class', 'tooltip-div')
+        .style('position', 'absolute')
+        .style('pointer-events', 'none')
+        .style('font-size', '0.65rem')
+        .style('margin', '0.5rem')
+        .style('color', 'red')
+        .style('background-color', '#d3d3d3ad')
+        .style('font-weight', 'bold')
+        .style('padding', '0.12rem')
+        .style('white-space', 'nowrap')
+        .style('z-index', '9999')
+        .style('left', d => `${d.pageX}px`)
+        .style('top', d => `${d.pageY}px`)
+        .text(d => d.text), update => update
+        .style('left', d => `${d.pageX}px`)
+        .style('top', d => `${d.pageY}px`)
+        .text(d => d.text), exit => exit.remove());
 }
 function getAllPointerEventsData(event) {
     const selection = selectAll(document.elementsFromPoint(event.clientX, event.clientY)).filter('path');
@@ -10347,6 +10377,8 @@ function computeMargins(labels = [], { font = '12px Verdana, sans-serif', top = 
     let maxWidth = ctx.measureText(String(labels[labels.length - 1])).width;
     if (labels.length < 5)
         maxWidth = maxWidth + 180;
+    /*if (labels.length >= 4 && labels.length < 7)
+      maxWidth = maxWidth + (260 - 20 * labels.length);*/
     const left = Math.ceil(maxWidth) + extraLeft;
     const right = Math.ceil(maxWidth / 2) + extraRight;
     return { top, right, bottom, left };
@@ -10549,10 +10581,10 @@ const handlePointerEnter = (event, d) => {
     parcoords.newDataset.forEach((record) => {
         datasetMap.set(record[hoverlabel], record);
     });
-    data.forEach((item) => {
-        const matchingRecord = datasetMap.get(item);
-        if (matchingRecord) {
-            createToolTipForValues(matchingRecord);
+    data.forEach((item, i) => {
+        const rec = datasetMap.get(item);
+        if (rec) {
+            createToolTipForValues(rec, rec.id ?? String(i));
         }
     });
 };

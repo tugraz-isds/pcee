@@ -1142,13 +1142,12 @@ window.addEventListener('scroll', () => {
       (document.getElementById('outlier-button') as HTMLButtonElement | null)?.removeAttribute('disabled');
       (document.getElementById('correlation-button') as HTMLButtonElement | null)?.removeAttribute('disabled');
       (document.getElementById('correlation-neg-button') as HTMLButtonElement | null)?.removeAttribute('disabled');
-      /*const activateButton = document.getElementById('activate-button') as HTMLButtonElement | null;
-      if (activateButton) activateButton.disabled = true;*/
       const stepperButtons = document.querySelectorAll<HTMLButtonElement>('.stepper-button');
       stepperButtons.forEach(button => {
         button.disabled = true;
       });
     }
+    (document.getElementById('activate-button') as HTMLButtonElement).textContent = "Enable Interactivity";
     if (chart.style.visibility !== 'hidden') {
       chart.style.opacity = '1';
     }
