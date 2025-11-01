@@ -1005,6 +1005,10 @@ const getOrientation = (): number => {
   }
 }
 
+function isPortrait(): boolean {
+  return window.innerHeight > window.innerWidth;
+}
+
 const getCurrentStepIndex = (): number => {
   const steps = document.querySelectorAll<HTMLElement>('.step');
   let currentIndex = 0
@@ -1050,6 +1054,14 @@ const writeTitleToDataset = (step: number): void => {
 }
 
 window.addEventListener('scroll', () => {
+  if (isPortrait()) {
+    const el = document.querySelector(".chart-container") as HTMLElement | null;
+
+    if (el) {
+      el.addEventListener("wheel", (e) => e.preventDefault(), { passive: false });
+      el.addEventListener("touchmove", (e) => e.preventDefault(), { passive: false });
+    }
+  }
   // eslint-disable-next-line no-undef
   const chart = document.getElementById('parallelcoords') as HTMLDivElement | null;
   if (!chart) return;
