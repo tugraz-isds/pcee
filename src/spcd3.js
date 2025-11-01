@@ -1,5 +1,4 @@
 // SPCD3 version 1.0.0 ESM
-/* eslint-disable */
 var xhtml = "http://www.w3.org/1999/xhtml";
 
 var namespaces = {
@@ -7972,11 +7971,17 @@ function brushUp(cleanDimensionName, event, d, tooltipValues, window) {
         select('#rect_' + cleanDimensionName)
             .attr('href', '#brush_image_top_active')
             .style('cursor', 'default');
+        select('#rect_' + cleanDimensionName)
+            .attr('fill', 'rgb(234, 234, 40)')
+            .attr('opacity', '0.5');
     }
     else {
         select('#rect_' + cleanDimensionName)
             .attr('href', '#brush_image_top_active')
             .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopAndBottom()), 20)}') 8 8, auto`);
+        select('#rect_' + cleanDimensionName)
+            .attr('fill', 'rgb(255, 255, 0)')
+            .attr('opacity', '0.5');
     }
     if (yPosBottom == 320) {
         select('#triangle_up_' + cleanDimensionName)
@@ -10312,6 +10317,8 @@ function setSelection(records) {
                 .classed('selected', true)
                 .transition()
                 .style('stroke', 'rgba(255, 165, 0, 1)');
+            //const data = parcoords.data.find(d => d.Name === records[i]);
+            //helper.createToolTipForValues(data, String(i));
         }
     }
 }
@@ -11010,7 +11017,8 @@ function setBrushUp(featureAxis, parcoords, tooltipValues, brushOverlay) {
             .style('pointer-events', 'all')
             .style('touch-action', 'none')
             .style('-webkit-user-select', 'none')
-            .style('user-select', 'none');
+            .style('user-select', 'none')
+            .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopCursor()), 13)}') 8 8, auto`);
         function cleanup() {
             brushOverlay.style('pointer-events', 'none').lower();
             tooltipValues.style('visibility', 'hidden');
@@ -11071,7 +11079,8 @@ function setBrushDown(featureAxis, parcoords, tooltipValues, brushOverlay) {
             .style('pointer-events', 'all')
             .style('touch-action', 'none')
             .style('-webkit-user-select', 'none')
-            .style('user-select', 'none');
+            .style('user-select', 'none')
+            .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowBottomCursor()), 13)}') 8 8, auto`);
         function cleanup() {
             brushOverlay.style('pointer-events', 'none').lower();
             tooltipValues.style('visibility', 'hidden');
