@@ -1507,6 +1507,7 @@ onMounted(async (): Promise<void> => {
 
   .chart-container {
     flex: 1 1 20rem;
+    overflow: hidden;
   }
 
   section {
@@ -1545,6 +1546,7 @@ onMounted(async (): Promise<void> => {
 
   .chart-container {
     flex: 1 1 18rem;
+    overflow: hidden;
   }
   
   section {
@@ -1585,6 +1587,7 @@ onMounted(async (): Promise<void> => {
   .chart-container {
     flex: 1 1 20rem;
     padding-bottom: 0;
+    overflow: hidden;
   }
   
   section {
@@ -1627,6 +1630,7 @@ onMounted(async (): Promise<void> => {
     flex: 1 1 8rem;
     min-width: 100%;
     padding-bottom: 0;
+    overflow: hidden;
   }
   
   section {
