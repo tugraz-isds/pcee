@@ -1795,6 +1795,11 @@ li {
   font-size: 1em;
 }
 
+svg {
+  display: inline;
+  vertical-align: middle;
+}
+
 /* Table */
 
 .table-container {
