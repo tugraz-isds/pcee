@@ -999,7 +999,7 @@ const getOrientation = (): number => {
   if (window.innerWidth < 600) {
     return window.innerHeight * 0.95;
   } else if (window.innerWidth < 1200) {
-    return window.innerHeight * 0.95;
+    return window.innerHeight * 0.5;
   } else {
     return window.innerHeight * 0.5;
   }
@@ -1099,11 +1099,6 @@ window.addEventListener('scroll', () => {
       (document.getElementById('outlier-button') as HTMLButtonElement | null)?.setAttribute('disabled', '');
       (document.getElementById('correlation-button') as HTMLButtonElement | null)?.setAttribute('disabled', '');
       (document.getElementById('correlation-neg-button') as HTMLButtonElement | null)?.setAttribute('disabled', '');
-      /*const activateButton = document.getElementById('activate-button') as HTMLButtonElement | null;
-      if (activateButton) {
-        activateButton.disabled = false;
-        activateButton.textContent = 'Interact Directly';
-      }*/
       const stepperButtons = document.querySelectorAll<HTMLButtonElement>('.stepper-button');
       stepperButtons.forEach(button => {
         button.disabled = false;
