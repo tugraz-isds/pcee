@@ -1,4 +1,5 @@
 // SPCD3 version 1.0.0 ESM
+/* eslint-disable */
 var xhtml = "http://www.w3.org/1999/xhtml";
 
 var namespaces = {
