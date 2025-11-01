@@ -11,7 +11,8 @@
         class="multi-line"
       >
         Parallel Coordinates:<br>
-        An Explorable Explainer
+        An Explorable Explainer<br>
+        <span class="info">Scroll to begin</span>
       </div>
       <div
         ref="singleLine"
@@ -1315,6 +1316,11 @@ onMounted(async (): Promise<void> => {
   animation: singleTextIn linear forwards;
   animation-timeline: scroll();
   animation-range: 80vh 90vh;
+}
+
+.info {
+  font-size: medium;
+  color:yellow;
 }
 
 @keyframes multiTextOut {

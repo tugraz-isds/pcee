@@ -10894,24 +10894,37 @@ function clearSelection() {
 }
 function setInvertIcon(featureAxis, padding) {
     let value = (80 / 1.5).toFixed(4);
-    featureAxis
+    const svg = featureAxis
         .append('svg')
-        .attr('y', value)
-        .attr('x', -6)
-        .append('use')
+        .attr('x', -6 - 22)
+        .attr('y', Number(value) - 22)
+        .attr('width', 44)
+        .attr('height', 22)
+        .style('overflow', 'visible');
+    svg.append('rect')
+        .attr('class', 'hitbox')
+        .attr('x', 6)
+        .attr('y', 20)
+        .attr('width', 44)
+        .attr('height', 22)
+        .attr('rx', 6)
+        .attr('ry', 6)
+        .attr('fill', 'transparent')
+        .style('pointer-events', 'all');
+    svg.append('use')
+        .attr('href', '#arrow_image_up')
         .attr('width', 12)
         .attr('height', 12)
-        .attr('y', 0)
-        .attr('x', 0)
-        .attr('href', '#arrow_image_up')
+        .attr('x', 22.5)
+        .attr('y', Number(value) - 33)
         .each(function (d) {
-        const processedDimensionName = cleanString(d.name);
+        const processed = cleanString(d.name);
         select(this)
-            .attr('id', 'dimension_invert_' + processedDimensionName)
+            .attr('id', 'dimension_invert_' + processed)
             .text('up')
             .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowDownCursor()), 12)}') 8 8, auto`);
-    })
-        .on('click', (event, d) => {
+    });
+    svg.on('click', (event, d) => {
         invert(d.name);
         event.stopPropagation();
     });
@@ -10989,16 +11002,15 @@ function setBrushUp(featureAxis, parcoords, tooltipValues, brushOverlay) {
         const hit = g.append('rect')
             .attr('class', 'handle-hitbox')
             .attr('id', 'triangle_up_hit' + processedDimensionName)
-            .attr('x', iconX)
+            .attr('x', -15)
             .attr('y', iconY)
-            .attr('width', 20)
-            .attr('height', 16)
+            .attr('width', 30)
+            .attr('height', 30)
             .style('fill', 'transparent')
             .style('pointer-events', 'all')
             .style('touch-action', 'none')
             .style('-webkit-user-select', 'none')
-            .style('user-select', 'none')
-            .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopCursor()), 13)}') 8 8, auto`);
+            .style('user-select', 'none');
         function cleanup() {
             brushOverlay.style('pointer-events', 'none').lower();
             tooltipValues.style('visibility', 'hidden');
@@ -11051,16 +11063,15 @@ function setBrushDown(featureAxis, parcoords, tooltipValues, brushOverlay) {
         const hit = g.append('rect')
             .attr('class', 'handle-hitbox')
             .attr('id', 'triangle_down_hit' + processedDimensionName)
-            .attr('x', iconX)
+            .attr('x', -15)
             .attr('y', iconY)
-            .attr('width', 20)
-            .attr('height', 16)
+            .attr('width', 30)
+            .attr('height', 30)
             .style('fill', 'transparent')
             .style('pointer-events', 'all')
             .style('touch-action', 'none')
             .style('-webkit-user-select', 'none')
-            .style('user-select', 'none')
-            .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowBottomCursor()), 13)}') 8 8, auto`);
+            .style('user-select', 'none');
         function cleanup() {
             brushOverlay.style('pointer-events', 'none').lower();
             tooltipValues.style('visibility', 'hidden');

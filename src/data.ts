@@ -74,6 +74,6 @@ export const originalColumns = [
   { Name: 'Bob',     Income: 2800, Costs: 900,  Leftover: 1900},
   { Name: 'Charlie', Income: 4200, Costs: 1500, Leftover: 2700},
   { Name: 'Fiona',   Income: 2700, Costs: 800,  Leftover: 1900},
-  { Name: 'Ursula',  Income: 6000, Costs: 2500, Leftover: 3500},
+  { Name: 'Ursula',  Income: 6000, Costs: 500,  Leftover: 5500},
   { Name: 'Victor',  Income: 3400, Costs: 1100, Leftover: 2300}
 ]
