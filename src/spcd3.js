@@ -10476,7 +10476,6 @@ function deleteChart() {
 function setUpParcoordData(data, newFeatures) {
     setPadding(60);
     setPaddingXaxis(60);
-    console.log(newFeatures.length);
     if (newFeatures.length <= 6) {
         setWidth(newFeatures.length * 180);
     }
