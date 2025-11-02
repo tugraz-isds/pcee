@@ -1128,6 +1128,7 @@ window.addEventListener('scroll', () => {
       chart.style.maxWidth = '100%';
       chart.style.maxHeight = 'auto';
       drawChart(dataset);
+      resetTable();
 
       // eslint-disable-next-line no-undef
       const toolbar = document.getElementById('toolbarRow') as HTMLDivElement | null;
