@@ -10383,8 +10383,8 @@ function computeMargins(labels = [], { font = '12px Verdana, sans-serif', top = 
     const ctx = document.createElement('canvas').getContext('2d');
     ctx.font = font;
     let maxWidth = ctx.measureText(String(labels[labels.length - 1])).width;
-    if (labels.length < 5)
-        maxWidth = maxWidth + 180;
+    /*if (labels.length < 5)
+        maxWidth = maxWidth + 180;*/
     const left = Math.ceil(maxWidth) + extraLeft;
     const right = Math.ceil(maxWidth / 2) + extraRight;
     return { top, right, bottom, left };
