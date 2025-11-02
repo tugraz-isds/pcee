@@ -7943,6 +7943,7 @@ function brushDown(cleanDimensionName, event, d, tooltipValues, window) {
             .attr('opacity', '0.7');
     }
     select('#triangle_down_' + cleanDimensionName).attr('y', yPosTop);
+    select('#triangle_down_hit' + cleanDimensionName).attr('y', yPosTop);
     const heightTopRect = yPosRect - 80;
     const heightBottomRect = 320 - yPosBottom;
     select('#rect_' + cleanDimensionName)
@@ -7994,6 +7995,7 @@ function brushUp(cleanDimensionName, event, d, tooltipValues, window) {
             .attr('href', '#brush_image_top_active');
     }
     select('#triangle_up_' + cleanDimensionName).attr('y', yPosBottom);
+    select('#triangle_up_hit' + cleanDimensionName).attr('y', yPosBottom);
     const heightTopRect = yPosTop - 70;
     const heightBottomRect = 320 - yPosBottom;
     select('#rect_' + cleanDimensionName)
