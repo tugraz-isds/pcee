@@ -1322,7 +1322,7 @@ onMounted(async (): Promise<void> => {
 .info {
   font-size: medium;
   color:yellow;
-  margin-top: 1.5rem;
+  margin-top: 2rem;
 }
 
 @keyframes multiTextOut {

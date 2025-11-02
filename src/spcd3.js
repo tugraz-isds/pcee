@@ -7870,6 +7870,7 @@ function invert(dimension) {
     textElement.text(currentArrowStatus === 'down' ? 'up' : 'down');
     textElement.attr('href', arrow);
     textElement.style('cursor', `url('data:image/svg+xml,${encodeURIComponent(arrowStyle)}') 8 8 , auto`);
+    select('#invert_hitbox_' + cleanDimensionName).style('cursor', `url('data:image/svg+xml,${encodeURIComponent(arrowStyle)}') 8 8 , auto`);
     select(dimensionId)
         .transition()
         .duration(1000)
@@ -10143,6 +10144,7 @@ function invertWoTransition(dimension) {
     textElement.text(currentArrowStatus === 'down' ? 'up' : 'down');
     textElement.attr('href', arrow);
     textElement.style('cursor', `url('data:image/svg+xml,${encodeURIComponent(arrowStyle)}') 8 8 , auto`);
+    select('#invert_hitbox_' + cleanDimensionName).style('cursor', `url('data:image/svg+xml,${encodeURIComponent(arrowStyle)}') 8 8 , auto`);
     select(dimensionId)
         .call(yAxis[dimension]
         .scale(parcoords.yScales[dimension]
@@ -10173,6 +10175,7 @@ function setInversionStatus(dimension, status) {
     textElement.text(status === 'ascending' ? 'up' : 'down');
     textElement.attr('href', arrow);
     textElement.style('cursor', `url('data:image/svg+xml,${encodeURIComponent(arrowStyle)}') 8 8 , auto`);
+    select('#invert_hitbox_' + cleanDimensionName).style('cursor', `url('data:image/svg+xml,${encodeURIComponent(arrowStyle)}') 8 8 , auto`);
     select(dimensionId)
         .transition()
         .duration(1000)
@@ -10383,8 +10386,8 @@ function computeMargins(labels = [], { font = '12px Verdana, sans-serif', top = 
     const ctx = document.createElement('canvas').getContext('2d');
     ctx.font = font;
     let maxWidth = ctx.measureText(String(labels[labels.length - 1])).width;
-    /*if (labels.length < 5)
-        maxWidth = maxWidth + 180;*/
+    if (labels.length < 5)
+        maxWidth = maxWidth + 100;
     const left = Math.ceil(maxWidth) + extraLeft;
     const right = Math.ceil(maxWidth / 2) + extraRight;
     return { top, right, bottom, left };
@@ -10910,15 +10913,22 @@ function setInvertIcon(featureAxis, padding) {
         .attr('height', 22)
         .style('overflow', 'visible');
     svg.append('rect')
+        .attr('id', 'invert_hitbox')
         .attr('class', 'hitbox')
         .attr('x', 6)
         .attr('y', 20)
         .attr('width', 44)
-        .attr('height', 22)
+        .attr('height', 15)
         .attr('rx', 6)
         .attr('ry', 6)
         .attr('fill', 'transparent')
-        .style('pointer-events', 'all');
+        .style('pointer-events', 'all')
+        .each(function (d) {
+        const processed = cleanString(d.name);
+        select(this)
+            .attr('id', 'invert_hitbox_' + processed)
+            .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowDownCursor()), 12)}') 8 8, auto`);
+    });
     svg.append('use')
         .attr('href', '#arrow_image_up')
         .attr('width', 12)
