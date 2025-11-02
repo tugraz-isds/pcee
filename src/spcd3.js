@@ -7982,8 +7982,8 @@ function brushUp(cleanDimensionName, event, d, tooltipValues, window) {
             .attr('href', '#brush_image_top_active')
             .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopAndBottom()), 20)}') 8 8, auto`);
         select('#rect_' + cleanDimensionName)
-            .attr('fill', 'rgb(250 255 128)')
-            .attr('opacity', '0.5');
+            .attr('fill', 'rgb(255, 255, 0)')
+            .attr('opacity', '0.7');
     }
     if (yPosBottom == 320) {
         select('#triangle_up_' + cleanDimensionName)
@@ -10973,7 +10973,7 @@ function setRectToDrag(featureAxis, svg, parcoords, tooltipValuesTop, tooltipVal
             .attr('x', -6)
             .attr('y', 80)
             .attr('fill', 'rgb(242, 242, 76)')
-            .attr('opacity', '0.7')
+            .attr('opacity', '0.5')
             .style('cursor', 'default')
             .call(drag()
             .on('drag', (event, d) => {
