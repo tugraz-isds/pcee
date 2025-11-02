@@ -1322,7 +1322,7 @@ onMounted(async (): Promise<void> => {
 .info {
   font-size: medium;
   color:yellow;
-  margin-top: 2rem;
+  margin-top: 5rem;
 }
 
 @keyframes multiTextOut {
@@ -1365,6 +1365,13 @@ onMounted(async (): Promise<void> => {
   .sticky-header {
     font-size: large;
   }
+
+  .info {
+    font-size: small;
+    color:yellow;
+    margin-top: 6rem;
+  }
+
 }
 
 @media (max-height: 500px) and (orientation: landscape) {
