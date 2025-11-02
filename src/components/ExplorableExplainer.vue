@@ -1055,14 +1055,15 @@ const writeTitleToDataset = (step: number): void => {
 }
 
 window.addEventListener('scroll', () => {
+  
   if (isPortrait()) {
     const el = document.querySelector(".chart-container") as HTMLElement | null;
 
     if (el) {
-      el.addEventListener("wheel", (e) => e.preventDefault(), { passive: false });
-      el.addEventListener("touchmove", (e) => e.preventDefault(), { passive: false });
+      el.addEventListener("wheel", (e) => { e.preventDefault(); }, { passive: false });
     }
   }
+
   // eslint-disable-next-line no-undef
   const chart = document.getElementById('parallelcoords') as HTMLDivElement | null;
   if (!chart) return;
@@ -1321,6 +1322,7 @@ onMounted(async (): Promise<void> => {
 .info {
   font-size: medium;
   color:yellow;
+  margin-top: 1rem;
 }
 
 @keyframes multiTextOut {
@@ -1525,7 +1527,8 @@ onMounted(async (): Promise<void> => {
 
   .chart-container {
     flex: 1 1 20rem;
-    overflow: hidden;
+    overscroll-behavior: contain;
+    touch-action: pinch-zoom;
   }
 
   section {
@@ -1564,7 +1567,8 @@ onMounted(async (): Promise<void> => {
 
   .chart-container {
     flex: 1 1 18rem;
-    overflow: hidden;
+    overscroll-behavior: contain;
+    touch-action: pinch-zoom;
   }
   
   section {
@@ -1605,7 +1609,8 @@ onMounted(async (): Promise<void> => {
   .chart-container {
     flex: 1 1 20rem;
     padding-bottom: 0;
-    overflow: hidden;
+    overscroll-behavior: contain;
+    touch-action: pinch-zoom;
   }
   
   section {
@@ -1648,7 +1653,8 @@ onMounted(async (): Promise<void> => {
     flex: 1 1 8rem;
     min-width: 100%;
     padding-bottom: 0;
-    overflow: hidden;
+    overscroll-behavior: contain;
+    touch-action: pinch-zoom;
   }
   
   section {
