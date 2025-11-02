@@ -8049,6 +8049,10 @@ function dragAndBrush(cleanDimensionName, d, event, delta, tooltipValuesTop, too
             .attr('y', yPosTop);
         select('#triangle_up_' + cleanDimensionName)
             .attr('y', yPosRect + rectHeight);
+        select('#triangle_up_hit' + cleanDimensionName)
+            .attr('y', yPosRect + rectHeight);
+        select('#triangle_down_hit' + cleanDimensionName)
+            .attr('y', yPosTop);
         if (!isNaN(parcoords.yScales[d.name].domain()[0])) {
             setToolTipDragAndBrush(tooltipValuesTop, tooltipValuesDown, d, window, true, yPosTop, yPosRect + rectHeight);
         }
