@@ -9910,7 +9910,7 @@ function createToolbar(dataset) {
         .html(getExpandToolbarIcon())
         .style('margin', '0')
         .style('border', 'none')
-        .style('border-radius', '10%')
+        .style('border-radius', '5%')
         .style('padding', '0.2em')
         .style('width', '2em')
         .style('height', '2em')
@@ -10382,12 +10382,10 @@ function setUnselectedWithId(recordId) {
     setUnselected(record);
 }
 //---------- IO Functions ----------
-function computeMargins(labels = [], { font = '12px Verdana, sans-serif', top = 15, bottom = 36, extraLeft = 0, extraRight = 8 } = {}) {
+function computeMargins(labels = [], { font = '12px Verdana, sans-serif', top = 0, bottom = 0, extraLeft = 0, extraRight = 0 } = {}) {
     const ctx = document.createElement('canvas').getContext('2d');
     ctx.font = font;
     let maxWidth = ctx.measureText(String(labels[labels.length - 1])).width;
-    if (labels.length < 5)
-        maxWidth = maxWidth + 100;
     const left = Math.ceil(maxWidth) + extraLeft;
     const right = Math.ceil(maxWidth / 2) + extraRight;
     return { top, right, bottom, left };
@@ -10403,40 +10401,26 @@ function drawChart(content) {
         wrapper = select(document.body)
             .append("div")
             .attr('id', 'parallelcoords');
-    wrapper
-        .style('display', 'block')
-        .style('width', '100%')
-        .style('margin', '0')
-        .style('padding', '0')
-        .style('text-align', 'left');
+
+    const margin = computeMargins(parcoords.newFeatures);
+
     const chartWrapper = wrapper.append('div')
         .attr('id', 'chartWrapper')
-        .style('display', 'block')
-        .style('width', '100%')
-        .style('margin', '0')
-        .style('padding', '0');
+        .style('--ml', `${margin.left}px`)
+        .style('--mr', `${margin.right}px`);
+        
     chartWrapper.append('div')
         .attr('id', 'toolbarRow')
-        .style('display', 'flex')
-        .style('flex-wrap', 'wrap')
-        .style('align-items', 'center')
-        .style('justify-content', 'flex-start')
-        .style('margin-top', '1.2rem')
-        .style('margin-left', '1rem')
-        .style('margin-bottom', 0);
+         .style('margin-left', 'var(--ml)')
+        .style('margin-right', 'var(--mr)')
+        .style('width', 'calc(100% - var(--ml) - var(--mr))');
+
     createToolbar(parcoords.newDataset);
     setSvg(chartWrapper.append('svg')
         .attr('id', 'pc_svg')
         .attr('viewBox', [0, 0, width, height])
         .attr('font-family', 'Verdana, sans-serif'));
-    const margin = computeMargins(parcoords.newFeatures);
-    select('#chartWrapper')
-        .style('--ml', `${margin.left}px`)
-        .style('--mr', `${margin.right}px`);
-    select('#toolbarRow')
-        .style('margin-left', 'var(--ml)')
-        .style('margin-right', 'var(--mr)')
-        .style('width', 'calc(100% - var(--ml) - var(--mr))');
+
     setDefsForIcons();
     setFeatureAxis(svg, yAxis, parcoords, width);
     setActive(setActivePathLines(svg, content, parcoords));
@@ -10491,7 +10475,12 @@ function deleteChart() {
 function setUpParcoordData(data, newFeatures) {
     setPadding(60);
     setPaddingXaxis(60);
-    setWidth(newFeatures.length * 100);
+    if (newFeatures.length <= 5) { 
+      setWidth(newFeatures.length * 180);
+    }
+    else {
+      setWidth(newFeatures.length * 100);
+    }
     setHeight(400);
     setInitDimension(newFeatures);
     const label = newFeatures[newFeatures.length - 1];
