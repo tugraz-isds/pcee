@@ -10398,7 +10398,14 @@ function drawChart(content) {
       .style('margin-left', 'var(--ml)')
       .style('margin-right', 'var(--mr)')
       .style('width', 'calc(100% - var(--ml) - var(--mr))');*/
-  
+    wrapper
+        .style('display', 'block')
+        .style('width', '100%')
+        .style('margin', '0')
+        .style('padding', '0')
+        .style('text-align', 'left')
+        .style('justify-content', 'center')
+        .style('align-items', 'center');
     const chartWrapper = wrapper.append('div')
         .attr('id', 'chartWrapper');
     chartWrapper.append('div')
