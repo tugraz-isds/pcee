@@ -3426,10 +3426,10 @@ function getArrowBottomCursor() {
     return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 5"><path fill="white" stroke="black" stroke-width="0.5" d="M 1 0 L 7 0 L 4 5 z"/></svg>';
 }
 function getArrowBottom() {
-    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="rgb(234, 234, 40)" fill-opacity="0.5" stroke="black" stroke-width="0.2" d="M 0 0 L 6 0 L 3 5 z"/></svg>';
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="rgb(242, 242, 76)" fill-opacity="0.5" stroke="black" stroke-width="0.2" d="M 0 0 L 6 0 L 3 5 z"/></svg>';
 }
 function getArrowBottomActive() {
-    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="rgb(255, 255, 0)" fill-opacity="0.5" stroke="black" stroke-width="0.5" d="M 0 0 L 6 0 L 3 5 z"/></svg>';
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="rgb(255, 255, 0)" fill-opacity="0.7" stroke="black" stroke-width="0.5" d="M 0 0 L 6 0 L 3 5 z"/></svg>';
 }
 function getArrowDown() {
     return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 10"><path d="M 0 6 L 2 6 L 2 0 L 4 0 L 4 6 L 6 6 L 3 10 z"/></svg>';
@@ -3453,10 +3453,10 @@ function getArrowTopCursor() {
     return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 5"><path fill="white" stroke="black" stroke-width="0.5" d="M 1 5 L 4 0 L 7 5 z"/></svg>';
 }
 function getArrowTop() {
-    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="rgb(234, 234, 40)" fill-opacity="0.5" stroke="black" stroke-width="0.2" d="M 0 5 L 3 0 L 6 5 z"/></svg>';
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="rgb(242, 242, 76)" fill-opacity="0.5" stroke="black" stroke-width="0.2" d="M 0 5 L 3 0 L 6 5 z"/></svg>';
 }
 function getArrowTopActive() {
-    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="rgb(255, 255, 0)" fill-opacity="0.5" stroke="black" stroke-width="0.5" d="M 0 5 L 3 0 L 6 5 z"/></svg>';
+    return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 5"><path fill="rgb(255, 255, 0)" fill-opacity="0.7" stroke="black" stroke-width="0.5" d="M 0 5 L 3 0 L 6 5 z"/></svg>';
 }
 function getArrowUp() {
     return '<?xml version="1.0" encoding="UTF-8"?>\r\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 10"><path d="M 0 4 L 3 0 L 6 4 L 4 4 L 4 10 L 2 10 L 2 4 z"/></svg>';
@@ -7932,7 +7932,7 @@ function brushDown(cleanDimensionName, event, d, tooltipValues, window) {
         select('#triangle_down_' + cleanDimensionName)
             .attr('href', '#brush_image_bottom');
         select('#rect_' + cleanDimensionName)
-            .attr('fill', 'rgb(234, 234, 40)')
+            .attr('fill', 'rgb(242, 242, 76)')
             .attr('opacity', '0.5');
     }
     else {
@@ -7940,7 +7940,7 @@ function brushDown(cleanDimensionName, event, d, tooltipValues, window) {
             .attr('href', '#brush_image_bottom_active');
         select('#rect_' + cleanDimensionName)
             .attr('fill', 'rgb(255, 255, 0)')
-            .attr('opacity', '0.5');
+            .attr('opacity', '0.7');
     }
     select('#triangle_down_' + cleanDimensionName).attr('y', yPosTop);
     const heightTopRect = yPosRect - 80;
@@ -7982,7 +7982,7 @@ function brushUp(cleanDimensionName, event, d, tooltipValues, window) {
             .attr('href', '#brush_image_top_active')
             .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopAndBottom()), 20)}') 8 8, auto`);
         select('#rect_' + cleanDimensionName)
-            .attr('fill', 'rgb(255, 255, 0)')
+            .attr('fill', 'rgb(250 255 128)')
             .attr('opacity', '0.5');
     }
     if (yPosBottom == 320) {
@@ -9897,20 +9897,14 @@ function removeClasses(svgString) {
 }
 
 function createToolbar(dataset) {
-    const toolbarRow = select('#toolbarRow')
-        .style('display', 'flex')
-        .style('flex-wrap', 'wrap')
-        .style('align-items', 'center')
-        .style('font-size', '0.8vw')
-        .style('margin-top', '1rem')
-        .style('margin-bottom', '0');
+    const toolbarRow = select('#toolbarRow');
     const toggleButton = toolbarRow.append('button')
         .attr('id', 'toggleButton')
         .attr('title', 'Expand toolbar')
         .html(getExpandToolbarIcon())
         .style('margin', '0')
         .style('border', 'none')
-        .style('border-radius', '5%')
+        .style('border-radius', '10%')
         .style('padding', '0.2em')
         .style('width', '2em')
         .style('height', '2em')
@@ -10381,15 +10375,6 @@ function setUnselectedWithId(recordId) {
     const record = getRecordWithId(recordId);
     setUnselected(record);
 }
-//---------- IO Functions ----------
-function computeMargins(labels = [], { font = '12px Verdana, sans-serif', top = 0, bottom = 0, extraLeft = 0, extraRight = 0 } = {}) {
-    const ctx = document.createElement('canvas').getContext('2d');
-    ctx.font = font;
-    let maxWidth = ctx.measureText(String(labels[labels.length - 1])).width;
-    const left = Math.ceil(maxWidth) + extraLeft;
-    const right = Math.ceil(maxWidth / 2) + extraRight;
-    return { top, right, bottom, left };
-}
 function drawChart(content) {
     setRefreshData(structuredClone(content));
     deleteChart();
@@ -10401,26 +10386,35 @@ function drawChart(content) {
         wrapper = select(document.body)
             .append("div")
             .attr('id', 'parallelcoords');
-
-    const margin = computeMargins(parcoords.newFeatures);
+    /*const margin = computeMargins(parcoords.newFeatures);
 
     const chartWrapper = wrapper.append('div')
-        .attr('id', 'chartWrapper')
-        .style('--ml', `${margin.left}px`)
-        .style('--mr', `${margin.right}px`);
-        
+      .attr('id', 'chartWrapper')
+      .style('--ml', `${margin.left}px`)
+      .style('--mr', `${margin.right}px`);
+
+    chartWrapper.append('div')
+      .attr('id', 'toolbarRow')
+      .style('margin-left', 'var(--ml)')
+      .style('margin-right', 'var(--mr)')
+      .style('width', 'calc(100% - var(--ml) - var(--mr))');*/
+  
+    const chartWrapper = wrapper.append('div')
+        .attr('id', 'chartWrapper');
     chartWrapper.append('div')
         .attr('id', 'toolbarRow')
-         .style('margin-left', 'var(--ml)')
-        .style('margin-right', 'var(--mr)')
-        .style('width', 'calc(100% - var(--ml) - var(--mr))');
-
+        .style('display', 'flex')
+        .style('flex-wrap', 'wrap')
+        .style('align-items', 'center')
+        .style('justify-content', 'flex-start')
+        .style('margin-left', '2rem')
+        .style('font-size', '0.8vw');
     createToolbar(parcoords.newDataset);
     setSvg(chartWrapper.append('svg')
         .attr('id', 'pc_svg')
         .attr('viewBox', [0, 0, width, height])
         .attr('font-family', 'Verdana, sans-serif'));
-
+    select('#toolbarRow');
     setDefsForIcons();
     setFeatureAxis(svg, yAxis, parcoords, width);
     setActive(setActivePathLines(svg, content, parcoords));
@@ -10475,11 +10469,12 @@ function deleteChart() {
 function setUpParcoordData(data, newFeatures) {
     setPadding(60);
     setPaddingXaxis(60);
-    if (newFeatures.length <= 5) { 
-      setWidth(newFeatures.length * 180);
+    console.log(newFeatures.length);
+    if (newFeatures.length <= 4) {
+        setWidth(newFeatures.length * 180);
     }
     else {
-      setWidth(newFeatures.length * 100);
+        setWidth(newFeatures.length * 100);
     }
     setHeight(400);
     setInitDimension(newFeatures);
@@ -10970,8 +10965,8 @@ function setRectToDrag(featureAxis, svg, parcoords, tooltipValuesTop, tooltipVal
             .attr('height', 240)
             .attr('x', -6)
             .attr('y', 80)
-            .attr('fill', 'rgb(234, 234, 40)')
-            .attr('opacity', '0.5')
+            .attr('fill', 'rgb(242, 242, 76)')
+            .attr('opacity', '0.7')
             .style('cursor', 'default')
             .call(drag()
             .on('drag', (event, d) => {

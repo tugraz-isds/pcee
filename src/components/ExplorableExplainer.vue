@@ -1486,6 +1486,10 @@ onMounted(async (): Promise<void> => {
   margin-top: 1rem;
 }
 
+.chart-container {
+  overscroll-behavior: auto;
+}
+
 .main-chart {
   position: sticky;
   top: calc(10vh + 1rem);
@@ -1697,6 +1701,7 @@ onMounted(async (): Promise<void> => {
   .chart-container {
     flex: 1 1 50%;
     min-width: 40%;
+    overscroll-behavior: auto;
   }
 
   .text-container {
