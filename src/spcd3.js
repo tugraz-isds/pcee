@@ -8403,10 +8403,12 @@ function makeInactive(currentLineName, dimension, duration) {
 }
 function addSettingsForBrushing(dimension, invertStatus) {
     const processedName = cleanString(dimension);
-    const yScale = parcoords.yScales[processedName];
+    console.log(processedName);
+    const yScale = parcoords.yScales[dimension];
     const dimensionSettings = parcoords.currentPosOfDims.find((d) => d.key === dimension);
     let top, bottom;
     if (isDimensionCategorical(dimension)) {
+        console.log("Categorical");
         const domain = yScale.domain();
         const sorted = domain.slice().sort((a, b) => yScale(a) - yScale(b));
         const topCategory = sorted[0];
@@ -8415,6 +8417,9 @@ function addSettingsForBrushing(dimension, invertStatus) {
         bottom = yScale(bottomCategory);
     }
     else {
+        console.log("Numerical");
+        console.log(dimensionSettings.currentFilterBottom);
+        console.log(dimensionSettings.currentFilterTop);
         top = yScale(dimensionSettings.currentFilterTop);
         bottom = yScale(dimensionSettings.currentFilterBottom);
     }
@@ -9122,14 +9127,14 @@ var cjs = {
 	exports.ParsingError = ParsingError;
 	let parsingState;
 	function nextChild() {
-	    return element(false) || text() || comment() || cdata() || processingInstruction(false);
+	    return element(false) || text() || comment() || cdata() || processingInstruction();
 	}
 	function nextRootChild() {
 	    match(/\s*/);
-	    return element(true) || comment() || doctype() || processingInstruction(false);
+	    return element(true) || comment() || doctype() || processingInstruction();
 	}
 	function parseDocument() {
-	    const declaration = processingInstruction(true);
+	    const declaration = processingInstruction();
 	    const children = [];
 	    let documentRootNode;
 	    let child = nextRootChild();
@@ -9157,29 +9162,27 @@ var cjs = {
 	        children
 	    };
 	}
-	function processingInstruction(matchDeclaration) {
-	    const m = matchDeclaration ? match(/^<\?(xml(-stylesheet)?)\s*/) : match(/^<\?([\w-:.]+)\s*/);
+	function processingInstruction() {
+	    const m = match(/^<\?([\w-:.]+)\s*/);
 	    if (!m)
 	        return;
 	    // tag
 	    const node = {
 	        name: m[1],
 	        type: 'ProcessingInstruction',
-	        attributes: {}
+	        content: ''
 	    };
-	    // attributes
-	    while (!(eos() || is('?>'))) {
-	        const attr = attribute();
-	        if (attr) {
-	            node.attributes[attr.name] = attr.value;
-	        }
-	        else {
-	            return;
-	        }
+	    const endMarkerIndex = parsingState.xml.indexOf('?>');
+	    if (endMarkerIndex > -1) {
+	        node.content = parsingState.xml.substring(0, endMarkerIndex).trim();
+	        parsingState.xml = parsingState.xml.slice(endMarkerIndex);
+	    }
+	    else {
+	        throw new ParsingError('Failed to parse XML', 'ProcessingInstruction closing tag not found');
 	    }
 	    match(/\?>/);
 	    return {
-	        excluded: matchDeclaration ? false : parsingState.options.filter(node) === false,
+	        excluded: parsingState.options.filter(node) === false,
 	        node
 	    };
 	}
@@ -9378,14 +9381,14 @@ var cjs = {
 	    state.content += content;
 	}
 	function processNode(node, state, preserveSpace) {
-	    if (typeof node.content === 'string') {
-	        processContent(node.content, state, preserveSpace);
-	    }
-	    else if (node.type === 'Element') {
+	    if (node.type === 'Element') {
 	        processElementNode(node, state, preserveSpace);
 	    }
 	    else if (node.type === 'ProcessingInstruction') {
 	        processProcessingIntruction(node, state);
+	    }
+	    else if (typeof node.content === 'string') {
+	        processContent(node.content, state, preserveSpace);
 	    }
 	    else {
 	        throw new Error('Unknown node type: ' + node.type);
@@ -9496,7 +9499,7 @@ var cjs = {
 	        newLine(state);
 	    }
 	    appendContent(state, '<?' + node.name);
-	    processAttributes(state, node.attributes);
+	    appendContent(state, ' ' + node.content.trim());
 	    appendContent(state, '?>');
 	}
 	/**
@@ -10132,6 +10135,7 @@ function downloadCSV(dataset, filename = 'data.csv') {
 }
 
 //******** API ********//
+//
 //---------- Invert Functions ----------
 function invertWoTransition(dimension) {
     const cleanDimensionName = cleanString(dimension);
