@@ -637,7 +637,9 @@ const activateChart = async (): Promise<void> => {
   const currentStepIndex = getCurrentStepIndex();
   if (currentStepIndex !== 2) return;
   if (!status) {
-  // eslint-disable-next-line no-undef
+    const dataset = getDatasetForStep(currentStepIndex);
+    drawChart(dataset);
+    // eslint-disable-next-line no-undef
     const chart = document.getElementById("parallelcoords") as HTMLDivElement | null;
     if (chart != null) {
         chart.style.pointerEvents = "auto";
@@ -651,7 +653,21 @@ const activateChart = async (): Promise<void> => {
     document.querySelectorAll<SVGPathElement>("path").forEach(p => {
       p.style.pointerEvents = "stroke";
     });
-        buttons.forEach(btn => {
+
+    const handleHitboxes = document.querySelectorAll<HTMLDivElement>('.handle-hitbox')
+
+    handleHitboxes.forEach((hitbox) => {
+      hitbox.style.pointerEvents = "auto";
+    });
+
+    // hitboxes invert
+    const hitboxes = document.querySelectorAll<HTMLDivElement>('.hitbox')
+
+    hitboxes.forEach((hitbox) => {
+      hitbox.style.pointerEvents = "auto";
+    });
+
+    buttons.forEach(btn => {
       btn.disabled = true;
     });
     status = true;
@@ -676,6 +692,21 @@ const activateChart = async (): Promise<void> => {
     document.querySelectorAll<SVGPathElement>("path").forEach(p => {
       p.style.pointerEvents = "none";
     });
+
+    // hitboxes filter
+    const handleHitboxes = document.querySelectorAll<HTMLDivElement>('.handle-hitbox')
+
+    handleHitboxes.forEach((hitbox) => {
+      hitbox.style.pointerEvents = "none";
+    });
+
+    // hitboxes invert
+    const hitboxes = document.querySelectorAll<HTMLDivElement>('.hitbox')
+
+    hitboxes.forEach((hitbox) => {
+      hitbox.style.pointerEvents = "none";
+    });
+
     buttons.forEach(btn => {
       if (btn.id === "start-button" || btn.id === "reset-button") {
         btn.disabled = true;
@@ -1116,6 +1147,18 @@ window.addEventListener('scroll', () => {
       const stepperButtons = document.querySelectorAll<HTMLButtonElement>('.stepper-button');
       stepperButtons.forEach(button => {
         button.disabled = false;
+      });
+
+      const handleHitboxes = document.querySelectorAll<HTMLDivElement>('.handle-hitbox')
+
+      handleHitboxes.forEach((hitbox) => {
+        hitbox.style.pointerEvents = "none";
+      });
+
+      const hitboxes = document.querySelectorAll<HTMLDivElement>('.hitbox')
+
+      hitboxes.forEach((hitbox) => {
+        hitbox.style.pointerEvents = "none";
       });
 
       status = false;

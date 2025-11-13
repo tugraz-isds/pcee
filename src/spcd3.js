@@ -8078,8 +8078,7 @@ function filter(dimensionName, min, max) {
         .transition()
         .duration(1000)
         .attr('y', rectY)
-        .attr('height', rectHeight)
-        .style('opacity', 0.3);
+        .attr('height', rectHeight);
     select('#triangle_down_' + cleanDimensionName)
         .transition()
         .duration(1000)
@@ -8403,12 +8402,10 @@ function makeInactive(currentLineName, dimension, duration) {
 }
 function addSettingsForBrushing(dimension, invertStatus) {
     const processedName = cleanString(dimension);
-    console.log(processedName);
     const yScale = parcoords.yScales[dimension];
     const dimensionSettings = parcoords.currentPosOfDims.find((d) => d.key === dimension);
     let top, bottom;
     if (isDimensionCategorical(dimension)) {
-        console.log("Categorical");
         const domain = yScale.domain();
         const sorted = domain.slice().sort((a, b) => yScale(a) - yScale(b));
         const topCategory = sorted[0];
@@ -8417,9 +8414,6 @@ function addSettingsForBrushing(dimension, invertStatus) {
         bottom = yScale(bottomCategory);
     }
     else {
-        console.log("Numerical");
-        console.log(dimensionSettings.currentFilterBottom);
-        console.log(dimensionSettings.currentFilterTop);
         top = yScale(dimensionSettings.currentFilterTop);
         bottom = yScale(dimensionSettings.currentFilterBottom);
     }
@@ -8434,14 +8428,29 @@ function addSettingsForBrushing(dimension, invertStatus) {
     rect.transition()
         .duration(300)
         .attr('y', rectY)
-        .attr('height', rectH)
-        .style('opacity', 0.3);
+        .attr('height', rectH);
     triDown.transition()
         .duration(300)
         .attr('y', rectY - 10);
     triUp.transition()
         .duration(300)
         .attr('y', rectY + rectH);
+    if (rectY - 10 == 70) {
+        select('#triangle_down_' + processedName)
+            .attr('href', '#brush_image_bottom');
+    }
+    else {
+        select('#triangle_down_' + processedName)
+            .attr('href', '#brush_image_bottom_active');
+    }
+    if (rectY + rectH == 320) {
+        select('#triangle_up_' + processedName)
+            .attr('href', '#brush_image_top');
+    }
+    else {
+        select('#triangle_up_' + processedName)
+            .attr('href', '#brush_image_top_active');
+    }
     addPosition(top, dimension, 'top');
     addPosition(bottom, dimension, 'bottom');
 }
