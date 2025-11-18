@@ -312,6 +312,12 @@ const applyMode = (): void => {
   resolveScroller();
   recomputeScrollOffset();
   getAllSection();
+
+  if(!activeId.value && sections.value.length) {
+    activeId.value = "1-introduction";
+  }
+  
+
   recalcPositions();
   findActiveSection(scroller.value);
 

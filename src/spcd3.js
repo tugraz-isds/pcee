@@ -6689,8 +6689,8 @@ function getAllVisibleDimensionNames$1() {
     let listOfDimensions = parcoords.newFeatures.slice();
     return listOfDimensions.reverse();
 }
-function recordIdOf(rec, fallback) {
-    return rec.id ?? rec._id ?? rec.key ?? fallback;
+function recordIdOf(rec) {
+    return rec.id ?? rec._id ?? rec.key;
 }
 function createToolTipForValues(records, recKey) {
     const dimensions = getAllVisibleDimensionNames$1();
@@ -6699,7 +6699,7 @@ function createToolTipForValues(records, recKey) {
     const ctm = plotG.getScreenCTM();
     if (!ctm)
         return;
-    const recordId = recordIdOf(records, String(recKey ?? Math.random()));
+    const recordId = recordIdOf(records);
     const layer = select('body')
         .selectAll(`div.tip-layer[data-record="${recordId}"]`)
         .data([recordId])
@@ -6765,17 +6765,17 @@ function getAllPointerEventsData(event) {
     }
     return data;
 }
-function createTooltipForPathLine(tooltipText, tooltipPath, event) {
+function createTooltipForLabel(tooltipText, tooltipLabel, event) {
     if (!tooltipText || tooltipText.length === 0)
         return;
     const [x, y] = getMouseCoords(event);
     let tempText = tooltipText.toString();
     tempText = tempText.split(',').join('\r\n');
-    tooltipPath.text(tempText)
+    tooltipLabel.text(tempText)
         .style('visibility', 'visible')
         .style('top', y / 16 + 'rem')
         .style('left', x / 16 + 0.5 + 'rem');
-    return tooltipPath;
+    return tooltipLabel;
 }
 function trans(g) {
     return g.transition().duration(50);
@@ -7649,62 +7649,104 @@ function show(dimension) {
         return line()(points);
     });
 }
-function getAllRecords() {
-    const selection = active;
-    const object = selection._groups;
-    const data = [];
-    for (let i = 0; i < object[0].length; i++) {
-        const items = object.map((item) => item[i]);
-        const keys = Object.keys(items);
-        const text = items[keys[0]].id;
-        data.push(text);
-    }
-    return data;
-}
-function getAllVisibleDimensionNames() {
-    let listOfDimensions = parcoords.newFeatures.slice();
-    return listOfDimensions.reverse();
-}
-function getAllDimensionNames() {
-    return parcoords.data['columns'];
-}
-function getAllHiddenDimensionNames() {
-    const dimensions = getAllDimensionNames();
-    const hiddenDimensions = [];
-    for (let i = 0; i < dimensions.length; i++) {
-        if (getHiddenStatus(dimensions[i]) == 'hidden') {
-            hiddenDimensions.push(dimensions[i]);
-        }
-    }
-    return hiddenDimensions;
-}
-function getHiddenStatus(dimension) {
-    const index = parcoords.newFeatures.indexOf(dimension);
-    if (index != -1) {
-        return "shown";
+//---------- Move Functions ----------
+function moveByOne(dimension, direction) {
+    const indexOfDimension = parcoords.newFeatures.indexOf(dimension);
+    const indexOfNeighbor = direction == 'right' ? indexOfDimension - 1
+        : indexOfDimension + 1;
+    const neighbour = parcoords.newFeatures[indexOfNeighbor];
+    const pos = parcoords.xScales(dimension);
+    const posNeighbour = parcoords.xScales(neighbour);
+    const distance = parcoords.xScales.step();
+    parcoords.dragging[dimension] = direction == 'right' ? pos + distance :
+        pos - distance;
+    parcoords.dragging[neighbour] = direction == 'right' ? posNeighbour - distance :
+        posNeighbour + distance;
+    if (direction == 'right') {
+        [parcoords.newFeatures[indexOfDimension], parcoords.newFeatures[indexOfDimension - 1]] =
+            [parcoords.newFeatures[indexOfDimension - 1], parcoords.newFeatures[indexOfDimension]];
     }
     else {
-        return "hidden";
+        [parcoords.newFeatures[indexOfDimension + 1], parcoords.newFeatures[indexOfDimension]] =
+            [parcoords.newFeatures[indexOfDimension], parcoords.newFeatures[indexOfDimension + 1]];
+    }
+    parcoords.xScales.domain(parcoords.newFeatures);
+    let active = select('g.active').selectAll('path');
+    let featureAxis = selectAll('.dimensions');
+    active.transition()
+        .duration(1000)
+        .attr('d', function (d) {
+        return linePath(d, parcoords.newFeatures);
+    })
+        .ease(cubicInOut);
+    featureAxis.transition()
+        .duration(1000)
+        .attr('transform', function (d) {
+        return 'translate(' + position(d.name, parcoords.dragging, parcoords.xScales) + ')';
+    })
+        .ease(cubicInOut);
+    delete parcoords.dragging[dimension];
+    delete parcoords.dragging[neighbour];
+}
+function move(dimensionA, toRightOf, dimensionB) {
+    const indexOfDimensionA = getDimensionPosition(dimensionA);
+    const indexOfDimensionB = getDimensionPosition(dimensionB);
+    if (toRightOf) {
+        if (indexOfDimensionA > indexOfDimensionB) {
+            for (let i = indexOfDimensionA; i > indexOfDimensionB; i--) {
+                if (i != indexOfDimensionB - 1) {
+                    swap(parcoords.newFeatures[i], parcoords.newFeatures[i - 1]);
+                }
+            }
+        }
+        else {
+            for (let i = indexOfDimensionA; i < indexOfDimensionB; i++) {
+                if (i != indexOfDimensionB - 1) {
+                    swap(parcoords.newFeatures[i], parcoords.newFeatures[i + 1]);
+                }
+            }
+        }
+    }
+    else {
+        if (indexOfDimensionA > indexOfDimensionB) {
+            for (let i = indexOfDimensionA; i > indexOfDimensionB; i--) {
+                if (i != indexOfDimensionB + 1) {
+                    swap(parcoords.newFeatures[i], parcoords.newFeatures[i - 1]);
+                }
+            }
+        }
+        else {
+            for (let i = indexOfDimensionA; i < indexOfDimensionB; i++) {
+                swap(parcoords.newFeatures[i], parcoords.newFeatures[i + 1]);
+            }
+        }
     }
 }
-function getInversionStatus(dimension) {
-    const invertId = '#dimension_invert_' + cleanString(dimension);
-    const element = select(invertId);
-    const arrowStatus = element.text();
-    return arrowStatus == 'up' ? 'ascending' : 'descending';
-}
-function getNumberOfDimensions() {
-    return parcoords.newFeatures.length;
-}
-function getDimensionPosition(dimension) {
-    return parcoords.newFeatures.indexOf(dimension);
-}
-function isDimensionCategorical(dimension) {
-    let values = parcoords.newDataset.map((o) => o[dimension]);
-    if (isNaN(values[0])) {
-        return true;
-    }
-    return false;
+function swap(dimensionA, dimensionB) {
+    const positionA = parcoords.xScales(dimensionA);
+    const positionB = parcoords.xScales(dimensionB);
+    parcoords.dragging[dimensionA] = positionB;
+    parcoords.dragging[dimensionB] = positionA;
+    const indexOfDimensionA = parcoords.newFeatures.indexOf(dimensionA);
+    const indexOfDimensionB = parcoords.newFeatures.indexOf(dimensionB);
+    [parcoords.newFeatures[indexOfDimensionA], parcoords.newFeatures[indexOfDimensionB]] =
+        [parcoords.newFeatures[indexOfDimensionB], parcoords.newFeatures[indexOfDimensionA]];
+    parcoords.xScales.domain(parcoords.newFeatures);
+    let active = select('g.active').selectAll('path');
+    let featureAxis = selectAll('.dimensions');
+    active.transition()
+        .duration(1000)
+        .attr('d', (d) => {
+        return linePath(d, parcoords.newFeatures);
+    });
+    featureAxis.transition()
+        .duration(1000)
+        .attr('transform', (d) => {
+        return 'translate(' + position(d.name, parcoords.dragging, parcoords.xScales) + ')';
+    })
+        .ease(cubicInOut);
+    delete parcoords.dragging[dimensionA];
+    delete parcoords.dragging[dimensionB];
 }
 //---------- Filter Functions ----------
 function getFilter(dimension) {
@@ -7859,6 +7901,75 @@ function isSelected(record) {
 function setDimensionForHovering(dimension) {
     setHoverLabel(dimension);
 }
+//---------- Invert Functions ----------
+function invertWoTransition(dimension) {
+    const cleanDimensionName = cleanString(dimension);
+    const invertId = '#dimension_invert_' + cleanDimensionName;
+    const dimensionId = '#dimension_axis_' + cleanDimensionName;
+    const textElement = select(invertId);
+    const currentArrowStatus = textElement.text();
+    const arrow = currentArrowStatus === 'down' ? '#arrow_image_up' : '#arrow_image_down';
+    const arrowStyle = currentArrowStatus === 'down' ? setSize(getArrowDownCursor(), 12) : setSize(getArrowUpCursor(), 12);
+    textElement.text(currentArrowStatus === 'down' ? 'up' : 'down');
+    textElement.attr('href', arrow);
+    textElement.style('cursor', `url('data:image/svg+xml,${encodeURIComponent(arrowStyle)}') 8 8 , auto`);
+    select('#invert_hitbox_' + cleanDimensionName).style('cursor', `url('data:image/svg+xml,${encodeURIComponent(arrowStyle)}') 8 8 , auto`);
+    select(dimensionId)
+        .call(yAxis[dimension]
+        .scale(parcoords.yScales[dimension]
+        .domain(parcoords.yScales[dimension]
+        .domain().reverse())));
+    trans(active).each(function (d) {
+        select(this)
+            .attr('d', (d) => {
+            return linePath(d, parcoords.newFeatures);
+        });
+    });
+    addSettingsForBrushing(dimension, isInverted(dimension));
+    if (isInverted(dimension)) {
+        addInvertStatus(true, dimension, "isInverted");
+    }
+    else {
+        addInvertStatus(false, dimension, "isInverted");
+    }
+}
+function setInversionStatus(dimension, status) {
+    const cleanDimensionName = cleanString(dimension);
+    const invertId = '#dimension_invert_' + cleanDimensionName;
+    const dimensionId = '#dimension_axis_' + cleanDimensionName;
+    const textElement = select(invertId);
+    const arrow = status === 'ascending' ? '#arrow_image_up' : '#arrow_image_down';
+    const arrowStyle = status === 'ascending' ? setSize(getArrowDownCursor(), 12) : setSize(getArrowUpCursor(), 12);
+    textElement.text(status === 'ascending' ? 'up' : 'down');
+    textElement.attr('href', arrow);
+    textElement.style('cursor', `url('data:image/svg+xml,${encodeURIComponent(arrowStyle)}') 8 8 , auto`);
+    select('#invert_hitbox_' + cleanDimensionName).style('cursor', `url('data:image/svg+xml,${encodeURIComponent(arrowStyle)}') 8 8 , auto`);
+    select(dimensionId)
+        .transition()
+        .duration(1000)
+        .call(yAxis[dimension]
+        .scale(parcoords.yScales[dimension]
+        .domain(parcoords.yScales[dimension]
+        .domain().reverse())))
+        .ease(cubicInOut);
+    trans(active).each(function (d) {
+        select(this)
+            .transition()
+            .duration(1000)
+            .attr('d', (d) => {
+            return linePath(d, parcoords.newFeatures);
+        })
+            .ease(cubicInOut);
+    });
+    getFilter(dimension);
+    addSettingsForBrushing(dimension, isInverted(dimension));
+    if (isInverted(dimension)) {
+        addInvertStatus(true, dimension, "isInverted");
+    }
+    else {
+        addInvertStatus(false, dimension, "isInverted");
+    }
+}
 function invert(dimension) {
     const cleanDimensionName = cleanString(dimension);
     const invertId = '#dimension_invert_' + cleanDimensionName;
@@ -7897,7 +8008,331 @@ function invert(dimension) {
         addInvertStatus(false, dimension, "isInverted");
     }
 }
+//---------- Selection Functions ----------
+function getSelected() {
+    let selected = [];
+    const records = getAllRecords();
+    for (let i = 0; i < records.length; i++) {
+        let isselected = isSelected(records[i]);
+        if (isselected) {
+            selected.push(records[i]);
+        }
+    }
+    return selected;
+}
+function setSelection(records) {
+    for (let i = 0; i < records.length; i++) {
+        let stroke = select('#' + cleanString(records[i])).style('stroke');
+        if (stroke !== 'lightgrey') {
+            select('#' + cleanString(records[i]))
+                .classed('selected', true)
+                .transition()
+                .style('stroke', 'rgba(255, 165, 0, 1)');
+        }
+    }
+}
+function clearSelection() {
+    const selectedRecords = getSelected();
+    selectedRecords.forEach(element => {
+        select('#' + cleanString(element))
+            .classed('selected', false)
+            .transition()
+            .style('stroke', 'rgba(0, 129, 175, 0.5)');
+    });
+}
+function toggleSelection(record) {
+    const selected = isSelected(record);
+    if (selected) {
+        setUnselected(record);
+    }
+    else {
+        setSelected(record);
+    }
+}
+function setSelected(record) {
+    let selectableLines = [];
+    selectableLines.push(record);
+    setSelection(selectableLines);
+}
+function setUnselected(record) {
+    selectAll('#' + cleanString(record))
+        .classed('selected', false)
+        .transition()
+        .style('stroke', 'rgba(0, 129, 175, 0.5)');
+}
+function isRecordInactive(record) {
+    const stroke = select('#' + cleanString(record));
+    let node = stroke.node();
+    let style = node.style.stroke;
+    return style === 'rgba(211, 211, 211, 0.4)' ? true : false;
+}
+//---------- Selection Functions With IDs ----------
+function setSelectionWithId(recordIds) {
+    let records = [];
+    for (let i = 0; i < recordIds.length; i++) {
+        let record = getRecordWithId(recordIds[i]);
+        records.push(record);
+    }
+    setSelection(records);
+}
+function isSelectedWithRecordId(recordId) {
+    let record = getRecordWithId(recordId);
+    return isSelected(record);
+}
+function getRecordWithId(recordId) {
+    const item = parcoords.currentPosOfDims.find((object) => object.recordId == recordId);
+    return item.key;
+}
+function toggleSelectionWithId(recordId) {
+    const record = getRecordWithId(recordId);
+    toggleSelection(record);
+}
+function setSelectedWithId(recordId) {
+    const record = getRecordWithId(recordId);
+    setSelected(record);
+}
+function setUnselectedWithId(recordId) {
+    const record = getRecordWithId(recordId);
+    setUnselected(record);
+}
+//---------- Color Records ----------
+function colorRecord(record, color) {
+    selectAll('#' + cleanString(record))
+        .transition()
+        .style('stroke', color);
+}
+function uncolorRecord(record) {
+    selectAll('#' + cleanString(record))
+        .transition()
+        .style('stroke', 'rgba(0, 129, 175, 0.5)');
+}
+//---------- Helper Functions ----------
+function getAllRecords() {
+    const selection = active;
+    const object = selection._groups;
+    const data = [];
+    for (let i = 0; i < object[0].length; i++) {
+        const items = object.map((item) => item[i]);
+        const keys = Object.keys(items);
+        const text = items[keys[0]].id;
+        data.push(text);
+    }
+    return data;
+}
+function getAllVisibleDimensionNames() {
+    let listOfDimensions = parcoords.newFeatures.slice();
+    return listOfDimensions.reverse();
+}
+function getAllDimensionNames() {
+    return parcoords.data['columns'];
+}
+function getAllHiddenDimensionNames() {
+    const dimensions = getAllDimensionNames();
+    const hiddenDimensions = [];
+    for (let i = 0; i < dimensions.length; i++) {
+        if (getHiddenStatus(dimensions[i]) == 'hidden') {
+            hiddenDimensions.push(dimensions[i]);
+        }
+    }
+    return hiddenDimensions;
+}
+function getHiddenStatus(dimension) {
+    const index = parcoords.newFeatures.indexOf(dimension);
+    if (index != -1) {
+        return "shown";
+    }
+    else {
+        return "hidden";
+    }
+}
+function getInversionStatus(dimension) {
+    const invertId = '#dimension_invert_' + cleanString(dimension);
+    const element = select(invertId);
+    const arrowStatus = element.text();
+    return arrowStatus == 'up' ? 'ascending' : 'descending';
+}
+function getNumberOfDimensions() {
+    return parcoords.newFeatures.length;
+}
+function getDimensionPosition(dimension) {
+    return parcoords.newFeatures.indexOf(dimension);
+}
+function isDimensionCategorical(dimension) {
+    let values = parcoords.newDataset.map((o) => o[dimension]);
+    if (isNaN(values[0])) {
+        return true;
+    }
+    return false;
+}
 
+let tooltipValues = select('#parallelcoords')
+    .append('div')
+    .style('position', 'absolute')
+    .style('visibility', 'hidden');
+let tooltipValuesTop = select('#parallelcoords')
+    .append('div')
+    .style('position', 'absolute')
+    .style('visibility', 'hidden');
+let tooltipValuesDown = select('#parallelcoords')
+    .append('div')
+    .style('position', 'absolute')
+    .style('visibility', 'hidden');
+// Brushing
+function setRectToDrag(featureAxis) {
+    let delta;
+    featureAxis.each(function (d) {
+        const processedDimensionName = cleanString(d.name);
+        select(this)
+            .append('g')
+            .attr('class', 'rect')
+            .append('rect')
+            .attr('id', 'rect_' + processedDimensionName)
+            .attr('width', 12)
+            .attr('height', 240)
+            .attr('x', -6)
+            .attr('y', 80)
+            .attr('fill', 'rgb(242, 242, 76)')
+            .attr('opacity', '0.5')
+            .style('cursor', 'default')
+            .call(drag()
+            .on('drag', (event, d) => {
+            if (parcoords.newFeatures.length > 25) {
+                throttleDragAndBrush(processedDimensionName, d, event, delta, tooltipValuesTop, tooltipValuesDown, window);
+            }
+            else {
+                dragAndBrush(processedDimensionName, d, event, delta, tooltipValuesTop, tooltipValuesDown, window);
+            }
+        })
+            .on('start', (event, d) => {
+            let current = select("#rect_" + processedDimensionName);
+            delta = current.attr("y") - event.y;
+        })
+            .on('end', () => {
+            tooltipValuesTop.style('visibility', 'hidden');
+            tooltipValuesDown.style('visibility', 'hidden');
+        }));
+    });
+}
+function setBrushUp(featureAxis, brushOverlay) {
+    featureAxis.each(function (d) {
+        const processedDimensionName = cleanString(d.name);
+        const g = select(this).append('g').attr('class', 'brush_' + processedDimensionName);
+        g.append('use')
+            .attr('id', 'triangle_up_' + processedDimensionName)
+            .attr('x', -7)
+            .attr('y', 320)
+            .attr('width', 14)
+            .attr('height', 10)
+            .attr('href', '#brush_image_top')
+            .attr('pointer-events', 'none')
+            .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopCursor()), 13)}') 8 8, auto`);
+        const hit = g.append('rect')
+            .attr('class', 'handle-hitbox')
+            .attr('id', 'triangle_up_hit' + processedDimensionName)
+            .attr('x', -15)
+            .attr('y', 320)
+            .attr('width', 30)
+            .attr('height', 30)
+            .style('fill', 'transparent')
+            .style('pointer-events', 'all')
+            .style('touch-action', 'none')
+            .style('-webkit-user-select', 'none')
+            .style('user-select', 'none')
+            .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopCursor()), 13)}') 8 8, auto`);
+        const makeDrag = () => drag()
+            .container(function () { return this.ownerSVGElement || this; })
+            .on('start', () => {
+            brushOverlay.raise().style('pointer-events', 'all');
+            g.select('#triangle_up_' + processedDimensionName).raise();
+            g.selectAll('.handle-hitbox').raise();
+        })
+            .on('drag', (event, dd) => {
+            if (parcoords.newFeatures.length > 25) {
+                throttleBrushUp(processedDimensionName, event, dd, tooltipValues, window);
+            }
+            else {
+                brushUp(processedDimensionName, event, dd, tooltipValues, window);
+            }
+            const yNow = g.select('#triangle_up_' + processedDimensionName).attr('y');
+            if (yNow != null) {
+                hit.attr('y', +yNow);
+            }
+            g.selectAll('.handle-hitbox').raise();
+        })
+            .on('end', () => {
+            cleanup(brushOverlay, tooltipValues);
+            requestAnimationFrame(() => {
+                const newHit = g.select('.handle-hitbox');
+                if (!newHit.empty()) {
+                    newHit.call(makeDrag());
+                }
+            });
+        });
+        hit.call(makeDrag());
+    });
+}
+function setBrushDown(featureAxis, brushOverlay) {
+    featureAxis.each(function (d) {
+        const processedDimensionName = cleanString(d.name);
+        const g = select(this).append('g').attr('class', 'brush_' + processedDimensionName);
+        g.append('use')
+            .attr('id', 'triangle_down_' + processedDimensionName)
+            .attr('x', -7)
+            .attr('y', 70)
+            .attr('width', 14)
+            .attr('height', 10)
+            .attr('href', '#brush_image_bottom')
+            .attr('pointer-events', 'none')
+            .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowBottomCursor()), 13)}') 8 8, auto`);
+        const hit = g.append('rect')
+            .attr('class', 'handle-hitbox')
+            .attr('id', 'triangle_down_hit' + processedDimensionName)
+            .attr('x', -15)
+            .attr('y', 70)
+            .attr('width', 30)
+            .attr('height', 30)
+            .style('fill', 'transparent')
+            .style('pointer-events', 'all')
+            .style('touch-action', 'none')
+            .style('-webkit-user-select', 'none')
+            .style('user-select', 'none')
+            .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowBottomCursor()), 13)}') 8 8, auto`);
+        const makeDrag = () => drag()
+            .container(function () { return this.ownerSVGElement || this; })
+            .on('start', () => {
+            brushOverlay.raise().style('pointer-events', 'all');
+            g.select('#triangle_down_' + processedDimensionName).raise();
+            g.selectAll('.handle-hitbox').raise();
+        })
+            .on('drag', (event, dd) => {
+            if (parcoords.newFeatures.length > 25) {
+                throttleBrushDown(processedDimensionName, event, dd, tooltipValues, window);
+            }
+            else {
+                brushDown(processedDimensionName, event, dd, tooltipValues, window);
+            }
+            const yNow = g.select('#triangle_down_' + processedDimensionName).attr('y');
+            if (yNow != null) {
+                hit.attr('y', +yNow);
+            }
+            g.selectAll('.handle-hitbox').raise();
+        })
+            .on('end', () => {
+            cleanup(brushOverlay, tooltipValues);
+            requestAnimationFrame(() => {
+                const newHit = g.select('.handle-hitbox');
+                if (!newHit.empty()) {
+                    newHit.call(makeDrag());
+                }
+            });
+        });
+        hit.call(makeDrag());
+    });
+}
+function cleanup(brushOverlay, tooltipValues) {
+    brushOverlay.style('pointer-events', 'none').lower();
+    tooltipValues.style('visibility', 'hidden');
+}
 function brushDown(cleanDimensionName, event, d, tooltipValues, window) {
     const yPosBottom = Number(select('#triangle_up_' + cleanDimensionName).attr('y'));
     let yPosTop;
@@ -8493,6 +8928,7 @@ function setContextMenu(featureAxis) {
         resetFilterMenu(dimension);
         showAllMenu();
         copyDimensionName(dimension);
+        select('#contextmenuRecords').style('display', 'none');
         event.preventDefault();
     });
 }
@@ -10143,257 +10579,7 @@ function downloadCSV(dataset, filename = 'data.csv') {
     document.body.removeChild(link);
 }
 
-//******** API ********//
-//
-//---------- Invert Functions ----------
-function invertWoTransition(dimension) {
-    const cleanDimensionName = cleanString(dimension);
-    const invertId = '#dimension_invert_' + cleanDimensionName;
-    const dimensionId = '#dimension_axis_' + cleanDimensionName;
-    const textElement = select(invertId);
-    const currentArrowStatus = textElement.text();
-    const arrow = currentArrowStatus === 'down' ? '#arrow_image_up' : '#arrow_image_down';
-    const arrowStyle = currentArrowStatus === 'down' ? setSize(getArrowDownCursor(), 12) : setSize(getArrowUpCursor(), 12);
-    textElement.text(currentArrowStatus === 'down' ? 'up' : 'down');
-    textElement.attr('href', arrow);
-    textElement.style('cursor', `url('data:image/svg+xml,${encodeURIComponent(arrowStyle)}') 8 8 , auto`);
-    select('#invert_hitbox_' + cleanDimensionName).style('cursor', `url('data:image/svg+xml,${encodeURIComponent(arrowStyle)}') 8 8 , auto`);
-    select(dimensionId)
-        .call(yAxis[dimension]
-        .scale(parcoords.yScales[dimension]
-        .domain(parcoords.yScales[dimension]
-        .domain().reverse())));
-    trans(active).each(function (d) {
-        select(this)
-            .attr('d', (d) => {
-            return linePath(d, parcoords.newFeatures);
-        });
-    });
-    getFilter(dimension);
-    addSettingsForBrushing(dimension, isInverted(dimension));
-    if (isInverted(dimension)) {
-        addInvertStatus(true, dimension, "isInverted");
-    }
-    else {
-        addInvertStatus(false, dimension, "isInverted");
-    }
-}
-function setInversionStatus(dimension, status) {
-    const cleanDimensionName = cleanString(dimension);
-    const invertId = '#dimension_invert_' + cleanDimensionName;
-    const dimensionId = '#dimension_axis_' + cleanDimensionName;
-    const textElement = select(invertId);
-    const arrow = status === 'ascending' ? '#arrow_image_up' : '#arrow_image_down';
-    const arrowStyle = status === 'ascending' ? setSize(getArrowDownCursor(), 12) : setSize(getArrowUpCursor(), 12);
-    textElement.text(status === 'ascending' ? 'up' : 'down');
-    textElement.attr('href', arrow);
-    textElement.style('cursor', `url('data:image/svg+xml,${encodeURIComponent(arrowStyle)}') 8 8 , auto`);
-    select('#invert_hitbox_' + cleanDimensionName).style('cursor', `url('data:image/svg+xml,${encodeURIComponent(arrowStyle)}') 8 8 , auto`);
-    select(dimensionId)
-        .transition()
-        .duration(1000)
-        .call(yAxis[dimension]
-        .scale(parcoords.yScales[dimension]
-        .domain(parcoords.yScales[dimension]
-        .domain().reverse())))
-        .ease(cubicInOut);
-    trans(active).each(function (d) {
-        select(this)
-            .transition()
-            .duration(1000)
-            .attr('d', (d) => {
-            return linePath(d, parcoords.newFeatures);
-        })
-            .ease(cubicInOut);
-    });
-    getFilter(dimension);
-    addSettingsForBrushing(dimension, isInverted(dimension));
-    if (isInverted(dimension)) {
-        addInvertStatus(true, dimension, "isInverted");
-    }
-    else {
-        addInvertStatus(false, dimension, "isInverted");
-    }
-}
-//---------- Move Functions ----------
-function moveByOne(dimension, direction) {
-    const indexOfDimension = parcoords.newFeatures.indexOf(dimension);
-    const indexOfNeighbor = direction == 'right' ? indexOfDimension - 1
-        : indexOfDimension + 1;
-    const neighbour = parcoords.newFeatures[indexOfNeighbor];
-    const pos = parcoords.xScales(dimension);
-    const posNeighbour = parcoords.xScales(neighbour);
-    const distance = parcoords.xScales.step();
-    parcoords.dragging[dimension] = direction == 'right' ? pos + distance :
-        pos - distance;
-    parcoords.dragging[neighbour] = direction == 'right' ? posNeighbour - distance :
-        posNeighbour + distance;
-    if (direction == 'right') {
-        [parcoords.newFeatures[indexOfDimension], parcoords.newFeatures[indexOfDimension - 1]] =
-            [parcoords.newFeatures[indexOfDimension - 1], parcoords.newFeatures[indexOfDimension]];
-    }
-    else {
-        [parcoords.newFeatures[indexOfDimension + 1], parcoords.newFeatures[indexOfDimension]] =
-            [parcoords.newFeatures[indexOfDimension], parcoords.newFeatures[indexOfDimension + 1]];
-    }
-    parcoords.xScales.domain(parcoords.newFeatures);
-    let active = select('g.active').selectAll('path');
-    let featureAxis = selectAll('.dimensions');
-    active.transition()
-        .duration(1000)
-        .attr('d', function (d) {
-        return linePath(d, parcoords.newFeatures);
-    })
-        .ease(cubicInOut);
-    featureAxis.transition()
-        .duration(1000)
-        .attr('transform', function (d) {
-        return 'translate(' + position(d.name, parcoords.dragging, parcoords.xScales) + ')';
-    })
-        .ease(cubicInOut);
-    delete parcoords.dragging[dimension];
-    delete parcoords.dragging[neighbour];
-}
-function move(dimensionA, toRightOf, dimensionB) {
-    const indexOfDimensionA = getDimensionPosition(dimensionA);
-    const indexOfDimensionB = getDimensionPosition(dimensionB);
-    if (toRightOf) {
-        if (indexOfDimensionA > indexOfDimensionB) {
-            for (let i = indexOfDimensionA; i > indexOfDimensionB; i--) {
-                if (i != indexOfDimensionB - 1) {
-                    swap(parcoords.newFeatures[i], parcoords.newFeatures[i - 1]);
-                }
-            }
-        }
-        else {
-            for (let i = indexOfDimensionA; i < indexOfDimensionB; i++) {
-                if (i != indexOfDimensionB - 1) {
-                    swap(parcoords.newFeatures[i], parcoords.newFeatures[i + 1]);
-                }
-            }
-        }
-    }
-    else {
-        if (indexOfDimensionA > indexOfDimensionB) {
-            for (let i = indexOfDimensionA; i > indexOfDimensionB; i--) {
-                if (i != indexOfDimensionB + 1) {
-                    swap(parcoords.newFeatures[i], parcoords.newFeatures[i - 1]);
-                }
-            }
-        }
-        else {
-            for (let i = indexOfDimensionA; i < indexOfDimensionB; i++) {
-                swap(parcoords.newFeatures[i], parcoords.newFeatures[i + 1]);
-            }
-        }
-    }
-}
-function swap(dimensionA, dimensionB) {
-    const positionA = parcoords.xScales(dimensionA);
-    const positionB = parcoords.xScales(dimensionB);
-    parcoords.dragging[dimensionA] = positionB;
-    parcoords.dragging[dimensionB] = positionA;
-    const indexOfDimensionA = parcoords.newFeatures.indexOf(dimensionA);
-    const indexOfDimensionB = parcoords.newFeatures.indexOf(dimensionB);
-    [parcoords.newFeatures[indexOfDimensionA], parcoords.newFeatures[indexOfDimensionB]] =
-        [parcoords.newFeatures[indexOfDimensionB], parcoords.newFeatures[indexOfDimensionA]];
-    parcoords.xScales.domain(parcoords.newFeatures);
-    let active = select('g.active').selectAll('path');
-    let featureAxis = selectAll('.dimensions');
-    active.transition()
-        .duration(1000)
-        .attr('d', (d) => {
-        return linePath(d, parcoords.newFeatures);
-    });
-    featureAxis.transition()
-        .duration(1000)
-        .attr('transform', (d) => {
-        return 'translate(' + position(d.name, parcoords.dragging, parcoords.xScales) + ')';
-    })
-        .ease(cubicInOut);
-    delete parcoords.dragging[dimensionA];
-    delete parcoords.dragging[dimensionB];
-}
-//---------- Selection Functions ----------
-function getSelected() {
-    let selected = [];
-    const records = getAllRecords();
-    for (let i = 0; i < records.length; i++) {
-        let isselected = isSelected(records[i]);
-        if (isselected) {
-            selected.push(records[i]);
-        }
-    }
-    return selected;
-}
-function setSelection(records) {
-    for (let i = 0; i < records.length; i++) {
-        let stroke = select('#' + cleanString(records[i])).style('stroke');
-        if (stroke !== 'lightgrey') {
-            select('#' + cleanString(records[i]))
-                .classed('selected', true)
-                .transition()
-                .style('stroke', 'rgba(255, 165, 0, 1)');
-            //const data = parcoords.data.find(d => d.Name === records[i]);
-            //helper.createToolTipForValues(data, String(i));
-        }
-    }
-}
-function toggleSelection(record) {
-    const selected = isSelected(record);
-    if (selected) {
-        setUnselected(record);
-    }
-    else {
-        setSelected(record);
-    }
-}
-function setSelected(record) {
-    let selectableLines = [];
-    selectableLines.push(record);
-    setSelection(selectableLines);
-}
-function setUnselected(record) {
-    selectAll('#' + cleanString(record))
-        .classed('selected', false)
-        .transition()
-        .style('stroke', 'rgba(0, 129, 175, 0.5)');
-}
-function isRecordInactive(record) {
-    const stroke = select('#' + cleanString(record));
-    let node = stroke.node();
-    let style = node.style.stroke;
-    return style === 'rgba(211, 211, 211, 0.4)' ? true : false;
-}
-//---------- Selection Functions With IDs ----------
-function setSelectionWithId(recordIds) {
-    let records = [];
-    for (let i = 0; i < recordIds.length; i++) {
-        let record = getRecordWithId(recordIds[i]);
-        records.push(record);
-    }
-    setSelection(records);
-}
-function isSelectedWithRecordId(recordId) {
-    let record = getRecordWithId(recordId);
-    return isSelected(record);
-}
-function getRecordWithId(recordId) {
-    const item = parcoords.currentPosOfDims.find((object) => object.recordId == recordId);
-    return item.key;
-}
-function toggleSelectionWithId(recordId) {
-    const record = getRecordWithId(recordId);
-    toggleSelection(record);
-}
-function setSelectedWithId(recordId) {
-    const record = getRecordWithId(recordId);
-    setSelected(record);
-}
-function setUnselectedWithId(recordId) {
-    const record = getRecordWithId(recordId);
-    setUnselected(record);
-}
+//---------- IO Functions ----------
 function drawChart(content) {
     setRefreshData(structuredClone(content));
     deleteChart();
@@ -10401,30 +10587,18 @@ function drawChart(content) {
     setUpParcoordData(content, newFeatures);
     const height = 360;
     let wrapper = select('#parallelcoords');
-    if (wrapper === null)
+    if (wrapper === null) {
         wrapper = select(document.body)
             .append("div")
-            .attr('id', 'parallelcoords');
-    /*const margin = computeMargins(parcoords.newFeatures);
-
-    const chartWrapper = wrapper.append('div')
-      .attr('id', 'chartWrapper')
-      .style('--ml', `${margin.left}px`)
-      .style('--mr', `${margin.right}px`);
-
-    chartWrapper.append('div')
-      .attr('id', 'toolbarRow')
-      .style('margin-left', 'var(--ml)')
-      .style('margin-right', 'var(--mr)')
-      .style('width', 'calc(100% - var(--ml) - var(--mr))');*/
-    wrapper
-        .style('display', 'block')
-        .style('width', '100%')
-        .style('margin', '0')
-        .style('padding', '0')
-        .style('text-align', 'left')
-        .style('justify-content', 'center')
-        .style('align-items', 'center');
+            .attr('id', 'parallelcoords')
+            .style('display', 'block')
+            .style('width', '100%')
+            .style('margin', '0')
+            .style('padding', '0')
+            .style('text-align', 'left')
+            .style('justify-content', 'center')
+            .style('align-items', 'center');
+    }
     const chartWrapper = wrapper.append('div')
         .attr('id', 'chartWrapper');
     chartWrapper.append('div')
@@ -10440,12 +10614,10 @@ function drawChart(content) {
         .attr('id', 'pc_svg')
         .attr('viewBox', [0, 0, width, height])
         .attr('font-family', 'Verdana, sans-serif'));
-    select('#toolbarRow');
     setDefsForIcons();
     setFeatureAxis(svg, yAxis, parcoords, width);
     setActive(setActivePathLines(svg, content, parcoords));
-    svg
-        .on("contextmenu", function (event) {
+    svg.on("contextmenu", function (event) {
         event.stopPropagation();
         event.preventDefault();
     })
@@ -10490,19 +10662,18 @@ function deleteChart() {
     select('#toolbarRow').remove();
     parcoords.currentPosOfDims.length = 0;
 }
-//---------- Helper Functions ----------
 // ---------- Needed for Built-In Interactivity Functions ---------- //
 function setUpParcoordData(data, newFeatures) {
     setPadding(60);
     setPaddingXaxis(60);
+    setInitDimension(newFeatures);
+    setHeight(400);
     if (newFeatures.length <= 6) {
         setWidth(newFeatures.length * 180);
     }
     else {
         setWidth(newFeatures.length * 100);
     }
-    setHeight(400);
-    setInitDimension(newFeatures);
     const label = newFeatures[newFeatures.length - 1];
     data.sort((a, b) => {
         const item1 = a[label];
@@ -10539,7 +10710,8 @@ function setUpParcoordData(data, newFeatures) {
         const ranges = getDimensionRange(newFeatures[i]);
         parcoords.currentPosOfDims.push({
             key: newFeatures[i], top: 80, bottom: 320, isInverted: false, index: i,
-            min: min, max: max, sigDig: 0, currentRangeTop: ranges[1], currentRangeBottom: ranges[0], currentFilterBottom: ranges[0], currentFilterTop: ranges[1]
+            min: min, max: max, sigDig: 0, currentRangeTop: ranges[1], currentRangeBottom: ranges[0],
+            currentFilterBottom: ranges[0], currentFilterTop: ranges[1]
         });
     }
     const hiddenDims = getAllHiddenDimensionNames();
@@ -10565,20 +10737,9 @@ function setUpParcoordData(data, newFeatures) {
     });
     setHoverLabel(getAllVisibleDimensionNames()[0]);
 }
-const tooltipPath = select('body')
+const tooltipLabel = select('body')
     .append('div')
-    .style('position', 'absolute')
-    .style('visibility', 'hidden')
-    .style('pointer-events', 'none')
-    .style('background', 'rgba(0,0,0,0.8)')
-    .style('color', '#fff')
-    .style('padding', '0.5rem')
-    .style('border-radius', '0.25rem')
-    .style('font-size', '0.75rem')
-    .style('z-index', '1000');
-const tooltipTest = select('body')
-    .append('div')
-    .attr('id', 'tooltipTest')
+    .attr('id', 'tooltip_label')
     .style('position', 'absolute')
     .style('visibility', 'hidden')
     .style('pointer-events', 'none')
@@ -10594,7 +10755,7 @@ const handlePointerEnter = (event, d) => {
     doNotHighlight();
     const data = getAllPointerEventsData(event);
     highlight(data);
-    createTooltipForPathLine(data, tooltipTest, event);
+    createTooltipForLabel(data, tooltipLabel, event);
     const datasetMap = new Map();
     parcoords.newDataset.forEach((record) => {
         datasetMap.set(record[hoverlabel], record);
@@ -10608,17 +10769,39 @@ const handlePointerEnter = (event, d) => {
 };
 const handlePointerLeaveOrOut = () => {
     doNotHighlight();
-    tooltipPath.style('visibility', 'hidden');
-    select('#tooltipTest').style('visibility', 'hidden');
+    select('#tooltip_label').style('visibility', 'hidden');
     cleanTooltip();
+};
+const handleClick = (event, d) => {
+    const data = getAllPointerEventsData(event);
+    const selectedRecords = getSelected();
+    if (event.metaKey || event.shiftKey) {
+        data.forEach((record) => {
+            if (selectedRecords.includes(record)) {
+                setUnselected(record);
+            }
+            else {
+                setSelected(record);
+            }
+        });
+    }
+    else if (event.ctrlKey) {
+        data.forEach((record) => {
+            toggleSelection(record);
+        });
+    }
+    else {
+        clearSelection();
+        setSelection(data);
+    }
+    event.stopPropagation();
 };
 select('#pc_svg').on('mouseleave', () => {
     if (cleanupTimeout)
         clearTimeout(cleanupTimeout);
     cleanupTimeout = setTimeout(() => {
         doNotHighlight();
-        tooltipPath.style('visibility', 'hidden');
-        select('#tooltipTest').style('visibility', 'hidden');
+        select('#tooltip_label').style('visibility', 'hidden');
         cleanTooltip();
     }, 100);
 });
@@ -10632,32 +10815,9 @@ document.addEventListener('mousemove', (e) => {
     }
 });
 function setActivePathLines(svg, content, parcoords) {
-    let contextMenu = select('#parallelcoords')
-        .append('g')
-        .attr('id', 'contextmenuRecords')
-        .style('position', 'absolute')
-        .style('display', 'none');
-    contextMenu.append('div')
-        .attr('id', 'selectRecord')
-        .attr('class', 'contextmenu')
-        .text('Select Record');
-    contextMenu.append('div')
-        .attr('id', 'unSelectRecord')
-        .attr('class', 'contextmenu')
-        .text('Unselect Record');
-    contextMenu.append('div')
-        .attr('id', 'toggleRecord')
-        .attr('class', 'contextmenu')
-        .text('Toggle Record');
-    contextMenu.append('div')
-        .attr('id', 'addSelection')
-        .attr('class', 'contextmenu')
-        .text('Add to Selection');
-    contextMenu.append('div')
-        .attr('id', 'removeSelection')
-        .attr('class', 'contextmenu')
-        .text('Remove from Selection');
-    let active = svg.append('g')
+    const contextMenu = createContextMenuForRecords();
+    // active polylines/paths/records
+    return svg.append('g')
         .attr('class', 'active')
         .selectAll('path')
         .data(content)
@@ -10686,38 +10846,32 @@ function setActivePathLines(svg, content, parcoords) {
         .on('mouseenter', handlePointerEnter)
         .on('mouseout', handlePointerLeaveOrOut)
         .on('mouseleave', handlePointerLeaveOrOut)
-        .on('click', function (event, d) {
-        const data = getAllPointerEventsData(event);
-        const selectedRecords = getSelected();
-        if (event.metaKey || event.shiftKey) {
-            data.forEach((record) => {
-                if (selectedRecords.includes(record)) {
-                    setUnselected(record);
-                }
-                else {
-                    selectRecord([record]);
-                }
-            });
-        }
-        else if (event.ctrlKey) {
-            data.forEach((record) => {
-                toggleSelection(record);
-            });
-        }
-        else {
-            clearSelection();
-            selectRecord(data);
-        }
-        event.stopPropagation();
-    })
+        .on('click', handleClick)
         .on('contextmenu', function (event, d) {
-        setContextMenuForActiceRecords(contextMenu, event, d);
+        handleRecordContextMenu(contextMenu, event, d);
+        select('#contextmenu').style('display', 'none');
     });
-    return active;
 }
-const delay1 = 50;
-const throttleShowValues = throttle(createToolTipForValues, delay1);
-function setContextMenuForActiceRecords(contextMenu, event, d) {
+function createContextMenuForRecords() {
+    let contextMenu = select('#parallelcoords')
+        .append('g')
+        .attr('id', 'contextmenuRecords')
+        .style('position', 'absolute')
+        .style('display', 'none');
+    createContextMenuItem(contextMenu, 'selectRecord', 'contextmenu', 'Select Record');
+    createContextMenuItem(contextMenu, 'unSelectRecord', 'contextmenu', 'Unselect Record');
+    createContextMenuItem(contextMenu, 'toggleRecord', 'contextmenu', 'Toggle Record');
+    createContextMenuItem(contextMenu, 'addSelection', 'contextmenu', 'Add to Selection');
+    createContextMenuItem(contextMenu, 'removeSelection', 'contextmenu', 'Remove from Selection');
+    return contextMenu;
+}
+function createContextMenuItem(contextMenu, id, className, text) {
+    contextMenu.append('div')
+        .attr('id', id)
+        .attr('class', className)
+        .text(text);
+}
+function handleRecordContextMenu(contextMenu, event, d) {
     const container = document.querySelector("#parallelcoords");
     const rect = container.getBoundingClientRect();
     const x = event.clientX - rect.left;
@@ -10733,27 +10887,23 @@ function setContextMenuForActiceRecords(contextMenu, event, d) {
         .on('click', (event) => {
         event.stopPropagation();
     });
-    select('#selectRecord')
-        .on('click', (event) => {
+    select('#selectRecord').on('click', (event) => {
         setSelected(d[hoverlabel]);
         event.stopPropagation();
         select('#contextmenuRecords').style('display', 'none');
     });
-    select('#unSelectRecord')
-        .on('click', (event) => {
+    select('#unSelectRecord').on('click', (event) => {
         setUnselected(d[hoverlabel]);
         event.stopPropagation();
         select('#contextmenuRecords').style('display', 'none');
     });
-    select('#toggleRecord')
-        .style('border-top', '0.08rem lightgrey solid')
+    select('#toggleRecord').style('border-top', '0.08rem lightgrey solid')
         .on('click', (event) => {
         toggleSelection(d[hoverlabel]);
         event.stopPropagation();
         select('#contextmenuRecords').style('display', 'none');
     });
-    select('#addSelection')
-        .style('border-top', '0.08rem lightgrey solid')
+    select('#addSelection').style('border-top', '0.08rem lightgrey solid')
         .on('click', (event) => {
         let selectedRecords = [];
         selectedRecords = getSelected();
@@ -10762,8 +10912,7 @@ function setContextMenuForActiceRecords(contextMenu, event, d) {
         event.stopPropagation();
         select('#contextmenuRecords').style('display', 'none');
     });
-    select('#removeSelection')
-        .on('click', (event) => {
+    select('#removeSelection').on('click', (event) => {
         setUnselected(d[hoverlabel]);
         event.stopPropagation();
         select('#contextmenuRecords').style('display', 'none');
@@ -10771,6 +10920,8 @@ function setContextMenuForActiceRecords(contextMenu, event, d) {
     selectAll('.contextmenu').style('padding', 0.35 + 'rem');
     event.preventDefault();
 }
+const delay1 = 50;
+const throttleShowValues = throttle(createToolTipForValues, delay1);
 function setFeatureAxis(svg, yAxis, parcoords, width, padding) {
     let featureAxis = svg.selectAll('g.feature')
         .data(parcoords.features)
@@ -10778,19 +10929,14 @@ function setFeatureAxis(svg, yAxis, parcoords, width, padding) {
         .append('g')
         .attr('class', 'dimensions')
         .attr('transform', (d) => ('translate(' + parcoords.xScales(d.name) + ')'));
-    select('body')
-        .append('g')
-        .style('position', 'absolute')
-        .style('visibility', 'hidden');
-    featureAxis
-        .append('g')
+    featureAxis.append('g')
         .each(function (d) {
         const processedDimensionName = cleanString(d.name);
         select(this)
             .attr('id', 'dimension_axis_' + processedDimensionName)
             .call(yAxis[d.name]);
     });
-    let tickElements = document.querySelectorAll('g.tick');
+    /*let tickElements = document.querySelectorAll('g.tick');
     tickElements.forEach((gElement) => {
         let transformValue = gElement.getAttribute('transform');
         let yValue = transformValue.match(/translate\(0,([^\)]+)\)/);
@@ -10799,19 +10945,7 @@ function setFeatureAxis(svg, yAxis, parcoords, width, padding) {
             let shortenedValue = originalValue.toFixed(4);
             gElement.setAttribute('transform', `translate(0,${shortenedValue})`);
         }
-    });
-    let tooltipValues = select('body')
-        .append('div')
-        .style('position', 'absolute')
-        .style('visibility', 'hidden');
-    let tooltipValuesTop = select('#parallelcoords')
-        .append('div')
-        .style('position', 'absolute')
-        .style('visibility', 'hidden');
-    let tooltipValuesDown = select('#parallelcoords')
-        .append('div')
-        .style('position', 'absolute')
-        .style('visibility', 'hidden');
+    });*/
     const brushOverlay = svg.append("rect")
         .attr("x", 0)
         .attr("y", 0)
@@ -10819,9 +10953,9 @@ function setFeatureAxis(svg, yAxis, parcoords, width, padding) {
         .attr("height", height)
         .style("fill", "transparent")
         .style("pointer-events", "none");
-    setBrushDown(featureAxis, parcoords, tooltipValues, brushOverlay);
-    setBrushUp(featureAxis, parcoords, tooltipValues, brushOverlay);
-    setRectToDrag(featureAxis, svg, parcoords, tooltipValuesTop, tooltipValuesDown);
+    setBrushDown(featureAxis, brushOverlay);
+    setBrushUp(featureAxis, brushOverlay);
+    setRectToDrag(featureAxis);
     setMarker(featureAxis);
     setContextMenu(featureAxis);
     setInvertIcon(featureAxis);
@@ -10838,81 +10972,21 @@ function setDefsForIcons() {
     const svgContainer = svg;
     let defs = svgContainer.select('defs');
     defs = svgContainer.append('defs');
-    defs.append('image')
-        .attr('id', 'arrow_image_up')
-        .attr('width', 12)
-        .attr('height', 12)
-        .attr('href', 'data:image/svg+xml;,' + getArrowUp());
-    defs.append('image')
-        .attr('id', 'arrow_image_down')
-        .attr('width', 12)
-        .attr('height', 12)
-        .attr('href', 'data:image/svg+xml;,' + getArrowDown());
-    defs.append('image')
-        .attr('id', 'brush_image_top')
-        .attr('width', 14)
-        .attr('height', 10)
-        .attr('href', 'data:image/svg+xml;,' + getArrowTop());
-    defs.append('image')
-        .attr('id', 'brush_image_bottom')
-        .attr('width', 14)
-        .attr('height', 10)
-        .attr('href', 'data:image/svg+xml;,' + getArrowBottom());
-    defs.append('image')
-        .attr('id', 'brush_image_top_active')
-        .attr('width', 14)
-        .attr('height', 10)
-        .attr('href', 'data:image/svg+xml;,' + getArrowTopActive());
-    defs.append('image')
-        .attr('id', 'brush_image_bottom_active')
-        .attr('width', 14)
-        .attr('height', 10)
-        .attr('href', 'data:image/svg+xml;,' + getArrowBottomActive());
+    createImage(defs, 'arrow_image_up', 12, 12, getArrowUp());
+    createImage(defs, 'arrow_image_down', 12, 12, getArrowDown());
+    createImage(defs, 'brush_image_top', 14, 10, getArrowTop());
+    createImage(defs, 'brush_image_bottom', 14, 10, getArrowBottom());
+    createImage(defs, 'brush_image_top_active', 14, 10, getArrowTopActive());
+    createImage(defs, 'brush_image_bottom_active', 14, 10, getArrowBottomActive());
 }
-// Hovering
-let currentlyHighlightedItems = [];
-function highlight(data) {
-    const cleanedItems = data.map((item) => cleanString(item).replace(/[.,]/g, ''));
-    currentlyHighlightedItems = [...cleanedItems];
-    cleanedItems.forEach((item) => {
-        select('#' + item)
-            .transition()
-            .duration(5)
-            .style('stroke', 'rgba(200, 28, 38, 0.7)');
-    });
+function createImage(defs, id, width, height, image) {
+    defs.append('image')
+        .attr('id', id)
+        .attr('width', width)
+        .attr('height', height)
+        .attr('href', 'data:image/svg+xml;,' + image);
 }
-function doNotHighlight() {
-    if (!currentlyHighlightedItems.length)
-        return;
-    currentlyHighlightedItems.forEach(item => {
-        const line = select('#' + item);
-        if (line.classed('selected')) {
-            line.transition()
-                .style('stroke', 'rgba(255, 165, 0, 1)');
-        }
-        else {
-            line.transition()
-                .style('stroke', 'rgba(0, 129, 175, 0.5)');
-        }
-    });
-    currentlyHighlightedItems = [];
-}
-// Selecting
-function selectRecord(linePaths) {
-    for (let i = 0; i < linePaths.length; i++) {
-        setSelected(linePaths[i]);
-    }
-}
-function clearSelection() {
-    const selectedRecords = getSelected();
-    selectedRecords.forEach(element => {
-        select('#' + cleanString(element))
-            .classed('selected', false)
-            .transition()
-            .style('stroke', 'rgba(0, 129, 175, 0.5)');
-    });
-}
-function setInvertIcon(featureAxis, padding) {
+function setInvertIcon(featureAxis) {
     let value = (80 / 1.5).toFixed(4);
     const svg = featureAxis
         .append('svg')
@@ -10956,6 +11030,34 @@ function setInvertIcon(featureAxis, padding) {
         event.stopPropagation();
     });
 }
+// Hovering
+let currentlyHighlightedItems = [];
+function highlight(data) {
+    const cleanedItems = data.map((item) => cleanString(item).replace(/[.,]/g, ''));
+    currentlyHighlightedItems = [...cleanedItems];
+    cleanedItems.forEach((item) => {
+        select('#' + item)
+            .transition()
+            .duration(5)
+            .style('stroke', 'rgba(200, 28, 38, 0.7)');
+    });
+}
+function doNotHighlight() {
+    if (!currentlyHighlightedItems.length)
+        return;
+    currentlyHighlightedItems.forEach(item => {
+        const line = select('#' + item);
+        if (line.classed('selected')) {
+            line.transition()
+                .style('stroke', 'rgba(255, 165, 0, 1)');
+        }
+        else {
+            line.transition()
+                .style('stroke', 'rgba(0, 129, 175, 0.5)');
+        }
+    });
+    currentlyHighlightedItems = [];
+}
 function setMarker(featureAxis) {
     featureAxis
         .each(function (d) {
@@ -10973,167 +11075,6 @@ function setMarker(featureAxis) {
             .attr('stroke', "rgb(228, 90, 15)")
             .attr('stroke-width', '0.1rem')
             .attr('opacity', '0');
-    });
-}
-// Brushing
-function setRectToDrag(featureAxis, svg, parcoords, tooltipValuesTop, tooltipValuesDown) {
-    let delta;
-    featureAxis
-        .each(function (d) {
-        const processedDimensionName = cleanString(d.name);
-        select(this)
-            .append('g')
-            .attr('class', 'rect')
-            .append('rect')
-            .attr('id', 'rect_' + processedDimensionName)
-            .attr('width', 12)
-            .attr('height', 240)
-            .attr('x', -6)
-            .attr('y', 80)
-            .attr('fill', 'rgb(242, 242, 76)')
-            .attr('opacity', '0.5')
-            .style('cursor', 'default')
-            .call(drag()
-            .on('drag', (event, d) => {
-            if (parcoords.newFeatures.length > 25) {
-                throttleDragAndBrush(processedDimensionName, d, event, delta, tooltipValuesTop, tooltipValuesDown, window);
-            }
-            else {
-                dragAndBrush(processedDimensionName, d, event, delta, tooltipValuesTop, tooltipValuesDown, window);
-            }
-        })
-            .on('start', (event, d) => {
-            let current = select("#rect_" + processedDimensionName);
-            delta = current.attr("y") - event.y;
-        })
-            .on('end', () => {
-            tooltipValuesTop.style('visibility', 'hidden');
-            tooltipValuesDown.style('visibility', 'hidden');
-        }));
-    });
-}
-function setBrushUp(featureAxis, parcoords, tooltipValues, brushOverlay) {
-    featureAxis.each(function (d) {
-        const processedDimensionName = cleanString(d.name);
-        const g = select(this).append('g').attr('class', 'brush_' + processedDimensionName);
-        const iconY = 320, iconX = -7, iconW = 14, iconH = 10;
-        g.append('use')
-            .attr('id', 'triangle_up_' + processedDimensionName)
-            .attr('x', iconX)
-            .attr('y', iconY)
-            .attr('width', iconW)
-            .attr('height', iconH)
-            .attr('href', '#brush_image_top')
-            .attr('pointer-events', 'none')
-            .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopCursor()), 13)}') 8 8, auto`);
-        const hit = g.append('rect')
-            .attr('class', 'handle-hitbox')
-            .attr('id', 'triangle_up_hit' + processedDimensionName)
-            .attr('x', -15)
-            .attr('y', iconY)
-            .attr('width', 30)
-            .attr('height', 30)
-            .style('fill', 'transparent')
-            .style('pointer-events', 'all')
-            .style('touch-action', 'none')
-            .style('-webkit-user-select', 'none')
-            .style('user-select', 'none')
-            .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopCursor()), 13)}') 8 8, auto`);
-        function cleanup() {
-            brushOverlay.style('pointer-events', 'none').lower();
-            tooltipValues.style('visibility', 'hidden');
-        }
-        const makeDrag = () => drag()
-            .container(function () { return this.ownerSVGElement || this; })
-            .on('start', () => {
-            brushOverlay.raise().style('pointer-events', 'all');
-            g.select('#triangle_up_' + processedDimensionName).raise();
-            g.selectAll('.handle-hitbox').raise();
-        })
-            .on('drag', (event, dd) => {
-            if (parcoords.newFeatures.length > 25) {
-                throttleBrushUp(processedDimensionName, event, dd, tooltipValues, window);
-            }
-            else {
-                brushUp(processedDimensionName, event, dd, tooltipValues, window);
-            }
-            const yNow = g.select('#triangle_up_' + processedDimensionName).attr('y');
-            if (yNow != null) {
-                hit.attr('y', +yNow);
-            }
-            g.selectAll('.handle-hitbox').raise();
-        })
-            .on('end', () => {
-            cleanup();
-            requestAnimationFrame(() => {
-                const newHit = g.select('.handle-hitbox');
-                if (!newHit.empty())
-                    newHit.call(makeDrag());
-            });
-        });
-        hit.call(makeDrag());
-    });
-}
-function setBrushDown(featureAxis, parcoords, tooltipValues, brushOverlay) {
-    featureAxis.each(function (d) {
-        const processedDimensionName = cleanString(d.name);
-        const g = select(this).append('g').attr('class', 'brush_' + processedDimensionName);
-        const iconY = 70, iconX = -7, iconW = 14, iconH = 10;
-        g.append('use')
-            .attr('id', 'triangle_down_' + processedDimensionName)
-            .attr('x', iconX)
-            .attr('y', iconY)
-            .attr('width', iconW)
-            .attr('height', iconH)
-            .attr('href', '#brush_image_bottom')
-            .attr('pointer-events', 'none')
-            .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowBottomCursor()), 13)}') 8 8, auto`);
-        const hit = g.append('rect')
-            .attr('class', 'handle-hitbox')
-            .attr('id', 'triangle_down_hit' + processedDimensionName)
-            .attr('x', -15)
-            .attr('y', iconY)
-            .attr('width', 30)
-            .attr('height', 30)
-            .style('fill', 'transparent')
-            .style('pointer-events', 'all')
-            .style('touch-action', 'none')
-            .style('-webkit-user-select', 'none')
-            .style('user-select', 'none')
-            .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowBottomCursor()), 13)}') 8 8, auto`);
-        function cleanup() {
-            brushOverlay.style('pointer-events', 'none').lower();
-            tooltipValues.style('visibility', 'hidden');
-        }
-        const makeDrag = () => drag()
-            .container(function () { return this.ownerSVGElement || this; })
-            .on('start', () => {
-            brushOverlay.raise().style('pointer-events', 'all');
-            g.select('#triangle_down_' + processedDimensionName).raise();
-            g.selectAll('.handle-hitbox').raise();
-        })
-            .on('drag', (event, dd) => {
-            if (parcoords.newFeatures.length > 25) {
-                throttleBrushDown(processedDimensionName, event, dd, tooltipValues, window);
-            }
-            else {
-                brushDown(processedDimensionName, event, dd, tooltipValues, window);
-            }
-            const yNow = g.select('#triangle_down_' + processedDimensionName).attr('y');
-            if (yNow != null) {
-                hit.attr('y', +yNow);
-            }
-            g.selectAll('.handle-hitbox').raise();
-        })
-            .on('end', () => {
-            cleanup();
-            requestAnimationFrame(() => {
-                const newHit = g.select('.handle-hitbox');
-                if (!newHit.empty())
-                    newHit.call(makeDrag());
-            });
-        });
-        hit.call(makeDrag());
     });
 }
 
@@ -11348,5 +11289,5 @@ function checkIfDuplicatesExists(value) {
     return new Set(value).size !== value.length;
 }
 
-export { createSvgString, deleteChart, drawChart, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelected, hide, hideMarker, invert, invertWoTransition, isDimensionCategorical, isRecordInactive, isSelected, isSelectedWithRecordId, loadCSV, move, moveByOne, refresh, reset, saveAsSvg, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setFilter, setInversionStatus, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setUnselected, setUnselectedWithId, show, showMarker, swap, throttleShowValues, toggleSelection, toggleSelectionWithId };
+export { clearSelection, colorRecord, createSvgString, deleteChart, drawChart, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelected, hide, hideMarker, invert, invertWoTransition, isDimensionCategorical, isRecordInactive, isSelected, isSelectedWithRecordId, loadCSV, move, moveByOne, refresh, reset, saveAsSvg, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setFilter, setInversionStatus, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setUnselected, setUnselectedWithId, show, showMarker, swap, throttleShowValues, toggleSelection, toggleSelectionWithId, uncolorRecord };
 //# sourceMappingURL=spcd3.js.map

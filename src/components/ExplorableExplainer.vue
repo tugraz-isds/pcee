@@ -739,6 +739,22 @@ const selectOutlier = (): void => {
     }
   }
 
+  const isAlreadySelected = spcd3.isSelected("Patient F");
+
+  console.log(isAlreadySelected);
+
+  if (isAlreadySelected && (document.getElementById('outlier-button') as HTMLButtonElement).textContent === 'Show Outlier') {
+     if (showError) {
+      showError.textContent = "Outlier (Patient F) is already selected!";
+      return;
+    }
+  }
+  else {
+    if (showError) {
+      showError.textContent = "";
+    }
+  }
+
   // eslint-disable-next-line no-undef
   const path = document.getElementById("Patient-F") as SVGPathElement | null;
   if (path) {
@@ -1764,14 +1780,13 @@ section {
   border-radius: 0.3rem;
   margin-top: 1rem;
   opacity: 0;
-  transform: translateY(100px);
   padding-right: 1rem;
   margin-left: 0.5rem;
   padding-bottom: 0.5rem;
 
   animation: slide-in-from-bottom 1s ease-out forwards;
   animation-timeline: scroll();
-  animation-range: 0vh 100vh;
+  animation-range: 0vh 10vh;
   animation-duration: 1s;
 }
 
