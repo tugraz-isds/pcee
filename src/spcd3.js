@@ -6582,7 +6582,8 @@ function setupYScales(header, dataset) {
     header.map((x) => {
         const values = dataset.map((o) => o[x.name]);
         let labels = [];
-        if (isNaN(values[0]) !== false) {
+        const numericValues = values.every(v => !isNaN(Number(v)));
+        if (!numericValues) {
             values.forEach(function (element) {
                 labels.push(element.length > 10 ? element.substr(0, 10) + '...' :
                     element);
@@ -6628,9 +6629,7 @@ function setupYAxis(yScales, dataset, hiddenDims) {
     Object.entries(yScales).forEach(([key, scale]) => {
         if (hiddenDims.includes(key))
             return;
-        const sample = dataset[0][key];
-        const isNumeric = !isNaN(+sample);
-        if (!isNumeric) {
+        if (!isLinearScale(scale)) {
             const rawLabels = dataset.map((d) => d[key]);
             const shortenedLabels = rawLabels.map((val) => typeof val === 'string' && val.length > 10 ? val.substr(0, 10) +
                 '...' : val);
@@ -6706,7 +6705,7 @@ function createToolTipForValues(records, recKey) {
         .join('div')
         .attr('class', 'tip-layer')
         .attr('data-record', recordId)
-        .style('position', 'absolute')
+        .style('position', 'fixed')
         .style('left', '0px')
         .style('top', '0px')
         .style('pointer-events', 'none');
@@ -6722,8 +6721,8 @@ function createToolTipForValues(records, recKey) {
         const sp = pt.matrixTransform(ctm);
         return {
             dim,
-            pageX: sp.x + window.scrollX + 8,
-            pageY: sp.y + window.scrollY + 8,
+            pageX: sp.x + 8,
+            pageY: sp.y + 8,
             text: String(records[dim]),
         };
     });
@@ -6768,13 +6767,15 @@ function getAllPointerEventsData(event) {
 function createTooltipForLabel(tooltipText, tooltipLabel, event) {
     if (!tooltipText || tooltipText.length === 0)
         return;
-    const [x, y] = getMouseCoords(event);
+    const x = event.clientX;
+    const y = event.clientY;
     let tempText = tooltipText.toString();
     tempText = tempText.split(',').join('\r\n');
     tooltipLabel.text(tempText)
         .style('visibility', 'visible')
-        .style('top', y / 16 + 'rem')
-        .style('left', x / 16 + 0.5 + 'rem');
+        .style('position', 'fixed')
+        .style('top', `${y}px`)
+        .style('left', `${x}px`);
     return tooltipLabel;
 }
 function trans(g) {
@@ -8158,11 +8159,9 @@ function getDimensionPosition(dimension) {
     return parcoords.newFeatures.indexOf(dimension);
 }
 function isDimensionCategorical(dimension) {
-    let values = parcoords.newDataset.map((o) => o[dimension]);
-    if (isNaN(values[0])) {
-        return true;
-    }
-    return false;
+    const values = parcoords.newDataset.map((o) => o[dimension]);
+    const isAllNumeric = values.every(v => !isNaN(Number(v)));
+    return !isAllNumeric;
 }
 
 let tooltipValues = select('#parallelcoords')

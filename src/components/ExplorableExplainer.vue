@@ -1898,16 +1898,21 @@ svg {
 
 .table-container {
   flex: 1 1 20rem;
+  min-width: 0;
   max-height: 30rem;
-  padding-top: 1rem;
+  margin-top: 1rem;
   margin-left: 0.5rem;
   position: relative;
   isolation: isolate;
+  overflow-y: auto;
+  overflow-x: auto;
+  box-sizing: border-box;
 }
 
 table {
   text-align: justify;
-  width: 100%;
+  width: max-content;
+  min-width: 100%;
   table-layout: fixed;
   border-collapse: separate;
   border-spacing: 0;
@@ -1918,6 +1923,10 @@ th, td {
   position: relative;
   overflow: hidden;
   padding: 0.5rem 0.75rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 8rem;
+  min-width: 8rem;
 }
 
 td {
@@ -1933,7 +1942,6 @@ th {
 }
 
 .header {
-  overflow: scroll;
   white-space: normal;
 }
 
@@ -2002,13 +2010,19 @@ td .add-button {
 .narrow-column {
   width: 2.5rem;
   text-align: center;
+  min-width: max-content;
+}
+
+input {
+  width: 100%;
 }
 
 input[type="number"] {
-  width: 100%;
   padding: 0.3rem;
   box-sizing: border-box;
 }
+
+
 
 th input[type="text"] {
   width: auto !important;
