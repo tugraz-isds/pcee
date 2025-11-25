@@ -9,12 +9,12 @@ export const originalColumns = [
   ];
 
   export const originalRows = [
-  { Patient: 'Patient A', Age: 45, BloodPressure: 120, HeartRate: 72, BMI: 25, Cholesterol: 200, FitnessScore: 90 },
-  { Patient: 'Patient B', Age: 48, BloodPressure: 125, HeartRate: 75, BMI: 26, Cholesterol: 210, FitnessScore: 85 },
-  { Patient: 'Patient C', Age: 51, BloodPressure: 130, HeartRate: 78, BMI: 27, Cholesterol: 220, FitnessScore: 80 },
-  { Patient: 'Patient D', Age: 54, BloodPressure: 135, HeartRate: 81, BMI: 28, Cholesterol: 230, FitnessScore: 75 },
-  { Patient: 'Patient E', Age: 57, BloodPressure: 140, HeartRate: 84, BMI: 29, Cholesterol: 240, FitnessScore: 70 },
-  { Patient: 'Patient F', Age: 70, BloodPressure: 180, HeartRate: 60, BMI: 35, Cholesterol: 800, FitnessScore: 50 }
+  { Patient: 'Patient A', Age: 42, BloodPressure: 110, HeartRate: 70, BMI: 22, Cholesterol: 170, FitnessScore: 95 },
+  { Patient: 'Patient B', Age: 48, BloodPressure: 118, HeartRate: 73, BMI: 24, Cholesterol: 185, FitnessScore: 90 },
+  { Patient: 'Patient C', Age: 53, BloodPressure: 125, HeartRate: 75, BMI: 25, Cholesterol: 200, FitnessScore: 85 },
+  { Patient: 'Patient D', Age: 60, BloodPressure: 145, HeartRate: 68, BMI: 29, Cholesterol: 260, FitnessScore: 65 },
+  { Patient: 'Patient E', Age: 63, BloodPressure: 150, HeartRate: 66, BMI: 31, Cholesterol: 280, FitnessScore: 60 },
+  { Patient: 'Patient F', Age: 70, BloodPressure: 165, HeartRate: 58, BMI: 34, Cholesterol: 600, FitnessScore: 55 }
   ];
 
   export const columnsStudent = [

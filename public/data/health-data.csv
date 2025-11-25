@@ -1,7 +1,7 @@
 Patient,Age,Blood Pressure (mmHg),Heart Rate (bpm),Body Mass Index (BMI),Cholesterol (mg/dl),Fitness Score (0-100)
-Patient A,45,120,72,25,200,90
-Patient B,48,125,75,26,210,85
-Patient C,51,130,78,27,220,80
-Patient D,54,135,81,28,230,75
-Patient E,57,140,84,29,240,70
-Patient F,70,180,60,35,800,50
+Patient A,42,110,70,22,170,95
+Patient B,48,118,73,24,185,90
+Patient C,53,125,75,25,200,85
+Patient D,60,145,68,29,260,65
+Patient E,63,150,66,31,280,60
+Patient F,70,165,58,34,600,55

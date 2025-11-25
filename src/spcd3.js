@@ -8098,14 +8098,23 @@ function setUnselectedWithId(recordId) {
 }
 //---------- Color Records ----------
 function colorRecord(record, color) {
-    selectAll('#' + cleanString(record))
-        .transition()
-        .style('stroke', color);
+  const path = selectAll('#' + cleanString(record));
+
+  path.classed("colored", true)
+    .property("clusterColor", color);
+
+  path.transition()
+    .style('stroke', color);
 }
 function uncolorRecord(record) {
-    selectAll('#' + cleanString(record))
-        .transition()
-        .style('stroke', 'rgba(0, 129, 175, 0.5)');
+
+  const path = selectAll('#' + cleanString(record));
+
+  path.classed("colored", false)
+    .property("clusterColor", "rgba(0, 129, 175, 0.5)");
+
+  path.transition()
+    .style('stroke', rgba(0, 129, 175, 0.5));
 }
 //---------- Helper Functions ----------
 function getAllRecords() {
@@ -8813,6 +8822,15 @@ function makeActive(currentLineName, duration) {
             .transition()
             .duration(duration)
             .style('stroke', 'rgba(255, 165, 0, 1)');
+    }
+    else if (select('.' + currentLineName).classed('colored')) {
+        let color = select('.' + currentLineName).property('clusterColor');
+        select('.' + currentLineName)
+            .style('pointer-events', 'stroke')
+            .text('')
+            .transition()
+            .duration(duration)
+            .style('stroke', color);
     }
     else {
         select('.' + currentLineName)
@@ -11049,6 +11067,11 @@ function doNotHighlight() {
         if (line.classed('selected')) {
             line.transition()
                 .style('stroke', 'rgba(255, 165, 0, 1)');
+        }
+        else if (line.classed('colored')) {
+          const color = line.property("clusterColor");
+          line.transition()
+            .style('stroke', color);
         }
         else {
             line.transition()

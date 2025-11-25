@@ -16,6 +16,7 @@ export const healthDataset = ref('');
 export const studentDataset = ref('');
 export const financeDataset = ref('');
 const currentStep = ref(0);
+let isColored = false;
 
 export const getSharedVariable = () => {
   const resetCurrentStep = () => {
@@ -135,6 +136,10 @@ const addClickEvent = (): void => {
   if (outlierButton) {
     outlierButton.addEventListener('click', selectOutlier);
   }
+  const clusterButton = document.getElementById('cluster-button');
+  if (clusterButton) {
+    clusterButton.addEventListener('click', showClusters);
+  }
   const correlationButton = document.getElementById('correlation-button');
   if (correlationButton) {
     correlationButton.addEventListener('click', showPositiveCorrelation);
@@ -202,6 +207,42 @@ const selectOutlier = (): void => {
     (document.getElementById('outlier-button') as HTMLButtonElement).textContent = 'Hide Outlier';
   }
 };
+
+const showClusters = (): void => {
+  if (isColored) {
+    resetColorOfRecord("Patient A");
+    resetColorOfRecord("Patient B");
+    resetColorOfRecord("Patient C");
+
+    resetColorOfRecord("Patient D");
+    resetColorOfRecord("Patient E");
+    resetColorOfRecord("Patient F");
+    (document.getElementById('cluster-button') as HTMLButtonElement).textContent = 'Show Clusters';
+    isColored = false;
+  } else {
+    colorRecord("Patient A", "magenta");
+    colorRecord("Patient B", "magenta");
+    colorRecord("Patient C", "magenta");
+
+    colorRecord("Patient D", "green");
+    colorRecord("Patient E", "green");
+    colorRecord("Patient F", "green");
+    (document.getElementById('cluster-button') as HTMLButtonElement).textContent = 'Hide Clusters';
+    isColored = true;
+  }
+}
+
+const colorRecord = (record: string, color: string): void => {
+  if (!spcd3.isRecordInactive(record)) {
+    spcd3.colorRecord(record, color);
+  }
+}
+
+const resetColorOfRecord = (record: string): void => {
+  if (!spcd3.isRecordInactive(record)) {
+    spcd3.uncolorRecord(record);
+  }
+}
 
 const showPositiveCorrelation = (): void => {
   const hiddenDimensions = spcd3.getAllHiddenDimensionNames();
