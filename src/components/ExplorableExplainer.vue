@@ -9,14 +9,14 @@
         class="multi-line"
       >
         Parallel Coordinates:<br>
-        An Explorable Explainer<br>
+        An Interactive Tutorial<br>
         <span class="info">Scroll to begin</span>
       </div>
       <div
         ref="singleLine"
         class="single-line"
       >
-        Parallel Coordinates: An Explorable Explainer
+        Parallel Coordinates: An Interactive Tutorial
       </div>
     </div>
   </div>

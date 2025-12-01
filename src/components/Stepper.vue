@@ -29,10 +29,17 @@
                 </p>
 
                 <button
-                v-if="step.title === '6. Play with the Data'"
-                id="activate-button"
+                  v-if="step.title === '6. Play with the Data'"
+                  id="activate-button"
                 >
-                Enable Interactivity
+                  Enable Interactivity
+                </button>
+                <button
+                  v-else
+                  id="run-button"
+                  @click="runAction(index)"
+                >
+                  Run
                 </button>
                 </div>
             </transition>
@@ -131,7 +138,7 @@ const goToStep = async(index: number): Promise<void> => {
     index = index + 1;
     for (let i = currentStep.value; i < index; i++) {
       currentStep.value = i;
-      runForward(i);
+      //runForward(i);
       await wait(800);
     }
   } else {
@@ -147,7 +154,7 @@ const next = (): void => {
   if (currentStep.value < steps.length - 1) {
     currentStep.value++;
   }
-  triggerNext(currentStep.value);
+  //triggerNext(currentStep.value);
 }
 
 const back = (): void => {
@@ -398,6 +405,8 @@ const setRangeNext = (): void => {
   dimensions.forEach(function (dimension: string) {
     if (!isNaN(spcd3.getMinValue(dimension))) {
       spcd3.setDimensionRange(dimension, 0, 100);
+      const range = spcd3.getDimensionRange(dimension);
+      spcd3.setFilter(dimension, Number(range[1]), Number(range[0]));
     }
   });
 }
@@ -462,6 +471,10 @@ const invertDimensionBack = (): void => {
   if(spcd3.getInversionStatus('English') === 'descending') {
     spcd3.setInversionStatus('English', 'ascending');
   }
+}
+
+const runAction = (currentStep: number): void => {
+  triggerNext(currentStep + 1);
 }
 
 const activateChart = async (): Promise<void> => {
@@ -559,6 +572,7 @@ const addClickEvent = (): void => {
         activateButton.addEventListener('click', activateChart);
     }
 }
+
 
 onMounted(async (): Promise<void> => {
   healthDataset.value = await loadDataset('data/health-data.csv');
@@ -689,6 +703,11 @@ onMounted(async (): Promise<void> => {
 }
 
 #activate-button {
+  margin-left: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+#run-button {
   margin-left: 1rem;
   margin-bottom: 0.5rem;
 }

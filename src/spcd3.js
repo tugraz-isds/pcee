@@ -8098,23 +8098,18 @@ function setUnselectedWithId(recordId) {
 }
 //---------- Color Records ----------
 function colorRecord(record, color) {
-  const path = selectAll('#' + cleanString(record));
-
-  path.classed("colored", true)
-    .property("clusterColor", color);
-
-  path.transition()
-    .style('stroke', color);
+    const path = selectAll('#' + cleanString(record));
+    path.classed("colored", true)
+        .property("clusterColor", color);
+    path.transition()
+        .style('stroke', color);
 }
 function uncolorRecord(record) {
-
-  const path = selectAll('#' + cleanString(record));
-
-  path.classed("colored", false)
-    .property("clusterColor", "rgba(0, 129, 175, 0.5)");
-
-  path.transition()
-    .style('stroke', rgba(0, 129, 175, 0.5));
+    const path = selectAll('#' + cleanString(record));
+    path.classed("colored", false)
+        .property("clusterColor", "rgba(0, 129, 175, 0.5)");
+    path.transition()
+        .style('stroke', "rgba(0, 129, 175, 0.5)");
 }
 //---------- Helper Functions ----------
 function getAllRecords() {
@@ -10251,7 +10246,7 @@ function setOptionsAndDownload(svgString) {
     fakeheader.style.borderTopRightRadius = '0.5rem';
     modal.append(fakeheader);
     const title = document.createElement('div');
-    title.textContent = 'Download SVG';
+    title.textContent = 'Download Chart (SVG)';
     title.style.padding = '0.5rem';
     title.style.marginBottom = '0.5rem';
     title.style.background = 'lightgrey';
@@ -10401,7 +10396,7 @@ function createToolbar(dataset) {
         .on('click', () => showModalWithData(dataset));
     toolbar.append('button')
         .attr('id', 'downloadButton')
-        .attr('title', 'Download SVG')
+        .attr('title', 'Download Chart (SVG)')
         .html(getDownloadButton())
         .style('margin', '0')
         .style('border', 'none')
@@ -10631,9 +10626,11 @@ function drawChart(content) {
         .attr('id', 'pc_svg')
         .attr('viewBox', [0, 0, width, height])
         .attr('font-family', 'Verdana, sans-serif'));
+    const plot = svg.append("g")
+        .attr("class", "plot");
     setDefsForIcons();
-    setFeatureAxis(svg, yAxis, parcoords, width);
-    setActive(setActivePathLines(svg, content, parcoords));
+    setFeatureAxis(plot, yAxis, parcoords, width);
+    setActive(setActivePathLines(plot, content, parcoords));
     svg.on("contextmenu", function (event) {
         event.stopPropagation();
         event.preventDefault();
@@ -10647,6 +10644,23 @@ function drawChart(content) {
         .on("mousedown.selection", function (event) {
         event.preventDefault();
     });
+    /*const zoomBehavior = zoom()
+        .scaleExtent([0.5, 20])
+        .translateExtent([[0, 0], [width * 3, height * 3]])
+        .on("zoom", (event) => {
+            plot.attr("transform", event.transform);
+        });
+
+
+    const identity = { k: 1, x: 0, y: 0 };
+    svg.call(zoomBehavior)
+        .on("dblclick.zoom", null)
+        .on("dblclick.reset", (event) => {
+            event.preventDefault();
+            svg.transition()
+                .duration(400)
+                .call(zoomBehavior.transform, identity);
+        });*/
     window.onclick = () => {
         select('#contextmenu').style('display', 'none');
         select('#contextmenuRecords').style('display', 'none');
@@ -11069,9 +11083,9 @@ function doNotHighlight() {
                 .style('stroke', 'rgba(255, 165, 0, 1)');
         }
         else if (line.classed('colored')) {
-          const color = line.property("clusterColor");
-          line.transition()
-            .style('stroke', color);
+            const color = line.property("clusterColor");
+            line.transition()
+                .style('stroke', color);
         }
         else {
             line.transition()
