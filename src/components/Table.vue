@@ -191,14 +191,12 @@ const isFormValid = computed<boolean>(() => {
 
 <style>
 .table-container {
-  flex: 1 1 20rem;
   min-width: 0;
-  max-height: 30rem;
+  max-height: 50rem;
   margin-top: 1rem;
   margin-left: 0.5rem;
   position: relative;
   isolation: isolate;
-  overflow-y: auto;
   overflow-x: auto;
   box-sizing: border-box;
 }

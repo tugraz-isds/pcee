@@ -173,6 +173,7 @@ const selectOutlier = (): void => {
   if (isAlreadySelected && (document.getElementById('outlier-button') as HTMLButtonElement).textContent === 'Show Outlier') {
      if (showError) {
       showError.textContent = "Outlier (Patient F) is already selected!";
+      (document.getElementById('outlier-button') as HTMLButtonElement).textContent = 'Hide Outlier';
       return;
     }
   }

@@ -237,109 +237,12 @@ const step5Backward = (): void => {
 }
 
 const triggerReset = async (): Promise<void> => {
-  if (currentStep.value === 1) {
-    setRangeBack();
-    currentStep.value = 0;
-  }
-  else if (currentStep.value === 2) {
-    selectRecordBack();
-    currentStep.value = 1;
-    await wait(800);
-    setRangeBack();
-    currentStep.value = 0;
-  }
-  else if (currentStep.value === 3) {
-    filterRecordsBack();
-    currentStep.value = 2;
-    await wait(800);
-    selectRecordBack();
-    currentStep.value = 1;
-    await wait(800);
-    setRangeBack();
-    currentStep.value = 0;
-  }
-  else if (currentStep.value === 4) {
-    moveDimensionBack();
-    currentStep.value = 3;
-    await wait(800);
-    filterRecordsBack();
-    currentStep.value = 2;
-    await wait(800);
-    selectRecordBack();
-    currentStep.value = 1;
-    await wait(800);
-    setRangeBack();
-    currentStep.value = 0;
-  }
-  else if (currentStep.value === 5) {
-    invertDimensionBack();
-    currentStep.value = 4;
-    await wait(800);
-    moveDimensionBack();
-    currentStep.value = 3;
-    await wait(800);
-    filterRecordsBack();
-    currentStep.value = 2;
-    await wait(800);
-    selectRecordBack();
-    currentStep.value = 1;
-    await wait(800);
-    setRangeBack();
-    currentStep.value = 0;
-  }
+  currentStep.value = 0;
+  drawChart(studentDataset.value);
 }
 
 const triggerSkip = async (): Promise<void> => {
-  if (currentStep.value === 4) {
-    invertDimensionNext();
-    currentStep.value = 5;
-  }
-  else if (currentStep.value === 3) {
-    filterRecordsNext();
-    currentStep.value = 4;
-    await wait(800);
-    invertDimensionNext();
-    currentStep.value = 5;
-  }
-  else if (currentStep.value === 2) {
-    moveDimensionNext();
-    currentStep.value = 3;
-    await wait(800);
-    filterRecordsNext();
-    currentStep.value = 4;
-    await wait(800);
-    invertDimensionNext();
-    currentStep.value = 5;
-  }
-  else if (currentStep.value === 1) {
-    selectRecordNext();
-    currentStep.value = 2;  
-    await wait(800);
-    moveDimensionNext();
-    currentStep.value = 3;
-    await wait(800);
-    filterRecordsNext();
-    currentStep.value = 4;
-    await wait(800);
-    invertDimensionNext();
-    currentStep.value = 5;
-  }
-  else if (currentStep.value === 0) {
-    setRangeNext();
-    currentStep.value = 1;
-    await wait(800);
-    selectRecordNext();
-    currentStep.value = 2;  
-    await wait(800);
-    moveDimensionNext();
-    currentStep.value = 3;
-    await wait(800);
-    filterRecordsNext();
-    currentStep.value = 4;
-    await wait(800);
-    invertDimensionNext();
-    currentStep.value = 5;
-  }
+  currentStep.value = 5;
 }
 
 const triggerNext = async (currentStep: number): Promise<void> => {

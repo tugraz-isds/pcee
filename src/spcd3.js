@@ -7808,9 +7808,12 @@ function setDimensionRange(dimension, min, max) {
     setFilterAfterSettingRanges(dimension, inverted);
 }
 function setFilterAfterSettingRanges(dimension, inverted) {
-    const rect = select('#rect_' + dimension);
-    const triDown = select('#triangle_down_' + dimension);
-    const triUp = select('#triangle_up_' + dimension);
+    const cleanDimensionName = cleanString(dimension);
+    const rect = select('#rect_' + cleanDimensionName);
+    const triDown = select('#triangle_down_' + cleanDimensionName);
+    const triDownHit = select('#triangle_down_hit' + cleanDimensionName);
+    const triUp = select('#triangle_up_' + cleanDimensionName);
+    const triUpHit = select('#triangle_up_hit' + cleanDimensionName);
     const dimensionSettings = parcoords.currentPosOfDims.find((d) => d.key === dimension);
     const yScale = parcoords.yScales[dimension];
     const newMin = Math.max(dimensionSettings.currentRangeBottom, dimensionSettings.currentFilterBottom);
@@ -7829,14 +7832,41 @@ function setFilterAfterSettingRanges(dimension, inverted) {
     rect.transition()
         .duration(300)
         .attr('y', rectY)
-        .attr('height', rectH)
-        .style('opacity', 0.3);
+        .attr('height', rectH);
     triDown.transition()
         .duration(300)
         .attr('y', rectY - 10);
+    triDownHit.attr('y', rectY - 10);
     triUp.transition()
         .duration(300)
         .attr('y', rectY + rectH);
+    triUpHit.attr('y', rectY + rectH);
+    if (rectY == 80) {
+        select('#triangle_down_' + cleanDimensionName)
+            .attr('href', '#brush_image_bottom');
+    }
+    else {
+        select('#triangle_down_' + cleanDimensionName)
+            .attr('href', '#brush_image_bottom_active');
+    }
+    if (rectY + rectH == 320) {
+        select('#triangle_up_' + cleanDimensionName)
+            .attr('href', '#brush_image_top');
+    }
+    else {
+        select('#triangle_up_' + cleanDimensionName)
+            .attr('href', '#brush_image_top_active');
+    }
+    if (rectY != 80 || rectY + rectH != 320) {
+        select('#rect_' + cleanDimensionName)
+            .attr('fill', 'rgb(255, 255, 0)')
+            .attr('opacity', '0.7');
+    }
+    else {
+        select('#rect_' + cleanDimensionName)
+            .attr('fill', 'rgb(242, 242, 76)')
+            .attr('opacity', '0.5');
+    }
 }
 function setDimensionRangeRounded(dimension, min, max) {
     const inverted = isInverted(dimension);
@@ -8548,6 +8578,16 @@ function filter(dimensionName, min, max) {
     else {
         select('#triangle_up_' + cleanDimensionName)
             .attr('href', '#brush_image_top_active');
+    }
+    if (topPosition != 80 || bottomPosition != 320) {
+        select('#rect_' + cleanDimensionName)
+            .attr('fill', 'rgb(255, 255, 0)')
+            .attr('opacity', '0.7');
+    }
+    else {
+        select('#rect_' + cleanDimensionName)
+            .attr('fill', 'rgb(242, 242, 76)')
+            .attr('opacity', '0.5');
     }
     let active = select('g.active').selectAll('path');
     const rectTop = Math.min(topPosition, bottomPosition);
@@ -9411,7 +9451,7 @@ function createContextMenu() {
     contextMenu.append('div')
         .attr('id', 'showAllMenu')
         .attr('class', 'contextmenu')
-        .text('Show All');
+        .text('Show All Dimensions');
 }
 function createModalToSetRange() {
     select('body')
