@@ -238,8 +238,41 @@ const step5Backward = (): void => {
 
 const triggerReset = async (): Promise<void> => {
   currentStep.value = 0;
+  
   drawChart(studentDataset.value);
+  // eslint-disable-next-line no-undef
+  const chart = document.getElementById("parallelcoords") as HTMLDivElement | null;
+  if (chart != null) {
+      chart.style.pointerEvents = "none";
+  }
+  // eslint-disable-next-line no-undef
+  const toolbar = (document.getElementById('toolbarRow') as HTMLDivElement);
+  if (toolbar !== null) {
+    toolbar.style.setProperty("font-size", "0vw", "important");
+  }
+  // eslint-disable-next-line no-undef
+  document.querySelectorAll<SVGPathElement>("path").forEach(p => {
+    p.style.pointerEvents = "none";
+  });
+
+  // hitboxes filter
+  const handleHitboxes = document.querySelectorAll<HTMLDivElement>('.handle-hitbox')
+
+  handleHitboxes.forEach((hitbox) => {
+    hitbox.style.pointerEvents = "none";
+  });
+
+  // hitboxes invert
+  const hitboxes = document.querySelectorAll<HTMLDivElement>('.hitbox')
+
+  hitboxes.forEach((hitbox) => {
+    hitbox.style.pointerEvents = "none";
+  });
+
+  status = false;
+  (document.getElementById('activate-button') as HTMLButtonElement).textContent = "Enable Interactivity";
 }
+
 
 const triggerSkip = async (): Promise<void> => {
   currentStep.value = 5;
