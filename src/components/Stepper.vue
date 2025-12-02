@@ -57,7 +57,7 @@
               >
             </button>
             <button
-              id="start-button"
+              id="back-button"
               class="stepper-button"
               :disabled="currentStep === 0"
               @click="back"
@@ -67,6 +67,7 @@
               >
             </button>
             <button
+              id="next-button"
               class="stepper-button"
               :disabled="currentStep === steps.length - 1"
               @click="next"
@@ -76,6 +77,7 @@
               >
             </button>
             <button
+              id="skip-button"
               class="stepper-button"
               :disabled="currentStep === steps.length - 1"
               @click="skip"
@@ -135,15 +137,17 @@ const steps = [
 
 const goToStep = async(index: number): Promise<void> => {
   if (index > currentStep.value) {
-    index = index + 1;
-    for (let i = currentStep.value; i < index; i++) {
+    //index = index + 1;
+    /*for (let i = currentStep.value; i < index; i++) {
       currentStep.value = i;
       //runForward(i);
       await wait(800);
-    }
+    }*/
+    currentStep.value = index;
   } else {
-    for (let i = currentStep.value; i >= index; i--) {
-      currentStep.value = i;
+    let step = currentStep.value;
+    currentStep.value = index;
+    for (let i = step; i >= index; i--) {
       runBackward(i);
       await wait(800);
     }
@@ -158,10 +162,8 @@ const next = (): void => {
 }
 
 const back = (): void => {
-  if (currentStep.value > 0) {
-    currentStep.value--;
-  }
   triggerBack(currentStep.value);
+  currentStep.value--;
 }
 
 const reset = (): void => {
@@ -316,6 +318,7 @@ const triggerBack = async (currentStep: number): Promise<void> => {
     case 1:
       selectRecordBack();
       await wait(800);
+      setRangeBack();
       break;
     case 2:
       filterRecordsBack();
@@ -489,7 +492,7 @@ const activateChart = async (): Promise<void> => {
     });
 
     buttons.forEach(btn => {
-      if (btn.id === "start-button" || btn.id === "reset-button") {
+      if (btn.id === "back-button" || btn.id === "reset-button") {
         btn.disabled = true;
       }
       else {

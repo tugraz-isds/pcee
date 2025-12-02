@@ -152,8 +152,14 @@ const handleStudentDataset = (chart: HTMLDivElement, dataset: string | undefined
   (document.getElementById('correlation-button') as HTMLButtonElement | null)?.setAttribute('disabled', '');
   (document.getElementById('correlation-neg-button') as HTMLButtonElement | null)?.setAttribute('disabled', '');
   const stepperButtons = document.querySelectorAll<HTMLButtonElement>('.stepper-button');
-  stepperButtons.forEach(button => {
-    button.disabled = false;
+
+  stepperButtons.forEach(btn => {
+    if (btn.id === "back-button" || btn.id === "reset-button") {
+      btn.disabled = true;
+    }
+    else {
+      btn.disabled = false;
+    }
   });
 
   const handleHitboxes = document.querySelectorAll<HTMLDivElement>('.handle-hitbox')
