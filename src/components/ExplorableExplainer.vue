@@ -33,7 +33,7 @@
       class="chart-container flex-1 basis-[30rem] relative justify-center"
     >
       <div class="main-chart">
-        <StatusDropdown :offset="60" />
+        <NavigationDropdown :offset="60" />
         <div class="chart-wrapper">
           <h3 id="chart-title">
             Personal Finances Dataset
@@ -75,7 +75,7 @@
 import { ref, onMounted, onBeforeUnmount, provide } from 'vue';
 import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
-import StatusDropdown from './StatusDropdown.vue';
+import NavigationDropdown from './NavigationDropdown.vue';
 import Table from './Table.vue';
 import Stepper from './Stepper.vue';
 import { resetTable, loadContent, getCurrentStepIndex, initalLoadOfDataset, getDatasetForStep, drawChart, 
@@ -343,7 +343,6 @@ onMounted(async (): Promise<void> => {
 
   color: white;
   background: rgba(0, 129, 175, 1);
-  pointer-events: none;
   font-size: x-large;
 
   z-index: 1000;
@@ -362,7 +361,6 @@ onMounted(async (): Promise<void> => {
   margin: 0;
   opacity: 0;
   visibility: hidden;
-  pointer-events: none;
   width: auto;
   max-width: min(65ch, 100% - 2rem);;
   word-wrap: break-word;

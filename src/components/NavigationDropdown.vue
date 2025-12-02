@@ -406,5 +406,5 @@ onMounted(async () => {
 </script>
 
 <style>
-[content-section] { scroll-margin-top: var(--scroll-offset, 0px); }
+[content-section] { scroll-margin-top: var(--scroll-offset, 0); }
 </style>
