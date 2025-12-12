@@ -29,7 +29,7 @@
                 </p>
 
                 <button
-                  v-if="step.title === '6. Play with the Data'"
+                  v-if="step.title === '6. Explore the Data'"
                   id="activate-button"
                 >
                   Enable Interactivity
