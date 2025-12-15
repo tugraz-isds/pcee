@@ -882,7 +882,7 @@ li {
   font-size: 1em;
 }
 
-.litext {
+li p {
   border-left: 0 solid transparent;
   font-size: 1em;
 }

@@ -132,7 +132,7 @@ const steps = [
   { title: '3. Filtering Records', content: filterText },
   { title: '4. Moving Dimensions', content: moveText },
   { title: '5. Inverting Dimensions', content: invertText },
-  { title: '6. Play with the Data', content: interactiveText }
+  { title: '6. Explore the Data', content: interactiveText }
 ];
 
 const goToStep = async(index: number): Promise<void> => {
