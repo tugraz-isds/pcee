@@ -24,10 +24,10 @@
                   v-show="index === currentStep"
                   class="step-panel"
                 >
-                <p class="step-text">
-                    {{ step.content }}
-                </p>
-
+                <div
+                  class="step-text"
+                  v-html=step.content.value 
+                />
                 <button
                   v-if="step.title === '6. Explore the Data'"
                   id="activate-button"
@@ -573,7 +573,7 @@ onMounted(async (): Promise<void> => {
   display: flex;
   gap: 0.5em;
   justify-content: center;
-  font-size: 0.75em;
+  font-size: 75%;
 }
 
 .step-indicator span {
@@ -626,6 +626,10 @@ onMounted(async (): Promise<void> => {
   border: 0.01rem solid black;
 }
 
+.step-text {
+  margin-left: 1rem;
+}
+
 .expand-enter-active,
 .expand-leave-active {
   transition: max-height .5s ease-in, opacity .5s ease-out;
@@ -641,6 +645,19 @@ onMounted(async (): Promise<void> => {
   opacity: 1;
 }
 
+.note {
+  font-size: 80%;
+  text-indent: 0;
+}
+
+.note::before {
+  content: "[";
+}
+
+.note::after {
+  content: "]";
+}
+
 #activate-button {
   margin-left: 1rem;
   margin-bottom: 0.5rem;
@@ -650,4 +667,6 @@ onMounted(async (): Promise<void> => {
   margin-left: 1rem;
   margin-bottom: 0.5rem;
 }
+
+
 </style>

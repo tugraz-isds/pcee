@@ -912,7 +912,7 @@ svg {
 button {
   padding: 0.25rem;
   margin-right: 0.5rem;
-  font-size: 0.9em;
+  font-size: 90%;
   margin-top: 0.5rem;
 }
 
