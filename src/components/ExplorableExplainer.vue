@@ -576,6 +576,7 @@ onMounted(async (): Promise<void> => {
 .chart-wrapper {
   border: 0.01rem solid black;
   border-radius: 0.3rem;
+  padding-bottom: 1rem;
 }
 
 #parallelcoords {
