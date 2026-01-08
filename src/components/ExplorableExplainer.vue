@@ -48,7 +48,6 @@
       <Table/>
       <div v-html="recordOperationsText" />
       <div v-html="dimensionOperationsText" />
-      <div v-html="healthDatasetText" />
       <div
         ref="usageContainer" 
         v-html="usageText" 
