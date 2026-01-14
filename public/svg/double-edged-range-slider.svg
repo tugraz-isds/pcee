@@ -2,9 +2,9 @@
 
 <svg
   xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 4 15">
+  viewBox="0 0 4 10">
   <path fill="rgba(255, 255, 0, 0.7)" stroke="black" stroke-width="0.05" d="M 0.5 2 L 2 4 L 3.5 2 z"/>
-  <path fill="rgba(255, 255, 0, 0.7)" stroke="black" stroke-width="0" d="M 1.5 4.05 L 2.5 4.05 L 2.5 10.5 L 1.5 10.5 z" />
-  <path fill="none" stroke ="black" stroke-width="0.05" d="M 2 4 L 2 10.5 z" />
-  <path fill="rgba(255, 255, 0, 0.7)" stroke="black" stroke-width="0.05" d="M 0.5 13 L 2 10.5 L 3.5 13 z"/>
+  <path fill="rgba(255, 255, 0, 0.7)" stroke="black" stroke-width="0" d="M 1.5 4.05 L 2.5 4.05 L 2.5 5.5 L 1.5 5.5 z" />
+  <path fill="none" stroke ="black" stroke-width="0.05" d="M 2 4 L 2 5.5 z" />
+  <path fill="rgba(255, 255, 0, 0.7)" stroke="black" stroke-width="0.05" d="M 0.5 8 L 2 5.5 L 3.5 8 z"/>
 </svg>

@@ -517,7 +517,7 @@ onMounted(async (): Promise<void> => {
   healthDataset.value = await loadDataset('data/health-data.csv');
   financeDataset.value = await loadDataset('data/finance-data.csv');
   studentDataset.value = await loadDataset('data/student-marks-data.csv');
-  loadContent(studentDatasetText, 'content/data-student.html');
+  loadContent(studentDatasetText, 'content/stepper/data-student.html');
   loadContent(moveText, 'content/stepper/move.html');
   loadContent(selectText, 'content/stepper/select.html');
   loadContent(filterText, 'content/stepper/filter.html');

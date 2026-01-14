@@ -182,7 +182,7 @@ const isFormValid = computed<boolean>(() => {
   return rows.value.every(row =>
     columns.value.every(column => {
       const value = row[column.key];
-      return value && String(value).trim() !== '';
+      return value != null && String(value).trim() !== '';
     })
   );
 });

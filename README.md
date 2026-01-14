@@ -17,7 +17,7 @@ using [GSAP](https://github.com/greensock/GSAP) as a polyfill.
 
 ## Project Setup
 
-Ensure Node version ≥ 22.0.
+Ensure Node version ≥ 23.0.
 
 Open terminal and execute the following command to install all the dependencies:
 
@@ -40,6 +40,9 @@ yarn build
 **Important:** To run the build, a live web server must be started.
 
 ### Build a native desktop app with Tauri 2.0
+
+**Prerequisites:** To build a native desktop app, Rust ≥ 1.77.2, Cargo and Tauri ≥ 2.8.0 needs to be installed.
+
 
 ```
 yarn tauri
