@@ -10288,6 +10288,7 @@ function saveAsSvg() {
     svgString = svgString.replaceAll("fill=\"none\" font-size=\"10\" font-family=\"sans-serif\" text-anchor=\"end\"", "fill=\"none\" font-size=\"8\" text-anchor=\"end\" stroke=\"black\"");
     svgString = svgString.replaceAll("domain", "dimension");
     svgString = svgString.replaceAll("12px", "12");
+    svgString = svgString.replaceAll("class=\"tick\" opacity=\"1\"", "class=\"tick\" fill=\"black\" stroke=\"none\"");
     setOptionsAndDownload(svgString);
 }
 function setOptionsAndDownload(svgString) {
@@ -10424,6 +10425,7 @@ function setOptionsAndDownload(svgString) {
         }
         if (inputRemoveUiControls.checked) {
             updatedSVG = removeUiControls(updatedSVG);
+            updatedSVG = updatedSVG.replaceAll("<svg y=\"25\" x=\"-6\"><use width=\"12\" height=\"12\" y=\"0\" x=\"0\" href=\"#arrow_image_up\"></use></svg>", "");
         }
         let processedData = xmlFormat(updatedSVG, { indentation: '  ', collapseContent: true });
         let preface = '<?xml version="1.0" standalone="no"?>\r\n';
@@ -10476,8 +10478,8 @@ function createToolbar(dataset) {
         .style('border', 'none')
         .style('border-radius', '10%')
         .style('padding', '0.2em')
-        .style('width', '2em')
-        .style('height', '2em')
+        .style('width', '2.5em')
+        .style('height', '2.5em')
         .style('cursor', 'pointer');
     const toolbar = toolbarRow.append('div')
         .attr('id', 'toolbar')
@@ -10496,8 +10498,8 @@ function createToolbar(dataset) {
         .style('border', 'none')
         .style('border-radius', '5%')
         .style('padding', '0.3em')
-        .style('width', '2em')
-        .style('height', '2em')
+        .style('width', '2.5em')
+        .style('height', '2.5em')
         .on('click', () => showModalWithData(dataset));
     toolbar.append('button')
         .attr('id', 'downloadButton')
@@ -10508,8 +10510,8 @@ function createToolbar(dataset) {
         .style('border', 'none')
         .style('border-radius', '5%')
         .style('padding', '0.3em')
-        .style('width', '2em')
-        .style('height', '2em')
+        .style('width', '2.5em')
+        .style('height', '2.5em')
         .on('click', saveAsSvg);
     toolbar.append('button')
         .attr('id', 'refreshButton')
@@ -10520,8 +10522,8 @@ function createToolbar(dataset) {
         .style('border', 'none')
         .style('border-radius', '5%')
         .style('padding', '0.3em')
-        .style('width', '2em')
-        .style('height', '2em')
+        .style('width', '2.5em')
+        .style('height', '2.5em')
         .on('click', refresh);
     toolbar.append('button')
         .attr('id', 'resetButton')
@@ -10532,8 +10534,8 @@ function createToolbar(dataset) {
         .style('border', 'none')
         .style('border-radius', '5%')
         .style('padding', '0.3em')
-        .style('width', '2em')
-        .style('height', '2em')
+        .style('width', '2.5em')
+        .style('height', '2.5em')
         .on('click', reset);
     toggleButton.on('click', () => {
         let isExpanded = toolbar.style('max-width') !== '0px';
@@ -10581,7 +10583,7 @@ function showModalWithData(dataset) {
         .style('overflow', 'hidden');
     const saveAsCSV = document.createElement('button');
     saveAsCSV.id = 'saveAsCsv';
-    saveAsCSV.textContent = 'Save as CSV';
+    saveAsCSV.textContent = 'Download as CSV';
     saveAsCSV.style.marginBottom = '3rem';
     saveAsCSV.style.alignSelf = 'flex-start';
     saveAsCSV.style.width = 'auto';
@@ -11458,21 +11460,26 @@ function showInvalidRowsMessage(invalidRows, columns, removedColumns) {
     box.style.boxShadow = "0 0.25rem 0.75rem rgba(0,0,0,0.2)";
     box.addEventListener("click", e => e.stopPropagation());
     const msg = document.createElement("p");
-    msg.textContent = `Dataset imported and ${invalidRows.length} invalid rows are found.`;
+    msg.textContent = `Dataset imported.`;
     box.appendChild(closeButton);
     box.appendChild(msg);
+    const removedRowInfo = document.createElement("div");
+    removedRowInfo.style.marginTop = "0.15rem";
+    removedRowInfo.style.fontSize = "0.85rem";
+    removedRowInfo.style.background = "white";
+    removedRowInfo.style.padding = "0.5rem";
+    removedRowInfo.style.borderRadius = "0.25rem";
+    removedRowInfo.textContent = `${invalidRows.length} invalid rows are found.`;
+    box.appendChild(removedRowInfo);
     if (removedColumns.length > 0) {
-        const removedInfo = document.createElement("div");
-        removedInfo.style.marginTop = "0.75rem";
-        removedInfo.style.fontSize = "0.85rem";
-        removedInfo.style.background = "#ffb3b3";
-        removedInfo.style.padding = "0.5rem";
-        removedInfo.style.borderRadius = "0.25rem";
-        removedInfo.innerHTML = `
-      <strong>Removed columns (no data):</strong><br>
-      ${removedColumns.join(", ")}
-    `;
-        box.appendChild(removedInfo);
+        const removedColumnInfo = document.createElement("div");
+        removedColumnInfo.style.marginTop = "0.15rem";
+        removedColumnInfo.style.fontSize = "0.85rem";
+        removedColumnInfo.style.background = "white";
+        removedColumnInfo.style.padding = "0.5rem";
+        removedColumnInfo.style.borderRadius = "0.25rem";
+        removedColumnInfo.textContent = `${removedColumns.length} column(s) without data: ${removedColumns.join(", ")}`;
+        box.appendChild(removedColumnInfo);
     }
     const btn = document.createElement("button");
     btn.textContent = "View";
