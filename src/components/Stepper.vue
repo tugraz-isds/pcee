@@ -17,6 +17,7 @@
             :aria-expanded="index === currentStep ? 'true' : 'false'"
             @click="status === false && goToStep(index)"
             >
+            <span class="triangle"></span>
             {{ step.title }}
             </div>
             <transition name="expand">
@@ -608,6 +609,23 @@ onMounted(async (): Promise<void> => {
   padding-bottom: 0.2rem;
   padding-left: 1rem;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.triangle{
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-left: 0.5rem solid currentColor;
+  border-top: 0.3rem solid transparent;
+  border-bottom: 0.3rem solid transparent;
+  transition: transform .2s ease;
+}
+
+li.active .triangle{
+  transform: rotate(90deg);
 }
 
 .steps > li.active .li-header {
