@@ -7681,9 +7681,9 @@ function moveByOne(dimension, direction) {
             [parcoords.newFeatures[indexOfDimension], parcoords.newFeatures[indexOfDimension + 1]];
     }
     parcoords.xScales.domain(parcoords.newFeatures);
-    let active = select('g.active').selectAll('path');
+    let active_all = select('g.active').selectAll('path');
     let featureAxis = selectAll('.dimensions');
-    active.transition()
+    active_all.transition()
         .duration(1000)
         .attr('d', function (d) {
         return linePath(d, parcoords.newFeatures);
@@ -7742,9 +7742,9 @@ function swap(dimensionA, dimensionB) {
     [parcoords.newFeatures[indexOfDimensionA], parcoords.newFeatures[indexOfDimensionB]] =
         [parcoords.newFeatures[indexOfDimensionB], parcoords.newFeatures[indexOfDimensionA]];
     parcoords.xScales.domain(parcoords.newFeatures);
-    let active = select('g.active').selectAll('path');
+    let active_all = select('g.active').selectAll('path');
     let featureAxis = selectAll('.dimensions');
-    active.transition()
+    active_all.transition()
         .duration(1000)
         .attr('d', (d) => {
         return linePath(d, parcoords.newFeatures);
@@ -7799,7 +7799,7 @@ function setDimensionRange(dimension, min, max) {
         .transition()
         .duration(1000)
         .ease(cubicInOut);
-    let active = select('g.active')
+    let active_all = select('g.active')
         .selectAll('path')
         .transition()
         .duration(1000)
@@ -7807,7 +7807,7 @@ function setDimensionRange(dimension, min, max) {
         return linePath(d, parcoords.newFeatures);
     })
         .ease(cubicInOut);
-    active.each(function (d) {
+    active_all.each(function (d) {
         select(this)
             .transition()
             .duration(1000)
@@ -7965,6 +7965,12 @@ function invertWoTransition(dimension) {
             return linePath(d, parcoords.newFeatures);
         });
     });
+    trans(selectAll('path.hitarea')).each(function (d) {
+        select(this)
+            .attr('d', (d) => {
+            return linePath(d, parcoords.newFeatures);
+        });
+    });
     addSettingsForBrushing(dimension, isInverted(dimension));
     if (isInverted(dimension)) {
         addInvertStatus(true, dimension, "isInverted");
@@ -8000,6 +8006,12 @@ function setInversionStatus(dimension, status) {
             return linePath(d, parcoords.newFeatures);
         })
             .ease(cubicInOut);
+    });
+    trans(selectAll('path.hitarea')).each(function (d) {
+        select(this)
+            .attr('d', (d) => {
+            return linePath(d, parcoords.newFeatures);
+        });
     });
     getFilter(dimension);
     addSettingsForBrushing(dimension, isInverted(dimension));
@@ -8038,6 +8050,12 @@ function invert(dimension) {
             return linePath(d, parcoords.newFeatures);
         })
             .ease(cubicInOut);
+    });
+    trans(selectAll('path.hitarea')).each(function (d) {
+        select(this)
+            .attr('d', (d) => {
+            return linePath(d, parcoords.newFeatures);
+        });
     });
     getFilter(dimension);
     addSettingsForBrushing(dimension, isInverted(dimension));
@@ -8204,6 +8222,22 @@ function showMarker(dimension) {
 function hideMarker(dimension) {
     const cleanDimensionName = cleanString(dimension);
     select('#marker_' + cleanDimensionName).attr('opacity', 0);
+}
+function disableInteractivity() {
+    select('#toolbarRow').style('display', 'none');
+    select('#parallelcoords').style('pointer-events', 'none');
+    select('#pc_svg').style('background', 'lightgrey');
+    selectAll('.hitarea').style('pointer-events', 'none');
+    selectAll('.handle-hitbox').style('pointer-events', 'none');
+    selectAll('.hitbox').style('pointer-events', 'none');
+}
+function enableInteractivity() {
+    select('#toolbarRow').style('display', 'flex');
+    select('#parallelcoords').style('pointer-events', 'auto');
+    select('#pc_svg').style('background', 'white');
+    selectAll('.hitarea').style('pointer-events', 'stroke');
+    selectAll('.handle-hitbox').style('pointer-events', 'auto');
+    selectAll('.hitbox').style('pointer-events', 'auto');
 }
 
 // globals
@@ -8865,37 +8899,56 @@ function checkAllPositionsBottom(positionItem, dimension, d, checkedLines, curre
 function makeActive(currentLineName, duration) {
     if (select('.' + currentLineName).classed('selected')) {
         select('.' + currentLineName)
-            .style('pointer-events', 'stroke')
             .text('')
             .transition()
             .duration(duration)
             .style('stroke', 'rgba(255, 165, 0, 1)');
+        select('#area_' + currentLineName)
+            .style('pointer-events', 'stroke')
+            .style('stroke', 'transparent')
+            .style('stroke-width', '0.4rem')
+            .text('');
     }
     else if (select('.' + currentLineName).classed('colored')) {
         let color = select('.' + currentLineName).property('clusterColor');
         select('.' + currentLineName)
-            .style('pointer-events', 'stroke')
             .text('')
             .transition()
             .duration(duration)
             .style('stroke', color);
+        select('#area_' + currentLineName)
+            .style('pointer-events', 'stroke')
+            .style('stroke', 'transparent')
+            .style('stroke-width', '0.4rem')
+            .text('');
     }
     else {
         select('.' + currentLineName)
-            .style('pointer-events', 'stroke')
             .text('')
             .transition()
             .duration(duration)
             .style('stroke', 'rgba(0, 129, 175, 0.5)');
+        select('#area_' + currentLineName)
+            .style('pointer-events', 'stroke')
+            .style('stroke', 'transparent')
+            .style('stroke-width', '0.4rem')
+            .text('');
     }
 }
 function makeInactive(currentLineName, dimension, duration) {
     const line = select('.' + currentLineName);
+    const hitline = select('#area_' + currentLineName);
     line
         .text(dimension)
         .transition()
         .duration(duration)
+        .style('stroke', 'rgba(211, 211, 211, 0.4');
+    hitline
+        .text(dimension)
+        .transition()
+        .duration(duration)
         .style('stroke', 'rgba(211, 211, 211, 0.4')
+        .style('stroke-width', '0.12rem')
         .on('end', function () {
         select(this).style('pointer-events', 'none');
     });
@@ -9373,6 +9426,11 @@ function onDragEventHandler(featureAxis) {
             timer = setInterval(() => { scroll(d); });
             parcoords.dragging[(d.subject).name] = Math.min(width - paddingXaxis, Math.max(paddingXaxis, this.__origin__ += d.x));
             active.each(function (d) {
+                select(this)
+                    .attr('d', linePath(d, parcoords.newFeatures));
+            });
+            let hitarea_active = selectAll('path.hitarea');
+            hitarea_active.each(function (d) {
                 select(this)
                     .attr('d', linePath(d, parcoords.newFeatures));
             });
@@ -10469,18 +10527,11 @@ function removeUiControls(svgString) {
 
 function createToolbar(dataset) {
     const toolbarRow = select('#toolbarRow');
-    const toggleButton = toolbarRow.append('button')
-        .attr('id', 'toggleButton')
-        .attr('title', 'Expand toolbar')
-        .html(getExpandToolbarIcon())
-        .style('verticalAlign', 'middle')
-        .style('margin', '0')
-        .style('border', 'none')
-        .style('border-radius', '10%')
-        .style('padding', '0.2em')
-        .style('width', '2.5em')
-        .style('height', '2.5em')
-        .style('cursor', 'pointer');
+    const { btn: toggleButton, tip: toggleTip } = makeIconButton(toolbarRow, {
+        id: 'toggleButton',
+        iconHtml: getExpandToolbarIcon(),
+        tipText: 'Expand Toolbar',
+    });
     const toolbar = toolbarRow.append('div')
         .attr('id', 'toolbar')
         .style('display', 'flex')
@@ -10489,63 +10540,107 @@ function createToolbar(dataset) {
         .style('opacity', '0')
         .style('transition', 'max-width 0.3s ease, opacity 0.3s ease')
         .style('pointer-events', 'none');
-    toolbar.append('button')
-        .attr('id', 'showData')
-        .attr('title', 'Show table')
-        .html(getTableIcon())
-        .style('verticalAlign', 'middle')
-        .style('margin', '0')
-        .style('border', 'none')
-        .style('border-radius', '5%')
-        .style('padding', '0.3em')
-        .style('width', '2.5em')
-        .style('height', '2.5em')
-        .on('click', () => showModalWithData(dataset));
-    toolbar.append('button')
-        .attr('id', 'downloadButton')
-        .attr('title', 'Download Chart (SVG)')
-        .html(getDownloadButton())
-        .style('verticalAlign', 'middle')
-        .style('margin', '0')
-        .style('border', 'none')
-        .style('border-radius', '5%')
-        .style('padding', '0.3em')
-        .style('width', '2.5em')
-        .style('height', '2.5em')
-        .on('click', saveAsSvg);
-    toolbar.append('button')
-        .attr('id', 'refreshButton')
-        .attr('title', 'Refresh')
-        .html(getRefreshIcon())
-        .style('verticalAlign', 'middle')
-        .style('margin', '0')
-        .style('border', 'none')
-        .style('border-radius', '5%')
-        .style('padding', '0.3em')
-        .style('width', '2.5em')
-        .style('height', '2.5em')
-        .on('click', refresh);
-    toolbar.append('button')
-        .attr('id', 'resetButton')
-        .attr('title', 'Reset')
-        .html(getResetIcon())
-        .style('verticalAlign', 'middle')
-        .style('margin', '0')
-        .style('border', 'none')
-        .style('border-radius', '5%')
-        .style('padding', '0.3em')
-        .style('width', '2.5em')
-        .style('height', '2.5em')
-        .on('click', reset);
-    toggleButton.on('click', () => {
-        let isExpanded = toolbar.style('max-width') !== '0px';
-        let expanded = !isExpanded;
-        toolbar.style('max-width', expanded ? '12.5rem' : '0')
-            .style('opacity', expanded ? '1' : '0')
-            .style('pointer-events', expanded ? 'auto' : 'none');
-        toggleButton.attr('title', expanded ? 'Collapse toolbar' : 'Expand toolbar');
-        toggleButton.html(expanded ? getCollapseToolbarIcon() : getExpandToolbarIcon());
+    makeIconButton(toolbar, {
+        iconHtml: getTableIcon(),
+        tipText: 'Show Table',
+        onClick: () => showModalWithData(dataset)
     });
+    makeIconButton(toolbar, {
+        id: 'downloadButton',
+        iconHtml: getDownloadButton(),
+        tipText: 'Download Chart (SVG)',
+        onClick: saveAsSvg
+    });
+    makeIconButton(toolbar, {
+        id: 'refreshButton',
+        iconHtml: getRefreshIcon(),
+        tipText: 'Refresh',
+        onClick: refresh
+    });
+    makeIconButton(toolbar, {
+        id: 'resetButton',
+        iconHtml: getResetIcon(),
+        tipText: 'Reset',
+        onClick: reset
+    });
+    let isExpanded = false;
+    toggleButton.on('click', () => {
+        isExpanded = !isExpanded;
+        toolbar.style('max-width', isExpanded ? '12.5rem' : '0')
+            .style('opacity', isExpanded ? '1' : '0')
+            .style('pointer-events', isExpanded ? 'auto' : 'none')
+            .style('overflow', isExpanded ? 'visible' : 'hidden');
+        toggleTip.text(isExpanded ? 'Collapse Toolbar' : 'Expand Toolbar');
+        toggleButton.select('.btn-icon').html(isExpanded ? getCollapseToolbarIcon() : getExpandToolbarIcon());
+        toggleButton.select('.btn-icon').selectAll('svg')
+            .style('display', 'block')
+            .style('width', '1em')
+            .style('height', '1em');
+    });
+}
+function makeIconButton(parent, opts) {
+    const { id, iconHtml, tipText, onClick } = opts;
+    const btn = parent.append('button')
+        .attr('type', 'button')
+        .attr('id', id ?? null)
+        .style('position', 'relative')
+        .style('display', 'inline-flex')
+        .style('align-items', 'center')
+        .style('justify-content', 'center')
+        .style('box-sizing', 'border-box')
+        .style('vertical-align', 'middle')
+        .style('margin', '0')
+        .style('line-height', '1')
+        .style('border', 'none')
+        .style('border-radius', '10%')
+        .style('padding', '0')
+        .style('width', '1.8em')
+        .style('height', '1.8em')
+        .style('cursor', 'pointer')
+        .style('overflow', 'visible');
+    if (onClick)
+        btn.on('click', onClick);
+    btn.append('span')
+        .attr('class', 'btn-icon')
+        .attr('id', id + 'icon')
+        .style('display', 'inline-flex')
+        .style('align-items', 'center')
+        .style('justify-content', 'center')
+        .style('width', '1em')
+        .style('height', '1em')
+        .style('pointer-events', 'none')
+        .html(iconHtml);
+    btn.select('.btn-icon').selectAll('svg')
+        .style('display', 'block')
+        .style('width', '1em')
+        .style('height', '1em');
+    const tip = btn.append('span')
+        .attr('class', 'btn-tip')
+        .attr('id', id + 'tip')
+        .text(tipText ?? '')
+        .style('position', 'absolute')
+        .style('left', '70%')
+        .style('top', 'calc(100% + 0.5rem)')
+        .style('transform', 'translateX(-50%)')
+        .style('background', 'lightgrey')
+        .style('padding', '0.2rem')
+        .style('border', '0.0625rem solid gray')
+        .style('border-radius', '0.2rem')
+        .style('white-space', 'nowrap')
+        .style('font-size', '0.75rem')
+        .style('line-height', '1.2')
+        .style('pointer-events', 'none')
+        .style('opacity', '0')
+        .style('visibility', 'hidden')
+        .style('transition', 'opacity .15s ease')
+        .style('z-index', '99999');
+    function show() { tip.style('opacity', '1').style('visibility', 'visible'); }
+    function hide() { tip.style('opacity', '0').style('visibility', 'hidden'); }
+    btn.on('mouseenter', show)
+        .on('mouseleave', hide)
+        .on('focus', show)
+        .on('blur', hide);
+    return { btn, tip };
 }
 function showModalWithData(dataset) {
     const overlay = select('body')
@@ -10730,7 +10825,8 @@ function drawChart(content) {
         .style('align-items', 'center')
         .style('justify-content', 'flex-start')
         .style('margin-left', '2rem')
-        .style('font-size', '0.8vw');
+        .style('font-size', '0.8vw')
+        .style('overflow', 'visible');
     createToolbar(parcoords.newDataset);
     setSvg(chartWrapper.append('svg')
         .attr('id', 'pc_svg')
@@ -10962,10 +11058,32 @@ document.addEventListener('mousemove', (e) => {
 });
 function setActivePathLines(svg, content, parcoords) {
     const contextMenu = createContextMenuForRecords();
-    // active polylines/paths/records
-    return svg.append('g')
-        .attr('class', 'active')
-        .selectAll('path')
+    const g = svg.append('g').attr('class', 'active');
+    g.selectAll('path.hitarea')
+        .data(content)
+        .enter()
+        .append('path')
+        .attr('class', 'hitarea')
+        .attr('id', (d) => {
+        const keys = Object.keys(d);
+        setKey(keys[0]);
+        const selected_value = cleanString(d[key]);
+        return 'area_' + selected_value;
+    })
+        .attr('d', d => linePath(d, parcoords.newFeatures))
+        .style('stroke', 'transparent')
+        .style('fill', 'none')
+        .style('stroke-width', '0.4rem')
+        .style('pointer-events', 'stroke')
+        .on('pointerenter', handlePointerEnter)
+        .on('pointerleave', handlePointerLeaveOrOut)
+        .on('pointerout', handlePointerLeaveOrOut)
+        .on('click', handleClick)
+        .on('contextmenu', function (event, d) {
+        handleRecordContextMenu(contextMenu, event);
+        select('#contextmenu').style('display', 'none');
+    });
+    return g.selectAll('path.visible')
         .data(content)
         .enter()
         .append('path')
@@ -10975,28 +11093,12 @@ function setActivePathLines(svg, content, parcoords) {
         const selected_value = cleanString(d[key]);
         return 'line ' + selected_value;
     })
-        .attr('id', (d) => {
-        return cleanString(d[key]);
-    })
-        .each(function (d) {
-        select(this)
-            .attr('d', linePath(d, parcoords.newFeatures));
-    })
-        .style('pointer-events', 'stroke')
+        .attr('id', d => cleanString(d[key]))
+        .attr('d', d => linePath(d, parcoords.newFeatures))
+        .style('pointer-events', 'none')
         .style('stroke', 'rgba(0, 129, 175, 0.5)')
         .style('stroke-width', '0.12rem')
-        .style('fill', 'none')
-        .on('pointerenter', handlePointerEnter)
-        .on('pointerleave', handlePointerLeaveOrOut)
-        .on('pointerout', handlePointerLeaveOrOut)
-        .on('mouseenter', handlePointerEnter)
-        .on('mouseout', handlePointerLeaveOrOut)
-        .on('mouseleave', handlePointerLeaveOrOut)
-        .on('click', handleClick)
-        .on('contextmenu', function (event, d) {
-        handleRecordContextMenu(contextMenu, event);
-        select('#contextmenu').style('display', 'none');
-    });
+        .style('fill', 'none');
 }
 function createContextMenuForRecords() {
     let contextMenu = select('#parallelcoords')
@@ -11469,7 +11571,7 @@ function showInvalidRowsMessage(invalidRows, columns, removedColumns) {
     removedRowInfo.style.background = "white";
     removedRowInfo.style.padding = "0.5rem";
     removedRowInfo.style.borderRadius = "0.25rem";
-    removedRowInfo.textContent = `${invalidRows.length} invalid rows are found.`;
+    removedRowInfo.textContent = `${invalidRows.length} invalid rows found.`;
     box.appendChild(removedRowInfo);
     if (removedColumns.length > 0) {
         const removedColumnInfo = document.createElement("div");
@@ -11492,13 +11594,13 @@ function showInvalidRowsMessage(invalidRows, columns, removedColumns) {
     btn.style.fontSize = "1rem";
     btn.addEventListener("click", () => {
         document.body.removeChild(overlay);
-        showInvalidRowsPopup(invalidRows, columns);
+        showInvalidRowsPopup(invalidRows, columns, removedColumns);
     });
     box.appendChild(btn);
     overlay.appendChild(box);
     document.body.appendChild(overlay);
 }
-function showInvalidRowsPopup(invalidRows, columns) {
+function showInvalidRowsPopup(invalidRows, columns, removedColumns = []) {
     const overlay = document.createElement("div");
     overlay.style.position = "fixed";
     overlay.style.top = "0";
@@ -11546,7 +11648,7 @@ function showInvalidRowsPopup(invalidRows, columns) {
     tableWrapper.style.padding = "0.5rem";
     tableWrapper.innerHTML = `
     <table border="1" cellpadding="6" style="border-collapse: collapse; margin-top: 0.5rem; width: 100%;">
-      ${renderInvalidTable(invalidRows, columns)}
+      ${renderInvalidTable(invalidRows, columns, removedColumns)}
     </table>
   `;
     dialog.appendChild(headerRow);
@@ -11554,11 +11656,17 @@ function showInvalidRowsPopup(invalidRows, columns) {
     overlay.appendChild(dialog);
     document.body.appendChild(overlay);
 }
-function renderInvalidTable(rows, columns) {
+function renderInvalidTable(rows, columns, removedColumns = []) {
     const headerHtml = `
     <thead>
       <tr>
-        ${columns.map(c => `<th style="text-align:left; font-size:0.85rem; background-color:rgb(201, 212, 221); border:0.063rem solid #ddd;">${c}</th>`).join("")}
+        ${columns.map(c => {
+        const isRemoved = removedColumns.includes(c);
+        return `<th style="
+            text-align:left;
+            background:${isRemoved ? "#ffb3b3" : "white"};
+          ">${c}</th>`;
+    }).join("")}
       </tr>
     </thead>
   `;
@@ -11566,23 +11674,23 @@ function renderInvalidTable(rows, columns) {
     <tr>
       ${columns.map(col => {
         const rawValue = row[col];
-        const value = rawValue ?? "";
-        const isInvalid = row.__invalidColumns?.includes(col);
+        const isInvalid = row.__invalidColumns?.includes(col) || removedColumns.includes(col);
         const isNumber = typeof rawValue === "number" ||
             (typeof rawValue === "string" &&
                 rawValue.trim() !== "" &&
                 !isNaN(Number(rawValue.replace(",", "."))));
         const align = isNumber ? "right" : "left";
+        const displayValue = rawValue === null ? "(null)" :
+            isEmptyCell(rawValue) ? "null" :
+                rawValue;
         return `
           <td style="
-            background: ${isInvalid ? '#ffb3b3' : 'white'};
-            color: ${isInvalid ? 'black' : 'inherit'};
+            background: ${isInvalid ? "#ffb3b3" : "white"};
             text-align: ${align};
-            padding: 0.25rem 0.5rem;
-            font-size: 0.75rem;
-            border: 0.063rem solid #ddd;
+            font-size: 0.85rem;
+            padding: 4px 8px;
           ">
-            ${value === "" ? "null" : value}
+            ${displayValue}
           </td>
         `;
     }).join("")}
@@ -11610,8 +11718,7 @@ function validateParsedCsv(data) {
     for (const row of data) {
         const emptyCols = [];
         for (const col of columns) {
-            const value = row[col]?.trim?.() ?? "";
-            if (value === "") {
+            if (isEmptyCell(row[col])) {
                 emptyCols.push(col);
             }
         }
@@ -11643,5 +11750,5 @@ function checkIfDuplicatesExists(value) {
     return new Set(value).size !== value.length;
 }
 
-export { clearSelection, colorRecord, createSvgString, deleteChart, drawChart, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelected, hide, hideMarker, invert, invertWoTransition, isDimensionCategorical, isRecordInactive, isSelected, isSelectedWithRecordId, loadCSV, move, moveByOne, refresh, reset, saveAsSvg, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setFilter, setInversionStatus, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setUnselected, setUnselectedWithId, show, showInvalidRowsMessage, showMarker, swap, throttleShowValues, toggleSelection, toggleSelectionWithId, uncolorRecord };
+export { clearSelection, colorRecord, createSvgString, deleteChart, disableInteractivity, drawChart, enableInteractivity, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelected, hide, hideMarker, invert, invertWoTransition, isDimensionCategorical, isRecordInactive, isSelected, isSelectedWithRecordId, loadCSV, move, moveByOne, refresh, renderInvalidTable, reset, saveAsSvg, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setFilter, setInversionStatus, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setUnselected, setUnselectedWithId, show, showInvalidRowsMessage, showMarker, swap, throttleShowValues, toggleSelection, toggleSelectionWithId, uncolorRecord };
 //# sourceMappingURL=spcd3.js.map

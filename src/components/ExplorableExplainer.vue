@@ -74,6 +74,7 @@
 import { ref, onMounted, onBeforeUnmount, provide } from 'vue';
 import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
+import * as spcd3 from '../spcd3.js';
 import NavigationDropdown from './NavigationDropdown.vue';
 import Table from './Table.vue';
 import Stepper from './Stepper.vue';
@@ -144,9 +145,8 @@ const handleStudentDataset = (chart: HTMLDivElement, dataset: string | undefined
   chart.style.maxWidth = '100%';
   chart.style.maxHeight = 'auto';
   drawChart(dataset);
-  const toolbar = document.getElementById('toolbarRow') as HTMLDivElement | null;
-  if (toolbar) toolbar.style.setProperty('font-size', '0vw', 'important');
-  document.querySelectorAll<SVGPathElement>('path').forEach(p => (p.style.pointerEvents = 'none'));
+  spcd3.disableInteractivity();
+
   (document.getElementById('outlier-button') as HTMLButtonElement | null)?.setAttribute('disabled', '');
   (document.getElementById('correlation-button') as HTMLButtonElement | null)?.setAttribute('disabled', '');
   (document.getElementById('correlation-neg-button') as HTMLButtonElement | null)?.setAttribute('disabled', '');
@@ -160,18 +160,6 @@ const handleStudentDataset = (chart: HTMLDivElement, dataset: string | undefined
       btn.disabled = false;
     }
   });
-
-  const handleHitboxes = document.querySelectorAll<HTMLDivElement>('.handle-hitbox')
-
-  handleHitboxes.forEach((hitbox) => {
-    hitbox.style.pointerEvents = "none";
-  });
-
-  const hitboxes = document.querySelectorAll<HTMLDivElement>('.hitbox')
-
-  hitboxes.forEach((hitbox) => {
-    hitbox.style.pointerEvents = "none";
-  });
 }
 
 const handleMisc = (chart: HTMLDivElement, dataset: string | undefined) : void => {
@@ -183,11 +171,7 @@ const handleMisc = (chart: HTMLDivElement, dataset: string | undefined) : void =
   chart.style.maxHeight = 'auto';
   drawChart(dataset);
   resetTable();
-
-  const toolbar = document.getElementById('toolbarRow') as HTMLDivElement | null;
-  if (toolbar) toolbar.style.setProperty('font-size', '0.8vw', 'important');
-
-  document.querySelectorAll<SVGPathElement>('path').forEach(p => (p.style.pointerEvents = 'stroke'));
+  spcd3.enableInteractivity();
 
   const outlierBtn = document.getElementById('outlier-button') as HTMLButtonElement | null;
   if (outlierBtn) outlierBtn.textContent = 'Show Outlier';

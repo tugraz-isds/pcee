@@ -27,20 +27,41 @@
                 >
                 <div
                   class="step-text"
-                  v-html=step.content.value 
+                  v-html="step.content.value" 
                 />
                 <button
                   v-if="step.title === '6. Explore the Data'"
                   id="activate-button"
+                  class="action-buttons"
+                  @click="activateChart(index)"
+                  :disabled="stepRan[index]"
                 >
                   Enable Interactivity
                 </button>
                 <button
                   v-else
-                  id="run-button"
+                  id="`run-button-${index}`"
+                  class="action-buttons"
                   @click="runAction(index)"
+                  :disabled="stepRan[index]"
                 >
                   Run
+                </button>
+                <button
+                  v-if="step.title === '6. Explore the Data'"
+                  id="deactivate-button"
+                  @click="deactivateChart(index)"
+                  :disabled="!stepRan[index]"
+                >
+                  Disable Interactivity
+                </button>
+                <button
+                  v-else
+                  id="`res-button-${index}`"
+                  :disabled="!stepRan[index]"
+                  @click="resetAction(index)"
+                >
+                  Reset
                 </button>
                 </div>
             </transition>
@@ -110,9 +131,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import * as spcd3 from '../spcd3.js';
-import { loadContent, loadDataset, getCurrentStepIndex, getDatasetForStep, drawChart, writeTitleToDataset, getSharedVariable } from '@/helper.js';
+import { loadContent, loadDataset, getSharedVariable, drawChart } from '@/helper.js';
 
 const studentDatasetText = ref('');
 const invertText = ref('');
@@ -126,6 +147,7 @@ const studentDataset = ref('');
 const financeDataset = ref('');
 const { currentStep } = getSharedVariable();
 let status = false;
+const stepRan = ref<boolean[]>([])
 
 const steps = [
   { title: '1. Adjusting Dimension Ranges', content: rangeText },
@@ -136,202 +158,113 @@ const steps = [
   { title: '6. Explore the Data', content: interactiveText }
 ];
 
-const goToStep = async(index: number): Promise<void> => {
-  if (index > currentStep.value) {
-    //index = index + 1;
-    /*for (let i = currentStep.value; i < index; i++) {
-      currentStep.value = i;
-      //runForward(i);
-      await wait(800);
-    }*/
-    currentStep.value = index;
-  } else {
-    let step = currentStep.value;
-    currentStep.value = index;
-    for (let i = step; i >= index; i--) {
-      runBackward(i);
-      await wait(800);
-    }
-  }  
+watch(
+  () => steps,
+  (newSteps) => {
+    stepRan.value = newSteps.map((_, i) => stepRan.value[i] ?? false)
+  },
+  { immediate: true }
+)
+
+const goToStep = (index: number): void => {
+  if (currentStep.value === 5) drawChart(studentDataset.value);
+  spcd3.disableInteractivity();
+  stepRan.value[index] = false
+  currentStep.value = index;
 }
 
 const next = (): void => {
-  if (currentStep.value < steps.length - 1) {
-    currentStep.value++;
-  }
-  //triggerNext(currentStep.value);
+  if (currentStep.value === 5) drawChart(studentDataset.value);
+  spcd3.disableInteractivity();
+  stepRan.value[currentStep.value] = false
+  currentStep.value++;
 }
 
 const back = (): void => {
-  triggerBack(currentStep.value);
+  if (currentStep.value === 5) drawChart(studentDataset.value);
+  spcd3.disableInteractivity();
+  stepRan.value[currentStep.value] = false
   currentStep.value--;
 }
 
 const reset = (): void => {
-  triggerReset();
+  if (currentStep.value === 5) drawChart(studentDataset.value);
+  spcd3.disableInteractivity();
+  stepRan.value[currentStep.value] = false
+  currentStep.value = 0;
 }
 
 const skip = (): void => {
-  triggerSkip();
-}
-
-function wait(ms: number) {
-  return new Promise<void>(resolve => window.setTimeout(resolve, ms));
-}
-
-function runForward(i: number) {
-  switch (i) {
-    case 1: step1Forward(); break
-    case 2: step2Forward(); break
-    case 3: step3Forward(); break
-    case 4: step4Forward(); break
-    case 5: step5Forward(); break
-  }
-}
-
-function runBackward(i: number) {
-  switch (i) {
-    case 0: step1Backward(); break
-    case 1: step2Backward(); break
-    case 2: step3Backward(); break
-    case 3: step4Backward(); break
-    case 4: step5Backward(); break
-  }
-}
-
-const step1Forward = (): void => {
-  setRangeNext();
-}
-
-const step2Forward = (): void => {
-  selectRecordNext();
-}
-
-const step3Forward = (): void => {
-  filterRecordsNext();
-}
-
-const step4Forward = (): void => {
-  moveDimensionNext();
-}
-
-const step5Forward = (): void => {
-  invertDimensionNext();
-}
-
-const step1Backward = (): void => {
-  setRangeBack();
-}
-
-const step2Backward = (): void => {
-  selectRecordBack();
-}
-
-const step3Backward = (): void => {
-  filterRecordsBack();
-}
-
-const step4Backward = (): void => {
-  moveDimensionBack();
-}
-
-const step5Backward = (): void => {
-  invertDimensionBack();
-}
-
-const triggerReset = async (): Promise<void> => {
-  currentStep.value = 0;
-  
-  drawChart(studentDataset.value);
-  // eslint-disable-next-line no-undef
-  const chart = document.getElementById("parallelcoords") as HTMLDivElement | null;
-  if (chart != null) {
-      chart.style.pointerEvents = "none";
-  }
-  // eslint-disable-next-line no-undef
-  const toolbar = (document.getElementById('toolbarRow') as HTMLDivElement);
-  if (toolbar !== null) {
-    toolbar.style.setProperty("font-size", "0vw", "important");
-  }
-  // eslint-disable-next-line no-undef
-  document.querySelectorAll<SVGPathElement>("path").forEach(p => {
-    p.style.pointerEvents = "none";
-  });
-
-  // hitboxes filter
-  const handleHitboxes = document.querySelectorAll<HTMLDivElement>('.handle-hitbox')
-
-  handleHitboxes.forEach((hitbox) => {
-    hitbox.style.pointerEvents = "none";
-  });
-
-  // hitboxes invert
-  const hitboxes = document.querySelectorAll<HTMLDivElement>('.hitbox')
-
-  hitboxes.forEach((hitbox) => {
-    hitbox.style.pointerEvents = "none";
-  });
-
-  status = false;
-  (document.getElementById('activate-button') as HTMLButtonElement).textContent = "Enable Interactivity";
-}
-
-
-const triggerSkip = async (): Promise<void> => {
+  if (currentStep.value === 5) drawChart(studentDataset.value);
+  spcd3.disableInteractivity();
+  stepRan.value[currentStep.value] = false
   currentStep.value = 5;
 }
 
-const triggerNext = async (currentStep: number): Promise<void> => {
+const runAction = (currentStep: number): void => {
+  triggerNext(currentStep + 1);
+  stepRan.value[currentStep] = true;
+}
+
+const resetAction = (currentStep: number): void => {
+  triggerBack(currentStep);
+  stepRan.value[currentStep] = false;
+}
+
+const activateChart = (currentStep:number): void => {
+  if (currentStep === 5) drawChart(studentDataset.value);
+  spcd3.enableInteractivity();
+  drawChart(studentDataset.value);
+  stepRan.value[currentStep] = true;
+}
+
+const deactivateChart = (currentStep: number): void => {
+  if (currentStep === 5) drawChart(studentDataset.value);
+  spcd3.disableInteractivity();
+  stepRan.value[currentStep] = false;
+}
+
+const triggerNext = (currentStep: number): void => {
   switch(currentStep) {
     case 0:
       break;
     case 1:
       setRangeNext();
-      await wait(800);
       break;
     case 2:
       selectRecordNext();
-      await wait(800);
       break;
     case 3:
       filterRecordsNext();
-      await wait(800);
       break;
     case 4:
       moveDimensionNext();
-      await wait(800);
       break;
     case 5:
       invertDimensionNext();
-      await wait(800);
       break;
     default:
       break;
   }
 }
 
-const triggerBack = async (currentStep: number): Promise<void> => {
+const triggerBack = (currentStep: number): void => {
   switch(currentStep) {
     case 0:
       setRangeBack();
-      await wait(800);
       break;
     case 1:
       selectRecordBack();
-      await wait(800);
       setRangeBack();
       break;
     case 2:
       filterRecordsBack();
-      await wait(800);
       break;
     case 3:
       moveDimensionBack();
-      await wait(800);
       break;
     case 4:
       invertDimensionBack();
-      await wait(800);
       break;
     case 5:
       break;
@@ -413,106 +346,6 @@ const invertDimensionBack = (): void => {
   }
 }
 
-const runAction = (currentStep: number): void => {
-  triggerNext(currentStep + 1);
-}
-
-const activateChart = async (): Promise<void> => {
-  const buttons = document.querySelectorAll<HTMLButtonElement>('.stepper-button');
-  const currentStepIndex = getCurrentStepIndex();
-  if (currentStepIndex !== 2) return;
-  if (!status) {
-    const dataset = getDatasetForStep(currentStepIndex);
-    drawChart(dataset);
-    // eslint-disable-next-line no-undef
-    const chart = document.getElementById("parallelcoords") as HTMLDivElement | null;
-    if (chart != null) {
-        chart.style.pointerEvents = "auto";
-    }
-    // eslint-disable-next-line no-undef
-    const toolbar = (document.getElementById('toolbarRow') as HTMLDivElement);
-    if (toolbar !== null) {
-      toolbar.style.setProperty("font-size", "0.8vw", "important");
-    }
-    // eslint-disable-next-line no-undef
-    document.querySelectorAll<SVGPathElement>("path").forEach(p => {
-      p.style.pointerEvents = "stroke";
-    });
-
-    const handleHitboxes = document.querySelectorAll<HTMLDivElement>('.handle-hitbox')
-
-    handleHitboxes.forEach((hitbox) => {
-      hitbox.style.pointerEvents = "auto";
-    });
-
-    // hitboxes invert
-    const hitboxes = document.querySelectorAll<HTMLDivElement>('.hitbox')
-
-    hitboxes.forEach((hitbox) => {
-      hitbox.style.pointerEvents = "auto";
-    });
-
-    buttons.forEach(btn => {
-      btn.disabled = true;
-    });
-    status = true;
-    (document.getElementById('activate-button') as HTMLButtonElement).textContent = "Disable Interactivity";
-  }
-  else {
-    const dataset = getDatasetForStep(currentStepIndex);
-    writeTitleToDataset(currentStepIndex);
-    drawChart(dataset);
-    currentStep.value = 0;
-    // eslint-disable-next-line no-undef
-    const chart = document.getElementById("parallelcoords") as HTMLDivElement | null;
-    if (chart != null) {
-        chart.style.pointerEvents = "none";
-    }
-    // eslint-disable-next-line no-undef
-    const toolbar = (document.getElementById('toolbarRow') as HTMLDivElement);
-    if (toolbar !== null) {
-      toolbar.style.setProperty("font-size", "0vw", "important");
-    }
-    // eslint-disable-next-line no-undef
-    document.querySelectorAll<SVGPathElement>("path").forEach(p => {
-      p.style.pointerEvents = "none";
-    });
-
-    // hitboxes filter
-    const handleHitboxes = document.querySelectorAll<HTMLDivElement>('.handle-hitbox')
-
-    handleHitboxes.forEach((hitbox) => {
-      hitbox.style.pointerEvents = "none";
-    });
-
-    // hitboxes invert
-    const hitboxes = document.querySelectorAll<HTMLDivElement>('.hitbox')
-
-    hitboxes.forEach((hitbox) => {
-      hitbox.style.pointerEvents = "none";
-    });
-
-    buttons.forEach(btn => {
-      if (btn.id === "back-button" || btn.id === "reset-button") {
-        btn.disabled = true;
-      }
-      else {
-        btn.disabled = false;
-      }
-    });
-
-    status = false;
-    (document.getElementById('activate-button') as HTMLButtonElement).textContent = "Enable Interactivity";
-  }
-}
-
-const addClickEvent = (): void => {
-    const activateButton = document.getElementById('activate-button');
-    if (activateButton) {
-        activateButton.addEventListener('click', activateChart);
-    }
-}
-
 
 onMounted(async (): Promise<void> => {
   healthDataset.value = await loadDataset('data/health-data.csv');
@@ -525,10 +358,6 @@ onMounted(async (): Promise<void> => {
   loadContent(rangeText, 'content/stepper/range.html');
   loadContent(invertText, 'content/stepper/invert.html');
   loadContent(interactiveText, 'content/stepper/interactive.html');
-
-  await nextTick(() => {
-    addClickEvent();
-  });
 });
 
 </script>
@@ -599,7 +428,7 @@ onMounted(async (): Promise<void> => {
 
 .steps > li {
   padding: 0;
-  margin: 0 0 0.1rem 0;
+  margin: 0 0 0.1rem 0.5rem;
   overflow: hidden;
 }
 
@@ -633,13 +462,13 @@ li.active .triangle{
   display: inline;
   color: rgb(255,255,255);
   font-weight: 590;
-  margin-left: 1rem;
+  margin-left: 0.5rem;
   padding-left: 0.5rem;
   padding-right: 0.5rem;
 }
 
 .step-panel {
-  margin-left: 1rem;
+  margin-left: 0.5rem;
   padding-right: 1rem;
   border: 0.01rem solid black;
 }
@@ -682,6 +511,11 @@ li.active .triangle{
 }
 
 #run-button {
+  margin-left: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.action-buttons {
   margin-left: 1rem;
   margin-bottom: 0.5rem;
 }
