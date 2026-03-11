@@ -1,6 +1,6 @@
 <template>
   <select
-    class="mb-4 mt-4 w-auto rounded-md border border-gray-200 bg-[rgb(253,252,250)] px-2.5 py-1.5 text-sm text-gray-800 shadow-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+    class="navigation-dropdown"
     :value="activeId"
     @change="onChange"
   >
@@ -30,7 +30,6 @@ interface ModeConfig {
 }
 
 interface Properties {
-  // eslint-disable-next-line vue/require-default-prop
   config?: Partial<Record<ModeKey, Partial<ModeConfig>>>;
   smooth?: boolean;
   useHeadingTitle?: boolean;
@@ -89,17 +88,13 @@ let pendingSnap: HTMLElement | null = null;
 let lastScrollY = 0;
 let scrollDir: 1 | -1 | 0 = 0;
 
-// eslint-disable-next-line no-undef
 const scroller = ref<Window | HTMLElement>(window);
 const sections = ref<SectionInfo[]>([]);
 const activeId = ref<string>('');
 
 let ticking = false;
-// eslint-disable-next-line no-undef
 let resizeObs: ResizeObserver | null = null;
-// eslint-disable-next-line no-undef
 let stickyObs: ResizeObserver | null = null;
-// eslint-disable-next-line no-undef
 let mutObs: MutationObserver | null = null;
 
 const getCurrentConfig = (): ModeConfig => {
@@ -113,12 +108,10 @@ const resolveScroller = (): void => {
     : window;
 }
 
-// eslint-disable-next-line no-undef
 const getScrollY = (scroller: Window | HTMLElement): number => {
   return scroller === window ? window.scrollY : (scroller as HTMLElement).scrollTop;
 }
 
-// eslint-disable-next-line no-undef
 const setScrollY = (y: number, behavior: ScrollBehavior = 'auto'): void => {
   if (scroller.value === window) {
     window.scrollTo({ top: y, behavior });
@@ -127,14 +120,12 @@ const setScrollY = (y: number, behavior: ScrollBehavior = 'auto'): void => {
   }
 }
 
-// eslint-disable-next-line no-undef
 const getViewportHeight = (scroller: Window | HTMLElement): number => {
   return scroller === window
     ? (window.visualViewport?.height ?? window.innerHeight)
     : (scroller as HTMLElement).clientHeight;
 }
 
-// eslint-disable-next-line no-undef
 const getTopPositionOfSection = (el: HTMLElement, scroller: Window | HTMLElement): number => {
   if (scroller === window) {
     const r = el.getBoundingClientRect();
@@ -185,7 +176,6 @@ const recalcPositions = (): void => {
   });
 }
 
-// eslint-disable-next-line no-undef
 const findActiveSection = (scr: Window | HTMLElement): void => {
   const vh = getViewportHeight(scr);
   const ratioBase = mode.value === 'portrait' ? 0.25 : 0.5;
@@ -224,16 +214,13 @@ const onScroll = (): void => {
 
   if (!ticking) {
     ticking = true;
-    // eslint-disable-next-line no-undef
     requestAnimationFrame(() => {
       ticking = false;
-      // eslint-disable-next-line no-undef
       if (performance.now() < suppressUntil.value) return;
       findActiveSection(scroller.value);
     });
   }
 
-  // eslint-disable-next-line no-undef
   if (idleTimer) clearTimeout(idleTimer);
   idleTimer = window.setTimeout(() => {
     if (!pendingSnap) return;
@@ -281,12 +268,9 @@ const recomputeScrollOffset = (): void => {
   document.documentElement.style.setProperty('--scroll-offset', `${Math.round(total + 2)}px`);
 }
 
-// eslint-disable-next-line no-undef
 const onChange = (e: Event): void => {
-  // eslint-disable-next-line no-undef
   suppressUntil.value = performance.now() + 800;
 
-  // eslint-disable-next-line no-undef
   const id = (e.target as HTMLSelectElement).value;
   const section = sections.value.find(x => x.id === id);
   if (!section) return;
@@ -323,7 +307,6 @@ const applyMode = (): void => {
 
   resizeObs?.disconnect();
   const target = scroller.value === window ? document.documentElement : (scroller.value as HTMLElement);
-  // eslint-disable-next-line no-undef
   resizeObs = new ResizeObserver(() => { recalcPositions(); findActiveSection(scroller.value); });
   resizeObs.observe(target);
 
@@ -332,7 +315,6 @@ const applyMode = (): void => {
     ? document.querySelector(getCurrentConfig().offsetElementSelector as string)
     : null;
   if (stickyElement) {
-    // eslint-disable-next-line no-undef
     stickyObs = new ResizeObserver(() => {
       recomputeScrollOffset();
       recalcPositions();
@@ -342,14 +324,12 @@ const applyMode = (): void => {
   }
 
   mutObs?.disconnect();
-  // eslint-disable-next-line no-undef
   mutObs = new MutationObserver(() => {
     getAllSection();
     recalcPositions();
     findActiveSection(scroller.value);
   });
   const root = getCurrentConfig().rootSelector ? document.querySelector(getCurrentConfig().rootSelector!) : document.body;
-  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
   (root || document.body).ownerDocument?.body && mutObs.observe(document.body, {
     childList: true, subtree: true, attributes: true,
     attributeFilter: ['id','data-title','content-section','class','style'],
@@ -385,11 +365,8 @@ onMounted(async () => {
     passive: true
   });
 
-  // eslint-disable-next-line no-undef
   const ro = new ResizeObserver(() => recomputeScrollOffset());
-  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
   document.querySelector('.sticky-header') && ro.observe(document.querySelector('.sticky-header')!);
-  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
   document.querySelector('.main-chart')  && ro.observe(document.querySelector('.main-chart')!);
 
   const onModeChange = () => {

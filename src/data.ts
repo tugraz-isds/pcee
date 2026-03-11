@@ -65,15 +65,15 @@ export const originalColumns = [
   export const columnsFinance = [
     {key: 'Name', label: 'Name', type: 'string'},
     {key: 'Income', label: 'Income', type: 'number'}, 
-    {key: 'Costs', label: 'Costs', type: 'number'},
-    {key: 'Leftover', label: 'Leftover', type: 'number'}
+    {key: 'Accomodation', label: 'Accomodation', type: 'number'},
+    {key: 'Living', label: 'Living', type: 'number'}
   ];
 
   export const rowsFinance = [
-  { Name: 'Alice',   Income: 3500, Costs: 1200, Leftover: 2300},
-  { Name: 'Bob',     Income: 2800, Costs: 900,  Leftover: 1900},
-  { Name: 'Charlie', Income: 4200, Costs: 1500, Leftover: 2700},
-  { Name: 'Fiona',   Income: 2700, Costs: 800,  Leftover: 1900},
-  { Name: 'Ursula',  Income: 6000, Costs: 500,  Leftover: 5500},
-  { Name: 'Victor',  Income: 3400, Costs: 1100, Leftover: 2300}
+  { Name: 'Alice',   Income: 3500, Accomodation: 1200, Living: 2300},
+  { Name: 'Bob',     Income: 2800, Accomodation: 900,  Living: 1900},
+  { Name: 'Charlie', Income: 4200, Accomodation: 1500, Living: 2700},
+  { Name: 'Fiona',   Income: 2700, Accomodation: 800,  Living: 1900},
+  { Name: 'Ursula',  Income: 6000, Accomodation: 500,  Living: 5500},
+  { Name: 'Victor',  Income: 3400, Accomodation: 1100, Living: 2300}
 ]

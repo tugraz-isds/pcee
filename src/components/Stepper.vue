@@ -29,40 +29,23 @@
                   class="step-text"
                   v-html="step.content.value" 
                 />
-                <button
-                  v-if="step.title === '6. Explore the Data'"
-                  id="activate-button"
-                  class="action-buttons"
-                  @click="activateChart(index)"
-                  :disabled="stepRan[index]"
-                >
-                  Enable Interactivity
-                </button>
-                <button
-                  v-else
-                  id="`run-button-${index}`"
-                  class="action-buttons"
-                  @click="runAction(index)"
-                  :disabled="stepRan[index]"
-                >
-                  Run
-                </button>
-                <button
-                  v-if="step.title === '6. Explore the Data'"
-                  id="deactivate-button"
-                  @click="deactivateChart(index)"
-                  :disabled="!stepRan[index]"
-                >
-                  Disable Interactivity
-                </button>
-                <button
-                  v-else
-                  id="`res-button-${index}`"
-                  :disabled="!stepRan[index]"
-                  @click="resetAction(index)"
-                >
-                  Reset
-                </button>
+                  <button
+                    class="action-buttons"
+                    id="activate-button"
+                    @click="
+                    step.title === '6. Explore the Data'
+                    ? (stepRan[index] ? deactivateChart(index) : activateChart(index))
+                    : (stepRan[index] ? resetAction(index) : runAction(index))">
+                    {{
+                      step.title === '6. Explore the Data' 
+                      ? stepRan[index]
+                      ? 'Disable Interactivity'
+                      : 'Enable Interactivity'
+                      : stepRan[index]
+                      ? 'Reset'
+                      : 'Run'
+                    }}
+                  </button>
                 </div>
             </transition>
             </li>

@@ -3520,17 +3520,6 @@ function addNumberOfDigs(number, currentPosOfDims, dimensionName, key) {
     const target = currentPosOfDims.find((obj) => obj.key == dimensionName);
     Object.assign(target, newObject);
 }
-//https://stackoverflow.com/questions/123999/how-can-i-tell-if-a-dom-element-is-visible-in-the-current-viewport
-function isElementVisible(element) {
-    let rect = element.node().getBoundingClientRect(), vWidth = window.innerWidth || document.documentElement.clientWidth, vHeight = window.innerHeight || document.documentElement.clientHeight, efp = function (x, y) { return document.elementFromPoint(x, y); };
-    if (rect.right < 0 || rect.bottom < 0
-        || rect.left > vWidth || rect.top > vHeight)
-        return false;
-    return (element.node().contains(efp(rect.left, rect.top))
-        || element.node().contains(efp(rect.right, rect.top))
-        || element.node().contains(efp(rect.right, rect.bottom))
-        || element.node().contains(efp(rect.left, rect.bottom)));
-}
 function getMouseCoords(event, targetContainer = document.body) {
     if (targetContainer === document.body) {
         return [event.clientX + window.scrollX, event.clientY + window.scrollY];
@@ -3541,7 +3530,6 @@ function getMouseCoords(event, targetContainer = document.body) {
     }
 }
 
-let padding;
 let paddingXaxis;
 let width;
 let height;
@@ -3561,16 +3549,23 @@ let active;
 let key;
 let svg;
 let hoverlabel;
-let refreshData;
+let columns;
 let initDimension;
+let thickness;
+let numberOfRecords;
+let numberOfDimensions;
+let resetContentData;
+function setContent(contentdata) {
+    resetContentData = contentdata;
+}
 function setHoverLabel(label) {
     hoverlabel = label;
 }
 function setYaxis(axis) {
     yAxis = axis;
 }
-function setRefreshData(data) {
-    refreshData = data;
+function setColumns(cols) {
+    columns = cols;
 }
 function setSvg(svgData) {
     svg = svgData;
@@ -3580,9 +3575,6 @@ function setWidth(value) {
 }
 function setHeight(value) {
     height = value;
-}
-function setPadding(value) {
-    padding = value;
 }
 function setPaddingXaxis(value) {
     paddingXaxis = value;
@@ -3613,6 +3605,18 @@ function setData(value) {
 }
 function setKey(value) {
     key = value;
+}
+function setLineThickness(value) {
+    thickness = value;
+}
+function getLineThickness() {
+    return thickness;
+}
+function setNumberOfRecords(value) {
+    numberOfRecords = value;
+}
+function setNumberOfDimensions(value) {
+    numberOfDimensions = value;
 }
 
 function ascending(a, b) {
@@ -6611,12 +6615,44 @@ function setupYScales(header, dataset) {
     });
     return yScales;
 }
-function setupXScales(header) {
+function getTextWidthSVG(text, font) {
+    const temp = select("body")
+        .append("svg")
+        .style("position", "absolute")
+        .style("visibility", "hidden")
+        .append("text")
+        .style("font", font)
+        .text(text);
+    const width = temp.node().getBBox().width;
+    temp.remove();
+    return width;
+}
+function getLongestTickLabel(data, labelKey) {
+    const uniqueLabels = Array.from(new Set(data.map(d => String(d[labelKey] ?? "")))).filter(s => s.length > 0);
+    const ticks = uniqueLabels.length > 30
+        ? uniqueLabels.filter((_, i) => i % 4 === 0)
+        : uniqueLabels;
+    return ticks.reduce((longest, v) => {
+        return v.length > longest.length ? v : longest;
+    }, "");
+}
+function detectLastStringKey(data) {
+    const keys = Object.keys(data[0]);
+    const stringKeys = keys.filter(key => typeof data[0][key] === "string" &&
+        isNaN(Number(data[0][key])));
+    return stringKeys[stringKeys.length - 1];
+}
+function setupXScales(header, dataset) {
+    const labelKey = detectLastStringKey(dataset);
+    const longest = getLongestTickLabel(dataset, labelKey);
+    const longestTicklabel = longest.length > 10 ? longest.substr(0, 10) + '.......' : longest;
+    const labelWidth = getTextWidthSVG(longestTicklabel, "0.75rem Verdana");
+    const margin = labelWidth * 0.6 + 16;
     const n = header.length;
     const pad = (n <= 2) ? 0 : 0.2;
     return point$4()
         .domain(header.map((x) => x.name))
-        .range([width - padding, padding])
+        .range([width - margin, margin])
         .padding(pad)
         .align(0.5);
 }
@@ -6635,7 +6671,7 @@ function setupYAxis(yScales, dataset, hiddenDims) {
                 '...' : val);
             const uniqueLabels = Array.from(new Set(shortenedLabels));
             const ticks = uniqueLabels.length > limit
-                ? uniqueLabels.filter((_, i) => i % 4 === 0)
+                ? uniqueLabels.filter((_, i) => i % 6 === 0)
                 : uniqueLabels;
             yAxis[key] = axisLeft(scale).tickValues(ticks).tickFormat((d) => d);
         }
@@ -6668,11 +6704,12 @@ function linePath(d, newFeatures) {
         const valueEntry = tempdata.find(x => x[0] === newFeature);
         if (valueEntry) {
             const name = newFeature;
-            const value = valueEntry[1];
+            const value = String(valueEntry[1]);
             const x = parcoords.dragging[name] !== undefined
                 ? parcoords.dragging[name]
                 : parcoords.xScales(name);
-            const y = parcoords.yScales[name](value);
+            const cleanedValue = value.length > 10 ? value.substr(0, 10) + '...' : value;
+            const y = parcoords.yScales[name](cleanedValue);
             points.push([x, y]);
         }
     });
@@ -6691,7 +6728,7 @@ function getAllVisibleDimensionNames$1() {
 function recordIdOf(rec) {
     return rec.id ?? rec._id ?? rec.key;
 }
-function createToolTipForValues(records, recKey) {
+function createToolTipForValues(records, isSelect) {
     const dimensions = getAllVisibleDimensionNames$1();
     const svg = select('#pc_svg').node();
     const plotG = (document.querySelector('#pc_svg g.plot') ?? svg);
@@ -6699,54 +6736,60 @@ function createToolTipForValues(records, recKey) {
     if (!ctm)
         return;
     const recordId = recordIdOf(records);
-    const layer = select('body')
+    const wrapper = document.querySelector('#parallelcoords .chartWrapper');
+    if (!wrapper)
+        return;
+    const layer = select(wrapper)
         .selectAll(`div.tip-layer[data-record="${recordId}"]`)
         .data([recordId])
         .join('div')
         .attr('class', 'tip-layer')
-        .attr('data-record', recordId)
-        .style('position', 'fixed')
-        .style('left', '0')
-        .style('top', '0')
-        .style('pointer-events', 'none');
+        .attr('data-record', recordId);
+    const wrapperRect = wrapper.getBoundingClientRect();
     const data = dimensions
-        .filter(dim => isElementVisible(select('#rect_' + cleanString(dim))))
         .map(dim => {
         const yScale = parcoords.yScales[dim];
         const x = parcoords.xScales(dim);
-        const y = yScale(records[dim]);
+        const record = records[dim];
+        const cleanRecord = record.length > 10 ? record.substr(0, 10) + '...' :
+            record;
+        const y = yScale(cleanRecord);
         const pt = svg.createSVGPoint();
         pt.x = x;
         pt.y = y;
         const sp = pt.matrixTransform(ctm);
         return {
             dim,
-            pageX: sp.x + 8,
-            pageY: sp.y + 8,
+            pageX: sp.x - wrapperRect.left + wrapper.scrollLeft,
+            pageY: sp.y - wrapperRect.top + wrapper.scrollTop,
             text: String(records[dim]),
         };
     });
-    const tips = layer
-        .selectAll('div.tooltip-div')
-        .data(data, (d) => d.dim);
-    tips.join(enter => enter.append('div')
-        .attr('class', 'tooltip-div')
-        .style('position', 'absolute')
-        .style('pointer-events', 'none')
-        .style('font-size', '0.65rem')
-        .style('margin', '0.5rem')
-        .style('color', 'red')
-        .style('background-color', '#d3d3d3ad')
-        .style('font-weight', 'bold')
-        .style('padding', '0.12rem')
-        .style('white-space', 'nowrap')
-        .style('z-index', '9999')
-        .style('left', d => `${d.pageX / 16}rem`)
-        .style('top', d => `${d.pageY / 16}rem`)
-        .text(d => d.text), update => update
-        .style('left', d => `${d.pageX / 16}rem`)
-        .style('top', d => `${d.pageY / 16}rem`)
-        .text(d => d.text), exit => exit.remove());
+    if (isSelect) {
+        const tips = layer.selectAll('div.tooltip-record-select')
+            .data(data, (d) => d.dim);
+        tips.join(enter => enter.append('div')
+            .attr('id', `tooltip-record-select-${cleanString(records[hoverlabel])}`)
+            .attr('class', 'tooltip-record-select')
+            .style('left', d => `${d.pageX / 16}rem`)
+            .style('top', d => `${d.pageY / 16}rem`)
+            .text(d => d.text), update => update
+            .style('left', d => `${d.pageX / 16}rem`)
+            .style('top', d => `${d.pageY / 16}rem`)
+            .text(d => d.text), exit => exit.remove());
+    }
+    else {
+        const tips = layer.selectAll('div.tooltip-record')
+            .data(data, (d) => dimensions);
+        tips.join(enter => enter.append('div')
+            .attr('class', 'tooltip-record')
+            .style('left', d => `${d.pageX / 16}rem`)
+            .style('top', d => `${d.pageY / 16}rem`)
+            .text(d => d.text), update => update
+            .style('left', d => `${d.pageX / 16}rem`)
+            .style('top', d => `${d.pageY / 16}rem`)
+            .text(d => d.text), exit => exit.remove());
+    }
 }
 function getAllPointerEventsData(event) {
     const selection = selectAll(document.elementsFromPoint(event.clientX, event.clientY)).filter('path');
@@ -6786,7 +6829,10 @@ function position(dimension, dragging, xScales) {
     return value == null ? xScales(dimension) : value;
 }
 function cleanTooltip() {
-    selectAll('.tooltip-div').remove();
+    selectAll('.tooltip-record').remove();
+}
+function cleanTooltipSelect() {
+    selectAll('.tooltip-record-select').remove();
 }
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
@@ -7608,6 +7654,12 @@ function hide(dimension) {
         .transition()
         .duration(1500)
         .attrTween('d', (d) => generateLineTween(oldxScales, parcoords.xScales, newDimensions, parcoords.yScales)(d));
+    cleanTooltipSelect();
+    var selectedRecords = getSelected();
+    selectedRecords.forEach(record => {
+        const path = parcoords.newDataset.find(d => d[hoverlabel] === record);
+        createToolTipForValues(path, true);
+    });
 }
 function generateLineTween(oldXscales, newXscales, newDimensions, yScales) {
     const path = line().defined((d) => d != null);
@@ -7648,6 +7700,12 @@ function show(dimension) {
             return [x, y];
         });
         return line()(points);
+    });
+    cleanTooltipSelect();
+    var selectedRecords = getSelected();
+    selectedRecords.forEach(record => {
+        const path = parcoords.newDataset.find(d => d[hoverlabel] === record);
+        createToolTipForValues(path, true);
     });
 }
 function getHiddenStatus(dimension) {
@@ -7697,6 +7755,12 @@ function moveByOne(dimension, direction) {
         .ease(cubicInOut);
     delete parcoords.dragging[dimension];
     delete parcoords.dragging[neighbour];
+    cleanTooltipSelect();
+    var selectedRecords = getSelected();
+    selectedRecords.forEach(record => {
+        const path = parcoords.newDataset.find(d => d[hoverlabel] === record);
+        createToolTipForValues(path, true);
+    });
 }
 function move(dimensionA, toRightOf, dimensionB) {
     const indexOfDimensionA = getDimensionPosition(dimensionA);
@@ -7757,6 +7821,12 @@ function swap(dimensionA, dimensionB) {
         .ease(cubicInOut);
     delete parcoords.dragging[dimensionA];
     delete parcoords.dragging[dimensionB];
+    cleanTooltipSelect();
+    var selectedRecords = getSelected();
+    selectedRecords.forEach(record => {
+        const path = parcoords.newDataset.find(d => d[hoverlabel] === record);
+        createToolTipForValues(path, true);
+    });
 }
 //---------- Filter Functions ----------
 function getFilter(dimension) {
@@ -7889,8 +7959,14 @@ function setDimensionRangeRounded(dimension, min, max) {
         setYaxis(setupYAxis(parcoords.yScales, parcoords.newDataset, hiddenDims));
     }
     const roundedRanges = parcoords.yScales[dimension].domain();
-    addRange$1(roundedRanges[0], parcoords.currentPosOfDims, dimension, 'currentRangeBottom');
-    addRange$1(roundedRanges[1], parcoords.currentPosOfDims, dimension, 'currentRangeTop');
+    if (inverted) {
+        addRange$1(roundedRanges[1], parcoords.currentPosOfDims, dimension, 'currentRangeBottom');
+        addRange$1(roundedRanges[0], parcoords.currentPosOfDims, dimension, 'currentRangeTop');
+    }
+    else {
+        addRange$1(roundedRanges[0], parcoords.currentPosOfDims, dimension, 'currentRangeBottom');
+        addRange$1(roundedRanges[1], parcoords.currentPosOfDims, dimension, 'currentRangeTop');
+    }
     select('#dimension_axis_' + cleanString(dimension))
         .call(yAxis[dimension])
         .transition()
@@ -7978,6 +8054,12 @@ function invertWoTransition(dimension) {
     else {
         addInvertStatus(false, dimension, "isInverted");
     }
+    cleanTooltipSelect();
+    var selectedRecords = getSelected();
+    selectedRecords.forEach(record => {
+        const path = parcoords.newDataset.find(d => d[hoverlabel] === record);
+        createToolTipForValues(path, true);
+    });
 }
 function setInversionStatus(dimension, status) {
     const cleanDimensionName = cleanString(dimension);
@@ -8021,6 +8103,12 @@ function setInversionStatus(dimension, status) {
     else {
         addInvertStatus(false, dimension, "isInverted");
     }
+    cleanTooltipSelect();
+    var selectedRecords = getSelected();
+    selectedRecords.forEach(record => {
+        const path = parcoords.newDataset.find(d => d[hoverlabel] === record);
+        createToolTipForValues(path, true);
+    });
 }
 function invert(dimension) {
     const cleanDimensionName = cleanString(dimension);
@@ -8057,6 +8145,12 @@ function invert(dimension) {
             return linePath(d, parcoords.newFeatures);
         });
     });
+    cleanTooltipSelect();
+    var selectedRecords = getSelected();
+    selectedRecords.forEach(record => {
+        const path = parcoords.newDataset.find(d => d[hoverlabel] === record);
+        createToolTipForValues(path, true);
+    });
     getFilter(dimension);
     addSettingsForBrushing(dimension, isInverted(dimension));
     if (isInverted(dimension)) {
@@ -8086,6 +8180,10 @@ function setSelection(records) {
                 .classed('selected', true)
                 .transition()
                 .style('stroke', 'rgba(255, 165, 0, 1)');
+            records.forEach(record => {
+                const path = parcoords.newDataset.find(d => cleanString(d[hoverlabel]) === record);
+                createToolTipForValues(path, true);
+            });
         }
     }
 }
@@ -8097,6 +8195,7 @@ function clearSelection() {
             .transition()
             .style('stroke', 'rgba(0, 129, 175, 0.5)');
     });
+    cleanTooltipSelect();
 }
 function toggleSelection(record) {
     const selected = isSelected(record);
@@ -8117,6 +8216,7 @@ function setUnselected(record) {
         .classed('selected', false)
         .transition()
         .style('stroke', 'rgba(0, 129, 175, 0.5)');
+    selectAll(`#tooltip-record-select-${record}`).style('display', 'none');
 }
 function isRecordInactive(record) {
     const stroke = select('#' + cleanString(record));
@@ -8186,7 +8286,7 @@ function getAllVisibleDimensionNames() {
     return listOfDimensions.reverse();
 }
 function getAllDimensionNames() {
-    return parcoords.data['columns'];
+    return columns;
 }
 function getAllHiddenDimensionNames() {
     const dimensions = getAllDimensionNames();
@@ -8239,26 +8339,25 @@ function enableInteractivity() {
     selectAll('.handle-hitbox').style('pointer-events', 'auto');
     selectAll('.hitbox').style('pointer-events', 'auto');
 }
+function setSelectableWidth(width) {
+    setLineThickness(width);
+    let hitarea_active = selectAll('path.hitarea');
+    hitarea_active.each(function (d) {
+        const value = width;
+        select(this).style('stroke-width', value);
+    });
+}
+function getSelectableWith() {
+    return getLineThickness();
+}
 
 // globals
 const TOP_AXIS_LOW_VALUE = 40;
 const TOP_AXIS_VALUE = 50;
 const BOTTOM_AXIS_VALUE = 350;
 const RECT_VALUE = 300;
-let tooltipValues = select('#parallelcoords')
-    .append('div')
-    .style('position', 'absolute')
-    .style('visibility', 'hidden');
-let tooltipValuesTop = select('#parallelcoords')
-    .append('div')
-    .style('position', 'absolute')
-    .style('visibility', 'hidden');
-let tooltipValuesDown = select('#parallelcoords')
-    .append('div')
-    .style('position', 'absolute')
-    .style('visibility', 'hidden');
 // Brushing
-function setRectToDrag(featureAxis) {
+function setRectToDrag(featureAxis, tooltipValuesDown, tooltipValuesTop) {
     let delta;
     featureAxis.each(function (d) {
         const processedDimensionName = cleanString(d.name);
@@ -8271,11 +8370,9 @@ function setRectToDrag(featureAxis) {
             .attr('height', RECT_VALUE)
             .attr('x', -6)
             .attr('y', 50)
-            .attr('fill', 'rgb(242, 242, 76)')
-            .attr('opacity', '0.5')
-            .style('cursor', 'default')
             .call(drag()
             .on('drag', (event, d) => {
+            selectAll('path.hitarea').style('pointer-events', 'none');
             if (parcoords.newFeatures.length > 25) {
                 throttleDragAndBrush(processedDimensionName, d, event, delta, tooltipValuesTop, tooltipValuesDown, window);
             }
@@ -8290,10 +8387,18 @@ function setRectToDrag(featureAxis) {
             .on('end', () => {
             tooltipValuesTop.style('visibility', 'hidden');
             tooltipValuesDown.style('visibility', 'hidden');
+            let active = select('g.active').selectAll('path');
+            let hitarea = selectAll('path.hitarea');
+            active.each(function (d) {
+                const isActive = select(this).style('stroke');
+                if (isActive === 'rgba(0, 129, 175, 0.5)') {
+                    hitarea.filter(d => d[hoverlabel] === this.id).style('pointer-events', 'stroke');
+                }
+            });
         }));
     });
 }
-function setBrushUp(featureAxis, brushOverlay) {
+function setBrushUp(featureAxis, brushOverlay, tooltipValues) {
     featureAxis.each(function (d) {
         const processedDimensionName = cleanString(d.name);
         const g = select(this).append('g').attr('class', 'brush_' + processedDimensionName);
@@ -8313,11 +8418,6 @@ function setBrushUp(featureAxis, brushOverlay) {
             .attr('y', BOTTOM_AXIS_VALUE)
             .attr('width', 30)
             .attr('height', 30)
-            .style('fill', 'transparent')
-            .style('pointer-events', 'all')
-            .style('touch-action', 'none')
-            .style('-webkit-user-select', 'none')
-            .style('user-select', 'none')
             .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopCursor()), 13)}') 8 8, auto`);
         const makeDrag = () => drag()
             .container(function () { return this.ownerSVGElement || this; })
@@ -8351,7 +8451,7 @@ function setBrushUp(featureAxis, brushOverlay) {
         hit.call(makeDrag());
     });
 }
-function setBrushDown(featureAxis, brushOverlay) {
+function setBrushDown(featureAxis, brushOverlay, tooltipValues) {
     featureAxis.each(function (d) {
         const processedDimensionName = cleanString(d.name);
         const g = select(this).append('g').attr('class', 'brush_' + processedDimensionName);
@@ -8371,11 +8471,6 @@ function setBrushDown(featureAxis, brushOverlay) {
             .attr('y', TOP_AXIS_LOW_VALUE)
             .attr('width', 30)
             .attr('height', 30)
-            .style('fill', 'transparent')
-            .style('pointer-events', 'all')
-            .style('touch-action', 'none')
-            .style('-webkit-user-select', 'none')
-            .style('user-select', 'none')
             .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowBottomCursor()), 13)}') 8 8, auto`);
         const makeDrag = () => drag()
             .container(function () { return this.ownerSVGElement || this; })
@@ -8488,18 +8583,16 @@ function brushUp(cleanDimensionName, event, d, tooltipValues, window) {
     if (yPosTop == TOP_AXIS_LOW_VALUE && yPosBottom == BOTTOM_AXIS_VALUE) {
         select('#rect_' + cleanDimensionName)
             .attr('href', '#brush_image_top_active')
-            .style('cursor', 'default');
-        select('#rect_' + cleanDimensionName)
-            .attr('fill', 'rgb(234, 234, 40)')
-            .attr('opacity', '0.5');
+            .style('cursor', 'default')
+            .style('fill', 'rgb(234, 234, 40)')
+            .style('opacity', '0.5');
     }
     else {
         select('#rect_' + cleanDimensionName)
             .attr('href', '#brush_image_top_active')
-            .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopAndBottom()), 20)}') 8 8, auto`);
-        select('#rect_' + cleanDimensionName)
-            .attr('fill', 'rgb(255, 255, 0)')
-            .attr('opacity', '0.7');
+            .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowTopAndBottom()), 20)}') 8 8, auto`)
+            .style('fill', 'rgb(255, 255, 0)')
+            .style('opacity', '0.7');
     }
     if (yPosBottom == BOTTOM_AXIS_VALUE) {
         select('#triangle_up_' + cleanDimensionName)
@@ -8669,7 +8762,7 @@ function filter(dimensionName, min, max) {
                 }
             });
             if (!checkedLines.includes(currentLine)) {
-                makeActive(currentLine, 1000);
+                makeActive(currentLine, d, 1000);
             }
         }
     });
@@ -8720,10 +8813,6 @@ function setToolTipBrush(tooltipValues, d, event, window, direction) {
     tooltipValues.text(Math.round(tooltipValue.toPrecision(digs).toLocaleString('en-GB') * 10) / 10);
     tooltipValues.style('visibility', 'visible');
     tooltipValues.style('top', window.event.pageY / 16 + 'rem').style('left', window.event.pageX / 16 + 'rem');
-    tooltipValues.style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
-        .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
-        .style('padding', 0.12 + 'rem').style('white-space', 'pre-line')
-        .style('background-color', 'LightGray').style('margin-left', 0.5 + 'rem');
 }
 function setToolTipDragAndBrush(tooltipValuesTop, tooltipValuesDown, d, window, direction, yPosTop, yPosBottom) {
     const range = parcoords.yScales[d.name].domain();
@@ -8752,10 +8841,6 @@ function setToolTipDragAndBrush(tooltipValuesTop, tooltipValuesDown, d, window, 
         tooltipValuesTop.text(Math.round(tooltipValueTop));
         tooltipValuesTop.style('visibility', 'visible');
         tooltipValuesTop.style('top', Number(yPosTop + 180) / 16 + 'rem').style('left', window.event.pageX / 16 + 'rem');
-        tooltipValuesTop.style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
-            .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
-            .style('padding', 0.12 + 'rem').style('white-space', 'pre-line')
-            .style('background-color', 'LightGray').style('margin-left', 0.5 + 'rem');
     }
     if ((!invertStatus && tooltipValueBottom == minValue) || (invertStatus && tooltipValueBottom == maxValue)) {
         tooltipValuesDown.style('visibility', 'hidden');
@@ -8764,10 +8849,6 @@ function setToolTipDragAndBrush(tooltipValuesTop, tooltipValuesDown, d, window, 
         tooltipValuesDown.text(Math.round(tooltipValueBottom));
         tooltipValuesDown.style('visibility', 'visible');
         tooltipValuesDown.style('top', Number(yPosBottom + 180) / 16 + 'rem').style('left', window.event.pageX / 16 + 'rem');
-        tooltipValuesDown.style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
-            .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
-            .style('padding', 0.12 + 'rem').style('white-space', 'pre-line')
-            .style('background-color', 'LightGray').style('margin-left', 0.5 + 'rem');
     }
 }
 function updateLines(dimension, cleanDimensionName) {
@@ -8827,7 +8908,7 @@ function updateLines(dimension, cleanDimensionName) {
                 }
             });
             if (!checkedLines.includes(currentLine)) {
-                makeActive(currentLine, RECT_VALUE);
+                makeActive(currentLine, d, RECT_VALUE);
             }
         }
         else ;
@@ -8896,7 +8977,7 @@ function checkAllPositionsBottom(positionItem, dimension, d, checkedLines, curre
         }
     }
 }
-function makeActive(currentLineName, duration) {
+function makeActive(currentLineName, record, duration) {
     if (select('.' + currentLineName).classed('selected')) {
         select('.' + currentLineName)
             .text('')
@@ -8906,8 +8987,9 @@ function makeActive(currentLineName, duration) {
         select('#area_' + currentLineName)
             .style('pointer-events', 'stroke')
             .style('stroke', 'transparent')
-            .style('stroke-width', '0.4rem')
+            .style('stroke-width', getLineThickness() + 'rem')
             .text('');
+        createToolTipForValues(record, true);
     }
     else if (select('.' + currentLineName).classed('colored')) {
         let color = select('.' + currentLineName).property('clusterColor');
@@ -8919,7 +9001,7 @@ function makeActive(currentLineName, duration) {
         select('#area_' + currentLineName)
             .style('pointer-events', 'stroke')
             .style('stroke', 'transparent')
-            .style('stroke-width', '0.4rem')
+            .style('stroke-width', getLineThickness() + 'rem')
             .text('');
     }
     else {
@@ -8931,7 +9013,7 @@ function makeActive(currentLineName, duration) {
         select('#area_' + currentLineName)
             .style('pointer-events', 'stroke')
             .style('stroke', 'transparent')
-            .style('stroke-width', '0.4rem')
+            .style('stroke-width', getLineThickness() + 'rem')
             .text('');
     }
 }
@@ -8942,13 +9024,15 @@ function makeInactive(currentLineName, dimension, duration) {
         .text(dimension)
         .transition()
         .duration(duration)
-        .style('stroke', 'rgba(211, 211, 211, 0.4');
+        .style('stroke', 'rgba(211, 211, 211, 0.4')
+        .style('pointer-events', 'none');
+    selectAll(`#tooltip-record-select-${currentLineName}`).style('display', 'none');
     hitline
         .text(dimension)
         .transition()
         .duration(duration)
-        .style('stroke', 'rgba(211, 211, 211, 0.4')
-        .style('stroke-width', '0.12rem')
+        .style('stroke', 'transparent')
+        .style('stroke-width', getLineThickness() + 'rem')
         .on('end', function () {
         select(this).style('pointer-events', 'none');
     });
@@ -9004,8 +9088,14 @@ function addSettingsForBrushing(dimension, invertStatus) {
         select('#triangle_up_' + processedName)
             .attr('href', '#brush_image_top_active');
     }
-    addPosition(top, dimension, 'top');
-    addPosition(bottom, dimension, 'bottom');
+    if (isDimensionCategorical(dimension)) {
+        addPosition(bottom, dimension, 'top');
+        addPosition(top, dimension, 'bottom');
+    }
+    else {
+        addPosition(top, dimension, 'top');
+        addPosition(bottom, dimension, 'bottom');
+    }
 }
 function getInvertStatus(key) {
     const item = parcoords.currentPosOfDims.find((object) => object.key == key);
@@ -9054,9 +9144,7 @@ function setToolTipsOnFeatureAxis(featureAxis) {
     let tooltipFeatures = select('body')
         .append('div')
         .attr('id', 'tooltip')
-        .style('position', 'absolute')
-        .style('pointer-events', 'none')
-        .style('visibility', 'hidden');
+        .attr('class', 'tooltip-dimension');
     featureAxis
         .append('text')
         .attr('class', 'dimension')
@@ -9078,14 +9166,7 @@ function setToolTipsOnFeatureAxis(featureAxis) {
         tooltipFeatures.text(d.name);
         tooltipFeatures
             .style("left", x / 16 + 'rem')
-            .style("top", y / 16 + 'rem')
-            .style('font-size', '0.75rem')
-            .style('border', 0.08 + 'rem solid gray')
-            .style('border-radius', 0.1 + 'rem')
-            .style('margin', 0.5 + 'rem')
-            .style('padding', 0.12 + 'rem')
-            .style('background-color', 'lightgrey')
-            .style('margin-left', 0.5 + 'rem');
+            .style("top", y / 16 + 'rem');
         return tooltipFeatures;
     })
         .on('mouseout', function () {
@@ -9116,8 +9197,7 @@ function showAllMenu() {
 }
 function resetFilterMenu(dimension) {
     if (isDimensionCategorical(dimension)) {
-        select('#resetfilterMenu')
-            .style('color', 'lightgrey');
+        select('#resetfilterMenu').style('color', 'lightgrey');
         return;
     }
     select('#resetfilterMenu')
@@ -9192,6 +9272,7 @@ function handleFilterButton(dimension) {
     const ranges = getDimensionRange(dimension);
     const minRange = Number(inverted ? ranges[1] : ranges[0]);
     const maxRange = Number(inverted ? ranges[0] : ranges[1]);
+    select('#infoFilter').text(`Set a filter between ${minRange} and ${maxRange}.`);
     if (max < min) {
         max = maxRange;
         errorMessage.text(`Max value is smaller than min value, filter is set to 
@@ -9214,7 +9295,7 @@ function handleFilterButton(dimension) {
     }
     else if (max < minRange) {
         max = minRange;
-        select('#errorFilter').text(`Max value is smaller than min range value, 
+        errorMessage.text(`Max value is smaller than min range value, 
       filter is set to min.`);
     }
     else {
@@ -9266,11 +9347,12 @@ function setRangeMenu(dimension) {
         return;
     }
     rangeMenu.style('visibility', 'visible')
-        .style('color', 'black')
-        .on('click', (event) => {
+        .style('color', 'black');
+    rangeMenu.on('click', (event) => {
         handleRangeButton(dimension);
         select('#closeButtonRange').on('click', () => {
             select('#modalSetRange').style('display', 'none');
+            select('#errorRange').style('display', 'none');
             select('#modalOverlaySetRange').style('display', 'none');
         });
         select('#contextmenu').style('display', 'none');
@@ -9284,6 +9366,7 @@ function handleRangeButton(dimension) {
     let resultMax = (maxRange - Math.floor(maxRange)) !== 0;
     let minValue = String(minRange);
     let maxValue = String(maxRange);
+    let errorMessage = select('#errorRange');
     if (resultMin && !resultMax) {
         const count = minValue.split('.')[1].length;
         maxValue = maxRange.toFixed(count);
@@ -9311,32 +9394,25 @@ function handleRangeButton(dimension) {
         if (inverted) {
             if (max < getMinValue(dimension) ||
                 min > getMaxValue(dimension)) {
-                select('#errorRange').text(`The range has to be bigger than ${minValue} and ${maxValue}.`)
-                    .style('display', 'block')
-                    .style('padding-left', 0.5 + 'rem')
-                    .style('padding-top', 0.5 + 'rem')
-                    .style('color', 'red')
-                    .style('font-size', 'x-small');
+                errorMessage.text(`The range has to be bigger than ${minValue} and smaller than ${maxValue}.`);
                 isOk = false;
             }
         }
         else {
             if (min > getMinValue(dimension) ||
                 max < getMaxValue(dimension)) {
-                select('#errorRange').text(`The range has to be bigger than ${minValue} and ${maxValue}.`)
-                    .style('display', 'block')
-                    .style('padding-left', 0.5 + 'rem')
-                    .style('padding-top', 0.5 + 'rem')
-                    .style('color', 'red')
-                    .style('font-size', 'x-small');
+                errorMessage.text(`The range has to be smaller than ${minValue} and bigger than ${maxValue}.`);
                 isOk = false;
             }
         }
         if (isOk) {
-            select('#errorRange').style('display', 'none');
             setDimensionRange(dimension, min, max);
+            errorMessage.style('display', 'none');
             select('#modalSetRange').style('display', 'none');
             select('#modalOverlaySetRange').style('display', 'none');
+        }
+        else {
+            errorMessage.style('display', 'block');
         }
     });
     select('#maxRangeValue').on('keypress', (event) => {
@@ -9378,11 +9454,6 @@ function styleContextMenu(event) {
         .style('left', x + 'px')
         .style('top', y + 'px')
         .style('display', 'block')
-        .style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
-        .style('border-radius', 0.3 + 'rem').style('margin', 0.5 + 'rem')
-        .style('padding', 0.35 + 'rem')
-        .style('background-color', 'white').style('margin-left', 0.5 + 'rem')
-        .style('cursor', 'pointer').style('minWidth', 15 + 'rem')
         .on('click', (event) => {
         event.stopPropagation();
     });
@@ -9468,6 +9539,12 @@ function onDragEndEventHandler(featureAxis) {
                 select(this)
                     .attr('d', linePath(d, parcoords.newFeatures));
             });
+            cleanTooltipSelect();
+            var selectedRecords = getSelected();
+            selectedRecords.forEach(record => {
+                const path = parcoords.newDataset.find(d => d[hoverlabel] === record);
+                createToolTipForValues(path, true);
+            });
         };
     }
 }
@@ -9484,6 +9561,7 @@ function scroll(d) {
 function createContextMenu() {
     let contextMenu = select('#parallelcoords')
         .append('g')
+        .attr('class', 'contextmenu-dimensions')
         .attr('id', 'contextmenu')
         .style('position', 'absolute')
         .style('display', 'none');
@@ -9536,31 +9614,16 @@ function createContextMenu() {
 function createModalToSetRange() {
     select('body')
         .append('div')
-        .attr('id', 'modalOverlaySetRange')
-        .style('position', 'fixed')
-        .style('top', '0')
-        .style('left', '0')
-        .style('width', '100vw')
-        .style('height', '100vh')
-        .style('background-color', 'rgba(0, 0, 0, 0.5)')
-        .style('display', 'none')
-        .style('z-index', '999');
+        .attr('class', 'modal-overlay')
+        .attr('id', 'modalOverlaySetRange');
     select('#modalOverlaySetRange').on('click', () => {
         select('#modalSetRange').style('display', 'none');
         select('#modalOverlaySetRange').style('display', 'none');
     });
     const modalSetRange = select('body')
         .append('div')
+        .attr('class', 'modal')
         .attr('id', 'modalSetRange')
-        .style('position', 'fixed')
-        .style('top', '50%')
-        .style('left', '50%')
-        .style('transform', 'translate(-50%, -50%)')
-        .style('z-index', '1000')
-        .style('background-color', 'white')
-        .style('padding', '1rem')
-        .style('border-radius', '0.5rem')
-        .style('box-shadow', '0 0.25rem 0.625rem rgba(0,0,0,0.2)')
         .style('display', 'none');
     createModalTitle(modalSetRange, 'Set Range for ');
     createCloseButton(modalSetRange, 'closeButtonRange');
@@ -9576,35 +9639,21 @@ function createModalToSetRange() {
 function createModalToFilter() {
     select('body')
         .append('div')
-        .attr('id', 'modalOverlayFilter')
-        .style('position', 'fixed')
-        .style('top', '0')
-        .style('left', '0')
-        .style('width', '100vw')
-        .style('height', '100vh')
-        .style('background-color', 'rgba(0, 0, 0, 0.5)')
-        .style('display', 'none')
-        .style('z-index', '999');
+        .attr('class', 'modal-overlay')
+        .attr('id', 'modalOverlayFilter');
     select('#modalOverlayFilter').on('click', () => {
         select('#modalFilter').style('display', 'none');
         select('#modalOverlayFilter').style('display', 'none');
     });
     const modalFilter = select('body')
         .append('div')
+        .attr('class', 'modal')
         .attr('id', 'modalFilter')
-        .style('position', 'fixed')
-        .style('top', '50%')
-        .style('left', '50%')
-        .style('transform', 'translate(-50%, -50%)')
-        .style('z-index', '1000')
-        .style('background-color', 'white')
-        .style('padding', '1rem')
-        .style('border-radius', '0.5rem')
-        .style('box-shadow', '0 0.25rem 0.625rem rgba(0,0,0,0.2)')
         .style('display', 'none');
     createModalTitle(modalFilter, 'Set Filter for ');
     createCloseButton(modalFilter, 'closeButtonFilter');
     createHeader(modalFilter, 'headerDimensionFilter');
+    createInfoMessage(modalFilter, 'infoFilter');
     createInputFieldWithLabel(modalFilter, 'Min', 'minFilterValue');
     createInputFieldWithLabel(modalFilter, 'Max', 'maxFilterValue');
     createButton(modalFilter, 'buttonFilter');
@@ -9612,72 +9661,136 @@ function createModalToFilter() {
 }
 function createModalTitle(modal, modalTitel) {
     const title = document.createElement('div');
+    title.className = 'modal-title';
     title.textContent = modalTitel;
-    title.style.paddingLeft = '0.5rem';
-    title.style.fontSize = 'large';
     modal.append(() => title);
 }
 function createHeader(modal, id) {
     const header = document.createElement('div');
     header.id = id;
-    header.style.paddingLeft = '0.5rem';
-    header.style.fontSize = 'large';
+    header.className = 'modal-title';
     modal.append(() => header);
 }
 function createInfoMessage(modal, id) {
     const infoMessage = document.createElement('div');
     infoMessage.id = id;
-    infoMessage.style.color = 'grey';
-    infoMessage.style.fontSize = 'smaller';
-    infoMessage.style.paddingLeft = '0.5rem';
-    infoMessage.style.paddingBottom = '0.5rem';
-    infoMessage.style.paddingTop = '1rem';
+    infoMessage.className = 'modal-notes';
     modal.append(() => infoMessage);
 }
 function createInputFieldWithLabel(modal, text, inputId) {
     const label = document.createElement('label');
+    label.className = 'modal-label';
     label.textContent = text;
-    label.style.padding = '0.5rem';
     modal.append(() => label);
     const input = document.createElement('input');
+    input.className = 'modal-input';
     input.type = 'number';
     input.id = inputId;
-    input.style.width = '4.5rem';
-    input.style.border = '0.1rem solid lightgrey';
-    input.style.borderRadius = "5%";
     modal.append(() => input);
 }
 function createButton(modal, id) {
     const button = document.createElement('button');
+    button.className = 'save-button';
     button.id = id;
     button.textContent = 'Save';
-    button.style.marginLeft = '0.5rem';
-    button.style.marginTop = '1rem';
-    button.style.width = '6.2rem';
     modal.append(() => button);
 }
 function createCloseButton(modal, id) {
     const closeButton = document.createElement('span');
+    closeButton.className = 'close-button';
     closeButton.id = id;
     closeButton.innerHTML = '&times;';
-    closeButton.style.position = 'absolute';
-    closeButton.style.top = '0.625rem';
-    closeButton.style.right = '0.938rem';
-    closeButton.style.cursor = 'pointer';
-    closeButton.style.fontWeight = 'bold';
-    closeButton.style.fontSize = '1.25rem';
     modal.append(() => closeButton);
 }
 function createErrorMessage(modal, id) {
     const errorMessage = document.createElement('div');
+    errorMessage.className = 'modal-errormessage';
     errorMessage.id = id;
-    errorMessage.style.position = 'relative';
-    errorMessage.style.display = 'none';
-    errorMessage.style.paddingLeft = 0.5 + 'rem';
-    errorMessage.style.paddingTop = 0.5 + 'rem';
-    errorMessage.style.color = 'red';
-    errorMessage.style.fontSize = 'x-small';
     modal.append(() => errorMessage);
+}
+function createContextMenuForRecords() {
+    let contextMenu = select('#parallelcoords')
+        .append('g')
+        .attr('class', 'contextmenu-records')
+        .attr('id', 'contextmenuRecords')
+        .style('position', 'absolute')
+        .style('display', 'none');
+    createContextMenuItem(contextMenu, 'selectRecord', 'contextmenu', 'Select Record', 'Select Record(s)');
+    createContextMenuItem(contextMenu, 'unSelectRecord', 'contextmenu', 'Unselect Record', 'Unselect Record(s)');
+    createContextMenuItem(contextMenu, 'toggleRecord', 'contextmenu', 'Toggle Record', 'Toggle Record(s)');
+    createContextMenuItem(contextMenu, 'addSelection', 'contextmenu', 'Add to Selection', 'Add to Selection');
+    createContextMenuItem(contextMenu, 'removeSelection', 'contextmenu', 'Remove from Selection', 'Remove from Selection');
+    return contextMenu;
+}
+function createContextMenuItem(contextMenu, id, className, text, title) {
+    contextMenu.append('div')
+        .attr('id', id)
+        .attr('class', className)
+        .attr('title', title)
+        .text(text);
+}
+function handleRecordContextMenu(contextMenu, event, d) {
+    const container = document.querySelector("#parallelcoords");
+    const rect = container.getBoundingClientRect();
+    const data = getAllPointerEventsData(event);
+    const cleanedItems = data.map((item) => cleanString(item).replace(/[.,]/g, ''));
+    if (cleanedItems.length > 1) {
+        select('#selectRecord').text('Select Records');
+        select('#unSelectRecord').text('Unselect Records');
+        select('#toggleRecord').text('Toggle Records');
+    }
+    else {
+        select('#selectRecord').text('Select Record');
+        select('#unSelectRecord').text('Unselect Record');
+        select('#toggleRecord').text('Toggle Record');
+    }
+    const x = (event.clientX - rect.left) / 16;
+    const y = (event.clientY - rect.top) / 16;
+    contextMenu
+        .style('left', x + 'rem')
+        .style('top', y + 'rem')
+        .style('display', 'block')
+        .on('click', (event) => {
+        event.stopPropagation();
+    });
+    select('#selectRecord').on('click', (event) => {
+        setSelection(cleanedItems);
+        event.stopPropagation();
+        select('#contextmenuRecords').style('display', 'none');
+    });
+    select('#unSelectRecord').on('click', (event) => {
+        cleanedItems.forEach(item => {
+            setUnselected(item);
+        });
+        event.stopPropagation();
+        select('#contextmenuRecords').style('display', 'none');
+    });
+    select('#toggleRecord').style('border-top', '0.08rem lightgrey solid')
+        .on('click', (event) => {
+        cleanedItems.forEach(item => {
+            toggleSelection(item);
+        });
+        event.stopPropagation();
+        select('#contextmenuRecords').style('display', 'none');
+    });
+    select('#addSelection').style('border-top', '0.08rem lightgrey solid')
+        .on('click', (event) => {
+        let selectedRecords = [];
+        selectedRecords = getSelected();
+        const records = [...selectedRecords, ...cleanedItems];
+        setSelection(records);
+        event.stopPropagation();
+        select('#contextmenuRecords').style('display', 'none');
+    });
+    select('#removeSelection').on('click', (event) => {
+        cleanedItems.forEach(item => {
+            setUnselected(item);
+        });
+        event.stopPropagation();
+        select('#contextmenuRecords').style('display', 'none');
+    });
+    selectAll('.contextmenu').style('padding', 0.35 + 'rem');
+    event.preventDefault();
 }
 
 var cjsExports$1 = {};
@@ -10172,8 +10285,8 @@ function setFeatureAxisToDownload(svg, yAxis, yScales, xScales) {
         const processedDimensionName = cleanString(d.name);
         const max = getCurrentMaxRange(d.name);
         const min = getCurrentMinRange(d.name);
+        const inversionStatus = getInversionStatus(d.name);
         if (!isDimensionCategorical(d.name)) {
-            const inversionStatus = getInversionStatus(d.name);
             if (inversionStatus === 'ascending') {
                 yScales[d.name].domain([min, max]);
                 yAxis = setupYAxis(yScales, parcoords.newDataset, hiddenDims);
@@ -10196,9 +10309,18 @@ function setFeatureAxisToDownload(svg, yAxis, yScales, xScales) {
             }
         }
         else {
-            select(this)
-                .attr('id', 'dimension_axis_' + processedDimensionName)
-                .call(yAxis[d.name]);
+            if (inversionStatus === 'ascending') {
+                select(this)
+                    .attr('id', 'dimension_axis_' + processedDimensionName)
+                    .call(yAxis[d.name]);
+            }
+            else {
+                const scale = yScales[d.name];
+                scale.domain([...scale.domain()].reverse());
+                select(this)
+                    .attr('id', 'dimension_axis_' + processedDimensionName)
+                    .call(yAxis[d.name]);
+            }
         }
     });
     featureAxis
@@ -10294,7 +10416,7 @@ function createSvgString() {
     const hiddenDims = getAllHiddenDimensionNames();
     let yScalesForDownload = setupYScales(parcoords.features, parcoords.newDataset);
     let yAxisForDownload = setupYAxis(yScalesForDownload, parcoords.newDataset, hiddenDims);
-    let xScalesForDownload = setupXScales(orderedFeatures);
+    let xScalesForDownload = setupXScales(orderedFeatures, parcoords.newDataset);
     let svg = create$1('svg')
         .attr("xmlns", "http://www.w3.org/2000/svg")
         .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
@@ -10352,115 +10474,69 @@ function saveAsSvg() {
 function setOptionsAndDownload(svgString) {
     let name = 'parcoords.svg';
     const modalOverlay = document.createElement('div');
-    modalOverlay.style.position = 'fixed';
-    modalOverlay.style.top = '0';
-    modalOverlay.style.left = '0';
-    modalOverlay.style.width = '100vw';
-    modalOverlay.style.height = '100vh';
-    modalOverlay.style.backgroundColor = 'rgba(0,0,0,0.5)';
-    modalOverlay.style.display = 'flex';
-    modalOverlay.style.justifyContent = 'center';
-    modalOverlay.style.alignItems = 'center';
-    modalOverlay.style.zIndex = '9999';
+    modalOverlay.className = 'modal-overlay';
+    modalOverlay.style.display = 'block';
     const modal = document.createElement('div');
-    modal.style.backgroundColor = 'white';
-    modal.style.padding = '0';
-    modal.style.border = '0.08rem solid gray';
-    modal.style.borderRadius = '0.5rem';
-    modal.style.boxShadow = '0 0 0.625rem rgba(0,0,0,0.3)';
-    modal.style.textAlign = 'center';
-    modal.style.minWidth = '18rem';
-    const fakeheader = document.createElement('div');
-    fakeheader.style.height = '0.4rem';
-    fakeheader.style.background = 'lightgrey';
-    fakeheader.style.borderTopLeftRadius = '0.5rem';
-    fakeheader.style.borderTopRightRadius = '0.5rem';
-    modal.append(fakeheader);
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.style.width = '30vw';
+    const header = document.createElement('div');
+    header.className = 'modal-header';
+    header.style.paddingLeft = '0';
     const title = document.createElement('div');
     title.textContent = 'Download Chart (SVG)';
-    title.style.padding = '0.5rem';
-    title.style.marginBottom = '0.5rem';
-    title.style.background = 'lightgrey';
-    title.style.textAlign = 'left';
+    title.className = 'modal-title';
+    title.style.paddingLeft = '0';
     const closeButton = document.createElement('span');
     closeButton.innerHTML = '&times;';
-    closeButton.style.padding = '0.5rem';
-    closeButton.style.marginBottom = '0.5rem';
-    closeButton.style.marginLeft = '9rem';
-    closeButton.style.cursor = 'pointer';
-    closeButton.style.fontWeight = 'bold';
-    closeButton.style.fontSize = '1.25rem';
-    closeButton.style.textAlign = 'right';
-    title.append(closeButton);
-    modal.append(title);
+    closeButton.className = 'close-button';
+    modal.appendChild(title);
+    modal.appendChild(closeButton);
+    modal.appendChild(header);
     const form = document.createElement('div');
-    form.style.display = 'flex';
-    form.style.flexDirection = 'column';
-    form.style.gap = '1rem';
+    form.className = 'form';
     const rowDecimals = document.createElement('div');
-    rowDecimals.style.display = 'flex';
-    rowDecimals.style.alignItems = 'center';
-    rowDecimals.style.justifyContent = 'space-between';
+    rowDecimals.className = 'options-div';
     const label = document.createElement('label');
+    label.className = 'label';
     label.textContent = 'Decimals places (0-10): ';
-    label.style.padding = '0.35rem';
-    label.style.textAlign = 'left';
-    label.style.flex = '1';
     label.htmlFor = 'decimalsInput';
     const input = document.createElement('input');
-    input.style.marginRight = '0.45rem';
+    input.className = 'input';
     input.type = 'number';
     input.min = '0';
     input.max = '10';
     input.value = '2';
     input.id = 'decimalsInput';
-    input.style.width = '3.125rem';
     rowDecimals.appendChild(label);
     rowDecimals.appendChild(input);
     const rowKeepClasses = document.createElement('div');
-    rowKeepClasses.style.display = 'flex';
-    rowKeepClasses.style.alignItems = 'center';
-    rowKeepClasses.style.justifyContent = 'space-between';
+    rowKeepClasses.className = 'options-div';
     const labelKeepClasses = document.createElement('label');
+    labelKeepClasses.className = 'label';
     labelKeepClasses.textContent = 'Keep classes: ';
-    labelKeepClasses.style.padding = '0.35rem';
-    labelKeepClasses.style.flex = '1';
-    labelKeepClasses.style.textAlign = 'left';
-    labelKeepClasses.style.marginRight = '0.5rem';
     const inputKeepClasses = document.createElement('input');
+    inputKeepClasses.className = 'input';
     inputKeepClasses.type = 'checkbox';
     inputKeepClasses.id = 'keepClassesInput';
-    inputKeepClasses.style.marginRight = '0.45rem';
-    inputKeepClasses.style.verticalAlign = 'middle';
     inputKeepClasses.checked = true;
     rowKeepClasses.appendChild(labelKeepClasses);
     rowKeepClasses.appendChild(inputKeepClasses);
     const rowRemoveUiControls = document.createElement('div');
-    rowRemoveUiControls.style.display = 'flex';
-    rowRemoveUiControls.style.alignItems = 'center';
-    rowRemoveUiControls.style.justifyContent = 'space-between';
+    rowRemoveUiControls.className = 'options-div';
     const labelRemoveUiControls = document.createElement('label');
+    labelRemoveUiControls.className = 'label';
     labelRemoveUiControls.textContent = 'Download without UI controls: ';
-    labelRemoveUiControls.style.padding = '0.35rem';
-    labelRemoveUiControls.style.flex = '1';
-    labelRemoveUiControls.style.textAlign = 'left';
-    labelRemoveUiControls.style.marginRight = '0.5rem';
     const inputRemoveUiControls = document.createElement('input');
+    inputRemoveUiControls.className = 'input';
     inputRemoveUiControls.type = 'checkbox';
     inputRemoveUiControls.id = 'removeUiControlsInput';
-    inputRemoveUiControls.style.marginRight = '0.45rem';
-    inputRemoveUiControls.style.verticalAlign = 'middle';
     inputRemoveUiControls.checked = true;
     rowRemoveUiControls.appendChild(labelRemoveUiControls);
     rowRemoveUiControls.appendChild(inputRemoveUiControls);
     const button = document.createElement('button');
     button.textContent = 'Download';
-    button.style.cursor = 'pointer';
-    button.style.marginLeft = '0.5rem';
-    button.style.marginTop = '0.4rem';
-    button.style.marginBottom = '0.5rem';
-    button.style.marginRight = '0.5rem';
-    button.style.display = 'block';
+    button.className = 'generic-button';
     form.appendChild(rowDecimals);
     form.appendChild(rowKeepClasses);
     form.appendChild(rowRemoveUiControls);
@@ -10534,12 +10610,7 @@ function createToolbar(dataset) {
     });
     const toolbar = toolbarRow.append('div')
         .attr('id', 'toolbar')
-        .style('display', 'flex')
-        .style('overflow', 'hidden')
-        .style('max-width', '0')
-        .style('opacity', '0')
-        .style('transition', 'max-width 0.3s ease, opacity 0.3s ease')
-        .style('pointer-events', 'none');
+        .attr('class', 'toolbar');
     makeIconButton(toolbar, {
         iconHtml: getTableIcon(),
         tipText: 'Show Table',
@@ -10571,69 +10642,28 @@ function createToolbar(dataset) {
             .style('pointer-events', isExpanded ? 'auto' : 'none')
             .style('overflow', isExpanded ? 'visible' : 'hidden');
         toggleTip.text(isExpanded ? 'Collapse Toolbar' : 'Expand Toolbar');
-        toggleButton.select('.btn-icon').html(isExpanded ? getCollapseToolbarIcon() : getExpandToolbarIcon());
-        toggleButton.select('.btn-icon').selectAll('svg')
-            .style('display', 'block')
-            .style('width', '1em')
-            .style('height', '1em');
+        const currentIcon = isExpanded ? getCollapseToolbarIcon() : getExpandToolbarIcon();
+        toggleButton.select('#toggleButtonicon').html(currentIcon);
     });
 }
 function makeIconButton(parent, opts) {
     const { id, iconHtml, tipText, onClick } = opts;
     const btn = parent.append('button')
+        .attr('class', 'toolbar-button')
         .attr('type', 'button')
-        .attr('id', id ?? null)
-        .style('position', 'relative')
-        .style('display', 'inline-flex')
-        .style('align-items', 'center')
-        .style('justify-content', 'center')
-        .style('box-sizing', 'border-box')
-        .style('vertical-align', 'middle')
-        .style('margin', '0')
-        .style('line-height', '1')
-        .style('border', 'none')
-        .style('border-radius', '10%')
-        .style('padding', '0')
-        .style('width', '1.8em')
-        .style('height', '1.8em')
-        .style('cursor', 'pointer')
-        .style('overflow', 'visible');
+        .attr('id', id ?? null);
     if (onClick)
         btn.on('click', onClick);
     btn.append('span')
-        .attr('class', 'btn-icon')
+        .attr('class', 'toolbar-buttonicon')
         .attr('id', id + 'icon')
-        .style('display', 'inline-flex')
-        .style('align-items', 'center')
-        .style('justify-content', 'center')
-        .style('width', '1em')
-        .style('height', '1em')
-        .style('pointer-events', 'none')
         .html(iconHtml);
     btn.select('.btn-icon').selectAll('svg')
-        .style('display', 'block')
-        .style('width', '1em')
-        .style('height', '1em');
+        .attr('class', 'toolbar-svg');
     const tip = btn.append('span')
-        .attr('class', 'btn-tip')
+        .attr('class', 'toolbar-buttontip')
         .attr('id', id + 'tip')
-        .text(tipText ?? '')
-        .style('position', 'absolute')
-        .style('left', '70%')
-        .style('top', 'calc(100% + 0.5rem)')
-        .style('transform', 'translateX(-50%)')
-        .style('background', 'lightgrey')
-        .style('padding', '0.2rem')
-        .style('border', '0.0625rem solid gray')
-        .style('border-radius', '0.2rem')
-        .style('white-space', 'nowrap')
-        .style('font-size', '0.75rem')
-        .style('line-height', '1.2')
-        .style('pointer-events', 'none')
-        .style('opacity', '0')
-        .style('visibility', 'hidden')
-        .style('transition', 'opacity .15s ease')
-        .style('z-index', '99999');
+        .text(tipText ?? '');
     function show() { tip.style('opacity', '1').style('visibility', 'visible'); }
     function hide() { tip.style('opacity', '0').style('visibility', 'hidden'); }
     btn.on('mouseenter', show)
@@ -10645,44 +10675,20 @@ function makeIconButton(parent, opts) {
 function showModalWithData(dataset) {
     const overlay = select('body')
         .append('div')
-        .attr('id', 'modalTableOverlay')
-        .style('position', 'fixed')
-        .style('top', 0)
-        .style('left', 0)
-        .style('width', '100vw')
-        .style('height', '100vh')
-        .style('background-color', 'rgba(0, 0, 0, 0.5)')
-        .style('z-index', '999')
-        .style('display', 'block');
+        .attr('class', 'modal-tableoverlay')
+        .attr('id', 'modalTableOverlay');
     overlay.on('click', () => {
         overlay.style('display', 'none');
         modal.style('display', 'none');
     });
     const modal = select('body')
         .append('div')
-        .attr('id', 'dataModal')
-        .style('top', '50%')
-        .style('left', '50%')
-        .style('transform', 'translate(-50%, -50%)')
-        .style('position', 'fixed')
-        .style('background', 'white')
-        .style('padding', '1rem')
-        .style('box-shadow', '0 0 0.625rem rgba(0, 0, 0, 0.3)')
-        .style('border', '0.08rem solid gray')
-        .style('border-radius', '0.5rem')
-        .style('max-height', '80vh')
-        .style('max-width', '90vw')
-        .style('z-index', '1000')
-        .style('display', 'flex')
-        .style('flex-direction', 'column')
-        .style('overflow', 'hidden');
+        .attr('class', 'modal-tabledata')
+        .attr('id', 'dataModal');
     const saveAsCSV = document.createElement('button');
+    saveAsCSV.className = 'save-csv-button';
     saveAsCSV.id = 'saveAsCsv';
     saveAsCSV.textContent = 'Download as CSV';
-    saveAsCSV.style.marginBottom = '3rem';
-    saveAsCSV.style.alignSelf = 'flex-start';
-    saveAsCSV.style.width = 'auto';
-    saveAsCSV.style.display = 'inline-block';
     modal.append(() => saveAsCSV);
     saveAsCSV.addEventListener('click', () => {
         const reservedArray = dataset.map((entry) => {
@@ -10692,24 +10698,18 @@ function showModalWithData(dataset) {
         downloadCSV(reservedArray);
     });
     const closeButton = document.createElement('span');
+    closeButton.className = 'close-button';
     closeButton.innerHTML = '&times;';
-    closeButton.style.position = 'absolute';
-    closeButton.style.top = '0.625rem';
-    closeButton.style.right = '0.938rem';
-    closeButton.style.cursor = 'pointer';
-    closeButton.style.fontWeight = 'bold';
-    closeButton.style.fontSize = '1.25rem';
-    closeButton.style.marginBottom = '3rem';
+    closeButton.style.marginBottom = '1rem';
     modal.append(() => closeButton);
+    const dimensionsElement = document.createElement('div');
+    dimensionsElement.textContent = `Dataset has ${numberOfDimensions} dimensions and ${numberOfRecords} records.`;
+    dimensionsElement.style.marginBottom = '1rem';
+    modal.append(() => dimensionsElement);
     const scrollWrapper = document.createElement('div');
-    scrollWrapper.style.flex = '1 1 auto';
-    scrollWrapper.style.minHeight = '0';
-    scrollWrapper.style.overflowY = 'auto';
-    scrollWrapper.style.overflowX = 'auto';
-    scrollWrapper.style.width = '100%';
+    scrollWrapper.className = 'scroll-wrapper';
     const tableContainer = document.createElement('table');
-    tableContainer.style.width = '100%';
-    tableContainer.style.borderCollapse = 'collapse';
+    tableContainer.className = 'tablecontainer';
     scrollWrapper.appendChild(tableContainer);
     modal.append(() => scrollWrapper);
     generateTable(dataset, tableContainer);
@@ -10719,9 +10719,6 @@ function showModalWithData(dataset) {
     });
 }
 function generateTable(dataset, table) {
-    table.innerHTML = '';
-    table.style.borderCollapse = 'collapse';
-    table.style.width = '100%';
     const reservedArray = dataset.map((entry) => {
         const entries = Object.entries(entry).reverse();
         return Object.fromEntries(entries);
@@ -10732,15 +10729,6 @@ function generateTable(dataset, table) {
     headers.forEach(header => {
         const th = document.createElement('th');
         th.innerText = header.charAt(0).toUpperCase() + header.slice(1);
-        th.style.border = '0.063rem solid #ddd';
-        th.style.padding = '0.5rem';
-        th.style.backgroundColor = 'rgb(201, 212, 221)';
-        th.style.position = 'sticky';
-        th.style.top = '0';
-        th.style.zIndex = '1';
-        th.style.whiteSpace = 'nowrap';
-        th.style.overflow = 'hidden';
-        th.style.textOverflow = 'ellipsis';
         const isNumericCol = reservedArray.every((row) => {
             const val = row[header];
             return !isNaN(parseFloat(val)) && isFinite(val);
@@ -10757,8 +10745,6 @@ function generateTable(dataset, table) {
             const td = document.createElement('td');
             const value = obj[key];
             td.innerText = value;
-            td.style.border = '0.063rem solid #ddd';
-            td.style.padding = '0.5rem';
             if (!isNaN(parseFloat(value)) && isFinite(value)) {
                 td.style.textAlign = 'right';
             }
@@ -10796,47 +10782,68 @@ function downloadCSV(dataset, filename = 'data.csv') {
     document.body.removeChild(link);
 }
 
+function styleInject(css, ref) {
+  if ( ref === void 0 ) ref = {};
+  var insertAt = ref.insertAt;
+
+  if (!css || typeof document === 'undefined') { return; }
+
+  var head = document.head || document.getElementsByTagName('head')[0];
+  var style = document.createElement('style');
+  style.type = 'text/css';
+
+  if (insertAt === 'top') {
+    if (head.firstChild) {
+      head.insertBefore(style, head.firstChild);
+    } else {
+      head.appendChild(style);
+    }
+  } else {
+    head.appendChild(style);
+  }
+
+  if (style.styleSheet) {
+    style.styleSheet.cssText = css;
+  } else {
+    style.appendChild(document.createTextNode(css));
+  }
+}
+
+var css_248z$1 = "/*https://useaxentix.com/blog/css/css-reset-complete-guide/*/\r\n\r\n/* ===============================================\r\n   Ultimate Modern CSS Reset\r\n   Based on best practices from Eric Meyer,\r\n   Josh W. Comeau, Andy Bell, and modern standards\r\n   =============================================== */\r\n\r\n/* 1. Use a more-intuitive box-sizing model */\r\n*, *::before, *::after {\r\n  box-sizing: border-box;\r\n}\r\n\r\n/* 2. Remove default margin and padding */\r\n* {\r\n  margin: 0;\r\n  padding: 0;\r\n}\r\n\r\n/* 3. Set core body defaults */\r\nbody {\r\n  min-height: 100vh;\r\n  line-height: 1.5;\r\n  -webkit-font-smoothing: antialiased;\r\n  -moz-osx-font-smoothing: grayscale;\r\n}\r\n\r\n/* 4. Remove list styles on ul, ol elements with a list role */\r\nul[role='list'], ol[role='list'] {\r\n  list-style: none;\r\n}\r\n\r\n/* 5. Set shorter line heights on headings and interactive elements */\r\nh1, h2, h3, h4, button, input, label {\r\n  line-height: 1.1;\r\n}\r\n\r\n/* 6. Balance text wrapping on headings */\r\nh1, h2, h3, h4 {\r\n  text-wrap: balance;\r\n}\r\n\r\n/* 7. Improve text rendering and wrapping */\r\np, h1, h2, h3, h4, h5, h6 {\r\n  overflow-wrap: break-word;\r\n}\r\n\r\np {\r\n  text-wrap: pretty;\r\n}\r\n\r\n/* 8. A elements that don't have a class get default styles */\r\na:not([class]) {\r\n  text-decoration-skip-ink: auto;\r\n  color: currentColor;\r\n}\r\n\r\n/* 9. Make images and media easier to work with */\r\nimg, picture, video, canvas, svg {\r\n  display: block;\r\n}\r\n\r\n/* 10. Inherit fonts for inputs and buttons */\r\ninput, button, textarea, select {\r\n  font: inherit;\r\n}\r\n\r\n/* 11. Make sure textareas without a rows attribute are not tiny */\r\ntextarea:not([rows]) {\r\n  min-height: 10em;\r\n}\r\n\r\n/* 12. Anything that has been anchored to should have extra scroll margin */\r\n:target {\r\n  scroll-margin-block: 5ex;\r\n}\r\n\r\n/* 13. Root stacking context */\r\n#root, #__next {\r\n  isolation: isolate;\r\n}\r\n\r\n/* 14. Enable keyword animations for modern browsers */\r\n@media (prefers-reduced-motion: no-preference) {\r\n  html {\r\n    interpolate-size: allow-keywords;\r\n  }\r\n}\r\n\r\n/* 15. HTML5 display-role reset for older browsers */\r\narticle, aside, details, figcaption, figure,\r\nfooter, header, hgroup, menu, nav, section {\r\n  display: block;\r\n}\r\n\r\n/* 16. Remove quotes from blockquotes and q elements */\r\nblockquote, q {\r\n  quotes: none;\r\n}\r\n\r\nblockquote:before, blockquote:after,\r\nq:before, q:after {\r\n  content: '';\r\n  content: none;\r\n}\r\n\r\n/* 17. Table border collapse */\r\ntable {\r\n  border-collapse: collapse;\r\n  border-spacing: 0;\r\n}\r\n\r\n/* 18. Focus management for accessibility */\r\n:focus-visible {\r\n  outline: 2px solid currentColor;\r\n  outline-offset: 2px;\r\n}\r\n\r\n/* 19. Remove focus outline for mouse users */\r\n:focus:not(:focus-visible) {\r\n  outline: none;\r\n}";
+styleInject(css_248z$1);
+
+var css_248z = "body {\n    font-size: 0.8rem;\n}\n\nheader {\n    display: flex;\n}\n\nbutton {\n    cursor: pointer;\n    background: #f6f6f6;\n    border: 0.08rem solid grey;\n    border-radius: 0.1rem;\n}\n\n.generic-button {\n    margin: 0.5rem auto;\n    padding: 0 0.5rem;\n    display: block;\n}\n\n.save-button {\n    margin-left: 0.5rem;\n    padding: 0 0.5rem;\n    display: inline-block;\n}\n\n.save-csv-button {\n    margin-bottom: 3rem;\n    padding: 0 0.5rem;\n    align-self: flex-start;\n    display: inline-block;\n}\n\n.close-button {\n    position: absolute;\n    top: 0.625rem;\n    right: 0.938rem;\n    font-size: 1.25rem;\n    font-weight: bold;\n}\n\nth {\n    position: sticky;\n    top: 0;\n    border: 0.08rem solid grey;\n    padding: 0.5rem;\n    background-color: rgb(201, 212, 221);\n    white-space: nowrap;\n    overflow: hidden;\n}\n\ntd {\n    border: 0.08rem solid grey;\n    padding: 0.5rem;\n}\n\nimg {\n    display: inline-block;\n}\n\n.form {\n    display: flex;\n    flex-direction: column;\n    gap: 1rem;\n}\n\n.label {\n    padding: 0.35rem;\n    text-align: left;\n    flex: 1;\n}\n\n.input {\n    width: 3.125rem;\n    margin-right: 0.45rem;\n}\n\n.tablecontainer {\n    width: 100%;\n}\n\n#parallelcoords {\n    display: block;\n    width: 100%;\n    text-align: left;\n}\n\n#pc_svg {\n    padding-bottom: 1rem;\n}\n\n.chartWrapper {\n    position: relative;\n    overflow-x: auto;\n    margin-left: 1rem;\n}\n\n.tip-layer{\n    position: absolute;\n    left: 0;\n    top: 0;\n    pointer-events: none;\n}\n\n.dimensions-axis {\n    stroke: black;\n}\n\n.tooltip-values {\n    position: absolute;\n    border: 0.08rem solid grey;\n    border-radius: 0.1rem;\n    margin: 0.5rem;\n    padding: 0.12rem;\n    background-color: lightgrey;\n    visibility: hidden;\n}\n\n.tooltip-record {\n    position: absolute;\n    pointer-events: none;\n    border: none;\n    border-radius: 0.1rem;\n    margin: 0.5rem;\n    padding: 0.12rem;\n    background-color: rgba(211, 211, 211, 0.5);\n    color: red;\n    font-size: 0.65rem;\n    font-weight: bold;\n    z-index: 999;\n}\n\n.tooltip-record-select {\n    position: absolute;\n    pointer-events: none;\n    border: none;\n    border-radius: 0.1rem;\n    margin: 0.5rem;\n    padding: 0.12rem;\n    background-color: rgba(211, 211, 211, 0.5);;\n    color: orange;\n    font-size: 0.65rem;\n    font-weight: bolder;\n    z-index: 999;\n}\n\n.tooltip-label {\n    position: absolute;\n    visibility: hidden;\n    pointer-events: none;\n    background: lightgrey;\n    padding: 0.2rem;\n    border: 0.08rem solid grey;\n    border-radius: 0.1rem;\n    font-size: 0.75rem;\n    z-index: 1000;\n    white-space: pre-line;\n}\n\n.tooltip-dimension {\n    position: absolute;\n    pointer-events: none;\n    border: 0.08rem solid grey;\n    border-radius: 0.1rem;\n    margin: 0.5rem;\n    padding: 0.12rem;\n    background-color: lightgrey;\n    visibility: hidden;\n}\n\n.marker {\n    fill: none;\n    stroke: rgb(228, 90, 15);\n    stroke-width: 0.1rem;\n    opacity: 0;\n}\n\n.rect {\n    fill: rgba(242, 242, 76, 0.5);\n    cursor: default;\n}\n\n.triangle {\n    width: 14;\n    height: 10;\n    pointer-events: none;\n}\n\n.toolbar {\n    display: flex;\n    overflow: hidden;\n    max-width: 0;\n    opacity: 0;\n    transition: max-width 0.3s ease, opacity 0.3s ease;\n    pointer-events: none;\n}\n\n#toolbarRow {\n    display: flex;\n    flex-wrap: wrap;\n    align-items: center;\n    justify-content: flex-start;\n    overflow: visible;\n    padding-left: 1rem;\n}\n\n.toolbar-button {\n    width: 1.4rem;\n    height: 1.4rem;\n    position: relative;\n    display: inline-flex;\n    overflow: visible;\n    border: none;\n    align-items: center;\n    justify-content: center;\n    box-sizing: border-box;\n    vertical-align: middle;\n}\n\n.toolbar-buttonicon {\n    width: 1rem;\n    height: 1rem;\n    display: inline-flex;\n    align-items: center;\n    justify-content: center;\n    pointer-events: none;\n}\n\n.toolbar-buttontip {\n    position: absolute;\n    left: 150%;\n    top: calc(100% + 0.5rem);\n    transform: translateX(-50%);\n    background: lightgrey;\n    padding: 0.2rem;\n    border: 0.08rem solid grey;\n    border-radius: 0.1rem;\n    white-space: nowrap;\n    line-height: 1.2;\n    pointer-events: none;\n    opacity: 0;\n    visibility: hidden;\n    transition: opacity 0.15s ease;\n    z-index: 99999;\n}\n\n.modal-tableoverlay {\n    position: fixed;\n    top: 0;\n    left: 0;\n    width: 100%;\n    height: 100%;\n    background-color: rgba(0, 0, 0, 0.5);\n    z-index: 999;\n    display: block;\n}\n\n.modal-tabledata {\n    top: 50%;\n    left: 50%;\n    transform: translate(-50%, -50%);\n    position: fixed;\n    background: white;\n    padding: 1rem;\n    box-shadow: 0 0 0.625rem rgba(0, 0, 0, 0.3);\n    border: 0.08rem solid grey;\n    border-radius: 0.5rem;\n    max-height: 80vh;\n    max-width: 90vh;\n    z-index: 1000;\n    display: flex;\n    flex-direction: column;\n    overflow: hidden;\n}\n\n.scroll-wrapper {\n    flex: 1 1 auto;\n    min-height: 0;\n    width: 100%;\n    overflow: auto;\n    max-height: 100%; \n}\n\n\n.contextmenu-records {\n    border: 0.08rem solid grey;\n    border-radius: 0.1rem;\n    margin: 0.5rem;\n    padding: 0.35rem;\n    background-color: white;\n    cursor: pointer;\n    z-index: 9999;\n}\n\n.contextmenu-dimensions {\n    border: 0.08rem solid grey;\n    border-radius: 0.1rem;\n    margin: 0.5rem;\n    padding: 0.35rem;\n    background-color: white;\n    cursor: pointer;\n    z-index: 9999;\n}\n\n.modal-overlay {\n    position: fixed;\n    top: 0;\n    left: 0;\n    width: 100%;\n    height: 100%;\n    background-color: rgba(0, 0, 0, 0.5);\n    display: none;\n    z-index: 9999;\n}\n\n.modal {\n    position: fixed;\n    top: 50%;\n    left: 50%;\n    transform: translate(-50%, -50%);\n    z-index: 9999;\n    background-color: white;\n    padding: 1rem;\n    border-radius: 0.5rem;\n    box-shadow: 0 0.25rem 0.625rem rgba(0,0,0,0.2);\n    display: none;\n}\n\n.modal-header {\n    display: flex;\n    justify-content: space-between;\n    align-items: center;\n    padding: 0.75rem 1rem;\n}\n\n.modal-title {\n    padding-left: 0.5rem;\n    font-size: large;\n}\n\n.modal-content {\n    min-width: 10rem;\n    position: relative;\n}\n\n.modal-info {\n    margin-top: 0.15rem;\n    padding: 0.5rem;\n}\n\n.modal-notes {\n    color: grey;\n    font-size: smaller;\n    padding: 1rem 0 0.5rem 0.5rem;\n}\n\n.modal-label {\n    padding: 0.5rem;\n}\n\n.modal-input {\n    width: 4.5rem;\n    border: 0.1rem solid lightgrey;\n    border-radius: 0.1rem;\n}\n\n.modal-errormessage {\n    position: relative;\n    display: none;\n    padding-left: 0.5rem;\n    padding-top: 0.5rem;\n    color: red;\n    font-size: x-small;\n}\n\n#errorRange {\n    display: block;\n    padding-left: 0.5rem;\n    padding-top: 0.5rem;\n    color: red;\n    font-size: x-small;\n}\n\n.header-row {\n    display: flex;\n    justify-content: space-between;\n    align-items: center;\n    margin-bottom: 1rem;\n    flex: 0 0 auto;\n}\n\n.options-div {\n    display: flex;\n    align-items: center;\n    justify-content: space-between;\n}\n\n.triangle-hitbox {\n    width: 30;\n    height: 30;\n    fill: transparent;\n    pointer-events: all;\n    touch-action: none;\n    user-select: none;\n}\n\n.handle-hitbox {\n    fill: transparent;\n    pointer-events: all;\n}\n";
+styleInject(css_248z);
+
 //---------- IO Functions ----------
 function drawChart(content) {
-    setRefreshData(structuredClone(content));
+    setContent(content);
+    var columns = structuredClone(content['columns']).reverse();
+    setColumns(columns);
+    setNumberOfDimensions(columns.length);
+    setNumberOfRecords(content.length);
     deleteChart();
-    let newFeatures = content['columns'].reverse();
-    setUpParcoordData(content, newFeatures);
-    const height = 360;
-    let wrapper = select('#parallelcoords');
-    if (wrapper === null) {
-        wrapper = select(document.body)
-            .append("div")
-            .attr('id', 'parallelcoords')
-            .style('display', 'block')
-            .style('width', '100%')
-            .style('margin', '0')
-            .style('padding', '0')
-            .style('text-align', 'left')
-            .style('justify-content', 'center')
-            .style('align-items', 'center');
+    if (thickness === undefined) {
+        setLineThickness('0.4rem');
     }
-    const chartWrapper = wrapper.append('div')
-        .attr('id', 'chartWrapper');
-    chartWrapper.append('div')
-        .attr('id', 'toolbarRow')
-        .style('display', 'flex')
-        .style('flex-wrap', 'wrap')
-        .style('align-items', 'center')
-        .style('justify-content', 'flex-start')
-        .style('margin-left', '2rem')
-        .style('font-size', '0.8vw')
-        .style('overflow', 'visible');
+    setUpParcoordData(content, columns);
+    let chart = select('#parallelcoords');
+    if (chart === null) {
+        chart = select(document.body)
+            .append("div")
+            .attr('id', 'parallelcoords');
+    }
+    const chartWrapper = chart.append('div')
+        .attr('class', 'chartWrapper');
+    chartWrapper.append('div').attr('id', 'toolbarRow');
     createToolbar(parcoords.newDataset);
     setSvg(chartWrapper.append('svg')
         .attr('id', 'pc_svg')
-        .attr('viewBox', [0, 0, width, height])
-        .attr('font-family', 'Verdana, sans-serif'));
-    const plot = svg.append("g")
-        .attr("class", "plot");
+        .attr('viewBox', [0, 0, width, 360]));
+    const plot = svg.append("g").attr("class", "plot");
     setDefsForIcons();
-    setFeatureAxis(plot, yAxis, parcoords, width);
     setActive(setActivePathLines(plot, content, parcoords));
+    setFeatureAxis(plot, yAxis, parcoords, width);
     svg.on("contextmenu", function (event) {
         event.stopPropagation();
         event.preventDefault();
@@ -10849,38 +10856,25 @@ function drawChart(content) {
     })
         .on("mousedown.selection", function (event) {
         event.preventDefault();
+    })
+        .on('mouseleave', function () {
+    })
+        .on('mousemove', function (event) {
+        const chartBounds = svg.node().getBoundingClientRect();
+        if (event.clientX < chartBounds.left ||
+            event.clientX > chartBounds.right ||
+            event.clientY < chartBounds.top ||
+            event.clientY > chartBounds.bottom) {
+            handlePointerLeaveOrOut();
+        }
     });
-    /*const zoomBehavior = zoom()
-        .scaleExtent([0.5, 20])
-        .translateExtent([[0, 0], [width * 3, height * 3]])
-        .on("zoom", (event) => {
-            plot.attr("transform", event.transform);
-        });
-
-
-    const identity = { k: 1, x: 0, y: 0 };
-    svg.call(zoomBehavior)
-        .on("dblclick.zoom", null)
-        .on("dblclick.reset", (event) => {
-            event.preventDefault();
-            svg.transition()
-                .duration(400)
-                .call(zoomBehavior.transform, identity);
-        });*/
     window.onclick = () => {
         select('#contextmenu').style('display', 'none');
         select('#contextmenuRecords').style('display', 'none');
     };
 }
 function reset() {
-    drawChart(refreshData);
-    let toolbar = select('#toolbar');
-    toolbar.style('max-width', '12.5rem')
-        .style('opacity', '1')
-        .style('pointer-events', 'auto');
-    let toggleButton = select('#toggleButton');
-    toggleButton.attr('title', 'Collapse toolbar');
-    toggleButton.html(getCollapseToolbarIcon());
+    drawChart(resetContentData);
 }
 function refresh() {
     const dimensions = getAllVisibleDimensionNames();
@@ -10897,11 +10891,15 @@ function deleteChart() {
     select('#refreshButton').remove();
     select('#showData').remove();
     select('#toolbarRow').remove();
+    select('.chartWrapper').remove();
+    selectAll('.tip-layer').remove();
+    selectAll('.tooltip-values').remove();
+    cleanTooltip();
+    cleanTooltipSelect();
     parcoords.currentPosOfDims.length = 0;
 }
 // ---------- Needed for Built-In Interactivity Functions ---------- //
 function setUpParcoordData(data, newFeatures) {
-    setPadding(60);
     setPaddingXaxis(60);
     setInitDimension(newFeatures);
     setHeight(400);
@@ -10928,7 +10926,7 @@ function setUpParcoordData(data, newFeatures) {
     let dataset = prepareData(data, newFeatures);
     setFeatures(dataset[0]);
     setNewDataset(dataset[1]);
-    setXScales(setupXScales(dataset[0]));
+    setXScales(setupXScales(dataset[0], dataset[1]));
     setYScales(setupYScales(dataset[0], dataset[1]));
     setNewFeatures(newFeatures);
     setData(data);
@@ -10974,23 +10972,10 @@ function setUpParcoordData(data, newFeatures) {
     });
     setHoverLabel(getAllVisibleDimensionNames()[0]);
 }
-const tooltipLabel = select('body')
-    .append('div')
-    .attr('id', 'tooltip_label')
-    .style('position', 'absolute')
-    .style('visibility', 'hidden')
-    .style('pointer-events', 'none')
-    .style('background', 'lightgrey')
-    .style('padding', '0.2rem')
-    .style('border', '0.0625rem solid gray')
-    .style('border-radius', '0.2rem')
-    .style('white-space', 'pre-line')
-    .style('font-size', '0.75rem')
-    .style('z-index', '1000');
-let cleanupTimeout = null;
-const handlePointerEnter = (event, d) => {
+function handlePointerEnter(event, d) {
     doNotHighlight();
     const data = getAllPointerEventsData(event);
+    const tooltipLabel = selectAll('.tooltip-label');
     highlight(data);
     createTooltipForLabel(data, tooltipLabel, event);
     const datasetMap = new Map();
@@ -10999,65 +10984,84 @@ const handlePointerEnter = (event, d) => {
     });
     data.forEach((item, i) => {
         const rec = datasetMap.get(item);
+        console.log(rec);
         if (rec) {
-            createToolTipForValues(rec, rec.id ?? String(i));
+            createToolTipForValues(rec, false);
         }
     });
-};
-const handlePointerLeaveOrOut = () => {
+}
+function handlePointerLeaveOrOut() {
     doNotHighlight();
-    select('#tooltip_label').style('visibility', 'hidden');
+    select('.tooltip-label').style('visibility', 'hidden');
     cleanTooltip();
-};
-const handleClick = (event, d) => {
-    const data = getAllPointerEventsData(event);
+}
+function handleClick(event, d) {
+    var data = getAllPointerEventsData(event);
+    if (hoverSnapshot)
+        data = hoverSnapshot;
+    hoverSnapshot = null;
     const cleanedItems = data.map((item) => cleanString(item).replace(/[.,]/g, ''));
     const selectedRecords = getSelected();
     if (event.metaKey || event.shiftKey) {
         cleanedItems.forEach((record) => {
             if (selectedRecords.includes(record)) {
                 setUnselected(record);
+                selectAll(`#tooltip-record-select-${record}`).style('display', 'none');
             }
             else {
                 setSelected(record);
+                const datasetMap = new Map();
+                parcoords.newDataset.forEach((cleanedItems) => {
+                    datasetMap.set(cleanedItems[hoverlabel], cleanedItems);
+                });
+                data.forEach((item, i) => {
+                    const rec = datasetMap.get(item);
+                    if (rec) {
+                        createToolTipForValues(rec, true);
+                    }
+                });
             }
         });
     }
     else if (event.ctrlKey) {
         cleanedItems.forEach((record) => {
-            toggleSelection(record);
+            if (selectedRecords.includes(record)) {
+                setUnselected(record);
+                select(`#tooltip-record-select-${record}`).remove();
+            }
+            else {
+                setSelected(record);
+                const datasetMap = new Map();
+                parcoords.newDataset.forEach((cleanedItems) => {
+                    datasetMap.set(cleanedItems[hoverlabel], cleanedItems);
+                });
+                data.forEach((item, i) => {
+                    const rec = datasetMap.get(item);
+                    if (rec) {
+                        createToolTipForValues(rec, true);
+                    }
+                });
+            }
         });
     }
     else {
         clearSelection();
         setSelection(cleanedItems);
+        const datasetMap = new Map();
+        parcoords.newDataset.forEach((cleanedItems) => {
+            datasetMap.set(cleanedItems[hoverlabel], cleanedItems);
+        });
+        data.forEach((item, i) => {
+            const rec = datasetMap.get(item);
+            if (rec) {
+                createToolTipForValues(rec, true);
+            }
+        });
     }
     event.stopPropagation();
-};
-select('#pc_svg').on('mouseleave', () => {
-    if (cleanupTimeout)
-        clearTimeout(cleanupTimeout);
-    cleanupTimeout = setTimeout(() => {
-        doNotHighlight();
-        select('#tooltip_label').style('visibility', 'hidden');
-        cleanTooltip();
-    }, 100);
-});
-document.addEventListener('mousemove', (e) => {
-    const chartSel = select('#pc_svg');
-    const chart = chartSel.node();
-    if (!chart)
-        return;
-    const chartBounds = chart.getBoundingClientRect();
-    if (e.clientX < chartBounds.left ||
-        e.clientX > chartBounds.right ||
-        e.clientY < chartBounds.top ||
-        e.clientY > chartBounds.bottom) {
-        handlePointerLeaveOrOut();
-    }
-});
+}
 function setActivePathLines(svg, content, parcoords) {
-    const contextMenu = createContextMenuForRecords();
+    const contextMenuRecords = createContextMenuForRecords();
     const g = svg.append('g').attr('class', 'active');
     g.selectAll('path.hitarea')
         .data(content)
@@ -11073,14 +11077,14 @@ function setActivePathLines(svg, content, parcoords) {
         .attr('d', d => linePath(d, parcoords.newFeatures))
         .style('stroke', 'transparent')
         .style('fill', 'none')
-        .style('stroke-width', '0.4rem')
+        .style('stroke-width', thickness)
         .style('pointer-events', 'stroke')
         .on('pointerenter', handlePointerEnter)
         .on('pointerleave', handlePointerLeaveOrOut)
         .on('pointerout', handlePointerLeaveOrOut)
         .on('click', handleClick)
         .on('contextmenu', function (event, d) {
-        handleRecordContextMenu(contextMenu, event);
+        handleRecordContextMenu(contextMenuRecords, event);
         select('#contextmenu').style('display', 'none');
     });
     return g.selectAll('path.visible')
@@ -11100,96 +11104,8 @@ function setActivePathLines(svg, content, parcoords) {
         .style('stroke-width', '0.12rem')
         .style('fill', 'none');
 }
-function createContextMenuForRecords() {
-    let contextMenu = select('#parallelcoords')
-        .append('g')
-        .attr('id', 'contextmenuRecords')
-        .style('position', 'absolute')
-        .style('display', 'none');
-    createContextMenuItem(contextMenu, 'selectRecord', 'contextmenu', 'Select Record', 'Select Record(s)');
-    createContextMenuItem(contextMenu, 'unSelectRecord', 'contextmenu', 'Unselect Record', 'Unselect Record(s)');
-    createContextMenuItem(contextMenu, 'toggleRecord', 'contextmenu', 'Toggle Record', 'Toggle Record(s)');
-    createContextMenuItem(contextMenu, 'addSelection', 'contextmenu', 'Add to Selection', 'Add to Selection');
-    createContextMenuItem(contextMenu, 'removeSelection', 'contextmenu', 'Remove from Selection', 'Remove from Selection');
-    return contextMenu;
-}
-function createContextMenuItem(contextMenu, id, className, text, title) {
-    contextMenu.append('div')
-        .attr('id', id)
-        .attr('class', className)
-        .attr('title', title)
-        .text(text);
-}
-function handleRecordContextMenu(contextMenu, event, d) {
-    const container = document.querySelector("#parallelcoords");
-    const rect = container.getBoundingClientRect();
-    const data = getAllPointerEventsData(event);
-    const cleanedItems = data.map((item) => cleanString(item).replace(/[.,]/g, ''));
-    if (cleanedItems.length > 1) {
-        select('#selectRecord').text('Select Records');
-        select('#unSelectRecord').text('Unselect Records');
-        select('#toggleRecord').text('Toggle Records');
-    }
-    else {
-        select('#selectRecord').text('Select Record');
-        select('#unSelectRecord').text('Unselect Record');
-        select('#toggleRecord').text('Toggle Record');
-    }
-    const x = (event.clientX - rect.left) / 16;
-    const y = (event.clientY - rect.top) / 16;
-    contextMenu.style('left', x + 'rem')
-        .style('top', y + 'rem')
-        .style('display', 'block')
-        .style('font-size', '0.75rem').style('border', 0.08 + 'rem solid gray')
-        .style('border-radius', 0.1 + 'rem').style('margin', 0.5 + 'rem')
-        .style('padding', 0.35 + 'rem')
-        .style('background-color', 'white').style('margin-left', 0.5 + 'rem')
-        .style('cursor', 'pointer')
-        .on('click', (event) => {
-        event.stopPropagation();
-    });
-    select('#selectRecord').on('click', (event) => {
-        setSelection(cleanedItems);
-        event.stopPropagation();
-        select('#contextmenuRecords').style('display', 'none');
-    });
-    select('#unSelectRecord').on('click', (event) => {
-        cleanedItems.forEach(item => {
-            setUnselected(item);
-        });
-        event.stopPropagation();
-        select('#contextmenuRecords').style('display', 'none');
-    });
-    select('#toggleRecord').style('border-top', '0.08rem lightgrey solid')
-        .on('click', (event) => {
-        cleanedItems.forEach(item => {
-            toggleSelection(item);
-        });
-        event.stopPropagation();
-        select('#contextmenuRecords').style('display', 'none');
-    });
-    select('#addSelection').style('border-top', '0.08rem lightgrey solid')
-        .on('click', (event) => {
-        let selectedRecords = [];
-        selectedRecords = getSelected();
-        const records = [...selectedRecords, ...cleanedItems];
-        setSelection(records);
-        event.stopPropagation();
-        select('#contextmenuRecords').style('display', 'none');
-    });
-    select('#removeSelection').on('click', (event) => {
-        cleanedItems.forEach(item => {
-            setUnselected(item);
-        });
-        event.stopPropagation();
-        select('#contextmenuRecords').style('display', 'none');
-    });
-    selectAll('.contextmenu').style('padding', 0.35 + 'rem');
-    event.preventDefault();
-}
-const delay1 = 50;
-const throttleShowValues = throttle(createToolTipForValues, delay1);
-function setFeatureAxis(svg, yAxis, parcoords, width, padding) {
+const throttleShowValues = throttle(createToolTipForValues, 50);
+function setFeatureAxis(svg, yAxis, parcoords, width) {
     let featureAxis = svg.selectAll('g.feature')
         .data(parcoords.features)
         .enter()
@@ -11200,19 +11116,13 @@ function setFeatureAxis(svg, yAxis, parcoords, width, padding) {
         .each(function (d) {
         const processedDimensionName = cleanString(d.name);
         select(this)
+            .attr('class', 'dimension-axis')
             .attr('id', 'dimension_axis_' + processedDimensionName)
             .call(yAxis[d.name]);
     });
-    /*let tickElements = document.querySelectorAll('g.tick');
-    tickElements.forEach((gElement) => {
-        let transformValue = gElement.getAttribute('transform');
-        let yValue = transformValue.match(/translate\(0,([^\)]+)\)/);
-        if (yValue) {
-            let originalValue = parseFloat(yValue[1]);
-            let shortenedValue = originalValue.toFixed(4);
-            gElement.setAttribute('transform', `translate(0,${shortenedValue})`);
-        }
-    });*/
+    select('body')
+        .append('div')
+        .attr('class', 'tooltip-label');
     const brushOverlay = svg.append("rect")
         .attr("x", 0)
         .attr("y", 0)
@@ -11220,9 +11130,18 @@ function setFeatureAxis(svg, yAxis, parcoords, width, padding) {
         .attr("height", height)
         .style("fill", "transparent")
         .style("pointer-events", "none");
-    setBrushDown(featureAxis, brushOverlay);
-    setBrushUp(featureAxis, brushOverlay);
-    setRectToDrag(featureAxis);
+    let tooltipValues = select('#parallelcoords')
+        .append('div')
+        .attr('class', 'tooltip-values');
+    let tooltipValuesTop = select('#parallelcoords')
+        .append('div')
+        .attr('class', 'tooltip-values');
+    let tooltipValuesDown = select('#parallelcoords')
+        .append('div')
+        .attr('class', 'tooltip-values');
+    setBrushDown(featureAxis, brushOverlay, tooltipValues);
+    setBrushUp(featureAxis, brushOverlay, tooltipValues);
+    setRectToDrag(featureAxis, tooltipValuesTop, tooltipValuesDown);
     setMarker(featureAxis);
     setContextMenu(featureAxis);
     setInvertIcon(featureAxis);
@@ -11247,14 +11166,14 @@ function createImage(defs, id, width, height, image) {
 }
 function setInvertIcon(featureAxis) {
     let value = (50 / 1.3).toFixed(4);
-    const svg = featureAxis
+    const invertIcon = featureAxis
         .append('svg')
         .attr('x', -6 - 22)
         .attr('y', Number(value) - 22)
         .attr('width', 44)
         .attr('height', 22)
-        .style('overflow', 'visible');
-    svg.append('rect')
+        .attr('overflow', 'visible');
+    invertIcon.append('rect')
         .attr('id', 'invert_hitbox')
         .attr('class', 'hitbox')
         .attr('x', 6)
@@ -11267,11 +11186,10 @@ function setInvertIcon(featureAxis) {
         .style('pointer-events', 'all')
         .each(function (d) {
         const processed = cleanString(d.name);
-        select(this)
-            .attr('id', 'invert_hitbox_' + processed)
+        select(this).attr('id', 'invert_hitbox_' + processed)
             .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowDownCursor()), 12)}') 8 8, auto`);
     });
-    svg.append('use')
+    invertIcon.append('use')
         .attr('href', '#arrow_image_up')
         .attr('width', 12)
         .attr('height', 12)
@@ -11279,19 +11197,20 @@ function setInvertIcon(featureAxis) {
         .attr('y', Number(value) - 33)
         .each(function (d) {
         const processed = cleanString(d.name);
-        select(this)
-            .attr('id', 'dimension_invert_' + processed)
+        select(this).attr('id', 'dimension_invert_' + processed)
             .text('up')
             .style('cursor', `url('data:image/svg+xml,${setSize(encodeURIComponent(getArrowDownCursor()), 12)}') 8 8, auto`);
     });
-    svg.on('click', (event, d) => {
+    invertIcon.on('click', (event, d) => {
         invert(d.name);
         event.stopPropagation();
     });
 }
 // Hovering
 let currentlyHighlightedItems = [];
+let hoverSnapshot = null;
 function highlight(data) {
+    hoverSnapshot = data;
     const cleanedItems = data.map((item) => cleanString(item).replace(/[.,]/g, ''));
     currentlyHighlightedItems = [...cleanedItems];
     cleanedItems.forEach((item) => {
@@ -11323,22 +11242,16 @@ function doNotHighlight() {
     currentlyHighlightedItems = [];
 }
 function setMarker(featureAxis) {
-    featureAxis
-        .each(function (d) {
+    featureAxis.each(function (d) {
         const processedDimensionName = cleanString(d.name);
-        select(this)
-            .append('g')
+        select(this).append('g')
             .attr('class', 'marker')
             .append('rect')
             .attr('id', 'marker_' + processedDimensionName)
             .attr('width', 44)
             .attr('height', 305)
             .attr('x', -22)
-            .attr('y', 30)
-            .attr('fill', 'none')
-            .attr('stroke', "rgb(228, 90, 15)")
-            .attr('stroke-width', '0.1rem')
-            .attr('opacity', '0');
+            .attr('y', 30);
     });
 }
 
@@ -11530,173 +11443,129 @@ function loadCSV(csv) {
 }
 function showInvalidRowsMessage(invalidRows, columns, removedColumns) {
     const overlay = document.createElement("div");
-    overlay.style.position = "fixed";
-    overlay.style.top = "0";
-    overlay.style.left = "0";
-    overlay.style.width = "100vw";
-    overlay.style.height = "100vh";
-    overlay.style.background = "rgba(0,0,0,0.4)";
-    overlay.style.display = "flex";
-    overlay.style.justifyContent = "center";
-    overlay.style.alignItems = "center";
-    overlay.style.zIndex = "9999";
+    overlay.className = 'modal-overlay';
+    overlay.style.display = 'block';
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    const header = document.createElement('div');
+    header.className = 'modal-header';
     const closeButton = document.createElement("span");
+    closeButton.className = 'close-button';
     closeButton.innerHTML = "&times;";
-    closeButton.style.cursor = "pointer";
-    closeButton.style.fontWeight = "bold";
-    closeButton.style.fontSize = "1.5rem";
-    closeButton.style.lineHeight = "1";
-    closeButton.style.position = "absolute";
-    closeButton.style.top = "0.5rem";
-    closeButton.style.right = "0.5rem";
     closeButton.addEventListener("click", () => {
         document.body.removeChild(overlay);
     });
-    const box = document.createElement("div");
-    box.style.background = "white";
-    box.style.padding = "1.5rem";
-    box.style.borderRadius = "0.5rem";
-    box.style.minWidth = "10rem";
-    box.style.position = "relative";
-    box.style.textAlign = "center";
-    box.style.boxShadow = "0 0.25rem 0.75rem rgba(0,0,0,0.2)";
-    box.addEventListener("click", e => e.stopPropagation());
-    const msg = document.createElement("p");
-    msg.textContent = `Dataset imported.`;
-    box.appendChild(closeButton);
-    box.appendChild(msg);
+    header.appendChild(closeButton);
+    modal.appendChild(header);
+    const contentDiv = document.createElement("div");
+    contentDiv.className = 'modal-content';
+    contentDiv.addEventListener("click", e => e.stopPropagation());
+    const importInfo = document.createElement("div");
+    importInfo.className = 'modal-info';
+    importInfo.textContent = `Dataset imported.`;
+    contentDiv.appendChild(importInfo);
     const removedRowInfo = document.createElement("div");
-    removedRowInfo.style.marginTop = "0.15rem";
-    removedRowInfo.style.fontSize = "0.85rem";
-    removedRowInfo.style.background = "white";
-    removedRowInfo.style.padding = "0.5rem";
-    removedRowInfo.style.borderRadius = "0.25rem";
+    removedRowInfo.className = 'modal-info';
     removedRowInfo.textContent = `${invalidRows.length} invalid rows found.`;
-    box.appendChild(removedRowInfo);
+    contentDiv.appendChild(removedRowInfo);
     if (removedColumns.length > 0) {
         const removedColumnInfo = document.createElement("div");
-        removedColumnInfo.style.marginTop = "0.15rem";
-        removedColumnInfo.style.fontSize = "0.85rem";
-        removedColumnInfo.style.background = "white";
-        removedColumnInfo.style.padding = "0.5rem";
-        removedColumnInfo.style.borderRadius = "0.25rem";
-        removedColumnInfo.textContent = `${removedColumns.length} column(s) without data: ${removedColumns.join(", ")}`;
-        box.appendChild(removedColumnInfo);
+        removedColumnInfo.className = 'modal-info';
+        if (removedColumns.length > 1) {
+            removedColumnInfo.textContent = `${removedColumns.length} columns without data: ${removedColumns.join(", ") + '.'}`;
+            contentDiv.appendChild(removedColumnInfo);
+        }
+        else {
+            removedColumnInfo.textContent = `${removedColumns.length} column without data: ${removedColumns.join(", ") + '.'}`;
+            contentDiv.appendChild(removedColumnInfo);
+        }
     }
     const btn = document.createElement("button");
     btn.textContent = "View";
-    btn.style.marginTop = "1rem";
-    btn.style.padding = "0.5rem 1rem";
-    btn.style.cursor = "pointer";
-    btn.style.border = "0.08rem solid gray";
-    btn.style.borderRadius = "0.5rem";
-    btn.style.background = "#f6f6f6";
-    btn.style.fontSize = "1rem";
+    btn.className = 'generic-button';
     btn.addEventListener("click", () => {
         document.body.removeChild(overlay);
         showInvalidRowsPopup(invalidRows, columns, removedColumns);
     });
-    box.appendChild(btn);
-    overlay.appendChild(box);
+    contentDiv.appendChild(btn);
+    modal.appendChild(contentDiv);
+    overlay.appendChild(modal);
     document.body.appendChild(overlay);
 }
 function showInvalidRowsPopup(invalidRows, columns, removedColumns = []) {
     const overlay = document.createElement("div");
-    overlay.style.position = "fixed";
-    overlay.style.top = "0";
-    overlay.style.left = "0";
-    overlay.style.width = "100vw";
-    overlay.style.height = "100vh";
-    overlay.style.background = "rgba(0,0,0,0.5)";
-    overlay.style.display = "flex";
-    overlay.style.justifyContent = "center";
-    overlay.style.alignItems = "center";
-    overlay.style.zIndex = "9999";
+    overlay.className = 'modal-tableoverlay';
     overlay.addEventListener("click", () => document.body.removeChild(overlay));
     const dialog = document.createElement("div");
-    dialog.style.position = "relative";
-    dialog.style.background = "white";
-    dialog.style.padding = "2rem";
-    dialog.style.borderRadius = "0.5rem";
-    dialog.style.maxHeight = "80vh";
-    dialog.style.overflow = "auto";
-    dialog.style.minWidth = "38rem";
+    dialog.className = 'modal-tabledata';
     dialog.addEventListener("click", e => e.stopPropagation());
     const headerRow = document.createElement("div");
-    headerRow.style.display = "flex";
-    headerRow.style.justifyContent = "space-between";
-    headerRow.style.alignItems = "center";
-    headerRow.style.marginBottom = "1rem";
-    headerRow.style.flex = "0 0 auto";
+    headerRow.className = 'header-row';
     const title = document.createElement("h2");
     title.textContent = `Invalid Rows (${invalidRows.length})`;
     title.style.margin = "0";
     const closeButton = document.createElement("span");
+    closeButton.className = 'close-button';
     closeButton.innerHTML = "&times;";
-    closeButton.style.cursor = "pointer";
-    closeButton.style.fontWeight = "bold";
-    closeButton.style.fontSize = "1.5rem";
-    closeButton.style.lineHeight = "1";
     closeButton.addEventListener("click", () => {
         document.body.removeChild(overlay);
     });
     headerRow.appendChild(title);
     headerRow.appendChild(closeButton);
+    const scrollWrapper = document.createElement('div');
+    scrollWrapper.className = 'scroll-wrapper';
     const tableWrapper = document.createElement("div");
-    tableWrapper.style.overflowY = "auto";
-    tableWrapper.style.flex = "1 1 auto";
-    tableWrapper.style.padding = "0.5rem";
-    tableWrapper.innerHTML = `
-    <table border="1" cellpadding="6" style="border-collapse: collapse; margin-top: 0.5rem; width: 100%;">
-      ${renderInvalidTable(invalidRows, columns, removedColumns)}
-    </table>
-  `;
+    tableWrapper.className = 'tablecontainer';
+    const table = renderInvalidTable(invalidRows, columns, removedColumns);
+    tableWrapper.appendChild(table);
+    scrollWrapper.appendChild(tableWrapper);
     dialog.appendChild(headerRow);
-    dialog.appendChild(tableWrapper);
+    dialog.appendChild(scrollWrapper);
     overlay.appendChild(dialog);
     document.body.appendChild(overlay);
 }
 function renderInvalidTable(rows, columns, removedColumns = []) {
-    const headerHtml = `
-    <thead>
-      <tr>
-        ${columns.map(c => {
+    const thead = document.createElement("thead");
+    const headRow = document.createElement("tr");
+    columns.forEach(c => {
+        const th = document.createElement("th");
         const isRemoved = removedColumns.includes(c);
-        return `<th style="
-            text-align:left;
-            background:${isRemoved ? "#ffb3b3" : "white"};
-          ">${c}</th>`;
-    }).join("")}
-      </tr>
-    </thead>
-  `;
-    const bodyHtml = rows.map(row => `
-    <tr>
-      ${columns.map(col => {
-        const rawValue = row[col];
-        const isInvalid = row.__invalidColumns?.includes(col) || removedColumns.includes(col);
-        const isNumber = typeof rawValue === "number" ||
-            (typeof rawValue === "string" &&
-                rawValue.trim() !== "" &&
-                !isNaN(Number(rawValue.replace(",", "."))));
-        const align = isNumber ? "right" : "left";
-        const displayValue = rawValue === null ? "(null)" :
-            isEmptyCell(rawValue) ? "null" :
-                rawValue;
-        return `
-          <td style="
-            background: ${isInvalid ? "#ffb3b3" : "white"};
-            text-align: ${align};
-            font-size: 0.85rem;
-            padding: 4px 8px;
-          ">
-            ${displayValue}
-          </td>
-        `;
-    }).join("")}
-    </tr>
-  `).join("");
-    return `${headerHtml}<tbody>${bodyHtml}</tbody>`;
+        th.textContent = c;
+        th.style.textAlign = "left";
+        th.style.background = isRemoved ? "#ffb3b3" : "rgb(201, 212, 221)";
+        headRow.appendChild(th);
+    });
+    thead.appendChild(headRow);
+    const tbody = document.createElement("tbody");
+    rows.forEach(row => {
+        const tr = document.createElement("tr");
+        columns.forEach(col => {
+            const td = document.createElement("td");
+            const rawValue = row[col];
+            const isInvalid = row.__invalidColumns?.includes(col) ||
+                removedColumns.includes(col);
+            const isNumber = typeof rawValue === "number" ||
+                (typeof rawValue === "string" &&
+                    rawValue.trim() !== "" &&
+                    !isNaN(Number(rawValue.replace(",", "."))));
+            const align = isNumber ? "right" : "left";
+            const displayValue = rawValue === null ? "(null)" :
+                isEmptyCell(rawValue) ? "null" :
+                    rawValue;
+            td.textContent = displayValue;
+            td.style.background = isInvalid ? "#ffb3b3" : "white";
+            td.style.textAlign = align;
+            td.style.fontSize = "0.85rem";
+            td.style.padding = "4px 8px";
+            tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+    });
+    const table = document.createElement("table");
+    table.appendChild(thead);
+    table.appendChild(tbody);
+    return table;
 }
 function isEmptyCell(value) {
     return value === undefined || value === null || String(value).trim() === "";
@@ -11750,5 +11619,5 @@ function checkIfDuplicatesExists(value) {
     return new Set(value).size !== value.length;
 }
 
-export { clearSelection, colorRecord, createSvgString, deleteChart, disableInteractivity, drawChart, enableInteractivity, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelected, hide, hideMarker, invert, invertWoTransition, isDimensionCategorical, isRecordInactive, isSelected, isSelectedWithRecordId, loadCSV, move, moveByOne, refresh, renderInvalidTable, reset, saveAsSvg, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setFilter, setInversionStatus, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setUnselected, setUnselectedWithId, show, showInvalidRowsMessage, showMarker, swap, throttleShowValues, toggleSelection, toggleSelectionWithId, uncolorRecord };
+export { clearSelection, colorRecord, createSvgString, deleteChart, disableInteractivity, drawChart, enableInteractivity, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelectableWith, getSelected, hide, hideMarker, invert, invertWoTransition, isDimensionCategorical, isRecordInactive, isSelected, isSelectedWithRecordId, loadCSV, move, moveByOne, refresh, renderInvalidTable, reset, saveAsSvg, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setFilter, setInversionStatus, setSelectableWidth, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setUnselected, setUnselectedWithId, show, showInvalidRowsMessage, showMarker, swap, throttleShowValues, toggleSelection, toggleSelectionWithId, uncolorRecord };
 //# sourceMappingURL=spcd3.js.map
