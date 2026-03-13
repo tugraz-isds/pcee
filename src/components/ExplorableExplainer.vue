@@ -30,7 +30,7 @@
   />
   <div class="explorable-explainer">
     <div
-      class="chart-container flex-1 basis-[30rem] relative justify-center"
+      class="chart-container"
     >
       <div class="main-chart">
         <NavigationDropdown :offset="60" />
@@ -42,7 +42,7 @@
         </div>
       </div>
     </div>
-    <div class="text-container flex-1 basis-[23rem] min-w-[23rem] flex flex-col w-full">
+    <div class="text-container">
       <div v-html="introText" />
       <div v-html="financeDatasetText" />
       <Table/>
@@ -196,12 +196,12 @@ const handleMisc = (chart: HTMLDivElement, dataset: string | undefined) : void =
 window.addEventListener('scroll', () => {
   
   if (isPortrait()) {
-    const el = document.querySelector(".chart-container") as HTMLElement | null;
+  const el = document.querySelector(".chart-container") as HTMLElement | null;
 
-    if (el) {
-      el.addEventListener("wheel", (e) => { e.preventDefault(); }, { passive: false });
-    }
+  if (el) {
+    el.removeEventListener("wheel", () => {});
   }
+}
 
   const chart = document.getElementById('parallelcoords') as HTMLDivElement | null;
   if (!chart) return;
@@ -229,8 +229,7 @@ window.addEventListener('scroll', () => {
       handleMisc(chart, dataset);
     }
 
-
-    (document.getElementById('activate-button') as HTMLButtonElement).textContent = "Enable Interactivity";
+    (document.getElementById('activate-button-5') as HTMLButtonElement).textContent = "Enable Interactivity";
     if (chart.style.visibility !== 'hidden') {
       chart.style.opacity = '1';
     }
@@ -262,55 +261,80 @@ onMounted(async (): Promise<void> => {
   }
 
   if (!supportsScrollDrivenAnimations) {
-    gsap.to(header.value, {
-      height: '6.8vh',
-      backgroundPosition: '50% 100%',
-      paddingLeft: '1rem',
-      scrollTrigger: {
-        trigger: document.body,
-        start: 'top top',
-        end: '+=90vh',
-        scrub: 1,
-        invalidateOnRefresh: true,
-      },
-      ease: 'none',
-    });
 
-    gsap.to(multiLine.value, {
-      opacity: 0,
-      fontSize: 'small',
-      scrollTrigger: {
-        trigger: document.body,
-        start: 'top top',
-        end: '+=80vh',
-        scrub: 1,
-        onUpdate: (self) => {
-          if (multiLine.value) {
-            multiLine.value.style.visibility =
-              self.progress < 1 ? 'visible' : 'hidden'
-          }
+  gsap.set(multiLine.value, {
+    fontSize: '3rem'
+  })
+
+  gsap.set(singleLine.value, {
+    fontSize: '1.2rem',
+    opacity: 0,
+    visibility: 'hidden'
+  })
+
+  gsap.set(multiLine.value, {
+    opacity: 1,
+    visibility: 'visible',
+    fontSize: '1rem',
+  });
+
+  gsap.set(singleLine.value, {
+    opacity: 0,
+    visibility: 'hidden',
+    fontSize: '0.875rem',
+  });
+
+  gsap.to(header.value, {
+    height: '6.8vh',
+    backgroundPosition: '50% 100%',
+    paddingLeft: '1rem',
+    ease: 'none',
+    scrollTrigger: {
+      trigger: document.body,
+      start: 'top top',
+      end: '+=90vh',
+      scrub: 1,
+      invalidateOnRefresh: true,
+    },
+  });
+
+  gsap.to(multiLine.value, {
+    opacity: 0,
+    fontSize: '0.875rem',
+    ease: 'none',
+    scrollTrigger: {
+      trigger: document.body,
+      start: 'top top',
+      end: '+=80vh',
+      scrub: 1,
+      invalidateOnRefresh: true,
+      onUpdate: (self) => {
+        if (multiLine.value) {
+          multiLine.value.style.visibility =
+            self.progress < 0.99 ? 'visible' : 'hidden';
         }
       },
-      ease: 'none'
-    });
+    },
+  });
 
-    gsap.to(singleLine.value, {
-      opacity: 1,
-      fontSize: 'medium',
-      scrollTrigger: {
-        trigger: document.body,
-        start: '+=80vh',
-        end: '+=90vh',
-        scrub: 1,
-        onUpdate: self => {
-          if (singleLine.value) {
-            singleLine.value.style.visibility =
-              self.progress > 0 ? 'visible' : 'hidden'
-          }
+  gsap.to(singleLine.value, {
+    opacity: 1,
+    fontSize: '1rem',
+    ease: 'none',
+    scrollTrigger: {
+      trigger: document.body,
+      start: 'top+=80vh top',
+      end: 'top+=90vh top',
+      scrub: 1,
+      invalidateOnRefresh: true,
+      onUpdate: (self) => {
+        if (singleLine.value) {
+          singleLine.value.style.visibility =
+            self.progress > 0.01 ? 'visible' : 'hidden';
         }
       },
-      ease: 'none'
-    });
+    },
+  });
   }
 });
 
@@ -332,7 +356,6 @@ onMounted(async (): Promise<void> => {
 
   color: white;
   background: rgba(0, 129, 175, 1);
-  font-size: x-large;
 
   z-index: 1000;
 
@@ -348,24 +371,26 @@ onMounted(async (): Promise<void> => {
   left: 50%;
   transform: translate(-50%, -50%);
   margin: 0;
-  opacity: 0;
-  visibility: hidden;
-  width: auto;
-  max-width: min(65ch, 100% - 2rem);;
-  word-wrap: break-word;
   overflow-wrap: anywhere;
-  box-sizing: border-box;
   padding-inline: 1rem;
+  width: 100%;
+  max-width: min(65ch, calc(100% - 2rem));
+  box-sizing: border-box;
 }
 
 .multi-line {
+  font-size: clamp(1.2rem, 3.2vw, 2.6rem);
+  line-height: 1.1;
   opacity: 1;
   visibility: visible;
 }
 
 .single-line {
+  font-size: clamp(0.9rem, 1.4vw + 0.35rem, 1.25rem);
+  line-height: 1.05;
   opacity: 0;
   visibility: hidden;
+  white-space: nowrap;
 }
 
 .use-native .multi-line {
@@ -381,7 +406,7 @@ onMounted(async (): Promise<void> => {
 }
 
 .info {
-  font-size: medium;
+  font-size: clamp(1.1rem, 1vw + 0.4rem, 1.4rem);
   color:yellow;
   margin-top: 5rem;
 }
@@ -411,109 +436,84 @@ onMounted(async (): Promise<void> => {
 }
 
 .use-native {
-  animation: sticky-header-move-and-size-desktop linear forwards;
+  animation: sticky-header-desktop linear forwards;
   animation-timeline: scroll();
   animation-range: 0vh 80vh;
 }
 
-@media (max-width: 960px) and (orientation: portrait){
+@media (max-width: 60em) and (orientation: portrait) {
   .use-native {
-    animation: sticky-header-move-and-size-tablet linear forwards;
+    animation: sticky-header-tablet linear forwards;
     animation-timeline: scroll();
     animation-range: 0vh 80vh;
   }
-
-  .sticky-header {
-    font-size: large;
-  }
-
-  .info {
-    font-size: small;
-    color:yellow;
-    margin-top: 6rem;
-  }
-
 }
 
-@media (max-height: 500px) and (orientation: landscape) {
+@media (max-width: 37.5em) and (orientation: portrait) {
+  .single-line {
+    font-size: clamp(0.85rem, 1vw + 0.45rem, 1rem);
+  }
+
   .use-native {
-    animation: sticky-header-move-and-size-mobile linear forwards;
+    animation: sticky-header-phone-portrait linear forwards;
     animation-timeline: scroll();
     animation-range: 0vh 80vh;
   }
+}
 
-  .sticky-header {
-    font-size: medium;
+@media (max-height: 31.25em) and (orientation: landscape) {
+  .use-native {
+    animation: sticky-header-mobile-landscape linear forwards;
+    animation-timeline: scroll();
+    animation-range: 0vh 80vh;
   }
 }
 
-@keyframes sticky-header-move-and-size-desktop {
+@keyframes sticky-header-desktop {
   from {
     background-position: 50% 0%;
     height: 100vh;
-    width: 100%;
-    font-size: xx-large;
   }
 
   to {
     background-position: 50% 100%;
-    height: 6.5vh;
-    width: 100%;
-    font-size: medium;
+    height: clamp(3.5rem, 6.5vh, 5rem);
   }
 }
 
-@media (max-width: 960px) and (orientation: portrait) {
-  @keyframes sticky-header-move-and-size-tablet {
-    from {
-      background-position: 50% 0%;
-      height: 100vh;
-      width: 100%;
-      font-size: xx-large;
-    }
+@keyframes sticky-header-tablet {
+  from {
+    background-position: 50% 0%;
+    height: 100vh;
+  }
 
-    to {
-      background-position: 50% 100%;
-      height: 6vh;
-      width: 100%;
-      font-size: medium;
-    }
+  to {
+    background-position: 50% 100%;
+    height: clamp(3.25rem, 6vh, 4.5rem);
   }
 }
 
-@media (max-width: 600px) and (orientation: portrait) {
-  @keyframes sticky-header-move-and-size-tablet {
-    from {
-      background-position: 50% 0%;
-      height: 100vh;
-      width: 100%;
-      font-size: x-large;
-    }
+@keyframes sticky-header-phone-portrait {
+  from {
+    background-position: 50% 0%;
+    height: 100vh;
+  }
 
-    to {
-      background-position: 50% 100%;
-      height: 6vh;
-      width: 100%;
-      font-size: small;
-    }
+  to {
+    background-position: 50% 100%;
+    height: clamp(3.5rem, 6vh, 4.25rem);
   }
 }
 
-@media (max-height: 500px) and (orientation: landscape) {
-  @keyframes sticky-header-move-and-size-mobile {
-    from {
-      background-position: 50% 0%;
-      height: 100vh;
-      width: 100%;
-      font-size: xx-large;
-    }
+@keyframes sticky-header-mobile-landscape {
+  from {
+    background-position: 50% 0%;
+    height: 100vh;
+  }
 
-    to {
-      background-position: 50% 100%;
-      height: 6.5vh;
-      width: 100%;
-      font-size: large;
-    }
+  to {
+    background-position: 50% 100%;
+    height: clamp(3.25rem, 6.5vh, 4.25rem);
   }
 }
 
@@ -525,7 +525,6 @@ onMounted(async (): Promise<void> => {
   height: 40vh;
 }
 
-/* Desktop (chart and text row) */
 .explorable-explainer {
   display: flex;
   flex-direction: row;
@@ -533,33 +532,37 @@ onMounted(async (): Promise<void> => {
 }
 
 #pc_svg {
-  display: block;
+  width: 100%;
   height: 100%;
   max-height: 25rem;
-  width: 100%;
-}
-
-#chart-title {
-  font-size: larger;
-  font-weight: bold;
-  text-align: center;
-  margin-top: 1rem;
 }
 
 .chart-container {
-  overscroll-behavior: auto;
+  flex: 1.2 1 25rem;
+  min-width: 0;
+  position: relative;
 }
 
 .main-chart {
   position: sticky;
   top: calc(10vh + 1rem);
+  width: 100%;
   margin-left: 1rem;
+  align-self: flex-start;
 }
 
 .chart-wrapper {
   border: 0.01rem solid black;
   border-radius: 0.3rem;
   padding-bottom: 1rem;
+  background: white;
+}
+
+#chart-title {
+  font-size: clamp(1rem, 0.9rem + 0.6vw, 1.35rem);
+  font-weight: 700;
+  text-align: center;
+  margin-top: clamp(0.5rem, 0.4rem + 0.6vw, 1rem);
 }
 
 #parallelcoords {
@@ -567,8 +570,15 @@ onMounted(async (): Promise<void> => {
 }
 
 .text-container {
+  flex: 1 1 23rem;
+  min-width: 23rem;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
   margin-right: 1rem;
-  max-width: 100%;
+  overflow: visible;
+  max-height: none;
+  height: auto;
 }
 
 .pic {
@@ -576,218 +586,19 @@ onMounted(async (): Promise<void> => {
   padding-right: 4rem;
 }
 
-
-/* Tablet portrait (chart and text column) */
-@media (max-width: 960px) and (orientation: portrait) {
-  .explorable-explainer {
-    flex-direction: column !important;
-  }
-
-  #chart-title {
-    font-size: large;
-  }
-
-  .main-chart {
-    position: fixed;
-    top: 2.9rem;
-    left: 0;
-    width: 100%;
-    background: white;
-    z-index: 100;
-    margin-left: 0;
-  }
-
-  .chart-container {
-    flex: 1 1 20rem;
-    overscroll-behavior: contain;
-    touch-action: pinch-zoom;
-  }
-
-  section {
-    margin-right: 0.5rem;
-  }
-
-  .stepper {
-    margin-right: 0.5rem;
-  }
-
-  .table-container {
-    margin-right: 0.5rem;
-  }
-}
-
-/* Mini tablet (chart and text column)*/
-@media (max-width: 800px) and (orientation: portrait) {
-  #chart-title {
-    font-size: large;
-    margin-top: 0.5rem;
-  }
-
-  .explorable-explainer {
-    flex-direction: column;
-  }
-
-  .main-chart {
-    position: fixed;
-    top: 2.7rem;
-    left: 0;
-    width: 100%;
-    background: white;
-    z-index: 100;
-    margin-left: 0;
-  }
-
-  .chart-container {
-    flex: 1 1 18rem;
-    overscroll-behavior: contain;
-    touch-action: pinch-zoom;
-  }
-  
-  section {
-    margin-right: 0.5rem;
-  }
-
-  .stepper {
-    margin-right: 0.5rem;
-  }
-
-  .table-container {
-    margin-right: 0.5rem;
-  }
-
-}
-
-/* Mobile portrait (chart and text column) */
-@media (max-width: 600px) and (orientation: portrait) {
-  .explorable-explainer {
-    flex-direction: column;
-  }
-
-  #chart-title {
-    font-size: small;
-    margin-top: 0.25rem;
-  }
-
-  .main-chart {
-    position: fixed;
-    top: 2.7rem;
-    left: 0;
-    width: 100%;
-    background: white;
-    z-index: 100;
-    margin-left: 0;
-  }
-
-  .chart-container {
-    flex: 1 1 20rem;
-    padding-bottom: 0;
-    overscroll-behavior: contain;
-    touch-action: pinch-zoom;
-  }
-  
-  section {
-    margin-right: 0.5rem;
-  }
-
-  .stepper {
-    margin-right: 0.5rem;
-  }
-
-  .table-container {
-    margin-right: 0.5rem;
-  }
-
-}
-
-/* Mobile portrait (chart and text column) */
-@media (max-width: 450px) and (orientation: portrait) {
-  .explorable-explainer {
-    flex-direction: column;
-  }
-
-  #chart-title {
-    font-size: small;
-    margin-top: 0.15rem;
-  }
-
-  .main-chart {
-    position: fixed;
-    top: 2.5rem;
-    left: 0;
-    width: 100%;
-    z-index: 100;
-    justify-content: left !important;
-    align-items: left !important;
-    margin-left: 0;
-  }
-
-  .chart-container {
-    flex: 1 1 8rem;
-    min-width: 100%;
-    padding-bottom: 0;
-    overscroll-behavior: contain;
-    touch-action: pinch-zoom;
-  }
-  
-  section {
-    margin-right: 0.5rem;
-  }
-
-  .stepper {
-    margin-right: 0.5rem;
-  }
-
-  .table-container {
-    margin-right: 0.5rem;
-  }
-
-}
-
-/* Mobile landscape (chart and text row) */
-@media (max-height: 600px) and (orientation: landscape) {
-  .explorable-explainer {
-    flex-direction: row;
-  }
-
-  #chart-title {
-    font-size: small;
-  }
-
-  .main-chart {
-    position: sticky;
-    top: 2rem;
-    height: auto;
-  }
-
-  .chart-container {
-    flex: 1 1 50%;
-    min-width: 40%;
-    overscroll-behavior: auto;
-  }
-
-  .text-container {
-    flex: 1 1 50%;
-    min-width: 40%;
-  }
-
-}
-
-/* Sections in Textcontainer with animation */
 section {
-  width: auto;
-  background: oklch(0.99 0.011 91.69);  /* rgb(229, 229, 220); */
+  background: oklch(0.99 0.011 91.69);
   border: 0.01rem solid black;
   border-radius: 0.3rem;
   margin-top: 1rem;
-  opacity: 0;
+  margin-inline: 0.5rem;
   padding-right: 1rem;
-  margin-left: 0.5rem;
   padding-bottom: 0.5rem;
+  opacity: 0;
 
   animation: slide-in-from-bottom 1s ease-out forwards;
   animation-timeline: scroll();
   animation-range: 0vh 10vh;
-  animation-duration: 1s;
 }
 
 @keyframes slide-in-from-bottom {
@@ -798,8 +609,130 @@ section {
 
   to {
     opacity: 1;
-    transform: translateY(0) rotate(0deg);
+    transform: translateY(0);
   }
+}
+
+@media (max-width: 60em) and (orientation: portrait) {
+  .explorable-explainer {
+    flex-direction: column;
+    gap: 1rem;
+    position: relative;
+  }
+
+  .chart-container {
+    display: contents;
+  }
+
+  .navigation-dropdown {
+    margin-top: 2rem;
+  }
+
+  .main-chart {
+    position: sticky;
+    top: 2.9rem;
+    width: 100%;
+    margin-left: 0;
+    align-self: flex-start;
+    z-index: 201;
+    background: white;
+  }
+
+  .text-container {
+    min-width: 0;
+    width: 100%;
+    margin-right: 0;
+    overflow: visible;
+    max-height: none;
+    height: auto;
+    z-index: 1;
+  }
+
+  #parallelcoords {
+    touch-action: pan-y;
+  }
+}
+
+@media (max-width: 50em) and (orientation: portrait) {
+  .main-chart {
+    top: 2.7rem;
+  }
+
+  #chart-title {
+    font-size: clamp(0.95rem, 0.9rem + 0.35vw, 1.1rem);
+    margin-top: clamp(0.35rem, 0.25rem + 0.3vw, 0.5rem);
+  }
+}
+
+@media (max-width: 37.5em) and (orientation: portrait) {
+  .main-chart {
+    top: 2.7rem;
+  }
+
+  #chart-title {
+    font-size: clamp(0.9rem, 0.85rem + 0.3vw, 1rem);
+    margin-top: clamp(0.2rem, 0.15rem + 0.2vw, 0.35rem);
+  }
+
+  section {
+    padding-right: 0.75rem;
+    padding-bottom: 0.4rem;
+  }
+}
+
+@media (max-width: 28.125em) and (orientation: portrait) {
+  .chart-container {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .main-chart {
+    top: 2.5rem;
+  }
+
+  #chart-title {
+    font-size: clamp(0.85rem, 0.8rem + 0.25vw, 0.95rem);
+    margin-top: 0.15rem;
+  }
+
+  section {
+    margin-inline: 0.35rem;
+  }
+}
+
+@media (max-height: 37.5em) and (orientation: landscape) {
+  .explorable-explainer {
+    flex-direction: row;
+    align-items: stretch;
+  }
+
+  .chart-container {
+    flex: 1 1 50%;
+    min-width: 40%;
+  }
+
+  .main-chart {
+    position: sticky;
+    top: 2rem;
+    margin-left: 1rem;
+    width: 100%;
+  }
+
+  .text-container {
+    flex: 1 1 50%;
+    min-width: 40%;
+    margin-right: 1rem;
+  }
+
+  #chart-title {
+    font-size: clamp(0.9rem, 0.85rem + 0.3vw, 1rem);
+    margin-top: 0.25rem;
+  }
+}
+
+svg {
+  display: inline;
+  vertical-align: middle;
 }
 
 /* Misc Headers */
@@ -882,14 +815,9 @@ li p {
 .liinstruction {
   border-left: 0 solid transparent;
   font-style: italic;
-  color: #00356B;  /* black; */
+  color: #00356B;
   text-indent: 0;
   font-size: 1em;
-}
-
-svg {
-  display: inline;
-  vertical-align: middle;
 }
 
 /* Buttons */
@@ -947,5 +875,16 @@ figcaption {
   margin-left: 1rem;
   margin-right: 1rem;
   width: auto;
+}
+
+.references li {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.references a {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
 }
 </style>

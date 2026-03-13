@@ -31,20 +31,10 @@
                 />
                   <button
                     class="action-buttons"
-                    id="activate-button"
-                    @click="
-                    step.title === '6. Explore the Data'
-                    ? (stepRan[index] ? deactivateChart(index) : activateChart(index))
-                    : (stepRan[index] ? resetAction(index) : runAction(index))">
-                    {{
-                      step.title === '6. Explore the Data' 
-                      ? stepRan[index]
-                      ? 'Disable Interactivity'
-                      : 'Enable Interactivity'
-                      : stepRan[index]
-                      ? 'Reset'
-                      : 'Run'
-                    }}
+                    :id="`activate-button-${index}`"
+                    @click="handleStepAction(index)"
+                  >
+                    {{ getButtonLabel(index) }}
                   </button>
                 </div>
             </transition>
@@ -57,7 +47,7 @@
               :disabled="currentStep === 0"
               @click="reset"
             >
-              <img 
+              <img class="icon"
                 src="/svg/reset-button.svg"
               >
             </button>
@@ -67,7 +57,7 @@
               :disabled="currentStep === 0"
               @click="back"
             >
-              <img 
+              <img class="icon"
                 src="/svg/back-button.svg"
               >
             </button>
@@ -77,7 +67,7 @@
               :disabled="currentStep === steps.length - 1"
               @click="next"
             >
-              <img 
+              <img class="icon"
                 src="/svg/next-button.svg"
               >
             </button>
@@ -87,7 +77,7 @@
               :disabled="currentStep === steps.length - 1"
               @click="skip"
             >
-              <img 
+              <img class="icon"
                 src="/svg/skip-button.svg"
               >
             </button>
@@ -130,7 +120,6 @@ const studentDataset = ref('');
 const financeDataset = ref('');
 const { currentStep } = getSharedVariable();
 let status = false;
-const stepRan = ref<boolean[]>([])
 
 const steps = [
   { title: '1. Adjusting Dimension Ranges', content: rangeText },
@@ -140,6 +129,39 @@ const steps = [
   { title: '5. Inverting Dimensions', content: invertText },
   { title: '6. Explore the Data', content: interactiveText }
 ];
+
+const stepRan = ref(steps.map(() => false));
+
+function isLastStep(index: number) {
+  return index === steps.length - 1
+}
+
+function getButtonLabel(index: number) {
+  if (isLastStep(index)) {
+    return stepRan.value[index] ? 'Disable Interactivity' : 'Enable Interactivity'
+  }
+  return stepRan.value[index] ? 'Reset' : 'Run'
+}
+
+function handleStepAction(index: number) {
+  if (isLastStep(index)) {
+    if (stepRan.value[index]) {
+      deactivateChart(index)
+      stepRan.value[index] = false
+    } else {
+      activateChart(index)
+      stepRan.value[index] = true
+    }
+  } else {
+    if (stepRan.value[index]) {
+      resetAction(index)
+      stepRan.value[index] = false
+    } else {
+      runAction(index)
+      stepRan.value[index] = true
+    }
+  }
+}
 
 watch(
   () => steps,
@@ -152,35 +174,35 @@ watch(
 const goToStep = (index: number): void => {
   if (currentStep.value === 5) drawChart(studentDataset.value);
   spcd3.disableInteractivity();
-  stepRan.value[index] = false
+  stepRan.value[index] = false;
   currentStep.value = index;
 }
 
 const next = (): void => {
   if (currentStep.value === 5) drawChart(studentDataset.value);
   spcd3.disableInteractivity();
-  stepRan.value[currentStep.value] = false
+  stepRan.value[currentStep.value] = false;
   currentStep.value++;
 }
 
 const back = (): void => {
   if (currentStep.value === 5) drawChart(studentDataset.value);
   spcd3.disableInteractivity();
-  stepRan.value[currentStep.value] = false
+  stepRan.value[currentStep.value] = false;
   currentStep.value--;
 }
 
 const reset = (): void => {
   if (currentStep.value === 5) drawChart(studentDataset.value);
   spcd3.disableInteractivity();
-  stepRan.value[currentStep.value] = false
+  stepRan.value[currentStep.value] = false;
   currentStep.value = 0;
 }
 
 const skip = (): void => {
   if (currentStep.value === 5) drawChart(studentDataset.value);
   spcd3.disableInteractivity();
-  stepRan.value[currentStep.value] = false
+  stepRan.value[currentStep.value] = false;
   currentStep.value = 5;
 }
 
@@ -303,7 +325,6 @@ const filterRecordsBack = (): void => {
   else {
     spcd3.setFilter('English', values[1], values[0]);
   }
-  // eslint-disable-next-line no-undef
   document.querySelectorAll<SVGPathElement>("path").forEach(p => {
     p.style.pointerEvents = "none";
   });
@@ -329,7 +350,6 @@ const invertDimensionBack = (): void => {
   }
 }
 
-
 onMounted(async (): Promise<void> => {
   healthDataset.value = await loadDataset('data/health-data.csv');
   financeDataset.value = await loadDataset('data/finance-data.csv');
@@ -346,26 +366,22 @@ onMounted(async (): Promise<void> => {
 </script>
 
 <style>
-/* stepper */
 .stepper {
   display: flex;
   flex-direction: column;
-  text-align: justify;
-  width: auto;
   background: oklch(0.99 0.011 91.69);
   border-radius: 0.3rem;
   margin-top: 1rem;
-  opacity: 0;
-  transform: translateY(100px);
-  padding-right: 1rem;
   margin-left: 0.5rem;
+  padding-right: 1rem;
   padding-bottom: 0.5rem;
   border: 0.01rem solid black;
 
-  animation: slide-in-from-bottom 1s ease-out forwards;
+  transform: translateY(5rem);
+
+  animation: slide-in-from-bottom ease-out forwards;
   animation-timeline: scroll();
   animation-range: 0vh 100vh;
-  animation-duration: 1s;
 }
 
 .buttons {
@@ -376,17 +392,25 @@ onMounted(async (): Promise<void> => {
 }
 
 .stepper-button {
-  width: 1.7rem;
-  height: 1.7rem;
-  display: block;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.icon {
+  padding-bottom: 0.6rem;
+}
+
+.action-buttons {
+  margin-left: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .step-indicator {
-  margin-top: 0.5em;
   display: flex;
-  gap: 0.5em;
   justify-content: center;
-  font-size: 75%;
+  gap: 0.4rem;
+  padding: 0.7rem 0;
+  font-size: 0.6rem;
 }
 
 .step-indicator span {
@@ -400,13 +424,13 @@ onMounted(async (): Promise<void> => {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: -0.1em;
-  height: 0.1em;
+  bottom: -0.15rem;
+  height: 0.1rem;
   background: grey;
 }
 
 .steps {
-  padding: 0;
+  padding-left: 0;
 }
 
 .steps > li {
@@ -417,13 +441,11 @@ onMounted(async (): Promise<void> => {
 
 .li-header {
   background: oklch(0.99 0.011 91.69);
-  padding-top: 0.2rem;
-  padding-bottom: 0.2rem;
-  padding-left: 1rem;
+  padding: 0.2rem 0 0.2rem 1rem;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: .5rem;
+  gap: 0.5rem;
 }
 
 .triangle{
@@ -433,7 +455,7 @@ onMounted(async (): Promise<void> => {
   border-left: 0.5rem solid currentColor;
   border-top: 0.3rem solid transparent;
   border-bottom: 0.3rem solid transparent;
-  transition: transform .2s ease;
+  transition: transform 0.2s ease;
 }
 
 li.active .triangle{
@@ -442,12 +464,10 @@ li.active .triangle{
 
 .steps > li.active .li-header {
   background: rgba(0, 129, 175, 1);
-  display: inline;
   color: rgb(255,255,255);
-  font-weight: 590;
-  margin-left: 0.5rem;
+  font-weight: 600;
   padding-left: 0.5rem;
-  padding-right: 0.5rem;
+  margin-left: 0.5rem;
 }
 
 .step-panel {
@@ -462,46 +482,18 @@ li.active .triangle{
 
 .expand-enter-active,
 .expand-leave-active {
-  transition: max-height .5s ease-in, opacity .5s ease-out;
+  transition: max-height 0.5s ease-in, opacity 0.5s ease-out;
 }
+
 .expand-enter-from,
 .expand-leave-to {
   max-height: 0;
   opacity: 0;
 }
+
 .expand-enter-to,
 .expand-leave-from {
   max-height: 10rem;
   opacity: 1;
 }
-
-.note {
-  font-size: 80%;
-  text-indent: 0;
-}
-
-.note::before {
-  content: "[";
-}
-
-.note::after {
-  content: "]";
-}
-
-#activate-button {
-  margin-left: 1rem;
-  margin-bottom: 0.5rem;
-}
-
-#run-button {
-  margin-left: 1rem;
-  margin-bottom: 0.5rem;
-}
-
-.action-buttons {
-  margin-left: 1rem;
-  margin-bottom: 0.5rem;
-}
-
-
 </style>

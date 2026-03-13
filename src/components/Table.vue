@@ -1,6 +1,6 @@
 <template>
     <div class="table-container">
-        <table border="1">
+        <table>
             <thead>
                 <tr>
                     <th
@@ -25,7 +25,6 @@
                     </div>
                     </th>
                 <th class="narrow-column">
-                <!-- Add Column Button -->
                 <button
                   class="add-button"
                   @click="addColumn"
@@ -191,80 +190,73 @@ const isFormValid = computed<boolean>(() => {
 
 <style>
 .table-container {
-  min-width: 0;
-  margin-top: 1rem;
-  margin-left: 0.5rem;
   position: relative;
-  isolation: isolate;
+  margin-top: 1rem;
+  margin-inline: 0.5rem;
+  padding: 0.5rem;
+  background: oklch(0.99 0.011 91.69);
+  border: 0.01rem solid black;
+  border-radius: 0.3rem;
   overflow-x: auto;
+  overflow-y: hidden;
   box-sizing: border-box;
 }
 
 table {
-  text-align: justify;
   width: max-content;
   min-width: 100%;
   table-layout: fixed;
   border-collapse: separate;
   border-spacing: 0;
-  font-size: 0.8em;
+  font-size: 0.8rem;
 }
 
 th, td {
   position: relative;
   overflow: hidden;
-  padding: 0.5rem 0.75rem;
   white-space: nowrap;
   text-overflow: ellipsis;
   max-width: 8rem;
   min-width: 8rem;
+  border: 0.15rem solid lightgrey !important;
+  padding: 0.25rem !important;
 }
 
 td {
   background-color: oklch(0.99 0.011 91.69);;
-  padding: 0.2rem;
-  z-index: 0
 }
 
 th {
-  background-color: rgba(30,61,89,0.8) !important;
-  color: white;
-  padding: 0.3rem;
-}
-
-.header {
-  white-space: normal;
+  background-color: rgba(30, 61, 89, 0.8) !important;
+  color: rgba(255, 255, 255, 1);
 }
 
 .header-cell {
   display: flex;
-  flex-wrap: nowrap;
   align-items: center;
   gap: 0.5rem;
   width: 100%;
-  box-sizing: border-box;
+  min-width: 0;
 }
 
 .header-input {
   flex: 1 1 auto;
   min-width: 4rem;
-  box-sizing: border-box;
   padding: 0.25rem 0.5rem;
 }
 
-.header-button {
-  flex: 0 0 auto;
-  padding: 0 0.5rem;
-  margin-top: 0rem;
-  margin-right: 0.25rem;
-  background: white;
-  color: black;
-  border: none;
+.header-button { 
+  flex: 0 0 auto; 
+  padding: 0 0.5rem; 
+  margin-top: 0rem; 
+  margin-right: 0.25rem; 
+  background: rgba(255, 255, 255, 1);; 
+  color: rgba(0, 0, 0, 1); 
+  border: none; 
   border-radius: 75%;
   cursor: pointer;
   width: 1.2rem;
   height: 1.2rem;
-  line-height: 1.2rem;
   font-size: 0.9em;
 }
 
@@ -275,32 +267,31 @@ th {
   text-align: right;
 }
 
-th .delete-button,
-th .add-button,
-td .delete-button,
-td .add-button {
-  border: 0.01rem solid black;
-  background: white;
-  border-radius: 75%;
-  width: 1.2rem;
-  height: 1.2rem;
-  line-height: 1.2rem;
-  text-align: center;
+.delete-button,
+.add-button {
+  position: absolute;
+  border: 0.01rem solid rgba(0, 0, 0, 1);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 1);
+  color: rgba(0, 0, 0, 1);
+  font-weight: bold;
+  font-size: 0.9em;
+  width: 1.25rem;
+  height: 1.25rem;
   cursor: pointer;
   padding: 0;
-  margin-top: 0.4rem;
-  margin-right: 0.2rem;
-  color: black;
-  font-weight: bold;
-  font-size: 1em;
-  top: 0.2rem;
-  right: 0.4rem;
-  position: absolute;
+  top: 0;
+  right: 0.1rem;
+}
+
+.header-button:hover,
+.delete-button:hover,
+.add-button:hover {
+  background: rgba(173, 216, 230, 1);
 }
 
 .narrow-column {
   width: 2.5rem;
-  text-align: center;
   min-width: max-content;
 }
 
@@ -309,11 +300,15 @@ input {
 }
 
 input[type="number"] {
-  padding: 0.3rem;
-  box-sizing: border-box;
+  padding: 0.2rem !important;
 }
 
-th input[type="text"] {
-  width: auto !important;
+input[type="text"] {
+  padding: 0.2rem !important;
+}
+
+td input:focus {
+  outline: 0.1rem solid rgba(211, 211, 211, 1);
+  background: rgba(211, 211, 211, 1);
 }
 </style>

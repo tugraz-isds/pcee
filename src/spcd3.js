@@ -6649,7 +6649,7 @@ function setupXScales(header, dataset) {
     const labelWidth = getTextWidthSVG(longestTicklabel, "0.75rem Verdana");
     const margin = labelWidth * 0.6 + 16;
     const n = header.length;
-    const pad = (n <= 2) ? 0 : 0.2;
+    const pad = (n <= 4) ? 0.1 : 0.2;
     return point$4()
         .domain(header.map((x) => x.name))
         .range([width - margin, margin])
@@ -6833,6 +6833,10 @@ function cleanTooltip() {
 }
 function cleanTooltipSelect() {
     selectAll('.tooltip-record-select').remove();
+}
+
+function cleanTooltipLabel() {
+  select('.tooltip-label').remove();
 }
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
@@ -8326,7 +8330,7 @@ function hideMarker(dimension) {
 function disableInteractivity() {
     select('#toolbarRow').style('display', 'none');
     select('#parallelcoords').style('pointer-events', 'none');
-    select('#pc_svg').style('background', 'lightgrey');
+    select('#parallelcoords').style('background', 'lightgrey');
     selectAll('.hitarea').style('pointer-events', 'none');
     selectAll('.handle-hitbox').style('pointer-events', 'none');
     selectAll('.hitbox').style('pointer-events', 'none');
@@ -8334,7 +8338,7 @@ function disableInteractivity() {
 function enableInteractivity() {
     select('#toolbarRow').style('display', 'flex');
     select('#parallelcoords').style('pointer-events', 'auto');
-    select('#pc_svg').style('background', 'white');
+    select('#parallelcoords').style('background', 'white');
     selectAll('.hitarea').style('pointer-events', 'stroke');
     selectAll('.handle-hitbox').style('pointer-events', 'auto');
     selectAll('.hitbox').style('pointer-events', 'auto');

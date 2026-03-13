@@ -64,9 +64,9 @@ export const originalColumns = [
 
   export const columnsFinance = [
     {key: 'Name', label: 'Name', type: 'string'},
-    {key: 'Income', label: 'Income', type: 'number'}, 
-    {key: 'Accomodation', label: 'Accomodation', type: 'number'},
-    {key: 'Living', label: 'Living', type: 'number'}
+    {key: 'Income', label: 'Income (EUR)', type: 'number'}, 
+    {key: 'Accomodation', label: 'Accomodation (EUR)', type: 'number'},
+    {key: 'Living', label: 'Living (EUR)', type: 'number'}
   ];
 
   export const rowsFinance = [

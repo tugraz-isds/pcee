@@ -42,7 +42,7 @@ const properties = withDefaults(defineProps<Properties>(), {
 
 const defaults: Record<ModeKey, ModeConfig> = {
   portrait: {
-    query: '(max-width: 900px), (orientation: portrait) and (max-width: 1200px)',
+    query: '(max-width: 60em), (orientation: portrait) and (max-width: 75em)',
     containerSelector: '',
     rootSelector: '.text-container',
     offsetElementSelector: '#chart-container',
@@ -51,7 +51,7 @@ const defaults: Record<ModeKey, ModeConfig> = {
     sectionQuery: '[content-section]',
   },
   landscape: {
-    query: '(min-width: 901px) and (orientation: landscape)',
+    query: '(min-width: 60.1em) and (orientation: landscape)',
     containerSelector: '',
     rootSelector: '#text',
     offsetElementSelector: '#header',
@@ -384,4 +384,25 @@ onMounted(async () => {
 
 <style>
 [content-section] { scroll-margin-top: var(--scroll-offset, 0); }
+
+.navigation-dropdown {
+  margin-bottom: 1rem;
+
+  width: auto;
+
+  border-radius: 0.375rem;
+  border: 0.1rem solid #e5e7eb;
+
+  padding: 0.375rem 0.625rem;
+
+  font-size: 0.875rem;
+  color: #1f2937;
+
+  box-shadow: 0 0.1rem 0.2rem rgba(0, 0, 0, 0.05);
+}
+
+.navigation-dropdown:focus {
+  outline: none;
+  box-shadow: 0 0 0 0.1rem #d1d5db;
+}
 </style>
