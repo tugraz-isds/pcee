@@ -193,18 +193,18 @@ const selectOutlier = (): void => {
     }
   }  
 
-  if (spcd3.isSelected('Patient F') && (document.getElementById('outlier-button') as HTMLButtonElement).textContent === 'Show Outlier') {
+  if (spcd3.isSelected('Patient-F') && (document.getElementById('outlier-button') as HTMLButtonElement).textContent === 'Show Outlier') {
     (document.getElementById('outlier-button') as HTMLButtonElement).textContent = 'Hide Outlier';
   }
-  else if (!spcd3.isSelected('Patient F') && (document.getElementById('outlier-button') as HTMLButtonElement).textContent !== 'Show Outlier') {
+  else if (!spcd3.isSelected('Patient-F') && (document.getElementById('outlier-button') as HTMLButtonElement).textContent !== 'Show Outlier') {
     (document.getElementById('outlier-button') as HTMLButtonElement).textContent = 'Show Outlier';
   }
-  else if (spcd3.isSelected('Patient F') && (document.getElementById('outlier-button') as HTMLButtonElement).textContent !== 'Show Outlier') {
-    spcd3.setUnselected('Patient F');
-    (document.getElementById('outlier-button') as HTMLButtonElement).textContent = 'Show Outlier';
+  else if (spcd3.isSelected('Patient-F') && (document.getElementById('outlier-button') as HTMLButtonElement).textContent !== 'Show Outlier') {
+    spcd3.setUnselected('Patient-F');
+    (document.getElementById('outlier-button') as HTMLButtonElement).textContent = 'Show Outlier';  
   }
   else {
-    spcd3.setSelected('Patient F');
+    spcd3.setSelected('Patient-F');
     (document.getElementById('outlier-button') as HTMLButtonElement).textContent = 'Hide Outlier';
   }
 };
@@ -242,6 +242,9 @@ const colorRecord = (record: string, color: string): void => {
 const resetColorOfRecord = (record: string): void => {
   if (!spcd3.isRecordInactive(record)) {
     spcd3.uncolorRecord(record);
+  }
+  else {
+    spcd3.setClassColoredFalse(record);
   }
 }
 

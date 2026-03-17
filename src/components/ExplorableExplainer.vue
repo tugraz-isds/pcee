@@ -134,6 +134,7 @@ const handleImage = (chart: HTMLDivElement): void => {
   chart.style.maxHeight = 'auto';
   chart.style.justifyContent = 'center';
   chart.style.alignItems = 'center';
+  chart.style.background = 'white';
   chart.onclick = handleClick;
 }
 
@@ -817,13 +818,19 @@ li p {
   font-style: italic;
   color: #00356B;
   text-indent: 0;
+  text-align: left;
+  hyphens: none;
   font-size: 1em;
+}
+
+.liinstruction svg {
+  display: inline-block;
+  vertical-align: middle;
 }
 
 /* Buttons */
 button {
   padding: 0.25rem;
-  margin-right: 0.5rem;
   font-size: 90%;
   margin-top: 0.5rem;
 }

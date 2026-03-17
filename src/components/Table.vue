@@ -70,12 +70,15 @@
         <tr>
             <td :colspan="columns.length">
                 <button
+                  class="table-button"
                   :disabled="!isFormValid"
                   @click="redrawChart"
                 >
                   Redraw Chart
                 </button>
-                <button @click="resetTable">
+                <button
+                  class="table-button"
+                  @click="resetTable">
                   Reset Table
                 </button>
             </td>
@@ -288,6 +291,10 @@ th {
 .delete-button:hover,
 .add-button:hover {
   background: rgba(173, 216, 230, 1);
+}
+
+.table-button {
+  margin-right: 0.5rem;
 }
 
 .narrow-column {
