@@ -133,32 +133,32 @@ const steps = [
 const stepRan = ref(steps.map(() => false));
 
 function isLastStep(index: number) {
-  return index === steps.length - 1
+  return index === steps.length - 1;
 }
 
 function getButtonLabel(index: number) {
   if (isLastStep(index)) {
-    return stepRan.value[index] ? 'Disable Interactivity' : 'Enable Interactivity'
+    return stepRan.value[index] ? 'Disable Interactivity' : 'Enable Interactivity';
   }
-  return stepRan.value[index] ? 'Reset' : 'Run'
+  return stepRan.value[index] ? 'Reset' : 'Run';
 }
 
 function handleStepAction(index: number) {
   if (isLastStep(index)) {
     if (stepRan.value[index]) {
-      deactivateChart(index)
-      stepRan.value[index] = false
+      deactivateChart(index);
+      stepRan.value[index] = false;
     } else {
-      activateChart(index)
-      stepRan.value[index] = true
+      activateChart(index);
+      stepRan.value[index] = true;
     }
   } else {
     if (stepRan.value[index]) {
-      resetAction(index)
-      stepRan.value[index] = false
+      resetAction(index);
+      stepRan.value[index] = false;
     } else {
-      runAction(index)
-      stepRan.value[index] = true
+      runAction(index);
+      stepRan.value[index] = true;
     }
   }
 }
@@ -174,35 +174,30 @@ watch(
 const goToStep = (index: number): void => {
   if (currentStep.value === 5) drawChart(studentDataset.value);
   spcd3.disableInteractivity();
-  stepRan.value[index] = false;
   currentStep.value = index;
 }
 
 const next = (): void => {
   if (currentStep.value === 5) drawChart(studentDataset.value);
   spcd3.disableInteractivity();
-  stepRan.value[currentStep.value] = false;
   currentStep.value++;
 }
 
 const back = (): void => {
   if (currentStep.value === 5) drawChart(studentDataset.value);
   spcd3.disableInteractivity();
-  stepRan.value[currentStep.value] = false;
   currentStep.value--;
 }
 
 const reset = (): void => {
   if (currentStep.value === 5) drawChart(studentDataset.value);
   spcd3.disableInteractivity();
-  stepRan.value[currentStep.value] = false;
   currentStep.value = 0;
 }
 
 const skip = (): void => {
   if (currentStep.value === 5) drawChart(studentDataset.value);
   spcd3.disableInteractivity();
-  stepRan.value[currentStep.value] = false;
   currentStep.value = 5;
 }
 
@@ -237,7 +232,7 @@ const triggerNext = (currentStep: number): void => {
       setRangeNext();
       break;
     case 2:
-      selectRecordNext();
+      selectRecordNext(currentStep);
       break;
     case 3:
       filterRecordsNext();
@@ -259,8 +254,7 @@ const triggerBack = (currentStep: number): void => {
       setRangeBack();
       break;
     case 1:
-      selectRecordBack();
-      setRangeBack();
+      selectRecordBack(currentStep);
       break;
     case 2:
       filterRecordsBack();
@@ -300,12 +294,22 @@ const setRangeBack = (): void => {
   });
 }
 
-const selectRecordNext = (): void => {
+const selectRecordNext = (stepIndex: number): void => {
+  if (!spcd3.isRecordInactive('Sylvia')) {
     spcd3.setSelected('Sylvia');
+  }
+  else {
+    runAction(stepIndex-1);
+  }
 }
 
-const selectRecordBack = (): void => {
+const selectRecordBack = (stepIndex: number): void => {
+  if (!spcd3.isRecordInactive('Sylvia')) {
     spcd3.setUnselected('Sylvia');
+  }
+  else {
+    resetAction(stepIndex);
+  }
 }
 
 const filterRecordsNext = (): void => {

@@ -7759,7 +7759,10 @@ function moveByOne(dimension, direction) {
     var selectedRecords = getSelected();
     selectedRecords.forEach(record => {
         const path = parcoords.newDataset.find(d => d[hoverlabel] === record);
-        createToolTipForValues(path, true);
+        if (!isRecordInactive(record)) {
+            console.log(record);
+            createToolTipForValues(path, true);
+        }
     });
 }
 function move(dimensionA, toRightOf, dimensionB) {
@@ -7825,7 +7828,10 @@ function swap(dimensionA, dimensionB) {
     var selectedRecords = getSelected();
     selectedRecords.forEach(record => {
         const path = parcoords.newDataset.find(d => d[hoverlabel] === record);
-        createToolTipForValues(path, true);
+        if (!isRecordInactive(record)) {
+            console.log(record);
+            createToolTipForValues(path, true);
+        }
     });
 }
 //---------- Filter Functions ----------
@@ -8058,7 +8064,9 @@ function invertWoTransition(dimension) {
     var selectedRecords = getSelected();
     selectedRecords.forEach(record => {
         const path = parcoords.newDataset.find(d => d[hoverlabel] === record);
-        createToolTipForValues(path, true);
+        if (!isRecordInactive(record)) {
+            createToolTipForValues(path, true);
+        }
     });
 }
 function setInversionStatus(dimension, status) {
@@ -8107,7 +8115,9 @@ function setInversionStatus(dimension, status) {
     var selectedRecords = getSelected();
     selectedRecords.forEach(record => {
         const path = parcoords.newDataset.find(d => d[hoverlabel] === record);
-        createToolTipForValues(path, true);
+        if (!isRecordInactive(record)) {
+            createToolTipForValues(path, true);
+        }
     });
 }
 function invert(dimension) {
@@ -8149,7 +8159,9 @@ function invert(dimension) {
     var selectedRecords = getSelected();
     selectedRecords.forEach(record => {
         const path = parcoords.newDataset.find(d => d[hoverlabel] === record);
-        createToolTipForValues(path, true);
+        if (!isRecordInactive(record)) {
+            createToolTipForValues(path, true);
+        }
     });
     getFilter(dimension);
     addSettingsForBrushing(dimension, isInverted(dimension));
@@ -8214,7 +8226,6 @@ function setSelected(record) {
 function setUnselected(record) {
     selectAll('#' + cleanString(record))
         .classed('selected', false)
-        .transition()
         .style('stroke', 'rgba(0, 129, 175, 0.5)');
     selectAll(`#tooltip-record-select-${record}`).style('display', 'none');
 }
@@ -8330,7 +8341,7 @@ function setClassColoredFalse(record) {
 function disableInteractivity() {
     select('#toolbarRow').style('display', 'none');
     select('#parallelcoords').style('pointer-events', 'none');
-    select('#parallelcoords').style('background', 'lightgrey');
+    select('#parallelcoords').style('background', 'oklch(0.99 0.011 91.69)');
     selectAll('.hitarea').style('pointer-events', 'none');
     selectAll('.handle-hitbox').style('pointer-events', 'none');
     selectAll('.hitbox').style('pointer-events', 'none');
@@ -9547,7 +9558,9 @@ function onDragEndEventHandler(featureAxis) {
             var selectedRecords = getSelected();
             selectedRecords.forEach(record => {
                 const path = parcoords.newDataset.find(d => d[hoverlabel] === record);
-                createToolTipForValues(path, true);
+                if (!isRecordInactive(record)) {
+                    createToolTipForValues(path, true);
+                }
             });
         };
     }
@@ -10995,7 +11008,7 @@ function handlePointerEnter(event, d) {
 }
 function handlePointerLeaveOrOut() {
     doNotHighlight();
-    select('.tooltip-label').style('visibility', 'hidden');
+    selectAll('.tooltip-label').style('visibility', 'hidden');
     cleanTooltip();
 }
 function handleClick(event, d) {

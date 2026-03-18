@@ -285,6 +285,7 @@ th {
   padding: 0;
   top: 0;
   right: 0.1rem;
+  margin-right: 0.5rem;
 }
 
 .header-button:hover,
