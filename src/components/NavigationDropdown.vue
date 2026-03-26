@@ -386,7 +386,7 @@ onMounted(async () => {
 [content-section] { scroll-margin-top: var(--scroll-offset, 0); }
 
 .navigation-dropdown {
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 
   width: auto;
 

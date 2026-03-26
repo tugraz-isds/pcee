@@ -7760,7 +7760,6 @@ function moveByOne(dimension, direction) {
     selectedRecords.forEach(record => {
         const path = parcoords.newDataset.find(d => d[hoverlabel] === record);
         if (!isRecordInactive(record)) {
-            console.log(record);
             createToolTipForValues(path, true);
         }
     });
@@ -7829,7 +7828,6 @@ function swap(dimensionA, dimensionB) {
     selectedRecords.forEach(record => {
         const path = parcoords.newDataset.find(d => d[hoverlabel] === record);
         if (!isRecordInactive(record)) {
-            console.log(record);
             createToolTipForValues(path, true);
         }
     });
@@ -8341,7 +8339,7 @@ function setClassColoredFalse(record) {
 function disableInteractivity() {
     select('#toolbarRow').style('display', 'none');
     select('#parallelcoords').style('pointer-events', 'none');
-    select('#parallelcoords').style('background', 'oklch(0.99 0.011 91.69)');
+    select('#parallelcoords').style('background', 'lightgrey').style('z-index', 1);
     selectAll('.hitarea').style('pointer-events', 'none');
     selectAll('.handle-hitbox').style('pointer-events', 'none');
     selectAll('.hitbox').style('pointer-events', 'none');
@@ -10673,21 +10671,71 @@ function makeIconButton(parent, opts) {
         btn.on('click', onClick);
     btn.append('span')
         .attr('class', 'toolbar-buttonicon')
-        .attr('id', id + 'icon')
+        .attr('id', `${id}icon`)
         .html(iconHtml);
-    btn.select('.btn-icon').selectAll('svg')
+    btn.select('.toolbar-buttonicon').selectAll('svg')
         .attr('class', 'toolbar-svg');
-    const tip = btn.append('span')
+    const tip = parent.append('span')
         .attr('class', 'toolbar-buttontip')
-        .attr('id', id + 'tip')
+        .attr('id', `${id}tip`)
+        .attr('popover', 'manual')
         .text(tipText ?? '');
-    function show() { tip.style('opacity', '1').style('visibility', 'visible'); }
-    function hide() { tip.style('opacity', '0').style('visibility', 'hidden'); }
+    const btnNode = btn.node();
+    const tipNode = tip.node();
+    function show() {
+        if (!tipNode)
+            return;
+        if (!tipNode.matches(':popover-open')) {
+            tipNode.showPopover();
+        }
+        positionTip(btnNode, tipNode);
+    }
+    function hide() {
+        if (!tipNode)
+            return;
+        if (tipNode.matches(':popover-open')) {
+            tipNode.hidePopover();
+        }
+    }
     btn.on('mouseenter', show)
         .on('mouseleave', hide)
         .on('focus', show)
         .on('blur', hide);
+    select(window).on(`resize.${id}`, () => {
+        if (tipNode?.matches(':popover-open')) {
+            positionTip(btnNode, tipNode);
+        }
+    });
+    select(window).on(`scroll.${id}`, () => {
+        if (tipNode?.matches(':popover-open')) {
+            positionTip(btnNode, tipNode);
+        }
+    });
     return { btn, tip };
+}
+function positionTip(btnNode, tipNode) {
+    if (!btnNode || !tipNode)
+        return;
+    const rect = btnNode.getBoundingClientRect();
+    const gap = 8;
+    tipNode.style.left = '0';
+    tipNode.style.top = '0';
+    const tipRect = tipNode.getBoundingClientRect();
+    let left = rect.left + rect.width / 2 - tipRect.width / 2;
+    let top = rect.bottom + gap;
+    const padding = 0.5;
+    if (left < padding)
+        left = padding;
+    if (left + tipRect.width > window.innerWidth - padding) {
+        left = window.innerWidth - tipRect.width - padding;
+    }
+    if (top + tipRect.height > window.innerHeight - padding) {
+        top = rect.top - tipRect.height - gap;
+    }
+    if (top < padding)
+        top = padding;
+    tipNode.style.left = `${left / 16}rem`;
+    tipNode.style.top = `${top / 16}rem`;
 }
 function showModalWithData(dataset) {
     const overlay = select('body')
@@ -10829,7 +10877,7 @@ function styleInject(css, ref) {
 var css_248z$1 = "/*https://useaxentix.com/blog/css/css-reset-complete-guide/*/\r\n\r\n/* ===============================================\r\n   Ultimate Modern CSS Reset\r\n   Based on best practices from Eric Meyer,\r\n   Josh W. Comeau, Andy Bell, and modern standards\r\n   =============================================== */\r\n\r\n/* 1. Use a more-intuitive box-sizing model */\r\n*, *::before, *::after {\r\n  box-sizing: border-box;\r\n}\r\n\r\n/* 2. Remove default margin and padding */\r\n* {\r\n  margin: 0;\r\n  padding: 0;\r\n}\r\n\r\n/* 3. Set core body defaults */\r\nbody {\r\n  min-height: 100vh;\r\n  line-height: 1.5;\r\n  -webkit-font-smoothing: antialiased;\r\n  -moz-osx-font-smoothing: grayscale;\r\n}\r\n\r\n/* 4. Remove list styles on ul, ol elements with a list role */\r\nul[role='list'], ol[role='list'] {\r\n  list-style: none;\r\n}\r\n\r\n/* 5. Set shorter line heights on headings and interactive elements */\r\nh1, h2, h3, h4, button, input, label {\r\n  line-height: 1.1;\r\n}\r\n\r\n/* 6. Balance text wrapping on headings */\r\nh1, h2, h3, h4 {\r\n  text-wrap: balance;\r\n}\r\n\r\n/* 7. Improve text rendering and wrapping */\r\np, h1, h2, h3, h4, h5, h6 {\r\n  overflow-wrap: break-word;\r\n}\r\n\r\np {\r\n  text-wrap: pretty;\r\n}\r\n\r\n/* 8. A elements that don't have a class get default styles */\r\na:not([class]) {\r\n  text-decoration-skip-ink: auto;\r\n  color: currentColor;\r\n}\r\n\r\n/* 9. Make images and media easier to work with */\r\nimg, picture, video, canvas, svg {\r\n  display: block;\r\n}\r\n\r\n/* 10. Inherit fonts for inputs and buttons */\r\ninput, button, textarea, select {\r\n  font: inherit;\r\n}\r\n\r\n/* 11. Make sure textareas without a rows attribute are not tiny */\r\ntextarea:not([rows]) {\r\n  min-height: 10em;\r\n}\r\n\r\n/* 12. Anything that has been anchored to should have extra scroll margin */\r\n:target {\r\n  scroll-margin-block: 5ex;\r\n}\r\n\r\n/* 13. Root stacking context */\r\n#root, #__next {\r\n  isolation: isolate;\r\n}\r\n\r\n/* 14. Enable keyword animations for modern browsers */\r\n@media (prefers-reduced-motion: no-preference) {\r\n  html {\r\n    interpolate-size: allow-keywords;\r\n  }\r\n}\r\n\r\n/* 15. HTML5 display-role reset for older browsers */\r\narticle, aside, details, figcaption, figure,\r\nfooter, header, hgroup, menu, nav, section {\r\n  display: block;\r\n}\r\n\r\n/* 16. Remove quotes from blockquotes and q elements */\r\nblockquote, q {\r\n  quotes: none;\r\n}\r\n\r\nblockquote:before, blockquote:after,\r\nq:before, q:after {\r\n  content: '';\r\n  content: none;\r\n}\r\n\r\n/* 17. Table border collapse */\r\ntable {\r\n  border-collapse: collapse;\r\n  border-spacing: 0;\r\n}\r\n\r\n/* 18. Focus management for accessibility */\r\n:focus-visible {\r\n  outline: 2px solid currentColor;\r\n  outline-offset: 2px;\r\n}\r\n\r\n/* 19. Remove focus outline for mouse users */\r\n:focus:not(:focus-visible) {\r\n  outline: none;\r\n}";
 styleInject(css_248z$1);
 
-var css_248z = "body {\n    font-size: 0.8rem;\n}\n\nheader {\n    display: flex;\n}\n\nbutton {\n    cursor: pointer;\n    background: #f6f6f6;\n    border: 0.08rem solid grey;\n    border-radius: 0.1rem;\n}\n\n.generic-button {\n    margin: 0.5rem auto;\n    padding: 0 0.5rem;\n    display: block;\n}\n\n.save-button {\n    margin-left: 0.5rem;\n    padding: 0 0.5rem;\n    display: inline-block;\n}\n\n.save-csv-button {\n    margin-bottom: 3rem;\n    padding: 0 0.5rem;\n    align-self: flex-start;\n    display: inline-block;\n}\n\n.close-button {\n    position: absolute;\n    top: 0.625rem;\n    right: 0.938rem;\n    font-size: 1.25rem;\n    font-weight: bold;\n    cursor: pointer;\n}\n\nth {\n    position: sticky;\n    top: 0;\n    border: 0.08rem solid grey;\n    padding: 0.5rem;\n    background-color: rgb(201, 212, 221);\n    white-space: nowrap;\n    overflow: hidden;\n}\n\ntd {\n    border: 0.08rem solid grey;\n    padding: 0.5rem;\n}\n\nimg {\n    display: inline-block;\n}\n\n.form {\n    display: flex;\n    flex-direction: column;\n    gap: 1rem;\n}\n\n.label {\n    padding: 0.35rem;\n    text-align: left;\n    flex: 1;\n}\n\n.input {\n    width: 3.125rem;\n    margin-right: 0.45rem;\n}\n\n.tablecontainer {\n    width: 100%;\n}\n\n#parallelcoords {\n    display: block;\n    width: 100%;\n    text-align: left;\n}\n\n#pc_svg {\n    padding-bottom: 1rem;\n}\n\n.chartWrapper {\n    position: relative;\n    overflow-x: auto;\n    margin-left: 1rem;\n}\n\n.tip-layer{\n    position: absolute;\n    left: 0;\n    top: 0;\n    pointer-events: none;\n}\n\n.dimensions-axis {\n    stroke: black;\n}\n\n.tooltip-values {\n    position: absolute;\n    border: 0.08rem solid grey;\n    border-radius: 0.1rem;\n    margin: 0.5rem;\n    padding: 0.12rem;\n    background-color: lightgrey;\n    visibility: hidden;\n}\n\n.tooltip-record {\n    position: absolute;\n    pointer-events: none;\n    border: none;\n    border-radius: 0.1rem;\n    margin: 0.5rem;\n    padding: 0.12rem;\n    background-color: rgba(211, 211, 211, 0.5);\n    color: red;\n    font-size: 0.65rem;\n    font-weight: bold;\n    z-index: 999;\n}\n\n.tooltip-record-select {\n    position: absolute;\n    pointer-events: none;\n    border: none;\n    border-radius: 0.1rem;\n    margin: 0.5rem;\n    padding: 0.12rem;\n    background-color: rgba(211, 211, 211, 0.5);;\n    color: orange;\n    font-size: 0.65rem;\n    font-weight: bolder;\n    z-index: 999;\n}\n\n.tooltip-label {\n    position: absolute;\n    visibility: hidden;\n    pointer-events: none;\n    background: lightgrey;\n    padding: 0.2rem;\n    border: 0.08rem solid grey;\n    border-radius: 0.1rem;\n    font-size: 0.75rem;\n    z-index: 1000;\n    white-space: pre-line;\n}\n\n.tooltip-dimension {\n    position: absolute;\n    pointer-events: none;\n    border: 0.08rem solid grey;\n    border-radius: 0.1rem;\n    margin: 0.5rem;\n    padding: 0.12rem;\n    background-color: lightgrey;\n    visibility: hidden;\n}\n\n.marker {\n    fill: none;\n    stroke: rgb(228, 90, 15);\n    stroke-width: 0.1rem;\n    opacity: 0;\n    transition: opacity 0.2s ease;\n}\n\n.marker.visible {\n    opacity: 1;\n}\n\n.rect {\n    fill: rgba(242, 242, 76, 0.5);\n    cursor: default;\n}\n\n.triangle {\n    width: 14;\n    height: 10;\n    pointer-events: none;\n}\n\n.toolbar {\n    display: flex;\n    overflow: hidden;\n    max-width: 0;\n    opacity: 0;\n    transition: max-width 0.3s ease, opacity 0.3s ease;\n    pointer-events: none;\n}\n\n#toolbarRow {\n    display: flex;\n    flex-wrap: wrap;\n    align-items: center;\n    justify-content: flex-start;\n    overflow: visible;\n    padding-left: 1rem;\n}\n\n.toolbar-button {\n    width: 1.4rem;\n    height: 1.4rem;\n    position: relative;\n    display: inline-flex;\n    overflow: visible;\n    border: none;\n    align-items: center;\n    justify-content: center;\n    box-sizing: border-box;\n    vertical-align: middle;\n}\n\n.toolbar-buttonicon {\n    width: 1rem;\n    height: 1rem;\n    display: inline-flex;\n    align-items: center;\n    justify-content: center;\n    pointer-events: none;\n}\n\n.toolbar-buttontip {\n    position: absolute;\n    left: 150%;\n    top: calc(100% + 0.5rem);\n    transform: translateX(-50%);\n    background: lightgrey;\n    padding: 0.2rem;\n    border: 0.08rem solid grey;\n    border-radius: 0.1rem;\n    white-space: nowrap;\n    line-height: 1.2;\n    pointer-events: none;\n    opacity: 0;\n    visibility: hidden;\n    transition: opacity 0.15s ease;\n    z-index: 99999;\n}\n\n.modal-tableoverlay {\n    position: fixed;\n    top: 0;\n    left: 0;\n    width: 100%;\n    height: 100%;\n    background-color: rgba(0, 0, 0, 0.5);\n    z-index: 999;\n    display: block;\n}\n\n.modal-tabledata {\n    top: 50%;\n    left: 50%;\n    transform: translate(-50%, -50%);\n    position: fixed;\n    background: white;\n    padding: 1rem;\n    box-shadow: 0 0 0.625rem rgba(0, 0, 0, 0.3);\n    border: 0.08rem solid grey;\n    border-radius: 0.5rem;\n    max-height: 80vh;\n    max-width: 90vh;\n    z-index: 1000;\n    display: flex;\n    flex-direction: column;\n    overflow: hidden;\n}\n\n.scroll-wrapper {\n    flex: 1 1 auto;\n    min-height: 0;\n    width: 100%;\n    overflow: auto;\n    max-height: 100%; \n}\n\n\n.contextmenu-records {\n    border: 0.08rem solid grey;\n    border-radius: 0.1rem;\n    margin: 0.5rem;\n    padding: 0.35rem;\n    background-color: white;\n    cursor: pointer;\n    z-index: 9999;\n}\n\n.contextmenu-dimensions {\n    border: 0.08rem solid grey;\n    border-radius: 0.1rem;\n    margin: 0.5rem;\n    padding: 0.35rem;\n    background-color: white;\n    cursor: pointer;\n    z-index: 9999;\n}\n\n.modal-overlay {\n    position: fixed;\n    top: 0;\n    left: 0;\n    width: 100%;\n    height: 100%;\n    background-color: rgba(0, 0, 0, 0.5);\n    display: none;\n    z-index: 9999;\n}\n\n.modal {\n    position: fixed;\n    top: 50%;\n    left: 50%;\n    transform: translate(-50%, -50%);\n    z-index: 9999;\n    background-color: white;\n    padding: 1rem;\n    border-radius: 0.5rem;\n    box-shadow: 0 0.25rem 0.625rem rgba(0,0,0,0.2);\n    display: none;\n}\n\n.modal-header {\n    display: flex;\n    justify-content: space-between;\n    align-items: center;\n    padding: 0.75rem 1rem;\n}\n\n.modal-title {\n    padding-left: 0.5rem;\n    font-size: large;\n}\n\n.modal-content {\n    min-width: 10rem;\n    position: relative;\n}\n\n.modal-info {\n    margin-top: 0.15rem;\n    padding: 0.5rem;\n}\n\n.modal-notes {\n    color: grey;\n    font-size: smaller;\n    padding: 1rem 0 0.5rem 0.5rem;\n}\n\n.modal-label {\n    padding: 0.5rem;\n}\n\n.modal-input {\n    width: 4.5rem;\n    border: 0.1rem solid lightgrey;\n    border-radius: 0.1rem;\n}\n\n.modal-errormessage {\n    position: relative;\n    display: none;\n    padding-left: 0.5rem;\n    padding-top: 0.5rem;\n    color: red;\n    font-size: x-small;\n}\n\n#errorRange {\n    display: block;\n    padding-left: 0.5rem;\n    padding-top: 0.5rem;\n    color: red;\n    font-size: x-small;\n}\n\n.header-row {\n    display: flex;\n    justify-content: space-between;\n    align-items: center;\n    margin-bottom: 1rem;\n    flex: 0 0 auto;\n}\n\n.options-div {\n    display: flex;\n    align-items: center;\n    justify-content: space-between;\n}\n\n.triangle-hitbox {\n    width: 30;\n    height: 30;\n    fill: transparent;\n    pointer-events: all;\n    touch-action: none;\n    user-select: none;\n}\n\n.handle-hitbox {\n    fill: transparent;\n    pointer-events: all;\n}\n";
+var css_248z = "body {\n    font-size: 0.8rem;\n}\n\nheader {\n    display: flex;\n}\n\nbutton {\n    cursor: pointer;\n    background: #f6f6f6;\n    border: 0.08rem solid grey;\n    border-radius: 0.1rem;\n}\n\n.generic-button {\n    margin: 0.5rem auto;\n    padding: 0 0.5rem;\n    display: block;\n}\n\n.save-button {\n    margin-left: 0.5rem;\n    padding: 0 0.5rem;\n    display: inline-block;\n}\n\n.save-csv-button {\n    margin-bottom: 3rem;\n    padding: 0 0.5rem;\n    align-self: flex-start;\n    display: inline-block;\n}\n\n.close-button {\n    position: absolute;\n    top: 0.625rem;\n    right: 0.938rem;\n    font-size: 1.25rem;\n    font-weight: bold;\n    cursor: pointer;\n}\n\nth {\n    position: sticky;\n    top: 0;\n    border: 0.08rem solid grey;\n    padding: 0.5rem;\n    background-color: rgb(201, 212, 221);\n    white-space: nowrap;\n    overflow: hidden;\n}\n\ntd {\n    border: 0.08rem solid grey;\n    padding: 0.5rem;\n}\n\nimg {\n    display: inline-block;\n}\n\n.form {\n    display: flex;\n    flex-direction: column;\n    gap: 1rem;\n}\n\n.label {\n    padding: 0.35rem;\n    text-align: left;\n    flex: 1;\n}\n\n.input {\n    width: 3.125rem;\n    margin-right: 0.45rem;\n}\n\n.tablecontainer {\n    width: 100%;\n}\n\n#parallelcoords {\n    display: block;\n    width: 100%;\n    text-align: left;\n}\n\n#pc_svg {\n    padding-bottom: 1rem;\n}\n\n.chartWrapper {\n    position: relative;\n    overflow-x: auto;\n    margin-left: 1rem;\n}\n\n.tip-layer{\n    position: absolute;\n    left: 0;\n    top: 0;\n    pointer-events: none;\n}\n\n.dimensions-axis {\n    stroke: black;\n}\n\n.tooltip-values {\n    position: absolute;\n    border: 0.08rem solid grey;\n    border-radius: 0.1rem;\n    margin: 0.5rem;\n    padding: 0.12rem;\n    background-color: lightgrey;\n    visibility: hidden;\n}\n\n.tooltip-record {\n    position: absolute;\n    pointer-events: none;\n    border: none;\n    border-radius: 0.1rem;\n    margin: 0.5rem;\n    padding: 0.12rem;\n    background-color: rgba(211, 211, 211, 0.5);\n    color: red;\n    font-size: 0.65rem;\n    font-weight: bold;\n    z-index: 999;\n}\n\n.tooltip-record-select {\n    position: absolute;\n    pointer-events: none;\n    border: none;\n    border-radius: 0.1rem;\n    margin: 0.5rem;\n    padding: 0.12rem;\n    background-color: rgba(211, 211, 211, 0.5);;\n    color: orange;\n    font-size: 0.65rem;\n    font-weight: bolder;\n    z-index: 999;\n}\n\n.tooltip-label {\n    position: absolute;\n    visibility: hidden;\n    pointer-events: none;\n    background: lightgrey;\n    padding: 0.2rem;\n    border: 0.08rem solid grey;\n    border-radius: 0.1rem;\n    font-size: 0.75rem;\n    z-index: 1000;\n    white-space: pre-line;\n}\n\n.tooltip-dimension {\n    position: absolute;\n    pointer-events: none;\n    border: 0.08rem solid grey;\n    border-radius: 0.1rem;\n    margin: 0.5rem;\n    padding: 0.12rem;\n    background-color: lightgrey;\n    visibility: hidden;\n}\n\n.marker {\n    fill: none;\n    stroke: rgb(228, 90, 15);\n    stroke-width: 0.1rem;\n    opacity: 0;\n    transition: opacity 0.2s ease;\n}\n\n.marker.visible {\n    opacity: 1;\n}\n\n.rect {\n    fill: rgba(242, 242, 76, 0.5);\n    cursor: default;\n}\n\n.triangle {\n    width: 0.9rem;\n    height: 0.8rem;\n    pointer-events: none;\n}\n\n.toolbar {\n    display: flex;\n    overflow: hidden;\n    max-width: 0;\n    opacity: 0;\n    transition: max-width 0.3s ease, opacity 0.3s ease;\n    pointer-events: none;\n}\n\n#toolbarRow {\n    display: flex;\n    flex-wrap: wrap;\n    align-items: center;\n    justify-content: flex-start;\n    overflow: visible;\n    padding-left: 1rem;\n}\n\n.toolbar-button {\n    width: 1.4rem;\n    height: 1.4rem;\n    position: relative;\n    display: inline-flex;\n    overflow: visible;\n    border: none;\n    align-items: center;\n    justify-content: center;\n    box-sizing: border-box;\n    vertical-align: middle;\n}\n\n.toolbar-buttonicon {\n    width: 1rem;\n    height: 1rem;\n    display: inline-flex;\n    align-items: center;\n    justify-content: center;\n    pointer-events: none;\n}\n\n.toolbar-buttontip {\n    inset: auto;\n    margin: 0;\n    background: lightgrey;\n    padding: 0.2rem;\n    border: 0.08rem solid grey;\n    border-radius: 0.1rem;\n    white-space: nowrap;\n    line-height: 1.2;\n    pointer-events: none;\n}\n\n.toolbar-buttontip:popover-open {\n    position: fixed;\n}\n\n.modal-tableoverlay {\n    position: fixed;\n    top: 0;\n    left: 0;\n    width: 100%;\n    height: 100%;\n    background-color: rgba(0, 0, 0, 0.5);\n    z-index: 999;\n    display: block;\n}\n\n.modal-tabledata {\n    top: 50%;\n    left: 50%;\n    transform: translate(-50%, -50%);\n    position: fixed;\n    background: white;\n    padding: 1rem;\n    box-shadow: 0 0 0.625rem rgba(0, 0, 0, 0.3);\n    border: 0.08rem solid grey;\n    border-radius: 0.5rem;\n    max-height: 80vh;\n    max-width: 90vh;\n    z-index: 1000;\n    display: flex;\n    flex-direction: column;\n    overflow: hidden;\n}\n\n.scroll-wrapper {\n    flex: 1 1 auto;\n    min-height: 0;\n    width: 100%;\n    overflow: auto;\n    max-height: 100%; \n}\n\n\n.contextmenu-records {\n    border: 0.08rem solid grey;\n    border-radius: 0.1rem;\n    margin: 0.5rem;\n    padding: 0.35rem;\n    background-color: white;\n    cursor: pointer;\n    z-index: 9999;\n}\n\n.contextmenu-dimensions {\n    border: 0.08rem solid grey;\n    border-radius: 0.1rem;\n    margin: 0.5rem;\n    padding: 0.35rem;\n    background-color: white;\n    cursor: pointer;\n    z-index: 9999;\n}\n\n.modal-overlay {\n    position: fixed;\n    top: 0;\n    left: 0;\n    width: 100%;\n    height: 100%;\n    background-color: rgba(0, 0, 0, 0.5);\n    display: none;\n    z-index: 9999;\n}\n\n.modal {\n    position: fixed;\n    top: 50%;\n    left: 50%;\n    transform: translate(-50%, -50%);\n    z-index: 9999;\n    background-color: white;\n    padding: 1rem;\n    border-radius: 0.5rem;\n    box-shadow: 0 0.25rem 0.625rem rgba(0,0,0,0.2);\n    display: none;\n}\n\n.modal-header {\n    display: flex;\n    justify-content: space-between;\n    align-items: center;\n    padding: 0.75rem 1rem;\n}\n\n.modal-title {\n    padding-left: 0.5rem;\n    font-size: large;\n}\n\n.modal-content {\n    min-width: 10rem;\n    position: relative;\n}\n\n.modal-info {\n    margin-top: 0.15rem;\n    padding: 0.5rem;\n}\n\n.modal-notes {\n    color: grey;\n    font-size: smaller;\n    padding: 1rem 0 0.5rem 0.5rem;\n}\n\n.modal-label {\n    padding: 0.5rem;\n}\n\n.modal-input {\n    width: 4.5rem;\n    border: 0.1rem solid lightgrey;\n    border-radius: 0.1rem;\n}\n\n.modal-errormessage {\n    position: relative;\n    display: none;\n    padding-left: 0.5rem;\n    padding-top: 0.5rem;\n    color: red;\n    font-size: x-small;\n}\n\n#errorRange {\n    display: block;\n    padding-left: 0.5rem;\n    padding-top: 0.5rem;\n    color: red;\n    font-size: x-small;\n}\n\n.header-row {\n    display: flex;\n    justify-content: space-between;\n    align-items: center;\n    margin-bottom: 1rem;\n    flex: 0 0 auto;\n}\n\n.options-div {\n    display: flex;\n    align-items: center;\n    justify-content: space-between;\n}\n\n.triangle-hitbox {\n    width: 30;\n    height: 30;\n    fill: transparent;\n    pointer-events: all;\n    touch-action: none;\n    user-select: none;\n}\n\n.handle-hitbox {\n    fill: transparent;\n    pointer-events: all;\n}\n";
 styleInject(css_248z);
 
 //---------- IO Functions ----------

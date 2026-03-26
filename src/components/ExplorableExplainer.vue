@@ -28,7 +28,7 @@
     v-else
     class="header-spacer-polyfill"
   />
-  <div class="explorable-explainer">
+ <div class="explorable-explainer portrait-resizable">
     <div
       class="chart-container"
     >
@@ -478,7 +478,7 @@ onMounted(async (): Promise<void> => {
 
   to {
     background-position: 50% 100%;
-    height: clamp(3.5rem, 6.5vh, 5rem);
+    height: clamp(5.5rem, 6.5vh, 5rem);
   }
 }
 
@@ -502,7 +502,7 @@ onMounted(async (): Promise<void> => {
 
   to {
     background-position: 50% 100%;
-    height: clamp(3.5rem, 6vh, 4.25rem);
+    height: clamp(3.25rem, 6.5vh, 4.25rem);
   }
 }
 
@@ -576,7 +576,7 @@ onMounted(async (): Promise<void> => {
   width: 100%;
   display: flex;
   flex-direction: column;
-  margin-right: 1rem;
+  margin-right: 0.5rem;
   overflow: visible;
   max-height: none;
   height: auto;
@@ -591,7 +591,7 @@ section {
   background: oklch(0.99 0.011 91.69);
   border: 0.01rem solid black;
   border-radius: 0.3rem;
-  margin-top: 1rem;
+  margin-bottom: 1rem;
   margin-inline: 0.5rem;
   padding-right: 1rem;
   padding-bottom: 0.5rem;
@@ -615,38 +615,43 @@ section {
 }
 
 @media (max-width: 60em) and (orientation: portrait) {
-  .explorable-explainer {
-    flex-direction: column;
-    gap: 1rem;
-    position: relative;
-  }
+  .explorable-explainer.portrait-resizable {
+    --chart-height: 18rem;
+    --chart-shell-height: calc(var(--chart-height) + 4rem);
 
-  .chart-container {
-    display: contents;
+    flex-direction: column;
+    gap: 0;
   }
 
   .navigation-dropdown {
-    margin-top: 2rem;
+    margin-top: 1rem;
+  }
+
+  .chart-container {
+    width: 100%;
+    min-width: 0;
+    height: var(--chart-shell-height);
   }
 
   .main-chart {
-    position: sticky;
+    position: fixed;
     top: 2.9rem;
+    left: 0;
     width: 100%;
     margin-left: 0;
-    align-self: flex-start;
     z-index: 201;
     background: white;
+  }
+
+  #pc_svg {
+    height: var(--chart-height);
+    max-height: var(--chart-height);
   }
 
   .text-container {
     min-width: 0;
     width: 100%;
     margin-right: 0;
-    overflow: visible;
-    max-height: none;
-    height: auto;
-    z-index: 1;
   }
 
   #parallelcoords {
@@ -714,7 +719,7 @@ section {
 
   .main-chart {
     position: sticky;
-    top: 2rem;
+    top: 6rem;
     margin-left: 1rem;
     width: 100%;
   }

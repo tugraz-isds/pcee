@@ -172,31 +172,26 @@ watch(
 )
 
 const goToStep = (index: number): void => {
-  if (currentStep.value === 5) drawChart(studentDataset.value);
   spcd3.disableInteractivity();
   currentStep.value = index;
 }
 
 const next = (): void => {
-  if (currentStep.value === 5) drawChart(studentDataset.value);
   spcd3.disableInteractivity();
   currentStep.value++;
 }
 
 const back = (): void => {
-  if (currentStep.value === 5) drawChart(studentDataset.value);
   spcd3.disableInteractivity();
   currentStep.value--;
 }
 
 const reset = (): void => {
-  if (currentStep.value === 5) drawChart(studentDataset.value);
   spcd3.disableInteractivity();
   currentStep.value = 0;
 }
 
 const skip = (): void => {
-  if (currentStep.value === 5) drawChart(studentDataset.value);
   spcd3.disableInteractivity();
   currentStep.value = 5;
 }
