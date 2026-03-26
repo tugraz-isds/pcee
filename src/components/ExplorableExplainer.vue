@@ -616,9 +616,6 @@ section {
 
 @media (max-width: 60em) and (orientation: portrait) {
   .explorable-explainer.portrait-resizable {
-    --chart-height: 18rem;
-    --chart-shell-height: calc(var(--chart-height) + 4rem);
-
     flex-direction: column;
     gap: 0;
   }
@@ -627,26 +624,15 @@ section {
     margin-top: 1rem;
   }
 
-  .chart-container {
-    width: 100%;
-    min-width: 0;
-    height: var(--chart-shell-height);
-  }
-
   .main-chart {
     position: fixed;
     top: 2.9rem;
     left: 0;
-    width: 100%;
+    right: 0;
     margin-left: 0;
     z-index: 201;
     background: white;
-  }
-
-  #pc_svg {
-    height: var(--chart-height);
-    max-height: var(--chart-height);
-  }
+}
 
   .text-container {
     min-width: 0;

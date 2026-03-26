@@ -17,7 +17,7 @@
             :aria-expanded="index === currentStep ? 'true' : 'false'"
             @click="status === false && goToStep(index)"
             >
-            <span class="triangle"></span>
+            <span class="triangle-bullet"></span>
             {{ step.title }}
             </div>
             <transition name="expand">
@@ -445,10 +445,10 @@ onMounted(async (): Promise<void> => {
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
 }
 
-.triangle{
+.triangle-bullet{
   display: inline-block;
   width: 0;
   height: 0;
@@ -458,7 +458,7 @@ onMounted(async (): Promise<void> => {
   transition: transform 0.2s ease;
 }
 
-li.active .triangle{
+li.active .triangle-bullet{
   transform: rotate(90deg);
 }
 
