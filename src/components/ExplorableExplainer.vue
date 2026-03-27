@@ -11,6 +11,11 @@
         Parallel Coordinates:<br>
         An Interactive Tutorial<br>
         <span class="info">Scroll to begin</span>
+        <!--<div class="pos">
+          <button class="about-button" @click="">
+            About
+          </button>
+        </div>-->
       </div>
       <div
         ref="singleLine"
@@ -348,7 +353,7 @@ onMounted(async (): Promise<void> => {
   top: 0;
   left: 0;
   width: 100%;
-  height: 100vh;
+  height: 100%;
 
   display: flex;
   justify-content: center;
@@ -375,7 +380,7 @@ onMounted(async (): Promise<void> => {
   overflow-wrap: anywhere;
   padding-inline: 1rem;
   width: 100%;
-  max-width: min(65ch, calc(100% - 2rem));
+  /*max-width: min(65ch, calc(100% - 2rem));*/
   box-sizing: border-box;
 }
 
@@ -410,6 +415,15 @@ onMounted(async (): Promise<void> => {
   font-size: clamp(1.1rem, 1vw + 0.4rem, 1.4rem);
   color:yellow;
   margin-top: 5rem;
+}
+
+.pos {
+  top: 0;
+  left: 0;
+}
+
+.about-button {
+  font-size: 1rem;
 }
 
 @keyframes multiTextOut {
@@ -478,7 +492,7 @@ onMounted(async (): Promise<void> => {
 
   to {
     background-position: 50% 100%;
-    height: clamp(5.5rem, 6.5vh, 5rem);
+    height: 8vh;
   }
 }
 
@@ -490,7 +504,7 @@ onMounted(async (): Promise<void> => {
 
   to {
     background-position: 50% 100%;
-    height: clamp(3.25rem, 6vh, 4.5rem);
+    height: 8vh;
   }
 }
 
@@ -502,7 +516,7 @@ onMounted(async (): Promise<void> => {
 
   to {
     background-position: 50% 100%;
-    height: clamp(3.25rem, 6.5vh, 4.25rem);
+    height: 8vh;
   }
 }
 
@@ -514,7 +528,7 @@ onMounted(async (): Promise<void> => {
 
   to {
     background-position: 50% 100%;
-    height: clamp(3.25rem, 6.5vh, 4.25rem);
+    height: 8vh;
   }
 }
 
@@ -532,12 +546,6 @@ onMounted(async (): Promise<void> => {
   gap: 1rem;
 }
 
-#pc_svg {
-  width: 100%;
-  height: 100%;
-  max-height: 25rem;
-}
-
 .chart-container {
   flex: 1.2 1 25rem;
   min-width: 0;
@@ -546,8 +554,7 @@ onMounted(async (): Promise<void> => {
 
 .main-chart {
   position: sticky;
-  top: calc(10vh + 1rem);
-  width: 100%;
+  top: calc(6.5vh + 1rem);
   margin-left: 1rem;
   align-self: flex-start;
 }
@@ -573,7 +580,6 @@ onMounted(async (): Promise<void> => {
 .text-container {
   flex: 1 1 23rem;
   min-width: 23rem;
-  width: 100%;
   display: flex;
   flex-direction: column;
   margin-right: 0.5rem;
@@ -626,7 +632,7 @@ section {
 
   .main-chart {
     position: fixed;
-    top: 2.9rem;
+    top: calc(5vh + 1rem);
     left: 0;
     right: 0;
     margin-left: 0;
@@ -636,7 +642,6 @@ section {
 
   .text-container {
     min-width: 0;
-    width: 100%;
     margin-right: 0;
   }
 
@@ -646,10 +651,6 @@ section {
 }
 
 @media (max-width: 50em) and (orientation: portrait) {
-  .main-chart {
-    top: 2.7rem;
-  }
-
   #chart-title {
     font-size: clamp(0.95rem, 0.9rem + 0.35vw, 1.1rem);
     margin-top: clamp(0.35rem, 0.25rem + 0.3vw, 0.5rem);
@@ -657,10 +658,6 @@ section {
 }
 
 @media (max-width: 37.5em) and (orientation: portrait) {
-  .main-chart {
-    top: 2.7rem;
-  }
-
   #chart-title {
     font-size: clamp(0.9rem, 0.85rem + 0.3vw, 1rem);
     margin-top: clamp(0.2rem, 0.15rem + 0.2vw, 0.35rem);
@@ -674,12 +671,7 @@ section {
 
 @media (max-width: 28.125em) and (orientation: portrait) {
   .chart-container {
-    width: 100%;
     min-width: 0;
-  }
-
-  .main-chart {
-    top: 2.5rem;
   }
 
   #chart-title {
@@ -700,19 +692,15 @@ section {
 
   .chart-container {
     flex: 1 1 50%;
-    min-width: 40%;
   }
 
   .main-chart {
     position: sticky;
-    top: 6rem;
     margin-left: 1rem;
-    width: 100%;
   }
 
   .text-container {
     flex: 1 1 50%;
-    min-width: 40%;
     margin-right: 1rem;
   }
 
@@ -720,11 +708,6 @@ section {
     font-size: clamp(0.9rem, 0.85rem + 0.3vw, 1rem);
     margin-top: 0.25rem;
   }
-}
-
-svg {
-  display: inline;
-  vertical-align: middle;
 }
 
 /* Misc Headers */
