@@ -84,7 +84,6 @@ export const drawChart = async (dataset: string | undefined): Promise<void> => {
 };
 
 export const writeTitleToDataset = (step: number): void => {
-  // eslint-disable-next-line no-undef
   const titleElement = document.getElementById("chart-title") as HTMLHeadingElement | null;
   if (titleElement == null) return;
   if (step == 0) {
@@ -151,7 +150,6 @@ const addClickEvent = (): void => {
 }
 
 const selectOutlier = (): void => {
-// eslint-disable-next-line no-undef
   const showError = document.getElementById("show-error") as HTMLParagraphElement | null;
 
   const isOutlierInactive = spcd3.isRecordInactive("Patient F");
@@ -183,10 +181,8 @@ const selectOutlier = (): void => {
     }
   }
 
-  // eslint-disable-next-line no-undef
   const path = document.getElementById("Patient-F") as SVGPathElement | null;
   if (path) {
-    // eslint-disable-next-line no-undef
     const stroke = getComputedStyle(path).getPropertyValue("stroke");
     if (stroke === 'rgb(211, 211, 211)') {
       return;
@@ -251,7 +247,6 @@ const resetColorOfRecord = (record: string): void => {
 const showPositiveCorrelation = (): void => {
   const hiddenDimensions = spcd3.getAllHiddenDimensionNames();
   const isHidden = hiddenDimensions.includes("Age");
-  // eslint-disable-next-line no-undef
   const invertError = document.getElementById("invert-error") as HTMLParagraphElement | null;
 
   if (isHidden) {
@@ -272,7 +267,6 @@ const showPositiveCorrelation = (): void => {
   else {
     spcd3.showMarker('Age');
     spcd3.setInversionStatus('Age', 'descending');
-    // eslint-disable-next-line no-undef
     setTimeout(() => {
     spcd3.hideMarker('Age');
   }, 1000); 
@@ -283,7 +277,6 @@ const showNegativeCorrelation = (): void => {
   const hiddenDimensions = spcd3.getAllHiddenDimensionNames();
   const isHiddenFitness = hiddenDimensions.includes("Fitness Score (0-100)");
   const isHiddenAge = hiddenDimensions.includes("Age");
-  // eslint-disable-next-line no-undef
   const moveError = document.getElementById("move-error") as HTMLParagraphElement | null;
   if (isHiddenFitness || isHiddenAge) {
     if (moveError) {

@@ -4,6 +4,27 @@
       ref="header"
       :class="['sticky-header', { 'use-native': supportsScrollDrivenAnimations }]"
     >
+      <div class="header-actions">
+        <button
+          type="button"
+          class="header-action-button"
+          @click="showAbout = true"
+        >
+          <img
+            class="header-icon-image"
+            src="/svg/info-icon.svg"
+          >
+        </button>
+        <a
+          class="header-action-button"
+          :href="repoUrl"
+        >
+          <img
+            class="header-icon-image"
+            src="/svg/github.svg"
+          >
+        </a>
+      </div>
       <div
         ref="multiLine"
         class="multi-line"
@@ -11,11 +32,6 @@
         Parallel Coordinates:<br>
         An Interactive Tutorial<br>
         <span class="info">Scroll to begin</span>
-        <!--<div class="pos">
-          <button class="about-button" @click="">
-            About
-          </button>
-        </div>-->
       </div>
       <div
         ref="singleLine"
@@ -23,6 +39,35 @@
       >
         Parallel Coordinates: An Interactive Tutorial
       </div>
+    </div>
+  </div>
+  <div
+    v-if="showAbout"
+    class="about-overlay"
+    @click.self="showAbout = false"
+  >
+    <div class="about-dialog">
+      <div class="about-header">
+        <h2 class="about-title">
+          About
+        </h2>
+        <button
+          type="button"
+          class="about-close"
+          @click="showAbout = false"
+        >
+          x
+        </button>
+      </div>
+      <p class="about-copy">
+        Parallel Coordinates: An Interactive Tutorial
+      </p>
+      <p class="about-copy">
+        PCEE version: {{ appVersion }}
+      </p>
+      <p class="about-copy">
+        SPCD3 version: 1.0.0
+      </p>
     </div>
   </div>
   <div
@@ -43,7 +88,7 @@
           <h3 id="chart-title">
             Personal Finances Dataset
           </h3>
-          <div id="parallelcoords" />
+          <div id="spcd3-parallelcoords" />
         </div>
       </div>
     </div>
@@ -77,6 +122,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, provide } from 'vue';
+import packageInfo from '../../package.json';
 import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
 import * as spcd3 from '../spcd3.js';
@@ -102,7 +148,10 @@ const multiLine = ref<HTMLElement | null>(null);
 const singleLine = ref<HTMLElement | null>(null);
 const usageContainer = ref<HTMLDivElement | null>(null);
 const zoomSrc = ref<string | null>(null);
+const showAbout = ref(false);
 let lastStep = -1;
+const appVersion = packageInfo.version;
+const repoUrl = packageInfo.repository.url;
 
 const image = new Image();
 image.src = 'images/mva.png';
@@ -209,7 +258,7 @@ window.addEventListener('scroll', () => {
   }
 }
 
-  const chart = document.getElementById('parallelcoords') as HTMLDivElement | null;
+  const chart = document.getElementById('spcd3-parallelcoords') as HTMLDivElement | null;
   if (!chart) return;
 
   const step = getCurrentStepIndex();
@@ -369,6 +418,52 @@ onMounted(async (): Promise<void> => {
   contain: layout style;
 }
 
+.header-actions {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  z-index: 2;
+}
+
+.header-action-button {
+  display: inline-flex;
+  align-items: center;
+  border: 0.01rem solid rgb(255 255 255 / 45%);
+  border-radius: 999rem;
+  background: rgb(255 255 255 / 14%);
+  color: white;
+  justify-content: center;
+  inline-size: 2.4rem;
+  block-size: 2.4rem;
+  padding: 0;
+  font: inherit;
+  font-size: 0.9rem;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  backdrop-filter: blur(0.25rem);
+  margin-top: 0;
+  vertical-align: middle;
+  flex: 0 0 auto;
+}
+
+.header-action-button:hover,
+.header-action-button:focus-visible {
+  background: rgb(255 255 255 / 24%);
+  outline: none;
+}
+
+.header-icon-image {
+  inline-size: 1.55rem;
+  block-size: 1.55rem;
+  flex: 0 0 auto;
+  display: block;
+  object-fit: contain;
+}
+
 .multi-line,
 .single-line {
   position: absolute;
@@ -412,18 +507,63 @@ onMounted(async (): Promise<void> => {
 }
 
 .info {
+  display: block;
   font-size: clamp(1.1rem, 1vw + 0.4rem, 1.4rem);
-  color:yellow;
-  margin-top: 5rem;
+  color: yellow;
+  margin-top: 6rem;
 }
 
-.pos {
-  top: 0;
-  left: 0;
+.about-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgb(0 0 0 / 45%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 1200;
 }
 
-.about-button {
-  font-size: 1rem;
+.about-dialog {
+  width: min(26rem, 100%);
+  border-radius: 0.6rem;
+  background: white;
+  color: #17324d;
+  padding: 1rem 1.1rem;
+  box-shadow: 0 1rem 2.5rem rgb(0 0 0 / 22%);
+}
+
+.about-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.about-title {
+  margin: 0;
+  padding: 0;
+}
+
+.about-close {
+  margin-top: 0;
+  border: 0.01rem solid #c6d3de;
+  border-radius: 999rem;
+  background: #f6f9fb;
+  padding: 0.35rem 0.8rem;
+}
+
+.about-copy {
+  margin: 0.75rem 0 0;
+  border-left: 0;
+  text-indent: 0;
+  text-align: left;
+}
+
+.about-link {
+  display: inline-block;
+  margin-top: 1rem;
+  color: #005d84;
 }
 
 @keyframes multiTextOut {
@@ -465,8 +605,24 @@ onMounted(async (): Promise<void> => {
 }
 
 @media (max-width: 37.5em) and (orientation: portrait) {
+  .header-actions {
+    top: 0.75rem;
+    right: 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .header-action-button {
+    inline-size: 2.1rem;
+    block-size: 2.1rem;
+    font-size: 0.8rem;
+  }
+
   .single-line {
     font-size: clamp(0.85rem, 1vw + 0.45rem, 1rem);
+  }
+
+  .info {
+    margin-top: 4.5rem;
   }
 
   .use-native {
@@ -573,7 +729,12 @@ onMounted(async (): Promise<void> => {
   margin-top: clamp(0.5rem, 0.4rem + 0.6vw, 1rem);
 }
 
-#parallelcoords {
+#spcd3-parallelcoords {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  flex: 1 1 auto;
   transition: opacity 0.5s ease;
 }
 
@@ -638,14 +799,14 @@ section {
     margin-left: 0;
     z-index: 201;
     background: white;
-}
+  }
 
   .text-container {
     min-width: 0;
     margin-right: 0;
   }
 
-  #parallelcoords {
+  #spcd3-parallelcoords {
     touch-action: pan-y;
   }
 }
@@ -685,6 +846,10 @@ section {
 }
 
 @media (max-height: 37.5em) and (orientation: landscape) {
+  .single-line {
+    white-space: normal;
+    line-height: 1.15;
+  }
   .explorable-explainer {
     flex-direction: row;
     align-items: stretch;

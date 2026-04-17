@@ -15,9 +15,9 @@ Scroll-driven animations are implemented using native CSS.
 For browsers and platforms that don't yet support it, a fallback is provided
 using [GSAP](https://github.com/greensock/GSAP) as a polyfill.
 
-## Project Setup
+## Getting Started
 
-Ensure Node version ≥ 23.0.
+### Prerequisites
 
 Open terminal and execute the following command to install all the dependencies:
 
@@ -31,43 +31,60 @@ yarn
 yarn dev
 ```
 
-### Compile and Minify for Production
+### Build And Development
+
+Gulp is used to automate repeatable tasks. The file [gulpfile.js](gulpfile.js)
+defines four public tasks:
+
+<br/>
+
+`clean` removes the existing `dist/` and `package/` directory in order to enable a clean rebuild of the project:
 
 ```
-yarn build
+npx gulp clean
 ```
 
-**Important:** To run the build, a live web server must be started.
+<br/>
 
-### Build a native desktop app with Tauri 2.0
-
-**Prerequisites:** To build a native desktop app, Rust ≥ 1.77.2, Cargo and Tauri ≥ 2.8.0 needs to be installed.
-
-
-```
-yarn tauri
-```
-
-### Clean rebuild of the project
+`cleanAll` restores the project folder to its virgin state,
+by deleting the existing `dist/`, `package/` and `node_modules/` directories
+and the `yarn.lock` file:
 
 ```
-yarn clean
+npx gulp cleanAll
 ```
 
-### Restore project folder by deleting dist/, node_modules/ and yarn.lock
+<br/>
+
+`build` creates a new build of pcee
+and stores the generated files into the `dist/` folder:
 
 ```
-yarn cleanAll
+npx gulp build
 ```
 
+To run the example, a live web server must be started in the
+folder `dist/`.
 
+<br/>
+
+Each of the public Gulp tasks can also be invoked by running the
+equivalent yarn script defined in `package.json`.
+
+### Build a native desktop app
+
+Prerequisites: To build a native desktop app, Rust, Cargo and Tauri 2.0 needs to be installed.
+
+`tauri` builds a native desktop app with Tauri 2.0 and copies the executable to `package/`:
+
+```
+npx gulp tauri
+```
 
 ## Licence
 
 PCEE is distributed under the MIT Licence. See [LICENSE](LICENSE) for
 more information.
-
-
 
 ## Contributors
 
@@ -79,4 +96,3 @@ more information.
 
 - Philipp Drescher, Jeremias Kleinschuster, Sebastian Schreiner, Burim Vrella  
   InfoVis SS 2023 G1, prepared original students dataset
-

@@ -78,7 +78,7 @@ const mqlPortrait = window.matchMedia(getConfig('portrait').query);
 const mqlLandscape = window.matchMedia(getConfig('landscape').query);
 
 const OFFSET_LANDSCAPE = ['.sticky-header'];
-const OFFSET_PORTRAIT  = ['.sticky-header', '.main-chart'];
+const OFFSET_PORTRAIT  = ['.sticky-header', '.chart-container'];
 const MIN_OVERLAP_PX = 56;
 const HYSTERESIS_PX  = 32;
 const IDLE_MS = 140;
@@ -118,6 +118,11 @@ const setScrollY = (y: number, behavior: ScrollBehavior = 'auto'): void => {
   } else {
     (scroller.value as HTMLElement).scrollTo({ top: y, behavior });
   }
+}
+
+const toRem = (value: number): string => {
+  const rootFontSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+  return `${value / rootFontSize}rem`;
 }
 
 const getViewportHeight = (scroller: Window | HTMLElement): number => {
@@ -235,7 +240,7 @@ const onScroll = (): void => {
 };
 
 const totalOffsetPx = (): number => {
-  const order = mode.value === 'portrait' ? ['.sticky-header', '.main-chart']
+  const order = mode.value === 'portrait' ? ['.sticky-header', '.chart-container']
     : ['.sticky-header'];
 
   let baseline = 0;
@@ -265,7 +270,7 @@ const measure = (elementSelector?: string): number => {
 const recomputeScrollOffset = (): void => {
   const list = mode.value === 'portrait' ? OFFSET_PORTRAIT : OFFSET_LANDSCAPE;
   const total = list.reduce((sum, sel) => sum + measure(sel), 0);
-  document.documentElement.style.setProperty('--scroll-offset', `${Math.round(total + 2)}px`);
+  document.documentElement.style.setProperty('--scroll-offset', toRem(Math.round(total + 2)));
 }
 
 const onChange = (e: Event): void => {
@@ -367,7 +372,7 @@ onMounted(async () => {
 
   const ro = new ResizeObserver(() => recomputeScrollOffset());
   document.querySelector('.sticky-header') && ro.observe(document.querySelector('.sticky-header')!);
-  document.querySelector('.main-chart')  && ro.observe(document.querySelector('.main-chart')!);
+  document.querySelector('.chart-container')  && ro.observe(document.querySelector('.chart-container')!);
 
   const onModeChange = () => {
     const newMode: ModeKey = mqlPortrait.matches ? 'portrait' : 'landscape';
