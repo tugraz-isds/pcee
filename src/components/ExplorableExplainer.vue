@@ -794,8 +794,8 @@ section {
   .main-chart {
     position: fixed;
     top: calc(5vh + 1rem);
-    left: 0;
-    right: 0;
+    left: 0.5rem;
+    right: 0.5rem;
     margin-left: 0;
     z-index: 201;
     background: white;
