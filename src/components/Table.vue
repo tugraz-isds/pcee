@@ -197,8 +197,8 @@ const isFormValid = computed<boolean>(() => {
   margin-bottom: 1rem;
   margin-inline: 0.5rem;
   padding: 0.5rem;
-  background: oklch(0.99 0.011 91.69);
-  border: 0.01rem solid black;
+  background: var(--content-panel-background);
+  border: 0.01rem solid var(--panel-border-color);
   border-radius: 0.3rem;
   overflow-x: auto;
   overflow-y: hidden;
@@ -221,17 +221,17 @@ th, td {
   text-overflow: ellipsis;
   max-width: 8rem;
   min-width: 8rem;
-  border: 0.15rem solid lightgrey !important;
+  border: 0.15rem solid var(--ui-border-color) !important;
   padding: 0.25rem !important;
 }
 
 td {
-  background-color: oklch(0.99 0.011 91.69);;
+  background-color: var(--content-panel-background);
 }
 
 th {
-  background-color: rgba(30, 61, 89, 0.8) !important;
-  color: rgba(255, 255, 255, 1);
+  background-color: color-mix(in srgb, var(--brand-accent-background) 78%, black) !important;
+  color: var(--accent-contrast-text-color);
 }
 
 .header-cell {
@@ -253,8 +253,8 @@ th {
   padding: 0 0.5rem; 
   margin-top: 0rem; 
   margin-right: 0.25rem; 
-  background: rgba(255, 255, 255, 1);; 
-  color: rgba(0, 0, 0, 1); 
+  background: var(--floating-card-background);
+  color: var(--body-text-color);
   border: none; 
   border-radius: 75%;
   cursor: pointer;
@@ -273,10 +273,10 @@ th {
 .delete-button,
 .add-button {
   position: absolute;
-  border: 0.01rem solid rgba(0, 0, 0, 1);
+  border: 0.01rem solid var(--panel-border-color);
   border-radius: 50%;
-  background: rgba(255, 255, 255, 1);
-  color: rgba(0, 0, 0, 1);
+  background: var(--floating-card-background);
+  color: var(--body-text-color);
   font-weight: bold;
   font-size: 0.9em;
   width: 1.25rem;
@@ -291,7 +291,7 @@ th {
 .header-button:hover,
 .delete-button:hover,
 .add-button:hover {
-  background: rgba(173, 216, 230, 1);
+  background: color-mix(in srgb, var(--brand-accent-background) 22%, var(--floating-card-background));
 }
 
 .table-button {
@@ -316,7 +316,7 @@ input[type="text"] {
 }
 
 td input:focus {
-  outline: 0.1rem solid rgba(211, 211, 211, 1);
-  background: rgba(211, 211, 211, 1);
+  outline: 0.1rem solid var(--ui-border-color);
+  background: var(--table-input-focus-background);
 }
 </style>

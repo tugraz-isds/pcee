@@ -368,13 +368,13 @@ onMounted(async (): Promise<void> => {
 .stepper {
   display: flex;
   flex-direction: column;
-  background: oklch(0.99 0.011 91.69);
+  background: var(--content-panel-background);
   border-radius: 0.3rem;
   margin-top: 1rem;
   margin-left: 0.5rem;
   padding-right: 1rem;
   padding-bottom: 0.5rem;
-  border: 0.01rem solid black;
+  border: 0.01rem solid var(--panel-border-color);
 
   transform: translateY(5rem);
 
@@ -398,6 +398,7 @@ onMounted(async (): Promise<void> => {
 
 .icon {
   padding-bottom: 0.6rem;
+  filter: var(--toolbar-icon-filter);
 }
 
 .action-buttons {
@@ -426,7 +427,7 @@ onMounted(async (): Promise<void> => {
   right: 0;
   bottom: -0.15rem;
   height: 0.1rem;
-  background: grey;
+  background: var(--muted-text-color);
 }
 
 .steps {
@@ -440,7 +441,7 @@ onMounted(async (): Promise<void> => {
 }
 
 .li-header {
-  background: oklch(0.99 0.011 91.69);
+  background: var(--content-panel-background);
   padding: 0.2rem 0 0.2rem 1rem;
   cursor: pointer;
   display: flex;
@@ -463,8 +464,8 @@ li.active .triangle-bullet{
 }
 
 .steps > li.active .li-header {
-  background: rgba(0, 129, 175, 1);
-  color: rgb(255,255,255);
+  background: var(--brand-accent-background);
+  color: var(--accent-contrast-text-color);
   font-weight: 600;
   padding-left: 0.5rem;
   margin-left: 0.5rem;
@@ -473,7 +474,7 @@ li.active .triangle-bullet{
 .step-panel {
   margin-left: 0.5rem;
   padding-right: 1rem;
-  border: 0.01rem solid black;
+  border: 0.01rem solid var(--panel-border-color);
 }
 
 .step-text {

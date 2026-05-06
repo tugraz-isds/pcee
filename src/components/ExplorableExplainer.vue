@@ -125,6 +125,7 @@ import { ref, onMounted, onBeforeUnmount, provide } from 'vue';
 import packageInfo from '../../package.json';
 import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
+import '../spcd3.css';
 import * as spcd3 from '../spcd3.js';
 import NavigationDropdown from './NavigationDropdown.vue';
 import Table from './Table.vue';
@@ -152,6 +153,18 @@ const showAbout = ref(false);
 let lastStep = -1;
 const appVersion = packageInfo.version;
 const repoUrl = packageInfo.repository.url;
+const DARK_MODE_MEDIA_QUERY = '(prefers-color-scheme: dark)';
+const darkModeMediaQuery =
+  typeof window !== 'undefined' ? window.matchMedia(DARK_MODE_MEDIA_QUERY) : null;
+
+const applyTheme = (nextTheme: 'light' | 'dark'): void => {
+  document.documentElement.dataset.theme = nextTheme;
+}
+
+const syncThemeWithSystemPreference = (event?: MediaQueryListEvent): void => {
+  const prefersDark = event?.matches ?? darkModeMediaQuery?.matches ?? false;
+  applyTheme(prefersDark ? 'dark' : 'light');
+}
 
 const image = new Image();
 image.src = 'images/mva.png';
@@ -188,7 +201,8 @@ const handleImage = (chart: HTMLDivElement): void => {
   chart.style.maxHeight = 'auto';
   chart.style.justifyContent = 'center';
   chart.style.alignItems = 'center';
-  chart.style.background = 'white';
+  chart.style.background = 'transparent';
+  chart.style.color = 'var(--chart-text-color)';
   chart.onclick = handleClick;
 }
 
@@ -297,9 +311,13 @@ onBeforeUnmount(() => {
   if (usageContainer.value) {
     usageContainer.value.removeEventListener("click", handleClick);
   }
+
+  darkModeMediaQuery?.removeEventListener('change', syncThemeWithSystemPreference);
 })
 
 onMounted(async (): Promise<void> => {
+  syncThemeWithSystemPreference();
+  darkModeMediaQuery?.addEventListener('change', syncThemeWithSystemPreference);
   initalLoadOfDataset();
   loadContent(introText, 'content/introduction.html');
   loadContent(financeDatasetText, 'content/data-finance.html');
@@ -409,8 +427,8 @@ onMounted(async (): Promise<void> => {
   align-items: center;
   text-align: center;
 
-  color: white;
-  background: rgba(0, 129, 175, 1);
+  color: var(--accent-contrast-text-color);
+  background: var(--brand-accent-background);
 
   z-index: 1000;
 
@@ -434,7 +452,7 @@ onMounted(async (): Promise<void> => {
   border: 0.01rem solid rgb(255 255 255 / 45%);
   border-radius: 999rem;
   background: rgb(255 255 255 / 14%);
-  color: white;
+  color: var(--accent-contrast-text-color);
   justify-content: center;
   inline-size: 2.4rem;
   block-size: 2.4rem;
@@ -462,6 +480,7 @@ onMounted(async (): Promise<void> => {
   flex: 0 0 auto;
   display: block;
   object-fit: contain;
+  filter: var(--toolbar-icon-filter);
 }
 
 .multi-line,
@@ -509,14 +528,14 @@ onMounted(async (): Promise<void> => {
 .info {
   display: block;
   font-size: clamp(1.1rem, 1vw + 0.4rem, 1.4rem);
-  color: yellow;
+  color: var(--highlight-text-color);
   margin-top: 6rem;
 }
 
 .about-overlay {
   position: fixed;
   inset: 0;
-  background: rgb(0 0 0 / 45%);
+  background: var(--modal-overlay-background);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -527,8 +546,8 @@ onMounted(async (): Promise<void> => {
 .about-dialog {
   width: min(26rem, 100%);
   border-radius: 0.6rem;
-  background: white;
-  color: #17324d;
+  background: var(--floating-card-background);
+  color: var(--body-text-color);
   padding: 1rem 1.1rem;
   box-shadow: 0 1rem 2.5rem rgb(0 0 0 / 22%);
 }
@@ -547,9 +566,9 @@ onMounted(async (): Promise<void> => {
 
 .about-close {
   margin-top: 0;
-  border: 0.01rem solid #c6d3de;
+  border: 0.01rem solid var(--ui-border-color);
   border-radius: 999rem;
-  background: #f6f9fb;
+  background: var(--subtle-panel-background);
   padding: 0.35rem 0.8rem;
 }
 
@@ -563,7 +582,7 @@ onMounted(async (): Promise<void> => {
 .about-link {
   display: inline-block;
   margin-top: 1rem;
-  color: #005d84;
+  color: var(--accent-text-color);
 }
 
 @keyframes multiTextOut {
@@ -697,6 +716,7 @@ onMounted(async (): Promise<void> => {
 }
 
 .explorable-explainer {
+  --header-content-offset: calc(6.5vh + 1rem);
   display: flex;
   flex-direction: row;
   gap: 1rem;
@@ -710,16 +730,17 @@ onMounted(async (): Promise<void> => {
 
 .main-chart {
   position: sticky;
-  top: calc(6.5vh + 1rem);
+  top: var(--header-content-offset);
   margin-left: 1rem;
   align-self: flex-start;
 }
 
 .chart-wrapper {
-  border: 0.01rem solid black;
+  border: 0.01rem solid var(--panel-border-color);
   border-radius: 0.3rem;
   padding-bottom: 1rem;
-  background: white;
+  background: var(--spcd3-bg);
+  color: var(--chart-text-color);
 }
 
 #chart-title {
@@ -755,8 +776,8 @@ onMounted(async (): Promise<void> => {
 }
 
 section {
-  background: oklch(0.99 0.011 91.69);
-  border: 0.01rem solid black;
+  background: var(--content-panel-background);
+  border: 0.01rem solid var(--panel-border-color);
   border-radius: 0.3rem;
   margin-bottom: 1rem;
   margin-inline: 0.5rem;
@@ -783,6 +804,7 @@ section {
 
 @media (max-width: 60em) and (orientation: portrait) {
   .explorable-explainer.portrait-resizable {
+    --header-content-offset: calc(5vh + 2rem);
     flex-direction: column;
     gap: 0;
   }
@@ -798,7 +820,7 @@ section {
     right: 0.5rem;
     margin-left: 0;
     z-index: 201;
-    background: white;
+    background: var(--page-background);
   }
 
   .text-container {
@@ -955,7 +977,7 @@ li p {
 .liinstruction {
   border-left: 0 solid transparent;
   font-style: italic;
-  color: #00356B;
+  color: var(--accent-text-color);
   text-indent: 0;
   text-align: left;
   hyphens: none;
@@ -980,7 +1002,7 @@ button {
 }
 
 .error {
-  color: red;
+  color: var(--error-text-color);
 }
 
 /* Figures */
@@ -1002,6 +1024,14 @@ figure {
   cursor: zoom-in;
 }
 
+:root[data-theme='dark'] .figure-row img[src*="correlation-"] {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+:root[data-theme='dark'] img[src$=".png"] {
+  filter: invert(1) hue-rotate(180deg);
+}
+
 figcaption {
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
@@ -1010,13 +1040,13 @@ figcaption {
 
 /* References section */
 #border {
-  border-bottom: rgb(0, 129, 175) 0.4rem;
+  border-bottom: var(--brand-accent-background) 0.4rem;
   border-bottom-style: solid;
   margin-top: 10rem;
 }
 
 .references {
-  background: white;
+  background: var(--floating-card-background);
   margin-top: 1rem;
   margin-left: 1rem;
   margin-right: 1rem;

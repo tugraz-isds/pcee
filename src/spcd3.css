@@ -1,0 +1,694 @@
+/*https://useaxentix.com/blog/css/css-reset-complete-guide/*/
+
+/* ===============================================
+   Ultimate Modern CSS Reset
+   Based on best practices from Eric Meyer,
+   Josh W. Comeau, Andy Bell, and modern standards
+   =============================================== */
+
+/* 1. Use a more-intuitive box-sizing model */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* 2. Remove default margin and padding */
+* {
+  margin: 0;
+  padding: 0;
+}
+
+/* 3. Set core body defaults */
+body {
+  min-height: 100vh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 4. Remove list styles on ul, ol elements with a list role */
+ul[role='list'], ol[role='list'] {
+  list-style: none;
+}
+
+/* 5. Set shorter line heights on headings and interactive elements */
+h1, h2, h3, h4, button, input, label {
+  line-height: 1.1;
+}
+
+/* 6. Balance text wrapping on headings */
+h1, h2, h3, h4 {
+  text-wrap: balance;
+}
+
+/* 7. Improve text rendering and wrapping */
+p, h1, h2, h3, h4, h5, h6 {
+  overflow-wrap: break-word;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+/* 8. A elements that don't have a class get default styles */
+a:not([class]) {
+  text-decoration-skip-ink: auto;
+  color: currentColor;
+}
+
+/* 9. Make images and media easier to work with */
+img, picture, video, canvas, svg {
+  display: block;
+}
+
+/* 10. Inherit fonts for inputs and buttons */
+input, button, textarea, select {
+  font: inherit;
+}
+
+/* 11. Make sure textareas without a rows attribute are not tiny */
+textarea:not([rows]) {
+  min-height: 10em;
+}
+
+/* 12. Anything that has been anchored to should have extra scroll margin */
+:target {
+  scroll-margin-block: 5ex;
+}
+
+/* 13. Root stacking context */
+#root, #__next {
+  isolation: isolate;
+}
+
+/* 14. Enable keyword animations for modern browsers */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    interpolate-size: allow-keywords;
+  }
+}
+
+/* 15. HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section {
+  display: block;
+}
+
+/* 16. Remove quotes from blockquotes and q elements */
+blockquote, q {
+  quotes: none;
+}
+
+blockquote:before, blockquote:after,
+q:before, q:after {
+  content: '';
+  content: none;
+}
+
+/* 17. Table border collapse */
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/* 18. Focus management for accessibility */
+:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* 19. Remove focus outline for mouse users */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+:root {
+  color-scheme: light dark;
+  --spcd3-theme: light dark;
+  --spcd3-page-bg: light-dark(#ffffff, #10233a);
+  --spcd3-panel-bg: light-dark(#ffffff, #17314d);
+  --spcd3-control-bg: light-dark(#f6f6f6, #21415f);
+  --spcd3-control-bg-hover: light-dark(#e7ebef, #2c5377);
+  --spcd3-backdrop: light-dark(rgba(0, 0, 0, 0.5), rgba(7, 17, 30, 0.74));
+  --spcd3-border-subtle: light-dark(#b8b8b8, #4d6d90);
+  --spcd3-border-emphasis: light-dark(#8f8f8f, #6e90b5);
+  --spcd3-text-primary: light-dark(#000000, #eef3f7);
+  --spcd3-text-secondary: light-dark(#6f6f6f, #b1bcc7);
+  --spcd3-text-disabled: light-dark(#a5a5a5, #7f8a95);
+  --spcd3-tooltip-surface: light-dark(#d3d3d3, #264664);
+  --spcd3-tooltip-record-bg: light-dark(
+    rgba(211, 211, 211, 0.5),
+    rgba(38, 70, 100, 0.76)
+  );
+  --spcd3-input-invalid-bg: light-dark(#ffb3b3, #6a2f35);
+  --spcd3-highlight-fill: light-dark(
+    rgba(242, 242, 76, 0.5),
+    rgba(234, 209, 83, 0.38)
+  );
+  --spcd3-highlight-fill-strong: light-dark(
+    rgba(255, 255, 0, 0.7),
+    rgba(255, 224, 102, 0.58)
+  );
+  --spcd3-chart-disabled-bg: light-dark(#f5f5f5, #132942);
+  --spcd3-tooltip-record-text: light-dark(#ff0000, #ff9b9b);
+  --spcd3-tooltip-record-selected-text: light-dark(#ffa500, #ffd27a);
+  --spcd3-marker-stroke: light-dark(#e45a0f, #ffb46b);
+  --spcd3-shadow-popover: light-dark(rgba(0, 0, 0, 0.2), rgba(7, 17, 30, 0.35));
+  --spcd3-shadow-modal: light-dark(rgba(0, 0, 0, 0.3), rgba(7, 17, 30, 0.45));
+}
+
+#spcd3-parallelcoords,
+.spcd3-modal-overlay,
+.spcd3-modal,
+.spcd3-modal-tableoverlay,
+.spcd3-modal-tabledata,
+.spcd3-contextmenu-records,
+.spcd3-contextmenu-dimensions,
+.spcd3-toolbar-buttontip {
+  color-scheme: var(--spcd3-theme);
+  forced-color-adjust: none;
+  font-size: 16px;
+}
+
+.spcd3-button {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  box-sizing: border-box;
+  font: inherit;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  background: var(--spcd3-control-bg);
+  border: 0.03rem solid var(--spcd3-border-subtle);
+  border-radius: 0.1rem;
+  color: var(--spcd3-text-primary);
+  opacity: 1;
+  box-shadow: none;
+  text-transform: none;
+}
+
+.spcd3-generic-button {
+  margin: 0.5rem auto;
+  padding: 0 0.5rem;
+  display: block;
+}
+
+.spcd3-save-button {
+  margin-left: 0.5rem;
+  min-height: 1.7rem;
+  padding: 0.2rem 0.5rem;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.spcd3-save-csv-button {
+  margin-bottom: 3rem;
+  padding: 0 0.5rem;
+  align-self: flex-start;
+  display: inline-block;
+}
+
+.spcd3-close-button {
+  appearance: none;
+  -webkit-appearance: none;
+  position: absolute;
+  top: 0.625rem;
+  right: 0.938rem;
+  border: 0;
+  background: transparent;
+  color: var(--spcd3-text-primary);
+  line-height: 1;
+  text-align: center;
+  text-decoration: none;
+  font-size: 1.25rem;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: none;
+  opacity: 1;
+}
+
+.spcd3-th {
+  position: sticky;
+  top: 0;
+  border: 0.08rem solid var(--spcd3-border-emphasis);
+  padding: 0.5rem;
+  background-color: var(--spcd3-control-bg-hover);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.spcd3-td {
+  border: 0.08rem solid var(--spcd3-border-emphasis);
+  padding: 0.5rem;
+}
+
+.spcd3-img {
+  display: inline-block;
+}
+
+.spcd3-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.spcd3-label {
+  padding: 0.35rem;
+  text-align: left;
+  flex: 1;
+}
+
+.spcd3-input {
+  width: 3.125rem;
+  margin-right: 0.45rem;
+}
+
+.spcd3-tablecontainer {
+  width: 100%;
+  color: var(--spcd3-text-primary);
+  background: var(--spcd3-panel-bg);
+}
+
+.spcd3-tablecontainer table,
+table.spcd3-tablecontainer {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: var(--spcd3-text-primary);
+  background: var(--spcd3-panel-bg);
+}
+
+.spcd3-tablecontainer thead,
+.spcd3-tablecontainer tbody,
+.spcd3-tablecontainer tr,
+.spcd3-tablecontainer th,
+.spcd3-tablecontainer td,
+table.spcd3-tablecontainer thead,
+table.spcd3-tablecontainer tbody,
+table.spcd3-tablecontainer tr,
+table.spcd3-tablecontainer th,
+table.spcd3-tablecontainer td {
+  color: var(--spcd3-text-primary);
+  background-clip: padding-box;
+}
+
+#spcd3-parallelcoords {
+  display: block;
+  width: 100%;
+  text-align: left;
+  color: var(--spcd3-text-primary);
+  background: var(--spcd3-page-bg);
+}
+
+#spcd3-pc_svg {
+  padding-bottom: 1rem;
+}
+
+.spcd3-chartWrapper {
+  position: relative;
+  overflow-x: auto;
+  margin-left: 1rem;
+}
+
+.spcd3-tip-layer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+}
+
+.spcd3-dimensions-axis path,
+.spcd3-dimensions-axis line {
+  stroke: var(--spcd3-text-primary);
+}
+
+.spcd3-dimensions-axis text {
+  stroke: none;
+  stroke-width: 0;
+  fill: var(--spcd3-text-primary);
+  font-weight: normal;
+  paint-order: fill;
+}
+
+.spcd3-dimensions-axis .tick text {
+  stroke: none;
+  stroke-width: 0;
+  fill: var(--spcd3-text-primary);
+  font-weight: 400;
+}
+
+.dimensions > text,
+.spcd3-dimensions-axis + text {
+  fill: var(--spcd3-text-primary);
+  stroke: none;
+}
+
+.spcd3-tooltip-values {
+  position: absolute;
+  border: 0.08rem solid var(--spcd3-border-emphasis);
+  border-radius: 0.1rem;
+  margin: 0.5rem;
+  padding: 0.12rem;
+  background-color: var(--spcd3-tooltip-surface);
+  color: var(--spcd3-text-primary);
+  visibility: hidden;
+}
+
+.spcd3-tooltip-record {
+  position: absolute;
+  pointer-events: none;
+  border: none;
+  border-radius: 0.1rem;
+  margin: 0.5rem;
+  padding: 0.12rem;
+  background-color: var(--spcd3-tooltip-record-bg);
+  color: var(--spcd3-tooltip-record-text);
+  font-size: 0.65rem;
+  font-weight: bold;
+  z-index: 999;
+}
+
+.spcd3-tooltip-record-select {
+  position: absolute;
+  pointer-events: none;
+  border: none;
+  border-radius: 0.1rem;
+  margin: 0.5rem;
+  padding: 0.12rem;
+  background-color: var(--spcd3-tooltip-record-bg);
+  color: var(--spcd3-tooltip-record-selected-text);
+  font-size: 0.65rem;
+  font-weight: bolder;
+  z-index: 999;
+}
+
+.spcd3-tooltip-label {
+  position: absolute;
+  visibility: hidden;
+  pointer-events: none;
+  background: var(--spcd3-tooltip-surface);
+  padding: 0.2rem;
+  border: 0.08rem solid var(--spcd3-border-emphasis);
+  border-radius: 0.1rem;
+  font-size: 0.75rem;
+  z-index: 1000;
+  white-space: pre-line;
+  color: var(--spcd3-text-primary);
+}
+
+.spcd3-tooltip-dimension {
+  position: absolute;
+  pointer-events: none;
+  border: 0.08rem solid var(--spcd3-border-emphasis);
+  border-radius: 0.1rem;
+  margin: 0.5rem;
+  padding: 0.12rem;
+  background-color: var(--spcd3-tooltip-surface);
+  color: var(--spcd3-text-primary);
+  visibility: hidden;
+}
+
+.spcd3-marker {
+  fill: none;
+  stroke: var(--spcd3-marker-stroke);
+  stroke-width: 0.1rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.spcd3-marker.visible {
+  opacity: 1;
+}
+
+.spcd3-rect {
+  fill: var(--spcd3-highlight-fill);
+  cursor: default;
+}
+
+.spcd3-triangle {
+  width: 0.9rem;
+  height: 0.8rem;
+  pointer-events: none;
+}
+
+.spcd3-toolbar {
+  display: flex;
+  overflow: hidden;
+  max-width: 0;
+  opacity: 0;
+  transition:
+    max-width 0.3s ease,
+    opacity 0.3s ease;
+  pointer-events: none;
+}
+
+#spcd3-toolbarRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  overflow: visible;
+  padding-left: 1rem;
+}
+
+.spcd3-toolbar-button {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 1.4rem;
+  height: 1.4rem;
+  position: relative;
+  display: inline-flex;
+  overflow: visible;
+  border: none;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  vertical-align: middle;
+  background: var(--spcd3-control-bg);
+  color: var(--spcd3-text-primary);
+  font: inherit;
+  line-height: 1;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 0.1rem;
+  box-shadow: none;
+  opacity: 1;
+  text-transform: none;
+}
+
+.spcd3-toolbar-buttonicon {
+  width: 1rem;
+  height: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.spcd3-toolbar-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  color: inherit;
+}
+
+.spcd3-toolbar-svg [stroke]:not([stroke="none"]) {
+  stroke: currentColor;
+}
+
+.spcd3-toolbar-svg [fill]:not([fill="none"]) {
+  fill: currentColor;
+}
+
+.spcd3-toolbar-buttontip {
+  inset: auto;
+  margin: 0;
+  background: var(--spcd3-tooltip-surface);
+  padding: 0.2rem;
+  border: 0.08rem solid var(--spcd3-border-emphasis);
+  border-radius: 0.1rem;
+  white-space: nowrap;
+  line-height: 1.2;
+  pointer-events: none;
+  color: var(--spcd3-text-primary);
+}
+
+.spcd3-toolbar-buttontip:popover-open {
+  position: fixed;
+}
+
+.spcd3-modal-tableoverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--spcd3-backdrop);
+  z-index: 999;
+  display: block;
+}
+
+.spcd3-modal-tabledata {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  position: fixed;
+  background: var(--spcd3-panel-bg);
+  padding: 1rem;
+  box-shadow: 0 0 0.625rem var(--spcd3-shadow-modal);
+  border: 0.08rem solid var(--spcd3-border-emphasis);
+  border-radius: 0.5rem;
+  max-height: 80vh;
+  max-width: 90vh;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: var(--spcd3-text-primary);
+}
+
+.spcd3-scroll-wrapper {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  overflow: auto;
+  max-height: 100%;
+}
+
+.spcd3-contextmenu-records {
+  border: 0.08rem solid var(--spcd3-border-emphasis);
+  border-radius: 0.1rem;
+  margin: 0.5rem;
+  padding: 0.35rem;
+  background-color: var(--spcd3-panel-bg);
+  cursor: pointer;
+  z-index: 9999;
+  color: var(--spcd3-text-primary);
+}
+
+.spcd3-contextmenu-dimensions {
+  border: 0.08rem solid var(--spcd3-border-emphasis);
+  border-radius: 0.1rem;
+  margin: 0.5rem;
+  padding: 0.35rem;
+  background-color: var(--spcd3-panel-bg);
+  cursor: pointer;
+  z-index: 9999;
+  color: var(--spcd3-text-primary);
+}
+
+.spcd3-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--spcd3-backdrop);
+  display: none;
+  z-index: 9999;
+}
+
+.spcd3-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  background-color: var(--spcd3-panel-bg);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.25rem 0.625rem var(--spcd3-shadow-popover);
+  display: none;
+  color: var(--spcd3-text-primary);
+}
+
+.spcd3-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+}
+
+.spcd3-modal-title {
+  padding-left: 0.5rem;
+  font-size: large;
+}
+
+.spcd3-modal-content {
+  min-width: 10rem;
+  position: relative;
+}
+
+.spcd3-modal-info {
+  margin-top: 0.15rem;
+  padding: 0.5rem;
+}
+
+.spcd3-modal-notes {
+  color: var(--spcd3-text-secondary);
+  font-size: smaller;
+  padding: 1rem 0 0.5rem 0.5rem;
+}
+
+.spcd3-modal-label {
+  padding: 0.5rem;
+}
+
+.spcd3-modal-input {
+  width: 4.5rem;
+  min-height: 1.7rem;
+  padding: 0.2rem 0.35rem;
+  border: 0.1rem solid var(--spcd3-border-subtle);
+  border-radius: 0.1rem;
+  box-sizing: border-box;
+  line-height: 1.2;
+  vertical-align: middle;
+  background: var(--spcd3-control-bg);
+  color: var(--spcd3-text-primary);
+}
+
+.spcd3-modal-errormessage {
+  position: relative;
+  display: none;
+  padding-left: 0.5rem;
+  padding-top: 0.5rem;
+  color: var(--spcd3-tooltip-record-text);
+  font-size: x-small;
+}
+
+#spcd3-errorRange {
+  display: block;
+  padding-left: 0.5rem;
+  padding-top: 0.5rem;
+  color: var(--spcd3-tooltip-record-text);
+  font-size: x-small;
+}
+
+.spcd3-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex: 0 0 auto;
+}
+
+.spcd3-options-div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.spcd3-triangle-hitbox {
+  width: 30;
+  height: 30;
+  fill: transparent;
+  pointer-events: all;
+  touch-action: none;
+  user-select: none;
+}
+
+.spcd3-handle-hitbox {
+  fill: transparent;
+  pointer-events: all;
+}

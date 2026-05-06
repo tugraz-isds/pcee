@@ -124,7 +124,7 @@ export function cleanAll() {
 
 gulp.task("clean", clean);
 gulp.task("cleanAll", cleanAll);
-gulp.task("build", build);
+//gulp.task("build", build);
 gulp.task("tauri", tauri);
 gulp.task("tauri:dev", tauriDev);
 

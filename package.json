@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "preview": "vite preview",
-    "build": "npx gulp build",
+    "build": "vite build",
     "tauri": "npx gulp tauri",
     "clean": "npx gulp clean",
     "cleanAll": "npx gulp cleanAll"

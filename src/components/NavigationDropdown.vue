@@ -396,18 +396,19 @@ onMounted(async () => {
   width: auto;
 
   border-radius: 0.375rem;
-  border: 0.1rem solid #e5e7eb;
+  border: 0.1rem solid var(--ui-border-color);
+  background: var(--floating-card-background);
 
   padding: 0.375rem 0.625rem;
 
   font-size: 0.875rem;
-  color: #1f2937;
+  color: var(--body-text-color);
 
-  box-shadow: 0 0.1rem 0.2rem rgba(0, 0, 0, 0.05);
+  box-shadow: var(--floating-card-shadow);
 }
 
 .navigation-dropdown:focus {
   outline: none;
-  box-shadow: 0 0 0 0.1rem #d1d5db;
+  box-shadow: 0 0 0 0.1rem var(--ui-border-color);
 }
 </style>

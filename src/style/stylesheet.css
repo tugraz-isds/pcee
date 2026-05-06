@@ -1,5 +1,41 @@
 @import "tailwindcss";
 
+:root {
+  color-scheme: light dark;
+  --page-background: light-dark(#ffffff, #0d1620);
+  --page-background-top: light-dark(#ffffff, #13212d);
+  --content-panel-background: light-dark(oklch(0.99 0.011 91.69), #182733);
+  --floating-card-background: light-dark(#ffffff, #213342);
+  --subtle-panel-background: light-dark(#eef4f8, #223746);
+  --brand-accent-background: light-dark(rgba(0, 129, 175, 1), #0c5f7f);
+  --modal-overlay-background: light-dark(rgb(0 0 0 / 55%), rgb(2 6 23 / 72%));
+  --ui-border-color: light-dark(#c9d3da, #355064);
+  --panel-border-color: light-dark(#111827, #5d7a8f);
+  --body-text-color: light-dark(#152536, #ebf3f7);
+  --muted-text-color: light-dark(#41596f, #b7cad7);
+  --accent-contrast-text-color: light-dark(#ffffff, #f8fbfd);
+  --accent-text-color: light-dark(#005d84, #8fd8ff);
+  --highlight-text-color: light-dark(#facc15, #fde68a);
+  --error-text-color: light-dark(#c62828, #fca5a5);
+  --body-link-color: light-dark(#0a67a3, #8fd8ff);
+  --body-link-hover-color: light-dark(#084d7a, #c4eeff);
+  --control-button-background: light-dark(#e7edf1, #29404f);
+  --control-button-background-hover: light-dark(#d4dee6, #345363);
+  --control-button-background-active: light-dark(#bccbd7, #416577);
+  --control-button-background-disabled: light-dark(#e7edf1, #29404f);
+  --control-button-text-disabled: light-dark(#728091, #8ca3b4);
+  --table-input-background: light-dark(#ffffff, #10202b);
+  --table-input-focus-background: light-dark(#e9f2ff, #183142);
+  --floating-card-shadow: 0 0.1rem 0.2rem rgb(15 23 42 / 10%);
+  --toolbar-icon-filter: none;
+  --chart-text-color: light-dark(#152536, #ebf3f7);
+}
+
+:root[data-theme='dark'] {
+  --floating-card-shadow: 0 0.1rem 0.2rem rgb(2 6 23 / 35%);
+  --toolbar-icon-filter: brightness(0) invert(1);
+}
+
 #app {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -12,6 +48,9 @@ body {
 
 body {
   font-family: Verdana, Geneva, Tahoma, sans-serif;
+  background: radial-gradient(circle at top, var(--page-background-top), var(--page-background) 42%);
+  color: var(--body-text-color);
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 
@@ -50,60 +89,61 @@ h6 {
 table {
   width: 100%;
   border-collapse: collapse;
-  border: 0.1rem solid #d1d5db;
+  border: 0.1rem solid var(--ui-border-color);
   text-align: left;
 }
 
 th {
-  border: 0.1rem solid #d1d5db;
+  border: 0.1rem solid var(--ui-border-color);
   padding: 0.5rem 0.75rem;
   font-weight: 600;
 }
 
 td {
-  border: 0.01rem solid #d1d5db;
+  border: 0.01rem solid var(--ui-border-color);
   padding: 0.5rem 0.75rem;
 }
 
 td input {
-  border: 0.01rem solid #d1d5db;
+  border: 0.01rem solid var(--ui-border-color);
   border-radius: 0.25rem;
   padding: 0.25rem 0.5rem;
-  background: white;
+  background: var(--table-input-background);
+  color: var(--body-text-color);
 }
 
 td:has(input:focus) {
-  background: #eff6ff;
+  background: var(--table-input-focus-background);
 }
 
 /* Buttons */
 
 button {
   padding: 0.375rem 0.75rem;
-  border: 0.1rem solid #d1d5db;
+  border: 0.1rem solid var(--ui-border-color);
   border-radius: 0.25rem;
-  background: #e5e7eb;
-  color: black;
+  background: var(--control-button-background);
+  color: var(--body-text-color);
 }
 
 button:hover {
-  background: #d1d5db;
+  background: var(--control-button-background-hover);
 }
 
 button:active {
-  background: #9ca3af;
+  background: var(--control-button-background-active);
 }
 
 button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  background: #e5e7eb;
-  color: #6b7280;
+  background: var(--control-button-background-disabled);
+  color: var(--control-button-text-disabled);
 }
 
 button:disabled:hover,
 button:disabled:active {
-  background: #e5e7eb;
+  background: var(--control-button-background-disabled);
 }
 
 /* Lists */
@@ -121,11 +161,10 @@ ol {
 /* Links */
 
 a {
-  color: #2563eb;
+  color: var(--body-link-color);
   text-decoration: underline;
 }
 
 a:hover {
-  color: #1e40af;
+  color: var(--body-link-hover-color);
 }
-
