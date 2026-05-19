@@ -415,6 +415,10 @@ onMounted(async (): Promise<void> => {
 
 <style>
 /* Header native and polyfill */
+:root {
+  --sticky-header-gap: 0.5rem;
+}
+
 .sticky-header {
   position: fixed;
   top: 0;
@@ -434,6 +438,17 @@ onMounted(async (): Promise<void> => {
 
   will-change: transform, height, font-size;
   contain: layout style;
+}
+
+.sticky-header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(-1 * var(--sticky-header-gap));
+  height: var(--sticky-header-gap);
+  background: var(--page-background);
+  pointer-events: none;
 }
 
 .header-actions {
@@ -716,7 +731,8 @@ onMounted(async (): Promise<void> => {
 }
 
 .explorable-explainer {
-  --header-content-offset: calc(6.5vh + 1rem);
+  --sticky-header-height: 8vh;
+  --header-content-offset: calc(var(--sticky-header-height) + var(--sticky-header-gap));
   display: flex;
   flex-direction: row;
   gap: 1rem;
@@ -804,18 +820,17 @@ section {
 
 @media (max-width: 60em) and (orientation: portrait) {
   .explorable-explainer.portrait-resizable {
-    --header-content-offset: calc(5vh + 2rem);
     flex-direction: column;
     gap: 0;
   }
 
   .navigation-dropdown {
-    margin-top: 1rem;
+    margin-top: 0;
   }
 
   .main-chart {
     position: fixed;
-    top: calc(5vh + 1rem);
+    top: var(--header-content-offset);
     left: 0.5rem;
     right: 0.5rem;
     margin-left: 0;
