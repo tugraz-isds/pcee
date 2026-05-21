@@ -4660,32 +4660,41 @@ function getTextWidthSVG(text, font) {
     temp.remove();
     return width;
 }
-function getLongestTickLabel(data, labelKey) {
-    const uniqueLabels = Array.from(new Set(data.map((d) => String(d[labelKey] ?? "")))).filter((s) => s.length > 0);
-    const ticks = uniqueLabels.length > 30
-        ? uniqueLabels.filter((_, i) => i % 4 === 0)
-        : uniqueLabels;
-    return ticks.reduce((longest, v) => {
-        return v.length > longest.length ? v : longest;
+function shortenAxisLabel(value) {
+    const label = String(value ?? "");
+    return label.length > 10 ? label.substr(0, 10) + "..." : label;
+}
+function getLongestVisibleTickLabel(data, header) {
+    return header.reduce((longest, column) => {
+        const values = data.map((d) => d[column.name]);
+        const numericValues = values.every((v) => !isNaN(Number(v)));
+        const labels = numericValues
+            ? values.map((value) => String(value ?? ""))
+            : values.map(shortenAxisLabel);
+        return labels.reduce((currentLongest, label) => label.length > currentLongest.length ? label : currentLongest, longest);
     }, "");
 }
-function detectLastStringKey(data) {
-    const keys = Object.keys(data[0]);
-    const stringKeys = keys.filter((key) => typeof data[0][key] === "string" && isNaN(Number(data[0][key])));
-    return stringKeys[stringKeys.length - 1];
+function calculateChartLayout(header, dataset) {
+    const n = header.length;
+    const longestDimensionLabel = header.reduce((longest, column) => {
+        const label = shortenAxisLabel(column.name);
+        return label.length > longest.length ? label : longest;
+    }, "");
+    const longestTickLabel = getLongestVisibleTickLabel(dataset, header);
+    const dimensionLabelWidth = getTextWidthSVG(longestDimensionLabel, "0.7rem Verdana");
+    const tickLabelWidth = getTextWidthSVG(longestTickLabel, "0.75rem Verdana");
+    const axisGap = Math.max(96, Math.ceil(dimensionLabelWidth + 56));
+    const leftPadding = Math.max(72, Math.ceil(tickLabelWidth + 44));
+    const rightPadding = Math.max(48, Math.ceil(dimensionLabelWidth / 2 + 36));
+    const chartWidth = Math.ceil(leftPadding + rightPadding + Math.max(0, n - 1) * axisGap);
+    return { axisGap, chartWidth, leftPadding, rightPadding };
 }
 function setupXScales(header, dataset) {
-    const labelKey = detectLastStringKey(dataset);
-    const longest = getLongestTickLabel(dataset, labelKey);
-    const longestTicklabel = longest.length > 10 ? longest.substr(0, 10) + "......." : longest;
-    const labelWidth = getTextWidthSVG(longestTicklabel, "0.75rem Verdana");
-    const margin = labelWidth * 0.6 + 16;
-    const n = header.length;
-    const pad = n <= 4 ? 0.1 : 0.2;
+    const { leftPadding, rightPadding } = calculateChartLayout(header, dataset);
     return point()
         .domain(header.map((x) => x.name))
-        .range([width - margin, margin])
-        .padding(pad)
+        .range([width - rightPadding, leftPadding])
+        .padding(0)
         .align(0.5);
 }
 function isLinearScale(scale) {
@@ -9054,11 +9063,15 @@ function drawChart(content) {
     setSvg(chartWrapper
         .append("svg")
         .attr("id", "spcd3-pc_svg")
-        .attr("viewBox", [0, 0, width, 360]));
+        .attr("width", width)
+        .attr("height", height)
+        .attr("viewBox", [0, 0, width, height])
+        .attr("preserveAspectRatio", "none"));
     const plot = svg.append("g").attr("class", "plot");
     setDefsForIcons();
     setActive(setActivePathLines(plot, content, parcoords));
     setFeatureAxis(plot, yAxis, parcoords, width);
+    realignToolbar();
     svg
         .on("contextmenu", function (event) {
         event.stopPropagation();
@@ -9119,12 +9132,6 @@ function setUpParcoordData(data, newFeatures) {
     setPaddingXaxis(60);
     setInitDimension(newFeatures);
     setHeight(400);
-    if (newFeatures.length <= 6) {
-        setWidth(newFeatures.length * 180);
-    }
-    else {
-        setWidth(newFeatures.length * 100);
-    }
     const label = newFeatures[newFeatures.length - 1];
     data.sort((a, b) => {
         const item1 = a[label];
@@ -9140,6 +9147,7 @@ function setUpParcoordData(data, newFeatures) {
         }
     });
     let dataset = prepareData(data, newFeatures);
+    setWidth(calculateChartLayout(dataset[0], dataset[1]).chartWidth);
     setFeatures(dataset[0]);
     setNewDataset(dataset[1]);
     setXScales(setupXScales(dataset[0], dataset[1]));
@@ -9198,6 +9206,25 @@ function setUpParcoordData(data, newFeatures) {
         counter = counter + 1;
     });
     setHoverLabel(getAllVisibleDimensionNames()[0]);
+}
+function realignToolbar() {
+    window.requestAnimationFrame(alignToolbarWithLeftmostAxisLabels);
+}
+function alignToolbarWithLeftmostAxisLabels() {
+    const toolbarRow = document.querySelector("#spcd3-toolbarRow");
+    const svgNode = document.querySelector("#spcd3-pc_svg");
+    const axisNodes = Array.from(document.querySelectorAll("#spcd3-pc_svg .dimensions"));
+    if (!toolbarRow || !svgNode || axisNodes.length === 0) {
+        return;
+    }
+    const toolbarRect = toolbarRow.getBoundingClientRect();
+    const leftmostAxis = axisNodes.reduce((leftmost, axis) => axis.getBoundingClientRect().left < leftmost.getBoundingClientRect().left
+        ? axis
+        : leftmost, axisNodes[0]);
+    const labelNodes = Array.from(leftmostAxis.querySelectorAll(".tick text"));
+    const leftEdge = labelNodes.reduce((minLeft, label) => Math.min(minLeft, label.getBoundingClientRect().left), leftmostAxis.getBoundingClientRect().left);
+    toolbarRow.style.paddingLeft = `${Math.max(0, leftEdge - toolbarRect.left) / 16}rem`;
+    toolbarRow.style.visibility = "visible";
 }
 function handlePointerEnter(event, d) {
     doNotHighlight();
@@ -9928,5 +9955,5 @@ function escapeCsvCell(value) {
     return value;
 }
 
-export { clearSelection, colorRecord, createSvgString, deleteChart, disableInteractivity, drawChart, enableInteractivity, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelectableWith, getSelected, hide, hideMarker, invert, invertWoTransition, isDimensionCategorical, isRecordInactive, isSelected, isSelectedWithRecordId, loadCSV, move, moveByOne, refresh, renderInvalidTable, reset, saveAsSvg, setClassColoredFalse, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setFilter, setInversionStatus, setSelectableWidth, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setUnselected, setUnselectedWithId, show, showInvalidRowsMessage, showMarker, swap, throttleShowValues, toggleSelection, toggleSelectionWithId, uncolorRecord };
+export { clearSelection, colorRecord, createSvgString, deleteChart, disableInteractivity, drawChart, enableInteractivity, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelectableWith, getSelected, hide, hideMarker, invert, invertWoTransition, isDimensionCategorical, isRecordInactive, isSelected, isSelectedWithRecordId, loadCSV, move, moveByOne, realignToolbar, refresh, renderInvalidTable, reset, saveAsSvg, setClassColoredFalse, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setFilter, setInversionStatus, setSelectableWidth, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setUnselected, setUnselectedWithId, show, showInvalidRowsMessage, showMarker, swap, throttleShowValues, toggleSelection, toggleSelectionWithId, uncolorRecord };
 //# sourceMappingURL=spcd3.js.map
