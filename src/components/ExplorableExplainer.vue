@@ -48,9 +48,6 @@
   >
     <div class="about-dialog">
       <div class="about-header">
-        <h2 class="about-title">
-          About
-        </h2>
         <button
           type="button"
           class="about-close"
