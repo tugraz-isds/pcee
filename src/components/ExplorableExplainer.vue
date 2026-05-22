@@ -59,9 +59,7 @@
           x
         </button>
       </div>
-      <p class="about-copy">
-        Parallel Coordinates: An Interactive Tutorial
-      </p>
+      <div v-html="aboutText" />
       <p class="about-copy">
         PCEE version: {{ appVersion }}
       </p>
@@ -153,6 +151,7 @@ const healthDatasetText = ref('');
 const multipleViewsText = ref('');
 const financeDatasetText = ref('');
 const referencesDatasetText = ref('');
+const aboutText = ref('');
 const header = ref<HTMLElement | null>(null);
 const multiLine = ref<HTMLElement | null>(null);
 const singleLine = ref<HTMLElement | null>(null);
@@ -447,6 +446,7 @@ onMounted(async (): Promise<void> => {
   loadContent(usageText, 'content/usage.html');
   loadContent(multipleViewsText, 'content/multipleviews.html');
   loadContent(referencesDatasetText, 'content/resources.html');
+  loadContent(aboutText, 'content/about.html');
 
   const container = usageContainer.value;
   if(container) {
@@ -712,6 +712,7 @@ onMounted(async (): Promise<void> => {
   border-left: 0;
   text-indent: 0;
   text-align: left;
+  font-size: 0.5rem;
 }
 
 .about-link {
