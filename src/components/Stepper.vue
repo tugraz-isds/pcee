@@ -124,9 +124,9 @@ let status = false;
 const steps = [
   { title: '1. Adjusting Dimension Ranges', content: rangeText },
   { title: '2. Selecting Records', content: selectText },
-  { title: '3. Filtering Records', content: filterText },
-  { title: '4. Moving Dimensions', content: moveText },
-  { title: '5. Inverting Dimensions', content: invertText },
+  { title: '3. Moving Dimensions', content: moveText },
+  { title: '4. Inverting Dimensions', content: invertText },
+  { title: '5. Filtering Records', content: filterText },
   { title: '6. Explore the Data', content: interactiveText }
 ];
 
@@ -230,13 +230,13 @@ const triggerNext = (currentStep: number): void => {
       selectRecordNext(currentStep);
       break;
     case 3:
-      filterRecordsNext();
-      break;
-    case 4:
       moveDimensionNext();
       break;
-    case 5:
+    case 4:
       invertDimensionNext();
+      break;
+    case 5:
+      filterRecordsNext();
       break;
     default:
       break;
@@ -252,13 +252,13 @@ const triggerBack = (currentStep: number): void => {
       selectRecordBack(currentStep);
       break;
     case 2:
-      filterRecordsBack();
-      break;
-    case 3:
       moveDimensionBack();
       break;
-    case 4:
+    case 3:
       invertDimensionBack();
+      break;
+    case 4:
+      filterRecordsBack();
       break;
     case 5:
       break;
@@ -285,6 +285,8 @@ const setRangeBack = (): void => {
       const min = spcd3.getMinValue(dimension);
       const max = spcd3.getMaxValue(dimension);
       spcd3.setDimensionRange(dimension, min, max);
+      const range = spcd3.getDimensionRange(dimension);
+      spcd3.setFilter(dimension, Number(range[1]), Number(range[0]));
     }
   });
 }
@@ -322,7 +324,7 @@ const filterRecordsBack = (): void => {
     spcd3.setFilter('English', values[1], values[0]);
   }
   else {
-    spcd3.setFilter('English', values[1], values[0]);
+    spcd3.setFilter('English', values[0], values[1]);
   }
   document.querySelectorAll<SVGPathElement>("path").forEach(p => {
     p.style.pointerEvents = "none";
