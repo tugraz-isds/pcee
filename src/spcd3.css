@@ -7,7 +7,9 @@
    =============================================== */
 
 /* 1. Use a more-intuitive box-sizing model */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -26,22 +28,38 @@ body {
 }
 
 /* 4. Remove list styles on ul, ol elements with a list role */
-ul[role='list'], ol[role='list'] {
+ul[role="list"],
+ol[role="list"] {
   list-style: none;
 }
 
 /* 5. Set shorter line heights on headings and interactive elements */
-h1, h2, h3, h4, button, input, label {
+h1,
+h2,
+h3,
+h4,
+button,
+input,
+label {
   line-height: 1.1;
 }
 
 /* 6. Balance text wrapping on headings */
-h1, h2, h3, h4 {
+h1,
+h2,
+h3,
+h4 {
   text-wrap: balance;
 }
 
 /* 7. Improve text rendering and wrapping */
-p, h1, h2, h3, h4, h5, h6 {
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   overflow-wrap: break-word;
 }
 
@@ -56,12 +74,19 @@ a:not([class]) {
 }
 
 /* 9. Make images and media easier to work with */
-img, picture, video, canvas, svg {
+img,
+picture,
+video,
+canvas,
+svg {
   display: block;
 }
 
 /* 10. Inherit fonts for inputs and buttons */
-input, button, textarea, select {
+input,
+button,
+textarea,
+select {
   font: inherit;
 }
 
@@ -76,7 +101,8 @@ textarea:not([rows]) {
 }
 
 /* 13. Root stacking context */
-#root, #__next {
+#root,
+#__next {
   isolation: isolate;
 }
 
@@ -88,19 +114,31 @@ textarea:not([rows]) {
 }
 
 /* 15. HTML5 display-role reset for older browsers */
-article, aside, details, figcaption, figure,
-footer, header, hgroup, menu, nav, section {
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+menu,
+nav,
+section {
   display: block;
 }
 
 /* 16. Remove quotes from blockquotes and q elements */
-blockquote, q {
+blockquote,
+q {
   quotes: none;
 }
 
-blockquote:before, blockquote:after,
-q:before, q:after {
-  content: '';
+blockquote:before,
+blockquote:after,
+q:before,
+q:after {
+  content: "";
   content: none;
 }
 
@@ -312,15 +350,8 @@ table.spcd3-tablecontainer td {
 
 .spcd3-chartWrapper {
   position: relative;
-  inline-size: var(--spcd3-chart-width, auto);
-  block-size: var(--spcd3-chart-height, auto);
-  min-inline-size: var(--spcd3-chart-min-width, 0);
-  min-block-size: var(--spcd3-chart-min-height, 0);
-  max-inline-size: var(--spcd3-chart-max-width, none);
-  resize: var(--spcd3-chart-resize, none);
-  overflow: var(--spcd3-chart-overflow, auto);
   margin-left: 1rem;
-  box-sizing: border-box;
+  overflow-x: auto;
 }
 
 .spcd3-tip-layer {

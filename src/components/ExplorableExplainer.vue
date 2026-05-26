@@ -73,26 +73,17 @@
     v-else
     class="header-spacer-polyfill"
   />
- <div
-    :class="['explorable-explainer portrait-resizable', { 'image-chart-active': isImageChart }]"
-    :style="portraitResizeVars"
-  >
+ <div class="explorable-explainer portrait-resizable">
     <div
       class="chart-container"
     >
-      <div :class="['main-chart', { 'image-chart': isImageChart }]">
+      <div class="main-chart">
         <NavigationDropdown :offset="60" />
         <div class="chart-wrapper">
           <h3 id="chart-title">
             Personal Finances Dataset
           </h3>
           <div id="spcd3-parallelcoords" />
-        </div>
-        <div
-          class="portrait-chart-divider"
-          @pointerdown="startPortraitResize"
-        >
-          <span class="portrait-chart-divider-grip" />
         </div>
       </div>
     </div>
@@ -125,7 +116,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, onBeforeUnmount, provide } from 'vue';
+import { ref, onMounted, onBeforeUnmount, provide } from 'vue';
 import packageInfo from '../../package.json';
 import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
@@ -155,15 +146,12 @@ const singleLine = ref<HTMLElement | null>(null);
 const usageContainer = ref<HTMLDivElement | null>(null);
 const zoomSrc = ref<string | null>(null);
 const showAbout = ref(false);
-const isImageChart = ref(false);
-const portraitChartHeight = ref(360);
 let lastStep = -1;
 const appVersion = packageInfo.version;
 const repoUrl = packageInfo.repository.url;
 const DARK_MODE_MEDIA_QUERY = '(prefers-color-scheme: dark)';
 const darkModeMediaQuery =
   typeof window !== 'undefined' ? window.matchMedia(DARK_MODE_MEDIA_QUERY) : null;
-let toolbarResizeObserver: ResizeObserver | null = null;
 
 const applyTheme = (nextTheme: 'light' | 'dark'): void => {
   document.documentElement.dataset.theme = nextTheme;
@@ -194,97 +182,6 @@ const handleClick = (e: Event): void => {
 const isPortrait = (): boolean => {
   return window.innerHeight > window.innerWidth;
 }
-
-const getRootFontSize = (): number => (
-  parseFloat(getComputedStyle(document.documentElement).fontSize) || 16
-)
-
-const toRem = (value: number): number => value / getRootFontSize()
-
-const portraitResizeVars = computed(() => ({
-  '--portrait-chart-height': `${toRem(portraitChartHeight.value)}rem`,
-}));
-
-const scheduleToolbarRealign = (): void => {
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => spcd3.realignToolbar?.());
-  });
-}
-
-const getHeaderOffset = (): number => {
-  const rootStyle = getComputedStyle(document.documentElement);
-  const gap = parseFloat(rootStyle.getPropertyValue('--sticky-header-gap')) || 8;
-  return window.innerHeight * 0.08 + gap;
-}
-
-const clampPortraitChartHeight = (height: number): number => {
-  const availableHeight = window.innerHeight - getHeaderOffset() - 96;
-  const minHeight = Math.min(availableHeight, Math.max(300, availableHeight * 0.32));
-  const maxHeight = Math.max(minHeight, availableHeight);
-  return Math.round(Math.min(Math.max(height, minHeight), maxHeight));
-}
-
-const syncPortraitChartHeight = (): void => {
-  if (!isPortrait()) return;
-  const availableHeight = window.innerHeight - getHeaderOffset() - 96;
-  const fallbackHeight = availableHeight * 0.4;
-  portraitChartHeight.value = clampPortraitChartHeight(fallbackHeight);
-  scheduleToolbarRealign();
-}
-
-const handleViewportResize = (): void => {
-  syncPortraitChartHeight();
-  scheduleToolbarRealign();
-}
-
-const setPortraitChartHeight = (height: number): void => {
-  portraitChartHeight.value = clampPortraitChartHeight(height);
-  scheduleToolbarRealign();
-}
-
-const stopPortraitResize = (): void => {
-  document.body.classList.remove('is-resizing-portrait-chart');
-  window.removeEventListener('pointermove', handlePortraitResize);
-  window.removeEventListener('pointerup', stopPortraitResize);
-}
-
-const handlePortraitResize = (event: PointerEvent): void => {
-  if (!isPortrait()) return;
-  setPortraitChartHeight(event.clientY - getHeaderOffset());
-}
-
-const startPortraitResize = (event: PointerEvent): void => {
-  if (!isPortrait()) return;
-  event.preventDefault();
-  (event.currentTarget as HTMLElement).setPointerCapture?.(event.pointerId);
-  document.body.classList.add('is-resizing-portrait-chart');
-  window.addEventListener('pointermove', handlePortraitResize);
-  window.addEventListener('pointerup', stopPortraitResize);
-}
-
-const getPortraitStepIndex = (): number => {
-  const steps = document.querySelectorAll<HTMLElement>('.step');
-  const triggerPoint = getHeaderOffset() + portraitChartHeight.value + 8;
-  let currentIndex = 0;
-  let closestSectionTop: number | null = null;
-
-  steps.forEach((step) => {
-    const section = step.closest('[content-section]') as HTMLElement | null;
-    const rect = (section ?? step).getBoundingClientRect();
-    const sectionHasStarted = rect.top <= triggerPoint;
-
-    if (sectionHasStarted && (closestSectionTop === null || rect.top > closestSectionTop)) {
-      closestSectionTop = rect.top;
-      currentIndex = parseInt(step.dataset.step ?? '0', 10);
-    }
-  });
-
-  return currentIndex;
-}
-
-const getResponsiveStepIndex = (): number => (
-  isPortrait() ? getPortraitStepIndex() : getCurrentStepIndex()
-)
 
 const handleImage = (chart: HTMLDivElement): void => {
   chart.style.visibility = 'visible';
@@ -374,7 +271,7 @@ window.addEventListener('scroll', () => {
   const chart = document.getElementById('spcd3-parallelcoords') as HTMLDivElement | null;
   if (!chart) return;
 
-  const step = getResponsiveStepIndex();
+  const step = getCurrentStepIndex();
   if (step === lastStep) return;
   lastStep = step;
 
@@ -383,7 +280,6 @@ window.addEventListener('scroll', () => {
   chart.style.opacity = '0';
 
   window.setTimeout(() => {
-    isImageChart.value = step === 3;
 
     if (step === 4) {
       chart.style.visibility = 'hidden';
@@ -402,7 +298,6 @@ window.addEventListener('scroll', () => {
     (document.getElementById('activate-button-5') as HTMLButtonElement).textContent = "Enable Interactivity";
     if (chart.style.visibility !== 'hidden') {
       chart.style.opacity = '1';
-      scheduleToolbarRealign();
     }
     resetCurrentStep();
     
@@ -410,12 +305,6 @@ window.addEventListener('scroll', () => {
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener('resize', handleViewportResize);
-  window.removeEventListener('orientationchange', handleViewportResize);
-  toolbarResizeObserver?.disconnect();
-  toolbarResizeObserver = null;
-  stopPortraitResize();
-
   if (usageContainer.value) {
     usageContainer.value.removeEventListener("click", handleClick);
   }
@@ -426,14 +315,6 @@ onBeforeUnmount(() => {
 onMounted(async (): Promise<void> => {
   syncThemeWithSystemPreference();
   darkModeMediaQuery?.addEventListener('change', syncThemeWithSystemPreference);
-  syncPortraitChartHeight();
-  window.addEventListener('resize', handleViewportResize);
-  window.addEventListener('orientationchange', handleViewportResize);
-  const mainChart = document.querySelector('.main-chart');
-  if (mainChart && typeof ResizeObserver !== 'undefined') {
-    toolbarResizeObserver = new ResizeObserver(scheduleToolbarRealign);
-    toolbarResizeObserver.observe(mainChart);
-  }
   initalLoadOfDataset();
   loadContent(introText, 'content/introduction.html');
   loadContent(financeDatasetText, 'content/data-finance.html');
@@ -851,22 +732,15 @@ onMounted(async (): Promise<void> => {
 .explorable-explainer {
   --sticky-header-height: 8vh;
   --header-content-offset: calc(var(--sticky-header-height) + var(--sticky-header-gap));
-  --portrait-chart-height: 22.5rem;
-  --portrait-divider-height: 1.1rem;
-  --portrait-chart-gap: 0.75rem;
   display: flex;
   flex-direction: row;
   gap: 1rem;
-  width: 100%;
-  max-width: 100%;
-  overflow-x: clip;
 }
 
 .chart-container {
   flex: 1.2 1 25rem;
   min-width: 0;
   position: relative;
-  transition: min-height 0.35s ease;
 }
 
 .main-chart {
@@ -874,7 +748,6 @@ onMounted(async (): Promise<void> => {
   top: var(--header-content-offset);
   margin-left: 1rem;
   align-self: flex-start;
-  transition: height 0.35s ease;
 }
 
 .chart-wrapper {
@@ -883,9 +756,6 @@ onMounted(async (): Promise<void> => {
   padding-bottom: 1rem;
   background: var(--spcd3-bg);
   color: var(--chart-text-color);
-  min-width: 0;
-  overflow: hidden;
-  transition: height 0.35s ease;
 }
 
 #chart-title {
@@ -904,22 +774,6 @@ onMounted(async (): Promise<void> => {
   transition: opacity 0.5s ease;
 }
 
-#spcd3-parallelcoords > .spcd3-chartWrapper {
-  margin-left: 0;
-  max-width: 100%;
-  overflow: hidden;
-}
-
-#spcd3-pc_svg {
-  display: block;
-  padding-bottom: 0;
-  max-width: 100%;
-}
-
-.portrait-chart-divider {
-  display: none;
-}
-
 .text-container {
   flex: 1 1 23rem;
   min-width: 23rem;
@@ -927,41 +781,13 @@ onMounted(async (): Promise<void> => {
   flex-direction: column;
   margin-right: 0.5rem;
   overflow: visible;
-  max-width: 100%;
   max-height: none;
   height: auto;
 }
 
 .pic {
-  display: block;
-  max-width: 100%;
-  height: auto;
   margin-left: 2rem;
   padding-right: 4rem;
-}
-
-.image-chart #spcd3-parallelcoords {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.image-chart #spcd3-parallelcoords figure {
-  width: 100%;
-  height: 100%;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.image-chart .pic {
-  max-width: 100%;
-  max-height: calc(100% - 1.5rem);
-  margin: 0 auto;
-  padding: 0;
-  object-fit: contain;
 }
 
 section {
@@ -995,17 +821,6 @@ section {
   .explorable-explainer.portrait-resizable {
     flex-direction: column;
     gap: 0;
-    width: 100%;
-    max-width: 100%;
-    overflow-x: clip;
-  }
-
-  .explorable-explainer.portrait-resizable .chart-container {
-    min-height: calc(var(--portrait-chart-height) + var(--portrait-divider-height) + var(--portrait-chart-gap));
-  }
-
-  .explorable-explainer.portrait-resizable.image-chart-active .chart-container {
-    min-height: calc(var(--portrait-chart-height) + var(--portrait-divider-height) + var(--portrait-chart-gap));
   }
 
   .navigation-dropdown {
@@ -1020,102 +835,11 @@ section {
     margin-left: 0;
     z-index: 201;
     background: var(--page-background);
-    height: var(--portrait-chart-height);
-    display: flex;
-    flex-direction: column;
-  }
-
-  .main-chart .chart-wrapper {
-    height: calc(var(--portrait-chart-height) - var(--portrait-divider-height));
-    padding-bottom: 0;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .main-chart.image-chart {
-    height: var(--portrait-chart-height);
-  }
-
-  .main-chart.image-chart .chart-wrapper {
-    height: calc(var(--portrait-chart-height) - var(--portrait-divider-height));
-  }
-
-  .main-chart.image-chart #spcd3-parallelcoords figure {
-    justify-content: flex-start;
-  }
-
-  .main-chart.image-chart .pic {
-    min-height: 0;
-    max-height: calc(100% - 2.25rem);
-  }
-
-  .main-chart #spcd3-parallelcoords {
-    flex: 1 1 auto;
-    height: auto;
-    min-height: 0;
-    overflow: hidden;
-  }
-
-  .main-chart #spcd3-parallelcoords > .spcd3-chartWrapper {
-    height: 100%;
-    max-width: 100%;
-    margin-left: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    overflow-x: hidden;
-    overflow-y: hidden;
-  }
-
-  .main-chart #spcd3-toolbarRow {
-    align-self: stretch;
-    flex: 0 0 auto;
-  }
-
-  .main-chart #spcd3-pc_svg {
-    flex: 1 1 auto;
-    width: 100%;
-    height: 100%;
-    max-width: none;
-    min-height: 0;
-    margin-top: 0.25rem;
-    margin-bottom: 0;
-  }
-
-  .portrait-chart-divider {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: var(--portrait-divider-height);
-    cursor: row-resize;
-    touch-action: none;
-    background: transparent;
-    border: 0;
-    border-radius: 0;
-  }
-
-  .portrait-chart-divider:focus-visible {
-    outline: 0.12rem solid var(--accent-text-color);
-    outline-offset: 0.05rem;
-  }
-
-  .portrait-chart-divider-grip {
-    width: min(7rem, 34vw);
-    height: 0.18rem;
-    border-radius: 999rem;
-    background: var(--ui-border-color);
-  }
-
-  .is-resizing-portrait-chart {
-    user-select: none;
   }
 
   .text-container {
     min-width: 0;
     margin-right: 0;
-    max-width: 100%;
-    overflow-x: clip;
   }
 
   #spcd3-parallelcoords {
@@ -1157,58 +881,6 @@ section {
   }
 }
 
-@media (orientation: landscape) {
-  .explorable-explainer {
-    overflow-x: clip;
-  }
-
-  .chart-container,
-  .text-container {
-    min-width: 0;
-  }
-
-  .main-chart .chart-wrapper {
-    height: clamp(18rem, calc(100vh - var(--header-content-offset) - 4rem), 24rem);
-    padding-bottom: 0;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .main-chart.image-chart .chart-wrapper {
-    height: clamp(26rem, calc(100vh - var(--header-content-offset) - 2.5rem), 34rem);
-  }
-
-  .main-chart #spcd3-parallelcoords {
-    flex: 1 1 auto;
-    height: auto;
-    min-height: 0;
-    overflow: hidden;
-  }
-
-  .main-chart #spcd3-parallelcoords > .spcd3-chartWrapper {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-  }
-
-  .main-chart #spcd3-toolbarRow {
-    align-self: stretch;
-    flex: 0 0 auto;
-  }
-
-  .main-chart #spcd3-pc_svg {
-    flex: 0 1 auto;
-    width: 100%;
-    height: auto;
-    max-width: none;
-    min-height: 0;
-    margin-top: 0.25rem;
-    margin-bottom: auto;
-  }
-}
-
 @media (max-height: 37.5em) and (orientation: landscape) {
   .single-line {
     white-space: normal;
@@ -1226,11 +898,6 @@ section {
   .main-chart {
     position: sticky;
     margin-left: 1rem;
-  }
-
-  .main-chart #spcd3-parallelcoords > .spcd3-chartWrapper {
-    margin-left: 0;
-    max-width: 100%;
   }
 
   .text-container {

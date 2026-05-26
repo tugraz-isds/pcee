@@ -31,7 +31,7 @@
   --chart-text-color: light-dark(#152536, #ebf3f7);
 }
 
-:root[data-theme='dark'] {
+:root[data-theme="dark"] {
   --floating-card-shadow: 0 0.1rem 0.2rem rgb(2 6 23 / 35%);
   --toolbar-icon-filter: brightness(0) invert(1);
 }
@@ -44,31 +44,20 @@
 html,
 body {
   max-width: 100%;
-  overflow-x: hidden;
-}
-
-body,
-#app {
-  position: relative;
-  width: 100%;
-  overflow-x: clip;
-}
-
-@supports not (overflow: clip) {
-  body,
-  #app {
-    overflow-x: hidden;
-  }
 }
 
 body {
   font-family: Verdana, Geneva, Tahoma, sans-serif;
-  background: radial-gradient(circle at top, var(--page-background-top), var(--page-background) 42%);
+  background: radial-gradient(
+    circle at top,
+    var(--page-background-top),
+    var(--page-background) 42%
+  );
   color: var(--body-text-color);
-  transition: background-color 0.25s ease, color 0.25s ease;
-  overscroll-behavior-x: none;
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease;
 }
-
 
 h1 {
   font-size: 1.5rem;
