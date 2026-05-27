@@ -101,12 +101,12 @@
       <div v-html="multipleViewsText" />
       <div
         v-if="zoomSrc"
-        class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 z-[9999]"
+        class="image-zoom-overlay"
         @click="zoomSrc = null"
       >
         <img
           :src="zoomSrc"
-          class="max-h-[90%] max-w-[90%] object-contain w-auto h-auto cursor-zoom-out"
+          :class="['image-zoom-preview', { 'image-zoom-preview-svg': isZoomSvg }]"
         >
       </div> 
     </div>
@@ -116,7 +116,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, provide } from 'vue';
+import { computed, ref, onMounted, onBeforeUnmount, provide } from 'vue';
 import packageInfo from '../../package.json';
 import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
@@ -145,6 +145,7 @@ const multiLine = ref<HTMLElement | null>(null);
 const singleLine = ref<HTMLElement | null>(null);
 const usageContainer = ref<HTMLDivElement | null>(null);
 const zoomSrc = ref<string | null>(null);
+const isZoomSvg = computed(() => /\.svg(?:[?#].*)?$/i.test(zoomSrc.value ?? ''));
 const showAbout = ref(false);
 let lastStep = -1;
 const appVersion = packageInfo.version;
@@ -415,6 +416,11 @@ onMounted(async (): Promise<void> => {
 /* Header native and polyfill */
 :root {
   --sticky-header-gap: 0.5rem;
+  --image-zoom-svg-background: #ffffff;
+}
+
+:root[data-theme='dark'] {
+  --image-zoom-svg-background: #111827;
 }
 
 .sticky-header {
@@ -494,6 +500,34 @@ onMounted(async (): Promise<void> => {
   display: block;
   object-fit: contain;
   filter: var(--toolbar-icon-filter);
+}
+
+.image-zoom-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1rem, 4vw, 3rem);
+  background: rgb(0 0 0 / 70%);
+}
+
+.image-zoom-preview {
+  width: auto;
+  height: auto;
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+  cursor: zoom-out;
+}
+
+.image-zoom-preview-svg {
+  box-sizing: border-box;
+  padding: clamp(0.75rem, 2vw, 1.5rem);
+  background: var(--image-zoom-svg-background);
+  border: 1px solid var(--ui-border-color);
+  border-radius: 0.5rem;
 }
 
 .multi-line,
