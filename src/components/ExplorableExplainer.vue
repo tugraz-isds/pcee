@@ -47,22 +47,22 @@
     @click.self="showAbout = false"
   >
     <div class="about-dialog">
-      <div class="about-header">
-        <button
-          type="button"
-          class="about-close"
-          @click="showAbout = false"
-        >
-          x
-        </button>
-      </div>
+      <button
+        type="button"
+        class="about-close"
+        @click="showAbout = false"
+      >
+        x
+      </button>
       <div v-html="aboutText" />
-      <p class="about-copy">
-        PCEE version: {{ appVersion }}
-      </p>
-      <p class="about-copy">
-        SPCD3 version: 1.0.0
-      </p>
+      <div class="about-version-row">
+        <p class="about-copy">
+          PCEE version: {{ appVersion }}
+        </p>
+        <p class="about-copy">
+          SPCD3 version: 1.0.0
+        </p>
+      </div>
     </div>
   </div>
   <div
@@ -591,12 +591,17 @@ onMounted(async (): Promise<void> => {
 }
 
 .about-dialog {
-  width: min(26rem, 100%);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(42rem, 100%);
+  max-height: calc(100vh - 2rem);
   border-radius: 0.6rem;
   background: var(--floating-card-background);
   color: var(--body-text-color);
-  padding: 1rem 1.1rem;
+  padding: 2.6rem 1.1rem 1rem;
   box-shadow: 0 1rem 2.5rem rgb(0 0 0 / 22%);
+  overflow: auto;
 }
 
 .about-header {
@@ -612,6 +617,9 @@ onMounted(async (): Promise<void> => {
 }
 
 .about-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
   margin-top: 0;
   border: 0.01rem solid var(--ui-border-color);
   border-radius: 999rem;
@@ -619,11 +627,20 @@ onMounted(async (): Promise<void> => {
   padding: 0.35rem 0.8rem;
 }
 
+.about-version-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 1.5rem;
+  margin-top: auto;
+  padding-top: 1rem;
+}
+
 .about-copy {
-  margin: 0.75rem 0 0;
+  margin: 0;
   border-left: 0;
   text-indent: 0;
-  text-align: left;
+  text-align: center;
   font-size: 0.5rem;
 }
 
