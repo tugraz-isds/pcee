@@ -310,21 +310,22 @@ const selectRecordBack = (stepIndex: number): void => {
 }
 
 const filterRecordsNext = (): void => {
-  if(spcd3.getInversionStatus('English') === 'descending') {
-    spcd3.setFilter('English', 50, 100);
+  const values = spcd3.getDimensionRange('IT');
+  if(spcd3.getInversionStatus('IT') === 'descending') {
+    spcd3.setFilter('IT', 35, values[1]);
   }
   else {
-     spcd3.setFilter('English', 100, 50);
+     spcd3.setFilter('IT', values[0], 35);
   }
 }
 
 const filterRecordsBack = (): void => {
-  const values = spcd3.getDimensionRange('English');
-  if(spcd3.getInversionStatus('English') === 'ascending') {
-    spcd3.setFilter('English', values[1], values[0]);
+  const values = spcd3.getDimensionRange('IT');
+  if(spcd3.getInversionStatus('IT') === 'ascending') {
+    spcd3.setFilter('IT', values[1], values[0]);
   }
   else {
-    spcd3.setFilter('English', values[0], values[1]);
+    spcd3.setFilter('IT', values[0], values[1]);
   }
   document.querySelectorAll<SVGPathElement>("path").forEach(p => {
     p.style.pointerEvents = "none";
