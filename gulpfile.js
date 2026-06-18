@@ -12,13 +12,33 @@ function resolveBin(name) {
   return path.join(__dirname, "node_modules", ".bin", executable);
 }
 
+function quoteWindowsArgument(value) {
+  if (/^[A-Za-z0-9_/:=-]+$/.test(value)) {
+    return value;
+  }
+
+  return `"${String(value)
+    .replace(/(\\*)"/g, '$1$1\\"')
+    .replace(/(\\+)$/g, "$1$1")}"`;
+}
+
 function runCommand(command, args = []) {
   return new Promise((resolve, reject) => {
-    const child = spawn(command, args, {
+    const isWindows = process.platform === "win32";
+    const executable = isWindows ? process.env.ComSpec || "cmd.exe" : command;
+    const commandArgs = isWindows
+      ? [
+          "/d",
+          "/s",
+          "/c",
+          [command, ...args].map(quoteWindowsArgument).join(" "),
+        ]
+      : args;
+    const child = spawn(executable, commandArgs, {
       cwd: __dirname,
       stdio: "inherit",
       env: process.env,
-      shell: process.platform === "win32",
+      shell: false,
     });
 
     child.on("close", (code) => {

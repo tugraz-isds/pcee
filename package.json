@@ -34,7 +34,7 @@
     "gulp": "^5.0.1",
     "gulp-cli": "^3.1.0",
     "tailwindcss": "^4.3.1",
-    "typescript":"^6.0.3",
+    "typescript": "^6.0.3",
     "vite": "^8.0.16",
     "vite-plugin-vue-devtools": "^8.1.3"
   }
