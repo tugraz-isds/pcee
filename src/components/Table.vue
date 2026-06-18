@@ -221,7 +221,7 @@ th, td {
   text-overflow: ellipsis;
   max-width: 8rem;
   min-width: 8rem;
-  border: 0.15rem solid var(--ui-border-color) !important;
+  border: 0.08rem solid var(--ui-border-color) !important;
   padding: 0.25rem !important;
 }
 
@@ -230,8 +230,8 @@ td {
 }
 
 th {
-  background-color: color-mix(in srgb, var(--brand-accent-background) 78%, black) !important;
-  color: var(--accent-contrast-text-color);
+  background-color: color-mix(in srgb, var(--brand-accent-background) 22%, #d7dee5) !important;
+  color: light-dark(#000000, #ffffff);
 }
 
 .header-cell {

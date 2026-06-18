@@ -49,12 +49,26 @@ async function pathExists(target) {
 
 async function removePaths(paths) {
   await Promise.all(
-    paths.map((target) =>
-      rm(path.join(__dirname, target), {
+    paths.map(async (target) => {
+      const absolutePath = path.join(__dirname, target);
+
+      let stats;
+      try {
+        stats = await stat(absolutePath);
+      } catch (error) {
+        if (error?.code === "ENOENT") {
+          return;
+        }
+        throw error;
+      }
+
+      await rm(absolutePath, {
         force: true,
-        recursive: true,
-      }),
-    ),
+        recursive: stats.isDirectory(),
+        maxRetries: process.platform === "win32" ? 5 : 0,
+        retryDelay: process.platform === "win32" ? 200 : 0,
+      });
+    }),
   );
 }
 
@@ -120,7 +134,14 @@ export function tauriDev() {
 }
 
 export function cleanAll() {
-  return removePaths(["dist", ".vite", "package", "node_modules", "yarn.lock"]);
+  return removePaths([
+    "dist",
+    ".vite",
+    "package",
+    "node_modules",
+    "yarn.lock",
+    "src-tauri/target",
+  ]);
 }
 
 gulp.task("clean", clean);

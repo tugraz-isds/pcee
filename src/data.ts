@@ -6,6 +6,7 @@ export const originalColumns = [
   { key: "BMI", label: "BMI", type: "number" },
   { key: "Cholesterol", label: "Cholesterol", type: "number" },
   { key: "FitnessScore", label: "Fitness Score", type: "number" },
+  { key: "Treatment", label: "Treatment", type: "string" },
 ];
 
 export const originalRows = [
@@ -17,6 +18,7 @@ export const originalRows = [
     BMI: 22,
     Cholesterol: 170,
     FitnessScore: 95,
+    Treatment: "A",
   },
   {
     Patient: "Patient B",
@@ -26,6 +28,7 @@ export const originalRows = [
     BMI: 24,
     Cholesterol: 185,
     FitnessScore: 90,
+    Treatment: "A",
   },
   {
     Patient: "Patient C",
@@ -35,6 +38,7 @@ export const originalRows = [
     BMI: 25,
     Cholesterol: 200,
     FitnessScore: 85,
+    Treatment: "A",
   },
   {
     Patient: "Patient D",
@@ -44,6 +48,7 @@ export const originalRows = [
     BMI: 29,
     Cholesterol: 260,
     FitnessScore: 65,
+    Treatment: "B",
   },
   {
     Patient: "Patient E",
@@ -53,6 +58,7 @@ export const originalRows = [
     BMI: 31,
     Cholesterol: 280,
     FitnessScore: 60,
+    Treatment: "B",
   },
   {
     Patient: "Patient F",
@@ -62,6 +68,7 @@ export const originalRows = [
     BMI: 34,
     Cholesterol: 600,
     FitnessScore: 55,
+    Treatment: "B",
   },
 ];
 

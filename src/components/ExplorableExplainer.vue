@@ -93,6 +93,7 @@
       <Table/>
       <div v-html="recordOperationsText" />
       <div v-html="dimensionOperationsText" />
+      <div v-html="otherFunctionalityText" />
       <div
         ref="usageContainer" 
         v-html="usageText" 
@@ -134,6 +135,7 @@ gsap.registerPlugin(ScrollTrigger);
 const introText = ref('');
 const recordOperationsText = ref('');
 const dimensionOperationsText = ref('');
+const otherFunctionalityText = ref('');
 const usageText = ref('');
 const healthDatasetText = ref('');
 const multipleViewsText = ref('');
@@ -321,6 +323,7 @@ onMounted(async (): Promise<void> => {
   loadContent(financeDatasetText, 'content/data-finance.html');
   loadContent(recordOperationsText, 'content/operations-records.html');
   loadContent(dimensionOperationsText, 'content/operations-dimensions.html');
+  loadContent(otherFunctionalityText, 'content/other-functionality.html');
   loadContent(healthDatasetText, 'content/data-health.html');
   loadContent(usageText, 'content/usage.html');
   loadContent(multipleViewsText, 'content/multipleviews.html');
@@ -641,7 +644,7 @@ onMounted(async (): Promise<void> => {
   border-left: 0;
   text-indent: 0;
   text-align: center;
-  font-size: 0.5rem;
+  font-size: 0.7rem;
 }
 
 .about-link {
@@ -823,6 +826,19 @@ onMounted(async (): Promise<void> => {
   min-height: 0;
   flex: 1 1 auto;
   transition: opacity 0.5s ease;
+}
+
+#spcd3-parallelcoords .spcd3-chartWrapper {
+  width: 100%;
+  margin-inline: auto;
+  margin-left: 0;
+  overflow: hidden;
+}
+
+#spcd3-parallelcoords #spcd3-pc_svg {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
 }
 
 .text-container {
@@ -1070,6 +1086,17 @@ button {
   color: var(--error-text-color);
 }
 
+[content-section] a:not([class]),
+.references a:not([class]) {
+  color: var(--body-link-color);
+  text-decoration: underline;
+}
+
+[content-section] a:not([class]):hover,
+.references a:not([class]):hover {
+  color: var(--body-link-hover-color);
+}
+
 /* Figures */
 .figure-row {
   display: flex;
@@ -1089,7 +1116,8 @@ figure {
   cursor: zoom-in;
 }
 
-:root[data-theme='dark'] .figure-row img[src*="correlation-"] {
+:root[data-theme='dark'] .figure-row img[src*="correlation-"],
+:root[data-theme='dark'] .figure-row img[src*="clusters-"] {
   filter: invert(1) hue-rotate(180deg);
 }
 

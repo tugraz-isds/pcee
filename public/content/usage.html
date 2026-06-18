@@ -1,151 +1,145 @@
 <section content-section>
+  <h2>6. Usage</h2>
 
-<h2>5. Usage</h2>
+  <p class="step" data-step="1">
+    Parallel coordinates are used for identifying outliers and clusters among
+    records, and discovering correlations between dimensions.
+  </p>
 
-<p class="step" data-step="1">
-  Parallel coordinates are used for identifying outliers and clusters among
-  records, and discovering correlations between dimensions.
-</p>
+  <p>
+    The Heart Health Dataset is a fictitious, curated dataset representing
+    health-related measurements. It consists of 8 dimensions (Patient, Age,
+    Blood Pressure, Heart Rate, BMI, Cholesterol, Fitness Score, and Treatment)
+    and 6 records (for six patients).
+  </p>
 
-<p>
-  The Heart Health Dataset is a fictitious, curated dataset representing
-  health-related measurements. It consists of 7 dimensions (Patient, Age,
-  Blood Pressure, Heart Rate, BMI, Cholesterol, and Fitness Score) and 6
-  records (for six patients).
-</p>
+  <h3>6.1 Identifying Outliers Among Records</h3>
 
+  <p>
+    An outlier is a record whose data points differ significantly from other
+    records in one or more dimensions. Outliers stand out clearly, because their
+    polylines follow a different path to those of other records.
+  </p>
 
+  <p>
+    The Heart Health Dataset contains one obvious outlier, Patient F, with
+    significantly higher blood pressure and cholesterol, lower heart rate, high
+    BMI, and advanced age.
+  </p>
 
-<h3>5.1 Identifying Outliers Among Records</h3>
+  <button class="usage-button" id="outlier-button">Show Outlier</button>
+  <p class="error" id="show-error"></p>
 
-<p>
-  An outlier is a record whose data points differ significantly from other
-  records in one or more dimensions. Outliers stand out clearly, because their
-  polylines follow a different path to those of other records.
-</p>
+  <h3>6.2 Identifying Clusters of Records</h3>
 
-<p>
-  The Heart Health Dataset contains one obvious outlier, Patient F, with
-  significantly higher blood pressure and cholesterol, lower heart rate, high
-  BMI, and advanced age.
-</p>
+  <p>
+    Clusters are groups of data records which have similar characteristics, so
+    their polylines follow similar paths.
+  </p>
 
-<button class="usage-button" id="outlier-button">Show Outlier</button>
-<p class="error" id="show-error"></p>
+  <div class="figure-row">
+    <figure id="fig1a">
+      <img src="images/clusters-pc.svg" alt="clusters-pc" />
+      <figcaption>Figure 1a: Clusters in parallel coordinates.</figcaption>
+    </figure>
 
+    <figure>
+      <img id="fig1b" src="images/clusters-sp.svg" alt="clusters-sp" />
+      <figcaption>Figure 1b: Clusters in a scatterplot.</figcaption>
+    </figure>
+  </div>
 
+  <button class="usage-button" id="cluster-button">Show Clusters</button>
 
-<h3>5.2 Identifying Clusters of Records</h3>
+  <h3>6.3 Discovering Correlations Between Dimensions</h3>
 
-<p>
-  Clusters are groups of data records which have similar characteristics, so
-  their polylines follow similar paths.
-</p>
+  <p>
+    If two dimensions are positively correlated, high values in one dimension
+    correspond to high values in the other, and low values in that dimension
+    correspond to low values in the other. In a parallel coordinates chart, this
+    can be seen only when the two dimensions are adjacent to one another.
+  </p>
+  <p>
+    A positive correlation is characterised by fairly parallel, rarely crossing
+    straight line segments running between the two dimensions, as shown in
+    Figure <a href="#fig2a">2a</a>. In a scatterplot, this corresponds to points
+    falling close to a straight line, as shown in Figure <a href="#fig2b">2b</a
+    >.
+  </p>
 
-<div class="figure-row">
-  <figure id="fig1a">
-    <img src="images/clusters-pc.svg" alt="clusters-pc" />
-    <figcaption>Figure 1a: Clusters in parallel coordinates.</figcaption>
-  </figure>
+  <div class="figure-row">
+    <figure id="fig2a">
+      <img src="images/correlation-pos-np-pc.svg" alt="pos-corr-np-pc" />
+      <figcaption>
+        Figure 2a: A positive correlation in parallel coordinates.
+      </figcaption>
+    </figure>
 
-  <figure>
-    <img id="fig1b" src="images/clusters-sp.svg" alt="clusters-sp" />
-    <figcaption>Figure 1b: Clusters in a scatterplot.</figcaption>
-  </figure>
-</div>
+    <figure>
+      <img
+        id="fig2b"
+        src="images/correlation-pos-np-sp.svg"
+        alt="pos-corr-np-sp"
+      />
+      <figcaption>
+        Figure 2b: A positive correlation in a scatterplot.
+      </figcaption>
+    </figure>
+  </div>
 
-<button class="usage-button" id="cluster-button">Show Clusters</button>
+  <p>
+    If two dimensions are negatively correlated, low values in one correspond to
+    high values in the other and vice versa. A negative correlation is
+    characterised by a visual <em>cross pattern</em> between adjacent
+    dimensions, i.e. line segments which all cross in the middle, as shown in
+    Figure <a href="#fig3a">3a</a>. In the equivalent scatterplot, the points
+    fall close to a negatively inclined straight line, as shown in Figure <a
+      href="#fig3b"
+      >3b</a
+    >.
+  </p>
 
+  <div class="figure-row">
+    <figure id="fig3a">
+      <img src="images/correlation-neg-np-pc.svg" alt="neg-corr-np-pc" />
+      <figcaption>
+        Figure 3a: A negative correlation in parallel coordinates.
+      </figcaption>
+    </figure>
 
+    <figure>
+      <img
+        id="fig3b"
+        src="images/correlation-neg-np-sp.svg"
+        alt="neg-corr-np-sp"
+      />
+      <figcaption>
+        Figure 3b: A negative correlation in a scatterplot.
+      </figcaption>
+    </figure>
+  </div>
 
-<h3>5.3 Discovering Correlations Between Dimensions</h3>
+  <p>
+    In the Heart Health Dataset, the dimensions Age and Fitness Score are
+    negatively correlated. Generally, the fitness score tends to decrease with
+    increasing age. This can be seen by moving the Fitness Score dimension next
+    to the Age dimension:
+  </p>
+  <button class="usage-button" id="correlation-neg-button">
+    Move Fitness Score Dimension
+  </button>
+  <p class="error" id="move-error"></p>
 
-<p>
-  If two dimensions are positively correlated, high values in one
-  dimension correspond to high values in the other, and low values in
-  that dimension correspond to low values in the other. In a parallel
-  coordinates chart, this can be seen only when the two dimensions are
-  adjacent to one another.
-</p>
-<p>
-  A positive correlation is characterised by fairly parallel, rarely
-  crossing straight line segments running between the two dimensions,
-  as shown in Figure <a href="#fig2a">2a</a>. In a scatterplot, this
-  corresponds to points falling close to a straight line, as shown in
-  Figure <a href="#fig2b">2b</a>.
-</p>
+  <p>
+    In the Heart Health Dataset, the dimensions Age and Blood Pressure are
+    positively correlated. Tendentially, blood pressure increases with age. With
+    real data, parallel non-crossing line segments are rare. It often makes
+    sense to invert one of the two dimensions to check for the visual cross
+    pattern. This can be seen by inverting the Age dimension:
+  </p>
+  <button class="usage-button" id="correlation-button">
+    Invert Age Dimension
+  </button>
 
-<div class="figure-row">
-  <figure id="fig2a">
-    <img src="images/correlation-pos-np-pc.svg" alt="pos-corr-np-pc" />
-    <figcaption>
-      Figure 2a: A positive correlation in parallel coordinates.
-    </figcaption>
-  </figure>
-
-  <figure>
-    <img
-      id="fig2b"
-      src="images/correlation-pos-np-sp.svg"
-      alt="pos-corr-np-sp"
-    />
-    <figcaption>
-      Figure 2b: A positive correlation in a scatterplot.
-    </figcaption>
-  </figure>
-</div>
-
-<p>
-  If two dimensions are negatively correlated, low values in one
-  correspond to high values in the other and vice versa. A negative
-  correlation is characterised by a visual <em>cross pattern</em>
-  between adjacent dimensions, i.e. line segments which all cross in
-  the middle, as shown in Figure <a href="#fig3a">3a</a>. In the
-  equivalent scatterplot, the points fall close to a negatively
-  inclined straight line, as shown in Figure <a href="#fig3b">3b</a>.
-</p>
-
-<div class="figure-row">
-  <figure id="fig3a">
-    <img src="images/correlation-neg-np-pc.svg" alt="neg-corr-np-pc" />
-    <figcaption>
-      Figure 3a: A negative correlation in parallel coordinates.
-    </figcaption>
-  </figure>
-
-  <figure>
-    <img
-      id="fig3b"
-      src="images/correlation-neg-np-sp.svg"
-      alt="neg-corr-np-sp"
-    />
-    <figcaption>
-      Figure 3b: A negative correlation in a scatterplot.
-    </figcaption>
-  </figure>
-</div>
-
-<p>
-  In the Heart Health Dataset, the dimensions Age and Fitness Score are
-  negatively correlated. Generally, the fitness score tends to decrease with
-  increasing age. This can be seen by moving the Fitness Score dimension next
-  to the Age dimension:
-</p>
-<button class="usage-button" id="correlation-neg-button">
-  Move Fitness Score Dimension
-</button>
-<p class="error" id="move-error"></p>
-
-<p>
-  In the Heart Health Dataset, the dimensions Age and Blood Pressure are
-  positively correlated. Tendentially, blood pressure increases with age. With
-  real data, parallel non-crossing line segments are rare. It often makes
-  sense to invert one of the two dimensions to check for the visual cross
-  pattern. This can be seen by inverting the Age dimension:
-</p>
-<button class="usage-button" id="correlation-button">
-  Invert Age Dimension
-</button>
-
-<p class="error" id="invert-error"></p>
+  <p class="error" id="invert-error"></p>
 </section>
