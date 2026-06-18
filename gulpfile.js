@@ -12,33 +12,14 @@ function resolveBin(name) {
   return path.join(__dirname, "node_modules", ".bin", executable);
 }
 
-function quoteWindowsArgument(value) {
-  if (/^[A-Za-z0-9_/:=-]+$/.test(value)) {
-    return value;
-  }
-
-  return `"${String(value)
-    .replace(/(\\*)"/g, '$1$1\\"')
-    .replace(/(\\+)$/g, "$1$1")}"`;
-}
-
 function runCommand(command, args = []) {
   return new Promise((resolve, reject) => {
     const isWindows = process.platform === "win32";
-    const executable = isWindows ? process.env.ComSpec || "cmd.exe" : command;
-    const commandArgs = isWindows
-      ? [
-          "/d",
-          "/s",
-          "/c",
-          [command, ...args].map(quoteWindowsArgument).join(" "),
-        ]
-      : args;
-    const child = spawn(executable, commandArgs, {
+    const child = spawn(command, args, {
       cwd: __dirname,
       stdio: "inherit",
       env: process.env,
-      shell: false,
+      shell: isWindows,
     });
 
     child.on("close", (code) => {
@@ -98,6 +79,16 @@ async function readTauriConfig() {
   return JSON.parse(configContent);
 }
 
+async function readCargoPackageName() {
+  const cargoTomlPath = path.join(__dirname, "src-tauri", "Cargo.toml");
+  const cargoTomlContent = await readFile(cargoTomlPath, "utf8");
+  const packageSection = cargoTomlContent.match(
+    /^\[package\][\s\S]*?(?=^\[|\s*$)/m,
+  )?.[0];
+  const packageName = packageSection?.match(/^name\s*=\s*"([^"]+)"/m)?.[1];
+  return packageName ?? null;
+}
+
 function getPlatformFolderName() {
   if (process.platform === "win32") return "windows";
   if (process.platform === "darwin") return "macos";
@@ -111,18 +102,37 @@ function getExecutableExtension() {
 
 async function packageTauriExecutable() {
   const tauriConfig = await readTauriConfig();
-  const productName = tauriConfig.productName ?? "app";
-  const executableName = `${productName}${getExecutableExtension()}`;
-  const sourcePath = path.join(
-    __dirname,
-    "src-tauri",
-    "target",
-    "release",
-    executableName,
-  );
+  const executableExtension = getExecutableExtension();
+  const productName = tauriConfig.productName ?? null;
+  const cargoPackageName = await readCargoPackageName();
+  const executableNames = [
+    productName && `${productName}${executableExtension}`,
+    cargoPackageName && `${cargoPackageName}${executableExtension}`,
+  ].filter(Boolean);
 
-  if (!(await pathExists(sourcePath))) {
-    throw new Error(`Built executable not found at ${sourcePath}`);
+  let executableName = null;
+  let sourcePath = null;
+
+  for (const candidate of executableNames) {
+    const candidatePath = path.join(
+      __dirname,
+      "src-tauri",
+      "target",
+      "release",
+      candidate,
+    );
+
+    if (await pathExists(candidatePath)) {
+      executableName = candidate;
+      sourcePath = candidatePath;
+      break;
+    }
+  }
+
+  if (!executableName || !sourcePath) {
+    throw new Error(
+      `Built executable not found in src-tauri/target/release (checked: ${executableNames.join(", ")})`,
+    );
   }
 
   const platformFolder = path.join(
