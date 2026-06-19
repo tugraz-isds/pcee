@@ -11,7 +11,7 @@ export const originalColumns = [
 
 export const originalRows = [
   {
-    Patient: "Patient A",
+    Patient: "Adam",
     Age: 42,
     BloodPressure: 110,
     HeartRate: 68,
@@ -21,7 +21,7 @@ export const originalRows = [
     Treatment: "B",
   },
   {
-    Patient: "Patient B",
+    Patient: "David",
     Age: 48,
     BloodPressure: 118,
     HeartRate: 66,
@@ -31,7 +31,7 @@ export const originalRows = [
     Treatment: "B",
   },
   {
-    Patient: "Patient C",
+    Patient: "Elaine",
     Age: 53,
     BloodPressure: 125,
     HeartRate: 58,
@@ -41,7 +41,7 @@ export const originalRows = [
     Treatment: "B",
   },
   {
-    Patient: "Patient D",
+    Patient: "Nicola",
     Age: 60,
     BloodPressure: 145,
     HeartRate: 73,
@@ -51,7 +51,7 @@ export const originalRows = [
     Treatment: "A",
   },
   {
-    Patient: "Patient E",
+    Patient: "Peter",
     Age: 63,
     BloodPressure: 150,
     HeartRate: 70,
@@ -61,7 +61,7 @@ export const originalRows = [
     Treatment: "A",
   },
   {
-    Patient: "Patient F",
+    Patient: "William",
     Age: 70,
     BloodPressure: 165,
     HeartRate: 75,
