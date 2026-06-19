@@ -275,14 +275,14 @@ const resetColorOfRecord = (record: string): void => {
 
 const showPositiveCorrelation = (): void => {
   const hiddenDimensions = spcd3.getAllHiddenDimensionNames();
-  const isHidden = hiddenDimensions.includes("Age");
+  const isHidden = hiddenDimensions.includes("Blood Pressure (mmHg)");
   const invertError = document.getElementById(
     "invert-error",
   ) as HTMLParagraphElement | null;
 
   if (isHidden) {
     if (invertError) {
-      invertError.textContent = "Age Dimension is hidden!";
+      invertError.textContent = "Blood Pressure Dimension is hidden!";
       return;
     }
   } else {
@@ -291,13 +291,13 @@ const showPositiveCorrelation = (): void => {
     }
   }
 
-  if (spcd3.getInversionStatus("Age") == "descending") {
-    spcd3.setInversionStatus("Age", "ascending");
+  if (spcd3.getInversionStatus("Blood Pressure (mmHg)") == "descending") {
+    spcd3.setInversionStatus("Blood Pressure (mmHg)", "ascending");
   } else {
-    spcd3.showMarker("Age");
-    spcd3.setInversionStatus("Age", "descending");
+    spcd3.showMarker("Blood Pressure (mmHg)");
+    spcd3.setInversionStatus("Blood Pressure (mmHg)", "descending");
     setTimeout(() => {
-      spcd3.hideMarker("Age");
+      spcd3.hideMarker("Blood Pressure (mmHg)");
     }, 1000);
   }
 };
