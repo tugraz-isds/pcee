@@ -1,7 +1,7 @@
 Patient,Age,Blood Pressure (mmHg),Heart Rate (bpm),Body Mass Index (BMI),Cholesterol (mg/dl),Fitness Score (0-100), Treatmeant
-Patient A,42,110,70,22,170,95,A
-Patient B,48,118,73,24,185,90,A
-Patient C,53,125,75,25,200,85,A
-Patient D,60,145,68,29,260,65,B
-Patient E,63,150,66,31,280,60,B
-Patient F,70,165,58,34,600,55,B
+Patient A,42,110,68,22,170,95,B
+Patient B,48,118,66,24,185,90,B
+Patient C,53,125,58,25,200,85,B
+Patient D,60,145,73,29,260,65,A
+Patient E,63,150,70,31,280,60,A
+Patient F,70,165,75,34,600,55,A
