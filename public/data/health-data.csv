@@ -1,4 +1,4 @@
-Patient,Age,Blood Pressure (mmHg),Heart Rate (bpm),Body Mass Index (BMI),Cholesterol (mg/dl),Fitness Score (0-100), Treatmeant
+Patient,Age,Blood Pressure (mmHg),Heart Rate (bpm),BMI,Cholesterol (mg/dl),Fitness Score (0-100), Treatmeant
 Adam,42,110,68,22,170,95,B
 David,48,118,66,24,185,90,B
 Elaine,53,125,58,25,200,85,B
