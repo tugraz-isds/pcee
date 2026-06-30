@@ -1,6 +1,7 @@
 {
   "name": "PCEE",
   "version": "1.0.0",
+  "releaseDate": "2026-06-30",
   "type": "module",
   "scripts": {
     "dev": "vite",

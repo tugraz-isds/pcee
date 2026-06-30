@@ -57,10 +57,10 @@
       <div v-html="aboutText" />
       <div class="about-version-row">
         <p class="about-copy">
-          PCEE version: {{ appVersion }}
+          PCEE version: {{ appVersion }}&nbsp;&nbsp;{{ releaseDate }}
         </p>
         <p class="about-copy">
-          SPCD3 version: 1.0.0
+          SPCD3 version: 1.0.0&nbsp;&nbsp;30 Jun 2026
         </p>
       </div>
     </div>
@@ -151,6 +151,12 @@ const isZoomSvg = computed(() => /\.svg(?:[?#].*)?$/i.test(zoomSrc.value ?? ''))
 const showAbout = ref(false);
 let lastStep = -1;
 const appVersion = packageInfo.version;
+const releaseDate = new Date(packageInfo.releaseDate).toLocaleDateString('en-GB', {
+  day: '2-digit',
+  month: 'short',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
 const repoUrl = packageInfo.repository.url;
 const DARK_MODE_MEDIA_QUERY = '(prefers-color-scheme: dark)';
 const darkModeMediaQuery =
@@ -427,6 +433,10 @@ onMounted(async (): Promise<void> => {
 }
 
 .sticky-header {
+  --header-actions-top: 1rem;
+  --header-actions-right: 1rem;
+  --header-action-size: clamp(1.8rem, 4.5vh, 2.4rem);
+  --header-actions-gap: clamp(0.35rem, 1.2vw, 0.75rem);
   position: fixed;
   top: 0;
   left: 0;
@@ -460,10 +470,10 @@ onMounted(async (): Promise<void> => {
 
 .header-actions {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
+  top: min(var(--header-actions-top), calc(50% - (var(--header-action-size) / 2)));
+  right: var(--header-actions-right);
   display: flex;
-  gap: 0.75rem;
+  gap: var(--header-actions-gap);
   align-items: center;
   z-index: 2;
 }
@@ -476,8 +486,8 @@ onMounted(async (): Promise<void> => {
   background: rgb(255 255 255 / 14%);
   color: var(--accent-contrast-text-color);
   justify-content: center;
-  inline-size: 2.4rem;
-  block-size: 2.4rem;
+  inline-size: var(--header-action-size);
+  block-size: var(--header-action-size);
   padding: 0;
   font: inherit;
   font-size: 0.9rem;
@@ -497,8 +507,8 @@ onMounted(async (): Promise<void> => {
 }
 
 .header-icon-image {
-  inline-size: 1.55rem;
-  block-size: 1.55rem;
+  inline-size: calc(var(--header-action-size) * 0.65);
+  block-size: calc(var(--header-action-size) * 0.65);
   flex: 0 0 auto;
   display: block;
   object-fit: contain;
@@ -561,6 +571,7 @@ onMounted(async (): Promise<void> => {
   opacity: 0;
   visibility: hidden;
   white-space: nowrap;
+  padding-inline-end: 6.25rem;
 }
 
 .use-native .multi-line {
@@ -692,15 +703,18 @@ onMounted(async (): Promise<void> => {
 }
 
 @media (max-width: 37.5em) and (orientation: portrait) {
+  .sticky-header {
+    --header-actions-top: 0.75rem;
+    --header-actions-right: 0.75rem;
+    --header-action-size: clamp(1.7rem, 4.2vh, 2.1rem);
+    --header-actions-gap: clamp(0.3rem, 1vw, 0.5rem);
+  }
+
   .header-actions {
-    top: 0.75rem;
-    right: 0.75rem;
-    gap: 0.5rem;
+    gap: var(--header-actions-gap);
   }
 
   .header-action-button {
-    inline-size: 2.1rem;
-    block-size: 2.1rem;
     font-size: 0.8rem;
   }
 
