@@ -3130,6 +3130,23 @@ function applyThemeToSvg(svg) {
         .replaceAll('fill="rgb(235, 196, 44)"', `fill="${handleActiveColor}"`)
         .replaceAll('fill="#f9f9f9"', `fill="${cursorSurfaceColor}"`);
 }
+function applyThemeToCursorSvg(svg) {
+    return svg
+        .replaceAll("currentColor", "#000000")
+        .replaceAll('stroke="black"', 'stroke="#000000"')
+        .replaceAll('stroke="#000"', 'stroke="#000000"')
+        .replaceAll('stroke="#000000"', 'stroke="#000000"')
+        .replaceAll('fill="black"', 'fill="#000000"')
+        .replaceAll('fill="#000"', 'fill="#000000"')
+        .replaceAll('fill="#000000"', 'fill="#000000"')
+        .replaceAll('stroke="white"', 'stroke="#000000"')
+        .replaceAll('fill="white"', 'fill="#ffffff"')
+        .replaceAll('fill="#fff"', 'fill="#ffffff"')
+        .replaceAll('fill="#ffffff"', 'fill="#ffffff"')
+        .replaceAll('fill="#f9f9f9"', 'fill="#ffffff"')
+        .replaceAll('fill-opacity="0.5"', 'fill-opacity="1"')
+        .replaceAll('fill-opacity="0.7"', 'fill-opacity="1"');
+}
 function applyThemeToBrushSvg(svg) {
     const isDark = typeof window !== "undefined" &&
         typeof window.matchMedia === "function" &&
@@ -4776,76 +4793,172 @@ function getAllVisibleDimensionNames$1() {
     let listOfDimensions = parcoords.newFeatures.slice();
     return listOfDimensions.reverse();
 }
+const TOOLTIP_LABEL_HEIGHT = 16;
+const TOOLTIP_LABEL_GAP = 3;
+const TOOLTIP_LABEL_X_OFFSET = 10;
+const TOOLTIP_LEADER_PADDING = 4;
 function recordIdOf(rec) {
     return rec.id ?? rec._id ?? rec.key;
 }
-function createToolTipForValues(records, isSelect) {
+function createToolTipForValues(records, isSelect, svgSelection = select("#spcd3-pc_svg"), xScales = parcoords.xScales, yScales = parcoords.yScales) {
     const dimensions = getAllVisibleDimensionNames$1();
-    const svg = select("#spcd3-pc_svg").node();
-    if (!svg)
+    const svgNode = svgSelection?.node?.();
+    if (!svgNode)
         return;
-    const plotG = document.querySelector("#spcd3-pc_svg g.plot") ?? svg;
-    const ctm = plotG.getScreenCTM();
-    if (!ctm)
+    const recordId = cleanString(String(records[hoverlabel] ?? recordIdOf(records) ?? ""));
+    if (!recordId)
         return;
-    const recordId = recordIdOf(records);
-    const wrapper = document.querySelector("#spcd3-parallelcoords .spcd3-chartWrapper");
-    if (!wrapper)
-        return;
-    const layer = select(wrapper)
-        .selectAll(`div.tip-layer[data-record="${recordId}"]`)
+    const tooltipType = isSelect ? "selected" : "hover";
+    const layer = svgSelection
+        .selectAll(`g.spcd3-tip-layer[data-record="${recordId}"][data-tooltip-type="${tooltipType}"]`)
         .data([recordId])
-        .join("div")
+        .join("g")
         .attr("class", "spcd3-tip-layer")
-        .attr("data-record", recordId);
-    const wrapperRect = wrapper.getBoundingClientRect();
+        .attr("data-record", recordId)
+        .attr("data-tooltip-type", tooltipType)
+        .style("display", null);
+    layer.attr("id", isSelect ? `tooltip-record-select-${recordId}` : null);
     const data = dimensions.map((dim) => {
-        const yScale = parcoords.yScales[dim];
-        const x = parcoords.xScales(dim);
+        const yScale = yScales[dim];
+        const x = xScales(dim);
         const record = records[dim];
-        const recordText = String(record ?? "");
-        const cleanRecord = recordText.length > 10 ? recordText.substr(0, 10) + "..." : recordText;
-        const y = yScale(cleanRecord);
-        const pt = svg.createSVGPoint();
-        pt.x = x;
-        pt.y = y;
-        const sp = pt.matrixTransform(ctm);
+        const scaleValue = typeof record === "string" ? shortenAxisLabel(record) : record;
+        const y = yScale(scaleValue);
         return {
             dim,
-            pageX: sp.x - wrapperRect.left + wrapper.scrollLeft,
-            pageY: sp.y - wrapperRect.top + wrapper.scrollTop,
-            text: String(records[dim]),
+            x,
+            y,
+            text: String(record ?? ""),
         };
+    }).filter((item) => Number.isFinite(item.x) && Number.isFinite(item.y));
+    const tipClass = isSelect
+        ? "spcd3-tooltip-record-select"
+        : "spcd3-tooltip-record";
+    layer
+        .selectAll(`g.${tipClass}`)
+        .data(data, (d) => d.dim)
+        .join((enter) => enter.append("g").attr("class", tipClass), (update) => update, (exit) => exit.remove())
+        .attr("transform", (d) => `translate(${d.x + 8}, ${d.y - 9})`)
+        .style("pointer-events", "none")
+        .each(function (d) {
+        const label = select(this);
+        const badgeWidth = Math.max(d.text.length * 6 + 8, 18);
+        label
+            .attr("data-dim", d.dim)
+            .attr("data-anchor-x", d.x)
+            .attr("data-anchor-y", d.y)
+            .attr("data-badge-width", badgeWidth)
+            .attr("data-priority", isSelect ? 2 : 1)
+            .attr("data-tooltip-type", tooltipType);
+        label
+            .selectAll("line")
+            .data([d])
+            .join("line")
+            .attr("class", "spcd3-tooltip-leader")
+            .attr("stroke", isSelect ? "rgb(255, 165, 0)" : "var(--spcd3-text-primary)")
+            .attr("stroke-width", isSelect ? 1.2 : 1)
+            .attr("stroke-opacity", isSelect ? 0.9 : 0.45);
+        label
+            .selectAll("rect")
+            .data([d])
+            .join("rect")
+            .attr("rx", 2)
+            .attr("ry", 2)
+            .attr("width", badgeWidth)
+            .attr("height", 16)
+            .attr("fill", isSelect
+            ? "rgb(255, 165, 0)"
+            : "var(--spcd3-tooltip-record-bg)")
+            .attr("stroke", isSelect
+            ? "rgb(255, 165, 0)"
+            : "var(--spcd3-tooltip-record-bg)")
+            .attr("stroke-width", 1);
+        label
+            .selectAll("text")
+            .data([d])
+            .join("text")
+            .attr("x", 4)
+            .attr("y", 11)
+            .attr("font-size", 10)
+            .attr("fill", isSelect
+            ? "black"
+            : "var(--spcd3-tooltip-record-text)")
+            .text(d.text);
     });
-    if (isSelect) {
-        const tips = layer
-            .selectAll("div.spcd3-tooltip-record-select")
-            .data(data, (d) => d.dim);
-        tips.join((enter) => enter
-            .append("div")
-            .attr("id", `tooltip-record-select-${cleanString(String(records[hoverlabel] ?? ""))}`)
-            .attr("class", "spcd3-tooltip-record-select")
-            .style("left", (d) => `${d.pageX / 16}rem`)
-            .style("top", (d) => `${d.pageY / 16}rem`)
-            .text((d) => d.text), (update) => update
-            .style("left", (d) => `${d.pageX / 16}rem`)
-            .style("top", (d) => `${d.pageY / 16}rem`)
-            .text((d) => d.text), (exit) => exit.remove());
-    }
-    else {
-        const tips = layer
-            .selectAll("div.spcd3-tooltip-record")
-            .data(data, (d) => dimensions);
-        tips.join((enter) => enter
-            .append("div")
-            .attr("class", "spcd3-tooltip-record")
-            .style("left", (d) => `${d.pageX / 16}rem`)
-            .style("top", (d) => `${d.pageY / 16}rem`)
-            .text((d) => d.text), (update) => update
-            .style("left", (d) => `${d.pageX / 16}rem`)
-            .style("top", (d) => `${d.pageY / 16}rem`)
-            .text((d) => d.text), (exit) => exit.remove());
-    }
+    relayoutValueTooltips(svgSelection);
+}
+function relayoutValueTooltips(svgSelection) {
+    const root = svgSelection?.node?.();
+    if (!root)
+        return;
+    const hoverLabels = Array.from(root.querySelectorAll("g.spcd3-tip-layer g.spcd3-tooltip-record"));
+    hoverLabels.forEach((labelNode) => {
+        const anchorX = Number(labelNode.getAttribute("data-anchor-x"));
+        const anchorY = Number(labelNode.getAttribute("data-anchor-y"));
+        if (!Number.isFinite(anchorX) || !Number.isFinite(anchorY))
+            return;
+        const top = anchorY - TOOLTIP_LABEL_HEIGHT / 2;
+        select(labelNode).attr("transform", `translate(${anchorX + TOOLTIP_LABEL_X_OFFSET}, ${top})`);
+        select(labelNode)
+            .select("line")
+            .attr("x1", 0)
+            .attr("y1", TOOLTIP_LABEL_HEIGHT / 2)
+            .attr("x2", -TOOLTIP_LABEL_X_OFFSET + TOOLTIP_LEADER_PADDING)
+            .attr("y2", TOOLTIP_LABEL_HEIGHT / 2);
+    });
+    const labels = Array.from(root.querySelectorAll("g.spcd3-tip-layer g.spcd3-tooltip-record-select"));
+    if (labels.length === 0)
+        return;
+    const labelsByDimension = new Map();
+    labels.forEach((labelNode) => {
+        const dim = labelNode.getAttribute("data-dim");
+        const anchorX = Number(labelNode.getAttribute("data-anchor-x"));
+        const anchorY = Number(labelNode.getAttribute("data-anchor-y"));
+        const badgeWidth = Number(labelNode.getAttribute("data-badge-width"));
+        const priority = Number(labelNode.getAttribute("data-priority") ?? "0");
+        if (!dim || !Number.isFinite(anchorX) || !Number.isFinite(anchorY))
+            return;
+        const items = labelsByDimension.get(dim) ?? [];
+        items.push({
+            anchorX,
+            anchorY,
+            badgeWidth: Number.isFinite(badgeWidth) ? badgeWidth : 18,
+            node: labelNode,
+            priority,
+        });
+        labelsByDimension.set(dim, items);
+    });
+    labelsByDimension.forEach((dimensionLabels) => {
+        dimensionLabels.sort((a, b) => {
+            if (b.priority !== a.priority)
+                return b.priority - a.priority;
+            return a.anchorY - b.anchorY;
+        });
+        let currentBottom = 0;
+        dimensionLabels.forEach((item) => {
+            const preferredTop = item.anchorY - TOOLTIP_LABEL_HEIGHT / 2;
+            const minTop = TOOLTIP_LEADER_PADDING;
+            const maxTop = height - TOOLTIP_LABEL_HEIGHT - TOOLTIP_LEADER_PADDING;
+            const top = Math.max(minTop, Math.min(maxTop, Math.max(preferredTop, currentBottom + TOOLTIP_LABEL_GAP)));
+            currentBottom = top + TOOLTIP_LABEL_HEIGHT;
+            const translateX = item.anchorX + TOOLTIP_LABEL_X_OFFSET;
+            select(item.node).attr("transform", `translate(${translateX}, ${top})`);
+            select(item.node)
+                .select("line")
+                .attr("x1", 0)
+                .attr("y1", TOOLTIP_LABEL_HEIGHT / 2)
+                .attr("x2", -TOOLTIP_LABEL_X_OFFSET + TOOLTIP_LEADER_PADDING)
+                .attr("y2", item.anchorY - top);
+            select(item.node)
+                .select("rect")
+                .attr("width", item.badgeWidth)
+                .attr("height", TOOLTIP_LABEL_HEIGHT);
+            select(item.node)
+                .select("text")
+                .attr("x", 4)
+                .attr("y", 11);
+        });
+    });
 }
 function getAllPointerEventsData(event) {
     const selection = selectAll(document.elementsFromPoint(event.clientX, event.clientY)).filter("path");
@@ -4886,10 +4999,10 @@ function position(dimension, dragging, xScales) {
     return value == null ? xScales(dimension) : value;
 }
 function cleanTooltip() {
-    selectAll(".spcd3-tooltip-record").remove();
+    selectAll('.spcd3-tip-layer[data-tooltip-type="hover"]').remove();
 }
 function cleanTooltipSelect() {
-    selectAll(".spcd3-tooltip-record-select").remove();
+    selectAll('.spcd3-tip-layer[data-tooltip-type="selected"]').remove();
 }
 
 const BRUSH_STATE_EPSILON$1 = 0.75;
@@ -5375,8 +5488,8 @@ function invertWoTransition(dimension) {
     const currentArrowStatus = textElement.text();
     const arrow = currentArrowStatus === "down" ? ARROW_UP_PATH : ARROW_DOWN_PATH;
     const arrowSvg = currentArrowStatus === "down"
-        ? applyThemeToSvg(setSize(getArrowDownCursor(), 12))
-        : applyThemeToSvg(setSize(getArrowUpCursor(), 12));
+        ? applyThemeToCursorSvg(setSize(getArrowDownCursor(), 12))
+        : applyThemeToCursorSvg(setSize(getArrowUpCursor(), 12));
     const [hotspotX, hotspotY] = currentArrowStatus === "down"
         ? getCursorHotspot(getArrowDownCursorMeta(), 12)
         : getCursorHotspot(getArrowUpCursorMeta(), 12);
@@ -5418,8 +5531,8 @@ function setInversionStatus(dimension, status) {
     const textElement = select(invertId);
     const arrow = status === "ascending" ? ARROW_UP_PATH : ARROW_DOWN_PATH;
     const arrowSvg = status === "ascending"
-        ? applyThemeToSvg(setSize(getArrowDownCursor(), 12))
-        : applyThemeToSvg(setSize(getArrowUpCursor(), 12));
+        ? applyThemeToCursorSvg(setSize(getArrowDownCursor(), 12))
+        : applyThemeToCursorSvg(setSize(getArrowUpCursor(), 12));
     const [hotspotX, hotspotY] = status === "ascending"
         ? getCursorHotspot(getArrowDownCursorMeta(), 12)
         : getCursorHotspot(getArrowUpCursorMeta(), 12);
@@ -5471,8 +5584,8 @@ function invert(dimension) {
     const currentArrowStatus = textElement.text();
     const arrow = currentArrowStatus === "down" ? ARROW_UP_PATH : ARROW_DOWN_PATH;
     const arrowSvg = currentArrowStatus === "down"
-        ? applyThemeToSvg(setSize(getArrowDownCursor(), 12))
-        : applyThemeToSvg(setSize(getArrowUpCursor(), 12));
+        ? applyThemeToCursorSvg(setSize(getArrowDownCursor(), 12))
+        : applyThemeToCursorSvg(setSize(getArrowUpCursor(), 12));
     const [hotspotX, hotspotY] = currentArrowStatus === "down"
         ? getCursorHotspot(getArrowDownCursorMeta(), 12)
         : getCursorHotspot(getArrowUpCursorMeta(), 12);
@@ -5759,6 +5872,9 @@ const TOP_AXIS_VALUE = 50;
 const BOTTOM_AXIS_VALUE = 350;
 const RECT_VALUE = 300;
 const BRUSH_STATE_EPSILON = 0.75;
+const BRUSH_TOOLTIP_HEIGHT = 16;
+const BRUSH_TOOLTIP_X_OFFSET = 12;
+const BRUSH_HANDLE_CENTER_OFFSET = 5;
 function toNumber(value) {
     return typeof value === "number" ? value : Number(value);
 }
@@ -5794,7 +5910,7 @@ function setRectToDrag(featureAxis, tooltipValuesDown, tooltipValuesTop) {
                 throttleDragAndBrush(processedDimensionName, d, event, delta, tooltipValuesTop, tooltipValuesDown, window);
             }
             else {
-                dragAndBrush(processedDimensionName, d, event, delta, tooltipValuesTop, tooltipValuesDown, window);
+                dragAndBrush(processedDimensionName, d, event, delta, tooltipValuesTop, tooltipValuesDown);
             }
         })
             .on("start", (event, d) => {
@@ -5832,7 +5948,7 @@ function setBrushUp(featureAxis, brushOverlay, tooltipValues) {
             .attr("height", 10)
             .attr("href", "#brush_image_top")
             .attr("pointer-events", "none")
-            .style("cursor", `url('data:image/svg+xml,${encodeURIComponent(applyThemeToSvg(setSize(getArrowTopCursor(), 12)))}') ${arrowTopHotspotX} ${arrowTopHotspotY}, auto`);
+            .style("cursor", `url('data:image/svg+xml,${encodeURIComponent(applyThemeToCursorSvg(setSize(getArrowTopCursor(), 12)))}') ${arrowTopHotspotX} ${arrowTopHotspotY}, auto`);
         const hit = g
             .append("rect")
             .attr("class", "spcd3-handle-hitbox")
@@ -5841,7 +5957,7 @@ function setBrushUp(featureAxis, brushOverlay, tooltipValues) {
             .attr("y", BOTTOM_AXIS_VALUE)
             .attr("width", 30)
             .attr("height", 30)
-            .style("cursor", `url('data:image/svg+xml,${encodeURIComponent(applyThemeToSvg(setSize(getArrowTopCursor(), 12)))}') ${arrowTopHotspotX} ${arrowTopHotspotY}, auto`);
+            .style("cursor", `url('data:image/svg+xml,${encodeURIComponent(applyThemeToCursorSvg(setSize(getArrowTopCursor(), 12)))}') ${arrowTopHotspotX} ${arrowTopHotspotY}, auto`);
         const makeDrag = () => drag()
             .container(function () {
             return this.ownerSVGElement || this;
@@ -5856,7 +5972,7 @@ function setBrushUp(featureAxis, brushOverlay, tooltipValues) {
                 throttleBrushUp(processedDimensionName, event, dd, tooltipValues, window);
             }
             else {
-                brushUp(processedDimensionName, event, dd, tooltipValues, window);
+                brushUp(processedDimensionName, event, dd, tooltipValues);
             }
             const yNow = g
                 .select("#triangle_up_" + processedDimensionName)
@@ -5893,7 +6009,7 @@ function setBrushDown(featureAxis, brushOverlay, tooltipValues) {
             .attr("height", 10)
             .attr("href", "#brush_image_bottom")
             .attr("pointer-events", "none")
-            .style("cursor", `url('data:image/svg+xml,${encodeURIComponent(applyThemeToSvg(setSize(getArrowBottomCursor(), 12)))}') ${arrowBottomHotspotX} ${arrowBottomHotspotY}, auto`);
+            .style("cursor", `url('data:image/svg+xml,${encodeURIComponent(applyThemeToCursorSvg(setSize(getArrowBottomCursor(), 12)))}') ${arrowBottomHotspotX} ${arrowBottomHotspotY}, auto`);
         const hit = g
             .append("rect")
             .attr("class", "spcd3-handle-hitbox")
@@ -5902,7 +6018,7 @@ function setBrushDown(featureAxis, brushOverlay, tooltipValues) {
             .attr("y", TOP_AXIS_LOW_VALUE)
             .attr("width", 30)
             .attr("height", 30)
-            .style("cursor", `url('data:image/svg+xml,${encodeURIComponent(applyThemeToSvg(setSize(getArrowBottomCursor(), 12)))}') ${arrowBottomHotspotX} ${arrowBottomHotspotY}, auto`);
+            .style("cursor", `url('data:image/svg+xml,${encodeURIComponent(applyThemeToCursorSvg(setSize(getArrowBottomCursor(), 12)))}') ${arrowBottomHotspotX} ${arrowBottomHotspotY}, auto`);
         const makeDrag = () => drag()
             .container(function () {
             return this.ownerSVGElement || this;
@@ -5917,7 +6033,7 @@ function setBrushDown(featureAxis, brushOverlay, tooltipValues) {
                 throttleBrushDown(processedDimensionName, event, dd, tooltipValues, window);
             }
             else {
-                brushDown(processedDimensionName, event, dd, tooltipValues, window);
+                brushDown(processedDimensionName, event, dd, tooltipValues);
             }
             const yNow = g
                 .select("#triangle_down_" + processedDimensionName)
@@ -5942,6 +6058,32 @@ function setBrushDown(featureAxis, brushOverlay, tooltipValues) {
 function cleanup(brushOverlay, tooltipValues) {
     brushOverlay.style("pointer-events", "none").lower();
     tooltipValues.style("visibility", "hidden");
+}
+function setBrushTooltipPosition(tooltipValues, textValue, x, y) {
+    const badgeWidth = Math.max(textValue.length * 6 + 8, 18);
+    tooltipValues
+        .style("visibility", "visible")
+        .attr("transform", `translate(${x + BRUSH_TOOLTIP_X_OFFSET}, ${y - BRUSH_TOOLTIP_HEIGHT / 2})`);
+    tooltipValues
+        .selectAll("rect")
+        .data([textValue])
+        .join("rect")
+        .attr("rx", 2)
+        .attr("ry", 2)
+        .attr("width", badgeWidth)
+        .attr("height", BRUSH_TOOLTIP_HEIGHT)
+        .attr("fill", "var(--spcd3-tooltip-surface)")
+        .attr("stroke", "var(--spcd3-border-emphasis)")
+        .attr("stroke-width", 1);
+    tooltipValues
+        .selectAll("text")
+        .data([textValue])
+        .join("text")
+        .attr("x", 4)
+        .attr("y", 11)
+        .attr("font-size", 10)
+        .attr("fill", "var(--spcd3-text-primary)")
+        .text(textValue);
 }
 function brushDown(cleanDimensionName, event, d, tooltipValues, window) {
     const [arrowTopAndBottomHotspotX, arrowTopAndBottomHotspotY] = getCursorHotspot(getArrowTopAndBottomMeta(), 20);
@@ -5970,7 +6112,7 @@ function brushDown(cleanDimensionName, event, d, tooltipValues, window) {
         select("#rect_" + cleanDimensionName).style("cursor", "default");
     }
     else {
-        select("#rect_" + cleanDimensionName).style("cursor", `url('data:image/svg+xml,${encodeURIComponent(applyThemeToSvg(setSize(getArrowTopAndBottom(), 20)))}') ${arrowTopAndBottomHotspotX} ${arrowTopAndBottomHotspotY}, auto`);
+        select("#rect_" + cleanDimensionName).style("cursor", `url('data:image/svg+xml,${encodeURIComponent(applyThemeToCursorSvg(setSize(getArrowTopAndBottom(), 20)))}') ${arrowTopAndBottomHotspotX} ${arrowTopAndBottomHotspotY}, auto`);
     }
     if (isAtTopHandle(yPosTop)) {
         select("#triangle_down_" + cleanDimensionName).attr("href", "#brush_image_bottom");
@@ -5992,7 +6134,7 @@ function brushDown(cleanDimensionName, event, d, tooltipValues, window) {
         .attr("y", yPosRect)
         .attr("height", RECT_VALUE - heightTopRect - heightBottomRect);
     if (!isNaN(parcoords.yScales[d.name].domain()[0])) {
-        setToolTipBrush(tooltipValues, d, event, window, true);
+        setToolTipBrush(tooltipValues, d, yPosTop + BRUSH_HANDLE_CENTER_OFFSET, true);
     }
     updateLines(d.name, cleanDimensionName);
 }
@@ -6023,7 +6165,7 @@ function brushUp(cleanDimensionName, event, d, tooltipValues, window) {
     else {
         select("#rect_" + cleanDimensionName)
             .attr("href", "#brush_image_top_active")
-            .style("cursor", `url('data:image/svg+xml,${encodeURIComponent(applyThemeToSvg(setSize(getArrowTopAndBottom(), 20)))}') ${arrowTopAndBottomHotspotX} ${arrowTopAndBottomHotspotY}, auto`)
+            .style("cursor", `url('data:image/svg+xml,${encodeURIComponent(applyThemeToCursorSvg(setSize(getArrowTopAndBottom(), 20)))}') ${arrowTopAndBottomHotspotX} ${arrowTopAndBottomHotspotY}, auto`)
             .style("fill", BRUSH_ACTIVE_FILL)
             .style("opacity", "0.7");
     }
@@ -6039,7 +6181,7 @@ function brushUp(cleanDimensionName, event, d, tooltipValues, window) {
     const heightBottomRect = BOTTOM_AXIS_VALUE - yPosBottom;
     select("#rect_" + cleanDimensionName).attr("height", RECT_VALUE - heightTopRect - heightBottomRect);
     if (!isNaN(parcoords.yScales[d.name].domain()[0])) {
-        setToolTipBrush(tooltipValues, d, event, window, false);
+        setToolTipBrush(tooltipValues, d, yPosBottom + BRUSH_HANDLE_CENTER_OFFSET, false);
     }
     updateLines(d.name, cleanDimensionName);
 }
@@ -6085,7 +6227,7 @@ function dragAndBrush(cleanDimensionName, d, event, delta, tooltipValuesTop, too
         select("#triangle_up_hit" + cleanDimensionName).attr("y", yPosRect + rectHeight);
         select("#triangle_down_hit" + cleanDimensionName).attr("y", yPosTop);
         if (!isNaN(parcoords.yScales[d.name].domain()[0])) {
-            setToolTipDragAndBrush(tooltipValuesTop, tooltipValuesDown, d, window, true, yPosTop, yPosRect + rectHeight);
+            setToolTipDragAndBrush(tooltipValuesTop, tooltipValuesDown, d, true, yPosTop + BRUSH_HANDLE_CENTER_OFFSET, yPosRect + rectHeight + BRUSH_HANDLE_CENTER_OFFSET);
         }
         updateLines(d.name, cleanDimensionName);
     }
@@ -6190,7 +6332,7 @@ function addPosition(yPosTop, dimension, key) {
     const target = parcoords.currentPosOfDims.find((obj) => obj.key == dimension);
     Object.assign(target, newObject);
 }
-function setToolTipBrush(tooltipValues, d, event, window, direction) {
+function setToolTipBrush(tooltipValues, d, anchorY, direction) {
     const range = parcoords.yScales[d.name].domain();
     const invertStatus = getInvertStatus(d.name);
     const maxValue = invertStatus == false ? range[1] : range[0];
@@ -6200,14 +6342,22 @@ function setToolTipBrush(tooltipValues, d, event, window, direction) {
     if (invertStatus) {
         tooltipValue =
             direction == true
-                ? (event.y - TOP_AXIS_LOW_VALUE) / (RECT_VALUE / scale) + minValue
-                : (event.y - TOP_AXIS_VALUE) / (RECT_VALUE / scale) + minValue;
+                ? (anchorY - BRUSH_HANDLE_CENTER_OFFSET - TOP_AXIS_LOW_VALUE) /
+                    (RECT_VALUE / scale) +
+                    minValue
+                : (anchorY - BRUSH_HANDLE_CENTER_OFFSET - TOP_AXIS_VALUE) /
+                    (RECT_VALUE / scale) +
+                    minValue;
     }
     else {
         tooltipValue =
             direction == true
-                ? maxValue - (event.y - TOP_AXIS_LOW_VALUE) / (RECT_VALUE / scale)
-                : maxValue - (event.y - TOP_AXIS_VALUE) / (RECT_VALUE / scale);
+                ? maxValue -
+                    (anchorY - BRUSH_HANDLE_CENTER_OFFSET - TOP_AXIS_LOW_VALUE) /
+                        (RECT_VALUE / scale)
+                : maxValue -
+                    (anchorY - BRUSH_HANDLE_CENTER_OFFSET - TOP_AXIS_VALUE) /
+                        (RECT_VALUE / scale);
     }
     if (!invertStatus) {
         if (tooltipValue > range[1]) {
@@ -6226,14 +6376,12 @@ function setToolTipBrush(tooltipValues, d, event, window, direction) {
         }
     }
     const digs = getSigDig(d.name);
-    tooltipValues.text(Math.round(tooltipValue.toPrecision(digs).toLocaleString("en-GB") * 10) /
+    const valueText = String(Math.round(tooltipValue.toPrecision(digs).toLocaleString("en-GB") * 10) /
         10);
-    tooltipValues.style("visibility", "visible");
-    tooltipValues
-        .style("top", window.event.pageY / 16 + "rem")
-        .style("left", window.event.pageX / 16 + "rem");
+    const anchorX = Number(parcoords.xScales(d.name));
+    setBrushTooltipPosition(tooltipValues, valueText, anchorX, anchorY);
 }
-function setToolTipDragAndBrush(tooltipValuesTop, tooltipValuesDown, d, window, direction, yPosTop, yPosBottom) {
+function setToolTipDragAndBrush(tooltipValuesTop, tooltipValuesDown, d, direction, yPosTop, yPosBottom) {
     const range = parcoords.yScales[d.name].domain();
     const invertStatus = getInvertStatus(d.name);
     const maxValue = invertStatus == false ? range[1] : range[0];
@@ -6243,18 +6391,26 @@ function setToolTipDragAndBrush(tooltipValuesTop, tooltipValuesDown, d, window, 
     let tooltipValueBottom;
     if (invertStatus) {
         tooltipValueTop =
-            (yPosTop - TOP_AXIS_LOW_VALUE) / (RECT_VALUE / scale) + minValue
+            (yPosTop - BRUSH_HANDLE_CENTER_OFFSET - TOP_AXIS_LOW_VALUE) /
+                    (RECT_VALUE / scale) +
+                    minValue
                 ;
         tooltipValueBottom =
-            (yPosBottom - TOP_AXIS_VALUE) / (RECT_VALUE / scale) + minValue
+            (yPosBottom - BRUSH_HANDLE_CENTER_OFFSET - TOP_AXIS_VALUE) /
+                    (RECT_VALUE / scale) +
+                    minValue
                 ;
     }
     else {
         tooltipValueTop =
-            maxValue - (yPosTop - TOP_AXIS_LOW_VALUE) / (RECT_VALUE / scale)
+            maxValue -
+                    (yPosTop - BRUSH_HANDLE_CENTER_OFFSET - TOP_AXIS_LOW_VALUE) /
+                        (RECT_VALUE / scale)
                 ;
         tooltipValueBottom =
-            maxValue - (yPosBottom - TOP_AXIS_VALUE) / (RECT_VALUE / scale)
+            maxValue -
+                    (yPosBottom - BRUSH_HANDLE_CENTER_OFFSET - TOP_AXIS_VALUE) /
+                        (RECT_VALUE / scale)
                 ;
     }
     if ((!invertStatus && tooltipValueTop == maxValue) ||
@@ -6262,22 +6418,14 @@ function setToolTipDragAndBrush(tooltipValuesTop, tooltipValuesDown, d, window, 
         tooltipValuesTop.style("visibility", "hidden");
     }
     else {
-        tooltipValuesTop.text(Math.round(tooltipValueTop));
-        tooltipValuesTop.style("visibility", "visible");
-        tooltipValuesTop
-            .style("top", Number(yPosTop + 180) / 16 + "rem")
-            .style("left", window.event.pageX / 16 + "rem");
+        setBrushTooltipPosition(tooltipValuesTop, String(Math.round(tooltipValueTop)), Number(parcoords.xScales(d.name)), yPosTop);
     }
     if ((!invertStatus && tooltipValueBottom == minValue) ||
         (invertStatus && tooltipValueBottom == maxValue)) {
         tooltipValuesDown.style("visibility", "hidden");
     }
     else {
-        tooltipValuesDown.text(Math.round(tooltipValueBottom));
-        tooltipValuesDown.style("visibility", "visible");
-        tooltipValuesDown
-            .style("top", Number(yPosBottom + 180) / 16 + "rem")
-            .style("left", window.event.pageX / 16 + "rem");
+        setBrushTooltipPosition(tooltipValuesDown, String(Math.round(tooltipValueBottom)), Number(parcoords.xScales(d.name)), yPosBottom);
     }
 }
 function updateLines(dimension, cleanDimensionName) {
@@ -6956,20 +7104,20 @@ function setCursorForDimensions(d, featureAxis) {
         const [hotspotX, hotspotY] = getCursorHotspot(getArrowRightMeta(), 14);
         featureAxis
             .select(".dimension")
-            .style("cursor", `url('data:image/svg+xml,${encodeURIComponent(applyThemeToSvg(setSize(getArrowRight(), 14)))}') ${hotspotX} ${hotspotY}, auto`);
+            .style("cursor", `url('data:image/svg+xml,${encodeURIComponent(applyThemeToCursorSvg(setSize(getArrowRight(), 14)))}') ${hotspotX} ${hotspotY}, auto`);
     }
     else if (getDimensionPosition(d.name) ==
         parcoords.newFeatures.length - 1) {
         const [hotspotX, hotspotY] = getCursorHotspot(getArrowLeftMeta(), 14);
         featureAxis
             .select(".dimension")
-            .style("cursor", `url('data:image/svg+xml,${encodeURIComponent(applyThemeToSvg(setSize(getArrowLeft(), 14)))}') ${hotspotX} ${hotspotY}, auto`);
+            .style("cursor", `url('data:image/svg+xml,${encodeURIComponent(applyThemeToCursorSvg(setSize(getArrowLeft(), 14)))}') ${hotspotX} ${hotspotY}, auto`);
     }
     else {
         const [hotspotX, hotspotY] = getCursorHotspot(getArrowLeftAndRightMeta(), 14);
         featureAxis
             .select(".dimension")
-            .style("cursor", `url('data:image/svg+xml,${encodeURIComponent(applyThemeToSvg(setSize(getArrowLeftAndRight(), 14)))}') ${hotspotX} ${hotspotY}, auto`);
+            .style("cursor", `url('data:image/svg+xml,${encodeURIComponent(applyThemeToCursorSvg(setSize(getArrowLeftAndRight(), 14)))}') ${hotspotX} ${hotspotY}, auto`);
     }
 }
 function onDragStartEventHandler() {
@@ -7020,28 +7168,24 @@ function onDragEventHandler(featureAxis) {
 function onDragEndEventHandler(featureAxis) {
     {
         return function onDragEnd(d) {
-            const distance = (width - 80) / parcoords.newFeatures.length;
-            const init = parcoords.dragPosStart[d.subject.name];
-            if (parcoords.dragPosStart[d.subject.name] >
-                parcoords.dragging[d.subject.name]) {
-                featureAxis.attr("transform", (d) => {
-                    return ("translate(" +
-                        position(d.name, init - distance, parcoords.xScales) +
-                        ")");
-                });
-            }
-            else {
-                featureAxis.attr("transform", (d) => {
-                    return ("translate(" +
-                        position(d.name, init - distance, parcoords.xScales) +
-                        ")");
-                });
+            if (timer !== null) {
+                clearInterval(timer);
+                timer = null;
             }
             delete this.__origin__;
             delete parcoords.dragging[d.subject.name];
             delete parcoords.dragPosStart[d.subject.name];
             syncDimensionOrderWithVisible();
+            parcoords.xScales.domain(parcoords.newFeatures);
+            featureAxis.attr("transform", (d) => {
+                return ("translate(" +
+                    position(d.name, parcoords.dragging, parcoords.xScales) +
+                    ")");
+            });
             trans(active).each(function (d) {
+                select(this).attr("d", linePath(d, parcoords.newFeatures));
+            });
+            trans(selectAll("path.hitarea")).each(function (d) {
                 select(this).attr("d", linePath(d, parcoords.newFeatures));
             });
             cleanTooltipSelect();
@@ -7882,6 +8026,17 @@ function setFeatureAxisToDownload(svg, yAxis, yScales, xScales) {
     setRectToDragToDownload(featureAxis);
     setInvertIconToDownload(featureAxis);
 }
+function setSelectedRecordValuesToDownload(svg, xScales, yScales) {
+    const selectedRecords = getSelected();
+    if (selectedRecords.length === 0)
+        return;
+    const selectedDataset = parcoords.newDataset.filter((record) => selectedRecords.includes(record[hoverlabel]));
+    if (selectedDataset.length === 0)
+        return;
+    selectedDataset.forEach((record) => {
+        createToolTipForValues(record, true, svg, xScales, yScales);
+    });
+}
 function setBrushDownToDownload(featureAxis) {
     featureAxis.each(function (d) {
         const processedDimensionName = cleanString(d.name);
@@ -7951,7 +8106,7 @@ function setInvertIconToDownload(featureAxis) {
     });
 }
 
-function createSvgString() {
+function createSvgString(includeDataValues = false) {
     const orderedFeatures = parcoords.newFeatures.map((name) => ({
         name,
     }));
@@ -7995,21 +8150,15 @@ function createSvgString() {
     ]);
     setFeatureAxisToDownload(svg, yAxisForDownload, yScalesForDownload, xScalesForDownload);
     setActivePathLinesToDownload(svg);
+    if (includeDataValues) {
+        setSelectedRecordValuesToDownload(svg, xScalesForDownload, yScalesForDownload);
+    }
     return svg.node().outerHTML;
 }
 function saveAsSvg() {
-    let svgString = createSvgString();
-    svgString = svgString.replaceAll("currentColor", "black");
-    svgString = svgString.replaceAll('stroke="black"', "");
-    svgString = svgString.replaceAll('fill="black"', "");
-    svgString = svgString.replaceAll('dy="0"', "");
-    svgString = svgString.replaceAll('fill="none" font-size="10" font-family="sans-serif" text-anchor="end"', 'fill="none" font-size="8" text-anchor="end" stroke="black"');
-    svgString = svgString.replaceAll("domain", "dimension");
-    svgString = svgString.replaceAll("12px", "12");
-    svgString = svgString.replaceAll('class="tick" opacity="1"', 'class="tick" fill="black" stroke="none"');
-    setOptionsAndDownload(svgString);
+    setOptionsAndDownload();
 }
-function setOptionsAndDownload(svgString) {
+function setOptionsAndDownload() {
     let name = "parcoords.svg";
     const modalOverlay = document.createElement("div");
     modalOverlay.className = "spcd3-modal-overlay";
@@ -8060,24 +8209,37 @@ function setOptionsAndDownload(svgString) {
     inputKeepClasses.checked = true;
     rowKeepClasses.appendChild(labelKeepClasses);
     rowKeepClasses.appendChild(inputKeepClasses);
-    const rowRemoveUiControls = document.createElement("div");
-    rowRemoveUiControls.className = "spcd3-options-div";
-    const labelRemoveUiControls = document.createElement("label");
-    labelRemoveUiControls.className = "spcd3-label";
-    labelRemoveUiControls.textContent = "Download without UI controls: ";
-    const inputRemoveUiControls = document.createElement("input");
-    inputRemoveUiControls.className = "spcd3-input";
-    inputRemoveUiControls.type = "checkbox";
-    inputRemoveUiControls.id = "removeUiControlsInput";
-    inputRemoveUiControls.checked = true;
-    rowRemoveUiControls.appendChild(labelRemoveUiControls);
-    rowRemoveUiControls.appendChild(inputRemoveUiControls);
+    const rowIncludeUiControls = document.createElement("div");
+    rowIncludeUiControls.className = "spcd3-options-div";
+    const labelIncludeUiControls = document.createElement("label");
+    labelIncludeUiControls.className = "spcd3-label";
+    labelIncludeUiControls.textContent = "Include UI controls: ";
+    const inputIncludeUiControls = document.createElement("input");
+    inputIncludeUiControls.className = "spcd3-input";
+    inputIncludeUiControls.type = "checkbox";
+    inputIncludeUiControls.id = "includeUiControlsInput";
+    inputIncludeUiControls.checked = true;
+    rowIncludeUiControls.appendChild(labelIncludeUiControls);
+    rowIncludeUiControls.appendChild(inputIncludeUiControls);
+    const rowIncludeDataValues = document.createElement("div");
+    rowIncludeDataValues.className = "spcd3-options-div";
+    const labelIncludeDataValues = document.createElement("label");
+    labelIncludeDataValues.className = "spcd3-label";
+    labelIncludeDataValues.textContent = "Include data values: ";
+    const inputIncludeDataValues = document.createElement("input");
+    inputIncludeDataValues.className = "spcd3-input";
+    inputIncludeDataValues.type = "checkbox";
+    inputIncludeDataValues.id = "includeDataValuesInput";
+    inputIncludeDataValues.checked = true;
+    rowIncludeDataValues.appendChild(labelIncludeDataValues);
+    rowIncludeDataValues.appendChild(inputIncludeDataValues);
     const button = document.createElement("button");
     button.textContent = "Download";
     button.className = "spcd3-button spcd3-generic-button";
     form.appendChild(rowDecimals);
     form.appendChild(rowKeepClasses);
-    form.appendChild(rowRemoveUiControls);
+    form.appendChild(rowIncludeUiControls);
+    form.appendChild(rowIncludeDataValues);
     form.appendChild(button);
     modal.appendChild(form);
     modalOverlay.appendChild(modal);
@@ -8090,12 +8252,21 @@ function setOptionsAndDownload(svgString) {
             input.focus();
             return;
         }
+        let svgString = createSvgString(inputIncludeDataValues.checked);
+        svgString = svgString.replaceAll("currentColor", "black");
+        svgString = svgString.replaceAll('stroke="black"', "");
+        svgString = svgString.replaceAll('fill="black"', "");
+        svgString = svgString.replaceAll('dy="0"', "");
+        svgString = svgString.replaceAll('fill="none" font-size="10" font-family="sans-serif" text-anchor="end"', 'fill="none" font-size="8" text-anchor="end" stroke="black"');
+        svgString = svgString.replaceAll("domain", "dimension");
+        svgString = svgString.replaceAll("12px", "12");
+        svgString = svgString.replaceAll('class="tick" opacity="1"', 'class="tick" fill="black" stroke="none"');
         let updatedSVG = roundDecimals(svgString, decimals);
         updatedSVG = updatedSVG.replaceAll('class="records" style="opacity: 1; stroke: rgba(0, 129, 175, 1); stroke-width: 2; fill: none;"', 'class="records" style="opacity: 0.5; stroke: rgba(0, 129, 175, 0.8); stroke-width: 2; fill: none;"');
         if (!inputKeepClasses.checked) {
             updatedSVG = removeClasses(updatedSVG);
         }
-        if (inputRemoveUiControls.checked) {
+        if (!inputIncludeUiControls.checked) {
             updatedSVG = removeUiControls(updatedSVG);
             updatedSVG = updatedSVG.replaceAll('<svg y="25" x="-6"><use width="12" height="12" y="0" x="0" href="#arrow_image_up"></use></svg>', "");
         }
@@ -8432,6 +8603,8 @@ function drawChart(content) {
     setDefsForIcons();
     setActive(setActivePathLines(plot, content, parcoords));
     setFeatureAxis(plot, yAxis, parcoords, width);
+    ensureCursorThemeSync();
+    refreshThemedCursors();
     realignToolbar();
     svg
         .on("contextmenu", function (event) {
@@ -8567,6 +8740,56 @@ function setUpParcoordData(data, newFeatures) {
         counter = counter + 1;
     });
     setHoverLabel(getAllVisibleDimensionNames()[0]);
+}
+let removeCursorThemeListener = null;
+function createThemedCursor(svgMarkup, size, meta) {
+    const [hotspotX, hotspotY] = getCursorHotspot(meta, size);
+    const themedSvg = applyThemeToCursorSvg(setSize(svgMarkup, size));
+    return `url('data:image/svg+xml,${encodeURIComponent(themedSvg)}') ${hotspotX} ${hotspotY}, auto`;
+}
+function refreshThemedCursors() {
+    if (!Array.isArray(parcoords.newFeatures)) {
+        return;
+    }
+    const topCursor = createThemedCursor(getArrowTopCursor(), 12, getArrowTopCursorMeta());
+    const bottomCursor = createThemedCursor(getArrowBottomCursor(), 12, getArrowBottomCursorMeta());
+    const rangeCursor = createThemedCursor(getArrowTopAndBottom(), 20, getArrowTopAndBottomMeta());
+    parcoords.newFeatures.forEach((dimension) => {
+        const processed = cleanString(dimension);
+        const invertStatus = getInversionStatus(dimension);
+        const invertCursor = invertStatus === "ascending"
+            ? createThemedCursor(getArrowDownCursor(), 12, getArrowDownCursorMeta())
+            : createThemedCursor(getArrowUpCursor(), 12, getArrowUpCursorMeta());
+        select(`#invert_hitbox_${processed}`).style("cursor", invertCursor);
+        select(`#dimension_invert_${processed}`).style("cursor", invertCursor);
+        select(`#triangle_up_${processed}`).style("cursor", topCursor);
+        select(`#triangle_up_hit${processed}`).style("cursor", topCursor);
+        select(`#triangle_down_${processed}`).style("cursor", bottomCursor);
+        select(`#triangle_down_hit${processed}`).style("cursor", bottomCursor);
+        const rect = select(`#rect_${processed}`);
+        if (rect.style("cursor") && rect.style("cursor") !== "default") {
+            rect.style("cursor", rangeCursor);
+        }
+    });
+}
+function ensureCursorThemeSync() {
+    if (typeof window === "undefined" ||
+        typeof window.matchMedia !== "function" ||
+        removeCursorThemeListener) {
+        return;
+    }
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handler = () => {
+        window.requestAnimationFrame(refreshThemedCursors);
+    };
+    if (typeof mediaQuery.addEventListener === "function") {
+        mediaQuery.addEventListener("change", handler);
+        removeCursorThemeListener = () => mediaQuery.removeEventListener("change", handler);
+    }
+    else if (typeof mediaQuery.addListener === "function") {
+        mediaQuery.addListener(handler);
+        removeCursorThemeListener = () => mediaQuery.removeListener(handler);
+    }
 }
 function realignToolbar() {
     window.requestAnimationFrame(alignToolbarWithLeftmostAxisLabels);
@@ -8745,15 +8968,18 @@ function setFeatureAxis(svg, yAxis, parcoords, width) {
         .attr("height", height)
         .style("fill", "transparent")
         .style("pointer-events", "none");
-    let tooltipValues = select("#spcd3-parallelcoords")
-        .append("div")
-        .attr("class", "spcd3-tooltip-values");
-    let tooltipValuesTop = select("#spcd3-parallelcoords")
-        .append("div")
-        .attr("class", "spcd3-tooltip-values");
-    let tooltipValuesDown = select("#spcd3-parallelcoords")
-        .append("div")
-        .attr("class", "spcd3-tooltip-values");
+    let tooltipValues = svg
+        .append("g")
+        .attr("class", "spcd3-tooltip-values")
+        .style("visibility", "hidden");
+    let tooltipValuesTop = svg
+        .append("g")
+        .attr("class", "spcd3-tooltip-values")
+        .style("visibility", "hidden");
+    let tooltipValuesDown = svg
+        .append("g")
+        .attr("class", "spcd3-tooltip-values")
+        .style("visibility", "hidden");
     setBrushDown(featureAxis, brushOverlay, tooltipValues);
     setBrushUp(featureAxis, brushOverlay, tooltipValues);
     setRectToDrag(featureAxis, tooltipValuesTop, tooltipValuesDown);
@@ -8811,7 +9037,7 @@ function setInvertIcon(featureAxis) {
         const [hotspotX, hotspotY] = getCursorHotspot(getArrowDownCursorMeta(), 12);
         select(this)
             .attr("id", "invert_hitbox_" + processed)
-            .style("cursor", `url('data:image/svg+xml,${encodeURIComponent(applyThemeToSvg(setSize(getArrowDownCursor(), 12)))}') ${hotspotX} ${hotspotY}, auto`);
+            .style("cursor", `url('data:image/svg+xml,${encodeURIComponent(applyThemeToCursorSvg(setSize(getArrowDownCursor(), 12)))}') ${hotspotX} ${hotspotY}, auto`);
     });
     invertIcon
         .append("svg")
@@ -8829,7 +9055,7 @@ function setInvertIcon(featureAxis) {
         select(this)
             .attr("id", "dimension_invert_" + processed)
             .text("up")
-            .style("cursor", `url('data:image/svg+xml,${encodeURIComponent(applyThemeToSvg(setSize(getArrowDownCursor(), 12)))}') ${hotspotX} ${hotspotY}, auto`);
+            .style("cursor", `url('data:image/svg+xml,${encodeURIComponent(applyThemeToCursorSvg(setSize(getArrowDownCursor(), 12)))}') ${hotspotX} ${hotspotY}, auto`);
     });
     invertIcon.on("click", (event, d) => {
         invert(d.name);
