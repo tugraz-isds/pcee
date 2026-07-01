@@ -5084,6 +5084,12 @@ function refreshRecordPathsForVisibleDimensions() {
         .attr("d", (d) => linePath(d, parcoords.newFeatures))
         .style("opacity", 1);
 }
+function isColoredRecord(record) {
+    return select("#" + cleanString(record)).classed("colored");
+}
+function shouldShowSelectedValues(record) {
+    return !isRecordInactive(record) && !isColoredRecord(record);
+}
 //---------- Show and Hide Functions ----------
 function hide(dimension) {
     parcoords.newFeatures = parcoords.newFeatures.filter((d) => d !== dimension);
@@ -5110,7 +5116,9 @@ function hide(dimension) {
     var selectedRecords = getSelected();
     selectedRecords.forEach((record) => {
         const path = parcoords.newDataset.find((d) => d[hoverlabel] === record);
-        createToolTipForValues(path, true);
+        if (shouldShowSelectedValues(record)) {
+            createToolTipForValues(path, true);
+        }
     });
     realignToolbarAfterSpacingChange();
 }
@@ -5143,7 +5151,9 @@ function show(dimension) {
     var selectedRecords = getSelected();
     selectedRecords.forEach((record) => {
         const path = parcoords.newDataset.find((d) => d[hoverlabel] === record);
-        createToolTipForValues(path, true);
+        if (shouldShowSelectedValues(record)) {
+            createToolTipForValues(path, true);
+        }
     });
     realignToolbarAfterSpacingChange();
 }
@@ -5212,7 +5222,7 @@ function moveByOne(dimension, direction) {
     var selectedRecords = getSelected();
     selectedRecords.forEach((record) => {
         const path = parcoords.newDataset.find((d) => d[hoverlabel] === record);
-        if (!isRecordInactive(record)) {
+        if (shouldShowSelectedValues(record)) {
             createToolTipForValues(path, true);
         }
     });
@@ -5290,7 +5300,7 @@ function swap(dimensionA, dimensionB) {
     var selectedRecords = getSelected();
     selectedRecords.forEach((record) => {
         const path = parcoords.newDataset.find((d) => d[hoverlabel] === record);
-        if (!isRecordInactive(record)) {
+        if (shouldShowSelectedValues(record)) {
             createToolTipForValues(path, true);
         }
     });
@@ -5519,7 +5529,7 @@ function invertWoTransition(dimension) {
     var selectedRecords = getSelected();
     selectedRecords.forEach((record) => {
         const path = parcoords.newDataset.find((d) => d[hoverlabel] === record);
-        if (!isRecordInactive(record)) {
+        if (shouldShowSelectedValues(record)) {
             createToolTipForValues(path, true);
         }
     });
@@ -5571,7 +5581,7 @@ function setInversionStatus(dimension, status) {
     var selectedRecords = getSelected();
     selectedRecords.forEach((record) => {
         const path = parcoords.newDataset.find((d) => d[hoverlabel] === record);
-        if (!isRecordInactive(record)) {
+        if (shouldShowSelectedValues(record)) {
             createToolTipForValues(path, true);
         }
     });
@@ -5616,7 +5626,7 @@ function invert(dimension) {
     var selectedRecords = getSelected();
     selectedRecords.forEach((record) => {
         const path = parcoords.newDataset.find((d) => cleanString(d[hoverlabel]) === record);
-        if (!isRecordInactive(record)) {
+        if (shouldShowSelectedValues(record)) {
             createToolTipForValues(path, true);
         }
     });
@@ -5651,7 +5661,9 @@ function setSelection(records) {
                 .style("stroke", "rgba(255, 165, 0, 1)");
             records.forEach((record) => {
                 const path = parcoords.newDataset.find((d) => cleanString(d[hoverlabel]) === record);
-                createToolTipForValues(path, true);
+                if (shouldShowSelectedValues(record)) {
+                    createToolTipForValues(path, true);
+                }
             });
         }
     }
@@ -5692,6 +5704,9 @@ function isRecordInactive(record) {
     let style = node.style.stroke;
     return style === getInactiveLineStroke();
 }
+function isRecordColored(record) {
+    return isColoredRecord(record);
+}
 //---------- Selection Functions With IDs ----------
 function setSelectionWithId(recordIds) {
     let records = [];
@@ -5725,6 +5740,9 @@ function setUnselectedWithId(recordId) {
 function colorRecord(record, color) {
     const path = selectAll("#" + cleanString(record));
     path.classed("colored", true).property("clusterColor", color);
+    if (isSelected(record)) {
+        selectAll(`#tooltip-record-select-${cleanString(record)}`).remove();
+    }
     path.transition().style("stroke", color);
 }
 function uncolorRecord(record) {
@@ -5859,7 +5877,7 @@ function setDimensionSpacing(spacingRem) {
     cleanTooltipSelect();
     getSelected().forEach((record) => {
         const path = parcoords.newDataset.find((d) => d[hoverlabel] === record);
-        if (path && !isRecordInactive(record)) {
+        if (path && shouldShowSelectedValues(record)) {
             createToolTipForValues(path, true);
         }
     });
@@ -6591,7 +6609,9 @@ function makeActive(currentLineName, record, duration) {
             .style("stroke", "transparent")
             .style("stroke-width", getLineThickness() + "rem")
             .text("");
-        createToolTipForValues(record, true);
+        if (!select("." + currentLineName).classed("colored")) {
+            createToolTipForValues(record, true);
+        }
     }
     else if (select("." + currentLineName).classed("colored")) {
         let color = select("." + currentLineName).property("clusterColor");
@@ -7192,7 +7212,8 @@ function onDragEndEventHandler(featureAxis) {
             var selectedRecords = getSelected();
             selectedRecords.forEach((record) => {
                 const path = parcoords.newDataset.find((d) => d[hoverlabel] === record);
-                if (!isRecordInactive(record)) {
+                if (!isRecordInactive(record) &&
+                    !isRecordColored(record)) {
                     createToolTipForValues(path, true);
                 }
             });
@@ -8030,7 +8051,8 @@ function setSelectedRecordValuesToDownload(svg, xScales, yScales) {
     const selectedRecords = getSelected();
     if (selectedRecords.length === 0)
         return;
-    const selectedDataset = parcoords.newDataset.filter((record) => selectedRecords.includes(record[hoverlabel]));
+    const selectedDataset = parcoords.newDataset.filter((record) => selectedRecords.includes(record[hoverlabel]) &&
+        !isRecordColored(record[hoverlabel]));
     if (selectedDataset.length === 0)
         return;
     selectedDataset.forEach((record) => {
@@ -8853,7 +8875,7 @@ function handleClick(event, d) {
                 });
                 data.forEach((item, i) => {
                     const rec = datasetMap.get(item);
-                    if (rec) {
+                    if (rec && !isRecordColored(item)) {
                         createToolTipForValues(rec, true);
                     }
                 });
@@ -8874,7 +8896,7 @@ function handleClick(event, d) {
                 });
                 data.forEach((item, i) => {
                     const rec = datasetMap.get(item);
-                    if (rec) {
+                    if (rec && !isRecordColored(item)) {
                         createToolTipForValues(rec, true);
                     }
                 });
@@ -8890,7 +8912,7 @@ function handleClick(event, d) {
         });
         data.forEach((item, i) => {
             const rec = datasetMap.get(item);
-            if (rec) {
+            if (rec && !isRecordColored(item)) {
                 createToolTipForValues(rec, true);
             }
         });
@@ -9547,5 +9569,5 @@ function escapeCsvCell(value) {
     return value;
 }
 
-export { clearSelection, colorRecord, createSvgString, deleteChart, disableInteractivity, drawChart, enableInteractivity, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelectableWith, getSelected, hide, hideMarker, invert, invertWoTransition, isDimensionCategorical, isRecordInactive, isSelected, isSelectedWithRecordId, loadCSV, move, moveByOne, realignToolbar, refresh, renderInvalidTable, reset, saveAsSvg, setClassColoredFalse, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setDimensionSpacing, setFilter, setInversionStatus, setSelectableWidth, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setUnselected, setUnselectedWithId, show, showInvalidRowsMessage, showMarker, swap, syncDimensionOrderWithVisible, throttleShowValues, toggleSelection, toggleSelectionWithId, uncolorRecord };
+export { clearSelection, colorRecord, createSvgString, deleteChart, disableInteractivity, drawChart, enableInteractivity, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelectableWith, getSelected, hide, hideMarker, invert, invertWoTransition, isDimensionCategorical, isRecordColored, isRecordInactive, isSelected, isSelectedWithRecordId, loadCSV, move, moveByOne, realignToolbar, refresh, renderInvalidTable, reset, saveAsSvg, setClassColoredFalse, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setDimensionSpacing, setFilter, setInversionStatus, setSelectableWidth, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setUnselected, setUnselectedWithId, show, showInvalidRowsMessage, showMarker, swap, syncDimensionOrderWithVisible, throttleShowValues, toggleSelection, toggleSelectionWithId, uncolorRecord };
 //# sourceMappingURL=spcd3.js.map
