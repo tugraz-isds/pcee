@@ -155,8 +155,12 @@ export function build() {
 }
 
 export async function tauri() {
-  await runCommand(resolveBin("tauri"), ["build"]);
+  await runCommand(resolveBin("tauri"), ["build", "--no-bundle"]);
   await packageTauriExecutable();
+}
+
+export function tauriBundle() {
+  return runCommand(resolveBin("tauri"), ["build"]);
 }
 
 export function tauriDev() {
@@ -178,6 +182,7 @@ gulp.task("clean", clean);
 gulp.task("cleanAll", cleanAll);
 gulp.task("build", build);
 gulp.task("tauri", tauri);
+gulp.task("tauriBundle", tauriBundle);
 gulp.task("tauri:dev", tauriDev);
 
 export default build;

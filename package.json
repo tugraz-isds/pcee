@@ -8,6 +8,7 @@
     "preview": "vite preview",
     "build": "vite build",
     "tauri": "npx gulp tauri",
+    "tauriBundle": "npx gulp tauriBundle",
     "clean": "npx gulp clean",
     "cleanAll": "npx gulp cleanAll"
   },
