@@ -1,6 +1,6 @@
 [package]
-name = "pcee"
-version = "0.1.0"
+name = "PCEE"
+version = "1.0.0"
 description = "Parallel Coordinates Explorable Explainer (PCEE)"
 authors = ["Romana Gruber"]
 license = "MIT"

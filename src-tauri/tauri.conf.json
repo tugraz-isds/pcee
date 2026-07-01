@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "pcee",
-  "version": "0.1.0",
+  "productName": "PCEE",
+  "version": "1.0.0",
   "identifier": "com.pcee.dev",
   "build": {
     "frontendDist": "../dist",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "pcee",
+        "title": "PCEE",
         "width": 800,
         "height": 600,
         "resizable": true,
