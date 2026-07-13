@@ -5,6 +5,15 @@
       :class="['sticky-header', { 'use-native': supportsScrollDrivenAnimations }]"
     >
       <div class="header-actions">
+        <a
+          class="header-action-button"
+          :href="repoUrl"
+        >
+          <img
+            class="header-icon-image"
+            src="/svg/github.svg"
+          >
+        </a>
         <button
           type="button"
           class="header-action-button"
@@ -15,15 +24,6 @@
             src="/svg/info-icon.svg"
           >
         </button>
-        <a
-          class="header-action-button"
-          :href="repoUrl"
-        >
-          <img
-            class="header-icon-image"
-            src="/svg/github.svg"
-          >
-        </a>
       </div>
       <div
         ref="multiLine"
@@ -222,6 +222,7 @@ const handleStudentDataset = (chart: HTMLDivElement, dataset: string | undefined
   spcd3.disableInteractivity();
 
   (document.getElementById('outlier-button') as HTMLButtonElement | null)?.setAttribute('disabled', '');
+  (document.getElementById('cluster-button') as HTMLButtonElement | null)?.setAttribute('disabled', '');
   (document.getElementById('correlation-button') as HTMLButtonElement | null)?.setAttribute('disabled', '');
   (document.getElementById('correlation-neg-button') as HTMLButtonElement | null)?.setAttribute('disabled', '');
   const stepperButtons = document.querySelectorAll<HTMLButtonElement>('.stepper-button');
@@ -250,6 +251,9 @@ const handleMisc = (chart: HTMLDivElement, dataset: string | undefined) : void =
   const outlierBtn = document.getElementById('outlier-button') as HTMLButtonElement | null;
   if (outlierBtn) outlierBtn.textContent = 'Show Outlier';
 
+  const clusterBtn = document.getElementById('cluster-button') as HTMLButtonElement | null;
+  if (clusterBtn) clusterBtn.textContent = 'Show Clusters';
+
   const negBtn = document.getElementById('correlation-neg-button') as HTMLButtonElement | null;
   if (negBtn) negBtn.textContent = 'Move Fitness Score Dimension';
 
@@ -259,6 +263,7 @@ const handleMisc = (chart: HTMLDivElement, dataset: string | undefined) : void =
   });
 
   (document.getElementById('outlier-button') as HTMLButtonElement | null)?.removeAttribute('disabled');
+  (document.getElementById('cluster-button') as HTMLButtonElement | null)?.removeAttribute('disabled');
   (document.getElementById('correlation-button') as HTMLButtonElement | null)?.removeAttribute('disabled');
   (document.getElementById('correlation-neg-button') as HTMLButtonElement | null)?.removeAttribute('disabled');
   const stepperButtons = document.querySelectorAll<HTMLButtonElement>('.stepper-button');

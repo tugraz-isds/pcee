@@ -94,5 +94,8 @@ more information.
 - Romana Gruber  
   Master's Thesis, main developer
 
+- Florian Zollner
+  Bachelor's Thesis, usability evaluation
+
 - Philipp Drescher, Jeremias Kleinschuster, Sebastian Schreiner, Burim Vrella  
   InfoVis SS 2023 G1, prepared original students dataset
