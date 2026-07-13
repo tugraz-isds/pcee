@@ -89,13 +89,13 @@ more information.
 ## Contributors
 
 - Keith Andrews [kandrews@iicm.edu](mailto:kandrews@iicm.edu?subject=Rslidy)  
-  Project Leader
+  Project Leader.
 
 - Romana Gruber  
-  Master's Thesis, main developer
+  Master's Thesis, main developer.
 
-- Florian Zollner
-  Bachelor's Thesis, usability evaluation
+- Florian Zollner  
+  Bachelor's Thesis, usability evaluation.
 
 - Philipp Drescher, Jeremias Kleinschuster, Sebastian Schreiner, Burim Vrella  
-  InfoVis SS 2023 G1, prepared original students dataset
+  InfoVis SS 2023 G1, prepared original students dataset.
