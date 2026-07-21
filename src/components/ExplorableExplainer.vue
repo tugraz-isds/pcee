@@ -66,6 +66,16 @@
     </div>
   </div>
   <div
+    v-if="zoomSrc"
+    class="image-zoom-overlay"
+    @click="zoomSrc = null"
+  >
+    <img
+      :src="zoomSrc"
+      :class="['image-zoom-preview', { 'image-zoom-preview-svg': isZoomSvg }]"
+    >
+  </div>
+  <div
     v-if="supportsScrollDrivenAnimations"
     class="header-spacer-native"
   />
@@ -99,20 +109,13 @@
         v-html="usageText" 
       />
       <Stepper/>
-      <div v-html="multipleViewsText" />
-      <div
-        v-if="zoomSrc"
-        class="image-zoom-overlay"
-        @click="zoomSrc = null"
-      >
-        <img
-          :src="zoomSrc"
-          :class="['image-zoom-preview', { 'image-zoom-preview-svg': isZoomSvg }]"
-        >
-      </div> 
     </div>
   </div>
   <div id="border" />
+  <div
+    ref="multipleViewsContainer"
+    v-html="multipleViewsText"
+  />
   <div v-html="referencesDatasetText" />
 </template>
 
@@ -146,6 +149,7 @@ const header = ref<HTMLElement | null>(null);
 const multiLine = ref<HTMLElement | null>(null);
 const singleLine = ref<HTMLElement | null>(null);
 const usageContainer = ref<HTMLDivElement | null>(null);
+const multipleViewsContainer = ref<HTMLDivElement | null>(null);
 const zoomSrc = ref<string | null>(null);
 const isZoomSvg = computed(() => /\.svg(?:[?#].*)?$/i.test(zoomSrc.value ?? ''));
 const showAbout = ref(false);
@@ -322,6 +326,9 @@ onBeforeUnmount(() => {
   if (usageContainer.value) {
     usageContainer.value.removeEventListener("click", handleClick);
   }
+  if (multipleViewsContainer.value) {
+    multipleViewsContainer.value.removeEventListener("click", handleClick);
+  }
 
   darkModeMediaQuery?.removeEventListener('change', syncThemeWithSystemPreference);
 })
@@ -344,6 +351,11 @@ onMounted(async (): Promise<void> => {
   const container = usageContainer.value;
   if(container) {
     container.addEventListener('click', handleClick);
+  }
+
+  const multipleViews = multipleViewsContainer.value;
+  if(multipleViews) {
+    multipleViews.addEventListener('click', handleClick);
   }
 
   if (!supportsScrollDrivenAnimations) {
@@ -1068,10 +1080,12 @@ li p {
 
 .liinstruction::before {
   content: "{";
+  margin-right: -0.25em;
 }
 
 .liinstruction::after {
   content: "}";
+  margin-left: -0.25em;
 }
 
 .liinstruction {

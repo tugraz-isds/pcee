@@ -173,3 +173,24 @@ a {
 a:hover {
   color: var(--body-link-hover-color);
 }
+
+.inline-icon {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.resource-intro {
+  margin-top: 1.5rem;
+}
+
+.resource-list-spaced li + li {
+  margin-top: 1rem;
+}
+
+.resource-title {
+  font-weight: 600;
+}
+
+.resource-link-wrap {
+  margin-left: 1rem;
+}
