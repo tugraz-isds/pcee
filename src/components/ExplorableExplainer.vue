@@ -1081,7 +1081,7 @@ li p {
   text-indent: 0;
   text-align: left;
   hyphens: none;
-  font-size: 1em;
+  font-size: 0.8em;
 }
 
 .liinstruction svg {

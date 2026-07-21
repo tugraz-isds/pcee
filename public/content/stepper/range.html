@@ -1,8 +1,12 @@
-<p>By default, parallel coordinates implementations typically set the
-range for each dimension to match the minimum and maximum values in
-the dataset. Here, the Maths dimension ranges from 2 to 98, because
-that is the range in the data. In this case, each student is awarded
-between 0 and 100 points in each subject, and it makes sense to show
-the range of each subject dimension from 0 to 100 to better represent
-the original data domain.
+<p>
+The range chosen for each dimension can significantly affect the
+visual pattern. By default, parallel coordinates implementations
+typically set the range for each dimension to match the minimum and
+maximum values in the dataset. Here, the PE dimension ranges by
+default from 51 to 99. In this dataset, each student is actually
+awarded between 0 and 100 points in each subject. The default range of
+the PE dimension gives a false visual impression, since the lowest
+data value in PE is 51 points. To better represent the original data
+domain, it makes sense to adjust the range of each dimension to extend
+from 0 to 100. The visual pattern changes accordingly.
 </p>
