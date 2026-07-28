@@ -1,6 +1,6 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "PCEE",
+  "productName": "pcee",
   "version": "1.0.0",
   "identifier": "com.pcee.dev",
   "build": {

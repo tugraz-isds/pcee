@@ -4796,6 +4796,7 @@ function getAllVisibleDimensionNames$1() {
 const TOOLTIP_LABEL_HEIGHT = 16;
 const TOOLTIP_LABEL_GAP = 3;
 const TOOLTIP_LABEL_X_OFFSET = 10;
+const TOOLTIP_LABEL_X_OFFSET_SELECTED = TOOLTIP_LABEL_X_OFFSET;
 const TOOLTIP_LEADER_PADDING = 4;
 function recordIdOf(rec) {
     return rec.id ?? rec._id ?? rec.key;
@@ -4818,7 +4819,8 @@ function createToolTipForValues(records, isSelect, svgSelection = select("#spcd3
         .attr("data-tooltip-type", tooltipType)
         .style("display", null);
     layer.attr("id", isSelect ? `tooltip-record-select-${recordId}` : null);
-    const data = dimensions.map((dim) => {
+    const data = dimensions
+        .map((dim) => {
         const yScale = yScales[dim];
         const x = xScales(dim);
         const record = records[dim];
@@ -4830,15 +4832,19 @@ function createToolTipForValues(records, isSelect, svgSelection = select("#spcd3
             y,
             text: String(record ?? ""),
         };
-    }).filter((item) => Number.isFinite(item.x) && Number.isFinite(item.y));
+    })
+        .filter((item) => Number.isFinite(item.x) && Number.isFinite(item.y));
     const tipClass = isSelect
         ? "spcd3-tooltip-record-select"
         : "spcd3-tooltip-record";
+    const labelOffsetX = isSelect
+        ? TOOLTIP_LABEL_X_OFFSET_SELECTED
+        : TOOLTIP_LABEL_X_OFFSET;
     layer
         .selectAll(`g.${tipClass}`)
         .data(data, (d) => d.dim)
         .join((enter) => enter.append("g").attr("class", tipClass), (update) => update, (exit) => exit.remove())
-        .attr("transform", (d) => `translate(${d.x + 8}, ${d.y - 9})`)
+        .attr("transform", (d) => `translate(${d.x + labelOffsetX}, ${d.y - 9})`)
         .style("pointer-events", "none")
         .each(function (d) {
         const label = select(this);
@@ -4852,7 +4858,7 @@ function createToolTipForValues(records, isSelect, svgSelection = select("#spcd3
             .attr("data-tooltip-type", tooltipType);
         label
             .selectAll("line")
-            .data([d])
+            .data([])
             .join("line")
             .attr("class", "spcd3-tooltip-leader")
             .attr("stroke", isSelect ? "rgb(255, 165, 0)" : "var(--spcd3-text-primary)")
@@ -4866,12 +4872,8 @@ function createToolTipForValues(records, isSelect, svgSelection = select("#spcd3
             .attr("ry", 2)
             .attr("width", badgeWidth)
             .attr("height", 16)
-            .attr("fill", isSelect
-            ? "rgb(255, 165, 0)"
-            : "var(--spcd3-tooltip-record-bg)")
-            .attr("stroke", isSelect
-            ? "rgb(255, 165, 0)"
-            : "var(--spcd3-tooltip-record-bg)")
+            .attr("fill", isSelect ? "rgb(255, 165, 0)" : "var(--spcd3-tooltip-record-bg)")
+            .attr("stroke", isSelect ? "rgb(255, 165, 0)" : "var(--spcd3-tooltip-record-bg)")
             .attr("stroke-width", 1);
         label
             .selectAll("text")
@@ -4880,9 +4882,7 @@ function createToolTipForValues(records, isSelect, svgSelection = select("#spcd3
             .attr("x", 4)
             .attr("y", 11)
             .attr("font-size", 10)
-            .attr("fill", isSelect
-            ? "black"
-            : "var(--spcd3-tooltip-record-text)")
+            .attr("fill", isSelect ? "black" : "var(--spcd3-tooltip-record-text)")
             .text(d.text);
     });
     relayoutValueTooltips(svgSelection);
@@ -4941,10 +4941,12 @@ function relayoutValueTooltips(svgSelection) {
             const maxTop = height - TOOLTIP_LABEL_HEIGHT - TOOLTIP_LEADER_PADDING;
             const top = Math.max(minTop, Math.min(maxTop, Math.max(preferredTop, currentBottom + TOOLTIP_LABEL_GAP)));
             currentBottom = top + TOOLTIP_LABEL_HEIGHT;
-            const translateX = item.anchorX + TOOLTIP_LABEL_X_OFFSET;
+            const line = select(item.node).select("line");
+            const hasLeader = !line.empty();
+            const translateX = item.anchorX +
+                (hasLeader ? TOOLTIP_LABEL_X_OFFSET : TOOLTIP_LABEL_X_OFFSET_SELECTED);
             select(item.node).attr("transform", `translate(${translateX}, ${top})`);
-            select(item.node)
-                .select("line")
+            line
                 .attr("x1", 0)
                 .attr("y1", TOOLTIP_LABEL_HEIGHT / 2)
                 .attr("x2", -TOOLTIP_LABEL_X_OFFSET + TOOLTIP_LEADER_PADDING)
@@ -4953,10 +4955,7 @@ function relayoutValueTooltips(svgSelection) {
                 .select("rect")
                 .attr("width", item.badgeWidth)
                 .attr("height", TOOLTIP_LABEL_HEIGHT);
-            select(item.node)
-                .select("text")
-                .attr("x", 4)
-                .attr("y", 11);
+            select(item.node).select("text").attr("x", 4).attr("y", 11);
         });
     });
 }
@@ -5006,9 +5005,19 @@ function cleanTooltipSelect() {
 }
 
 const BRUSH_STATE_EPSILON$1 = 0.75;
+const FILTER_STATE_EPSILON$1 = 0.75;
 const AXIS_VISIBILITY_DURATION = 1500;
 function isNear(value, target) {
     return Math.abs(value - target) < BRUSH_STATE_EPSILON$1;
+}
+function hasActiveBrushFilterState(dimension) {
+    const settings = parcoords.currentPosOfDims.find((d) => d.key === dimension);
+    if (!settings)
+        return false;
+    return (Math.abs(settings.currentFilterTop - settings.currentRangeTop) >
+        FILTER_STATE_EPSILON$1 ||
+        Math.abs(settings.currentFilterBottom - settings.currentRangeBottom) >
+            FILTER_STATE_EPSILON$1);
 }
 function remToPixels(value) {
     const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
@@ -5408,7 +5417,7 @@ function setFilterAfterSettingRanges(dimension, inverted) {
     else {
         select("#triangle_up_" + cleanDimensionName).attr("href", "#brush_image_top_active");
     }
-    if (!(isNear(rectY, 50) && isNear(rectY + rectH, 350))) {
+    if (hasActiveBrushFilterState(dimension)) {
         select("#rect_" + cleanDimensionName)
             .attr("fill", BRUSH_ACTIVE_FILL)
             .attr("opacity", "0.7");
@@ -5490,7 +5499,7 @@ function setDimensionForHovering(dimension) {
     setHoverLabel(dimension);
 }
 //---------- Invert Functions ----------
-function invertWoTransition(dimension) {
+function invertWithoutTransition(dimension) {
     const cleanDimensionName = cleanString(dimension);
     const invertId = "#dimension_invert_" + cleanDimensionName;
     const dimensionId = "#dimension_axis_" + cleanDimensionName;
@@ -5716,7 +5725,7 @@ function setSelectionWithId(recordIds) {
     }
     setSelection(records);
 }
-function isSelectedWithRecordId(recordId) {
+function isSelectedWithId(recordId) {
     let record = getRecordWithId(recordId);
     return isSelected(record);
 }
@@ -5893,6 +5902,7 @@ const BRUSH_STATE_EPSILON = 0.75;
 const BRUSH_TOOLTIP_HEIGHT = 16;
 const BRUSH_TOOLTIP_X_OFFSET = 12;
 const BRUSH_HANDLE_CENTER_OFFSET = 5;
+const FILTER_STATE_EPSILON = 0.75;
 function toNumber(value) {
     return typeof value === "number" ? value : Number(value);
 }
@@ -5904,6 +5914,22 @@ function isAtTopRect(value) {
 }
 function isAtBottom(value) {
     return Math.abs(toNumber(value) - BOTTOM_AXIS_VALUE) < BRUSH_STATE_EPSILON;
+}
+function hasActiveBrushFilter(dimension) {
+    const settings = parcoords.currentPosOfDims.find((d) => d.key === dimension);
+    if (!settings)
+        return false;
+    if (isDimensionCategorical(dimension)) {
+        const domain = parcoords.yScales[dimension].domain();
+        const filteredCategories = settings.currentFilterCategories;
+        return (Array.isArray(filteredCategories) &&
+            filteredCategories.length > 0 &&
+            filteredCategories.length < domain.length);
+    }
+    return (Math.abs(settings.currentFilterTop - settings.currentRangeTop) >
+        FILTER_STATE_EPSILON ||
+        Math.abs(settings.currentFilterBottom - settings.currentRangeBottom) >
+            FILTER_STATE_EPSILON);
 }
 // Brushing
 function setRectToDrag(featureAxis, tooltipValuesDown, tooltipValuesTop) {
@@ -6177,15 +6203,15 @@ function brushUp(cleanDimensionName, event, d, tooltipValues, window) {
         select("#rect_" + cleanDimensionName)
             .attr("href", "#brush_image_top_active")
             .style("cursor", "default")
-            .style("fill", BRUSH_IDLE_FILL)
-            .style("opacity", "0.5");
+            .attr("fill", BRUSH_IDLE_FILL)
+            .attr("opacity", "0.5");
     }
     else {
         select("#rect_" + cleanDimensionName)
             .attr("href", "#brush_image_top_active")
             .style("cursor", `url('data:image/svg+xml,${encodeURIComponent(applyThemeToCursorSvg(setSize(getArrowTopAndBottom(), 20)))}') ${arrowTopAndBottomHotspotX} ${arrowTopAndBottomHotspotY}, auto`)
-            .style("fill", BRUSH_ACTIVE_FILL)
-            .style("opacity", "0.7");
+            .attr("fill", BRUSH_ACTIVE_FILL)
+            .attr("opacity", "0.7");
     }
     if (isAtBottom(yPosBottom)) {
         select("#triangle_up_" + cleanDimensionName).attr("href", "#brush_image_top");
@@ -6721,6 +6747,12 @@ function addSettingsForBrushing(dimension, invertStatus) {
     else {
         select("#triangle_up_" + processedName).attr("href", "#brush_image_top_active");
     }
+    if (hasActiveBrushFilter(dimension)) {
+        rect.attr("fill", BRUSH_ACTIVE_FILL).attr("opacity", "0.7");
+    }
+    else {
+        rect.attr("fill", BRUSH_IDLE_FILL).attr("opacity", "0.5");
+    }
     if (isDimensionCategorical(dimension)) {
         addPosition(bottom, dimension, "top");
         addPosition(top, dimension, "bottom");
@@ -6751,6 +6783,22 @@ const throttleDragAndBrush = throttle(dragAndBrush, delay);
 
 let scrollXPos;
 let timer = null;
+function getDragBounds() {
+    const range = parcoords.xScales?.range?.();
+    if (!Array.isArray(range) || range.length < 2) {
+        return {
+            min: paddingXaxis,
+            max: width - paddingXaxis,
+        };
+    }
+    const minRange = Math.min(...range);
+    const maxRange = Math.max(...range);
+    const edgeSlack = Math.max(0, minRange - paddingXaxis);
+    return {
+        min: minRange - edgeSlack,
+        max: maxRange + edgeSlack,
+    };
+}
 function setContextMenu(featureAxis) {
     createContextMenu();
     createModalToSetRange();
@@ -7137,7 +7185,7 @@ function setCursorForDimensions(d, featureAxis) {
         const [hotspotX, hotspotY] = getCursorHotspot(getArrowLeftAndRightMeta(), 14);
         featureAxis
             .select(".dimension")
-            .style("cursor", `url('data:image/svg+xml,${encodeURIComponent(applyThemeToCursorSvg(setSize(getArrowLeftAndRight(), 14)))}') ${hotspotX} ${hotspotY}, auto`);
+            .style("cursor", `url('data:image/svg+xml,${encodeURIComponent(applyThemeToCursorSvg(setSize(getArrowLeftAndRight(), 15)))}') ${hotspotX} ${hotspotY}, auto`);
     }
 }
 function onDragStartEventHandler() {
@@ -7163,7 +7211,8 @@ function onDragEventHandler(featureAxis) {
             timer = setInterval(() => {
                 (scroll(d));
             });
-            parcoords.dragging[d.subject.name] = Math.min(width - paddingXaxis, Math.max(paddingXaxis, (this.__origin__ += d.x)));
+            const { min, max } = getDragBounds();
+            parcoords.dragging[d.subject.name] = Math.min(max, Math.max(min, (this.__origin__ += d.x)));
             active.each(function (d) {
                 select(this).attr("d", linePath(d, parcoords.newFeatures));
             });
@@ -7173,8 +7222,7 @@ function onDragEventHandler(featureAxis) {
             });
             parcoords.newFeatures.sort((a, b) => {
                 return (position(b, parcoords.dragging, parcoords.xScales) -
-                    position(a, parcoords.dragging, parcoords.xScales) -
-                    1);
+                    position(a, parcoords.dragging, parcoords.xScales));
             });
             parcoords.xScales.domain(parcoords.newFeatures);
             featureAxis.attr("transform", (d) => {
@@ -7192,6 +7240,12 @@ function onDragEndEventHandler(featureAxis) {
                 clearInterval(timer);
                 timer = null;
             }
+            const { min, max } = getDragBounds();
+            parcoords.dragging[d.subject.name] = Math.min(max, Math.max(min, this.__origin__));
+            parcoords.newFeatures.sort((a, b) => {
+                return (position(b, parcoords.dragging, parcoords.xScales) -
+                    position(a, parcoords.dragging, parcoords.xScales));
+            });
             delete this.__origin__;
             delete parcoords.dragging[d.subject.name];
             delete parcoords.dragPosStart[d.subject.name];
@@ -7212,8 +7266,7 @@ function onDragEndEventHandler(featureAxis) {
             var selectedRecords = getSelected();
             selectedRecords.forEach((record) => {
                 const path = parcoords.newDataset.find((d) => d[hoverlabel] === record);
-                if (!isRecordInactive(record) &&
-                    !isRecordColored(record)) {
+                if (!isRecordInactive(record) && !isRecordColored(record)) {
                     createToolTipForValues(path, true);
                 }
             });
@@ -7497,16 +7550,16 @@ var hasRequiredCjs$1;
 function requireCjs$1 () {
 	if (hasRequiredCjs$1) return cjs$1.exports;
 	hasRequiredCjs$1 = 1;
-	(function (module, exports$1) {
-		Object.defineProperty(exports$1, "__esModule", { value: true });
-		exports$1.ParsingError = void 0;
+	(function (module, exports) {
+		Object.defineProperty(exports, "__esModule", { value: true });
+		exports.ParsingError = void 0;
 		class ParsingError extends Error {
 		    constructor(message, cause) {
 		        super(message);
 		        this.cause = cause;
 		    }
 		}
-		exports$1.ParsingError = ParsingError;
+		exports.ParsingError = ParsingError;
 		let parsingState;
 		function nextChild() {
 		    return element(false) || text() || comment() || cdata() || processingInstruction();
@@ -7618,7 +7671,7 @@ function requireCjs$1 () {
 		        }
 		    }
 		    else {
-		        match(/^<\/[\w-:.\u00C0-\u00FF]+\s*>/);
+		        match(/^<\/[\p{L}\p{M}\w\-:.]+\s*>/u);
 		    }
 		    return {
 		        excluded,
@@ -7733,7 +7786,7 @@ function requireCjs$1 () {
 		{
 		    module.exports = parseXml;
 		}
-		exports$1.default = parseXml;
+		exports.default = parseXml;
 		
 	} (cjs$1, cjs$1.exports));
 	return cjs$1.exports;
@@ -7746,11 +7799,11 @@ var hasRequiredCjs;
 function requireCjs () {
 	if (hasRequiredCjs) return cjs$2.exports;
 	hasRequiredCjs = 1;
-	(function (module, exports$1) {
+	(function (module, exports) {
 		var __importDefault = (cjs && cjs.__importDefault) || function (mod) {
 		    return (mod && mod.__esModule) ? mod : { "default": mod };
 		};
-		Object.defineProperty(exports$1, "__esModule", { value: true });
+		Object.defineProperty(exports, "__esModule", { value: true });
 		const xml_parser_xo_1 = __importDefault(/*@__PURE__*/ requireCjs$1());
 		function newLine(state) {
 		    if (!state.options.indentation && !state.options.lineSeparator)
@@ -7938,7 +7991,7 @@ function requireCjs () {
 		{
 		    module.exports = formatXml;
 		}
-		exports$1.default = formatXml;
+		exports.default = formatXml;
 		
 	} (cjs$2, cjs$2.exports));
 	return cjs$2.exports;
@@ -7947,6 +8000,12 @@ function requireCjs () {
 var cjsExports = /*@__PURE__*/ requireCjs();
 var xmlFormat = /*@__PURE__*/getDefaultExportFromCjs(cjsExports);
 
+const DOWNLOAD_BRUSH_ARROW_WIDTH = 11;
+const DOWNLOAD_BRUSH_ARROW_HEIGHT = 8;
+const DOWNLOAD_BRUSH_ARROW_X = -4.5;
+const DOWNLOAD_INVERT_ARROW_WIDTH = 6.8;
+const DOWNLOAD_INVERT_ARROW_HEIGHT = 11;
+const DOWNLOAD_INVERT_ARROW_X = -3.4;
 function setActivePathLinesToDownload(svg) {
     svg
         .append("g")
@@ -8067,10 +8126,10 @@ function setBrushDownToDownload(featureAxis) {
             .append("g")
             .append("use")
             .attr("id", "triangle_down_" + processedDimensionName)
-            .attr("y", item.top == 50 ? 40 : item.top - 10)
-            .attr("x", -6)
-            .attr("width", 14)
-            .attr("height", 10)
+            .attr("y", item.top == 50 ? 41 : item.top - DOWNLOAD_BRUSH_ARROW_HEIGHT)
+            .attr("x", DOWNLOAD_BRUSH_ARROW_X)
+            .attr("width", DOWNLOAD_BRUSH_ARROW_WIDTH)
+            .attr("height", DOWNLOAD_BRUSH_ARROW_HEIGHT)
             .attr("href", "#brush_image_bottom");
     });
 }
@@ -8083,9 +8142,9 @@ function setBrushUpToDownload(featureAxis) {
             .append("use")
             .attr("id", "triangle_up_" + processedDimensionName)
             .attr("y", item.bottom)
-            .attr("x", -6)
-            .attr("width", 14)
-            .attr("height", 10)
+            .attr("x", DOWNLOAD_BRUSH_ARROW_X)
+            .attr("width", DOWNLOAD_BRUSH_ARROW_WIDTH)
+            .attr("height", DOWNLOAD_BRUSH_ARROW_HEIGHT)
             .attr("href", "#brush_image_top");
     });
 }
@@ -8110,11 +8169,11 @@ function setRectToDragToDownload(featureAxis) {
 function setInvertIconToDownload(featureAxis) {
     featureAxis
         .append("svg")
-        .attr("y", 25)
-        .attr("x", -6)
+        .attr("y", 24)
+        .attr("x", DOWNLOAD_INVERT_ARROW_X)
         .append("use")
-        .attr("width", 12)
-        .attr("height", 12)
+        .attr("width", DOWNLOAD_INVERT_ARROW_WIDTH)
+        .attr("height", DOWNLOAD_INVERT_ARROW_HEIGHT)
         .attr("y", 0)
         .attr("x", 0)
         .each(function (d) {
@@ -8128,10 +8187,14 @@ function setInvertIconToDownload(featureAxis) {
     });
 }
 
+const DOWNLOAD_TOP_BALANCE_PADDING = 32;
 function createSvgString(includeDataValues = false) {
     const orderedFeatures = parcoords.newFeatures.map((name) => ({
         name,
     }));
+    const layout = calculateChartLayout(orderedFeatures, parcoords.newDataset);
+    const leftBalancePadding = Math.max(0, layout.rightPadding - layout.leftPadding);
+    const rightBalancePadding = Math.max(0, layout.leftPadding - layout.rightPadding);
     const hiddenDims = getAllHiddenDimensionNames();
     let yScalesForDownload = setupYScales(parcoords.features, parcoords.newDataset);
     let yAxisForDownload = setupYAxis(yScalesForDownload, parcoords.newDataset, hiddenDims);
@@ -8139,8 +8202,14 @@ function createSvgString(includeDataValues = false) {
     let svg = create$1("svg")
         .attr("xmlns", "http://www.w3.org/2000/svg")
         .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
-        .attr("viewBox", [0, 0, width, height])
+        .attr("viewBox", [
+        -leftBalancePadding,
+        -DOWNLOAD_TOP_BALANCE_PADDING,
+        width + leftBalancePadding + rightBalancePadding,
+        height + DOWNLOAD_TOP_BALANCE_PADDING,
+    ])
         .attr("font-family", "Verdana, sans-serif");
+    const contentRoot = svg.append("g");
     let defs = svg.append("defs");
     appendSymbol(defs, "arrow_image_up", "0 0 6 10", [
         {
@@ -8170,10 +8239,10 @@ function createSvgString(includeDataValues = false) {
             d: "M 7 7 L 93 7 L 50 79 Z",
         },
     ]);
-    setFeatureAxisToDownload(svg, yAxisForDownload, yScalesForDownload, xScalesForDownload);
-    setActivePathLinesToDownload(svg);
+    setFeatureAxisToDownload(contentRoot, yAxisForDownload, yScalesForDownload, xScalesForDownload);
+    setActivePathLinesToDownload(contentRoot);
     if (includeDataValues) {
-        setSelectedRecordValuesToDownload(svg, xScalesForDownload, yScalesForDownload);
+        setSelectedRecordValuesToDownload(contentRoot, xScalesForDownload, yScalesForDownload);
     }
     return svg.node().outerHTML;
 }
@@ -8247,7 +8316,8 @@ function setOptionsAndDownload() {
     rowIncludeDataValues.className = "spcd3-options-div";
     const labelIncludeDataValues = document.createElement("label");
     labelIncludeDataValues.className = "spcd3-label";
-    labelIncludeDataValues.textContent = "Include data values: ";
+    labelIncludeDataValues.textContent =
+        "Include data values of selected records: ";
     const inputIncludeDataValues = document.createElement("input");
     inputIncludeDataValues.className = "spcd3-input";
     inputIncludeDataValues.type = "checkbox";
@@ -8255,6 +8325,18 @@ function setOptionsAndDownload() {
     inputIncludeDataValues.checked = true;
     rowIncludeDataValues.appendChild(labelIncludeDataValues);
     rowIncludeDataValues.appendChild(inputIncludeDataValues);
+    const rowConvertSymbols = document.createElement("div");
+    rowConvertSymbols.className = "spcd3-options-div";
+    const labelConvertSymbols = document.createElement("label");
+    labelConvertSymbols.className = "spcd3-label";
+    labelConvertSymbols.textContent = "Convert symbols to paths: ";
+    const inputConvertSymbols = document.createElement("input");
+    inputConvertSymbols.className = "spcd3-input";
+    inputConvertSymbols.type = "checkbox";
+    inputConvertSymbols.id = "convertSymbolsInput";
+    inputConvertSymbols.checked = false;
+    rowConvertSymbols.appendChild(labelConvertSymbols);
+    rowConvertSymbols.appendChild(inputConvertSymbols);
     const button = document.createElement("button");
     button.textContent = "Download";
     button.className = "spcd3-button spcd3-generic-button";
@@ -8262,6 +8344,7 @@ function setOptionsAndDownload() {
     form.appendChild(rowKeepClasses);
     form.appendChild(rowIncludeUiControls);
     form.appendChild(rowIncludeDataValues);
+    form.appendChild(rowConvertSymbols);
     form.appendChild(button);
     modal.appendChild(form);
     modalOverlay.appendChild(modal);
@@ -8291,6 +8374,9 @@ function setOptionsAndDownload() {
         if (!inputIncludeUiControls.checked) {
             updatedSVG = removeUiControls(updatedSVG);
             updatedSVG = updatedSVG.replaceAll('<svg y="25" x="-6"><use width="12" height="12" y="0" x="0" href="#arrow_image_up"></use></svg>', "");
+        }
+        if (inputConvertSymbols.checked) {
+            updatedSVG = convertSymbolsToPaths(updatedSVG);
         }
         let processedData = xmlFormat(updatedSVG, {
             indentation: "  ",
@@ -8347,6 +8433,92 @@ function removeUiControls(svgString) {
     svgString = svgString.replace(/<g><rect[\s\S]*?<\/rect><\/g>/g, "");
     svgString = svgString.replace(/y\s*=\s*["']?18["']?/g, 'y="29"');
     return svgString;
+}
+function convertSymbolsToPaths(svgString) {
+    const parser = new DOMParser();
+    const documentSvg = parser.parseFromString(svgString, "image/svg+xml");
+    const svgRoot = documentSvg.documentElement;
+    const defs = svgRoot.querySelector("defs");
+    if (!defs)
+        return svgString;
+    const symbols = new Map();
+    defs.querySelectorAll("symbol").forEach((symbol) => {
+        const id = symbol.getAttribute("id");
+        if (id) {
+            symbols.set(id, symbol);
+        }
+    });
+    svgRoot.querySelectorAll("use").forEach((useNode) => {
+        const href = useNode.getAttribute("href") || useNode.getAttribute("xlink:href");
+        if (!href || !href.startsWith("#"))
+            return;
+        const symbol = symbols.get(href.slice(1));
+        if (!symbol)
+            return;
+        const replacement = createPathsFromSymbol(documentSvg, symbol, useNode);
+        const parent = useNode.parentElement;
+        if (!parent)
+            return;
+        if (parent.tagName.toLowerCase() === "svg" &&
+            parent.childElementCount === 1 &&
+            parent.parentElement) {
+            parent.parentElement.replaceChild(replacement, parent);
+        }
+        else {
+            parent.replaceChild(replacement, useNode);
+        }
+    });
+    defs.remove();
+    return new XMLSerializer().serializeToString(svgRoot);
+}
+function createPathsFromSymbol(documentSvg, symbol, useNode) {
+    const group = documentSvg.createElementNS("http://www.w3.org/2000/svg", "g");
+    const symbolSvgParent = useNode.parentElement?.tagName.toLowerCase() === "svg"
+        ? useNode.parentElement
+        : null;
+    const symbolX = parseSvgNumber(symbolSvgParent?.getAttribute("x"));
+    const symbolY = parseSvgNumber(symbolSvgParent?.getAttribute("y"));
+    const useX = parseSvgNumber(useNode.getAttribute("x"));
+    const useY = parseSvgNumber(useNode.getAttribute("y"));
+    const width = parseSvgNumber(useNode.getAttribute("width"), 0);
+    const height = parseSvgNumber(useNode.getAttribute("height"), 0);
+    const [minX, minY, viewBoxWidth, viewBoxHeight] = parseViewBox(symbol.getAttribute("viewBox"));
+    const scaleX = viewBoxWidth === 0 ? 1 : width / viewBoxWidth;
+    const scaleY = viewBoxHeight === 0 ? 1 : height / viewBoxHeight;
+    const transforms = [
+        `translate(${symbolX + useX} ${symbolY + useY})`,
+        `scale(${scaleX} ${scaleY})`,
+    ];
+    if (minX !== 0 || minY !== 0) {
+        transforms.push(`translate(${-minX} ${-minY})`);
+    }
+    group.setAttribute("transform", transforms.join(" "));
+    symbol.querySelectorAll("path").forEach((pathNode) => {
+        const path = documentSvg.createElementNS("http://www.w3.org/2000/svg", "path");
+        Array.from(pathNode.attributes).forEach((attribute) => {
+            path.setAttribute(attribute.name, attribute.value);
+        });
+        group.appendChild(path);
+    });
+    return group;
+}
+function parseViewBox(viewBox) {
+    if (!viewBox)
+        return [0, 0, 0, 0];
+    const values = viewBox
+        .trim()
+        .split(/[\s,]+/)
+        .map((value) => Number.parseFloat(value));
+    if (values.length !== 4 || values.some((value) => Number.isNaN(value))) {
+        return [0, 0, 0, 0];
+    }
+    return [values[0], values[1], values[2], values[3]];
+}
+function parseSvgNumber(value, fallback = 0) {
+    if (value == null || value === "")
+        return fallback;
+    const parsed = Number.parseFloat(value);
+    return Number.isNaN(parsed) ? fallback : parsed;
 }
 
 function createToolbar(dataset) {
@@ -9426,11 +9598,7 @@ function renderInvalidTable(rows, columns, removedColumns = []) {
                     rawValue.trim() !== "" &&
                     !isNaN(Number(rawValue.replace(",", "."))));
             const align = isNumber ? "right" : "left";
-            const displayValue = rawValue === null
-                ? "(null)"
-                : isEmptyOrNull
-                    ? "null"
-                    : rawValue;
+            const displayValue = rawValue === null ? "(null)" : isEmptyOrNull ? "null" : rawValue;
             td.textContent = displayValue;
             if (isInvalid || isEmptyOrNull) {
                 td.classList.add("spcd3-invalid-cell");
@@ -9569,5 +9737,5 @@ function escapeCsvCell(value) {
     return value;
 }
 
-export { clearSelection, colorRecord, createSvgString, deleteChart, disableInteractivity, drawChart, enableInteractivity, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelectableWith, getSelected, hide, hideMarker, invert, invertWoTransition, isDimensionCategorical, isRecordColored, isRecordInactive, isSelected, isSelectedWithRecordId, loadCSV, move, moveByOne, realignToolbar, refresh, renderInvalidTable, reset, saveAsSvg, setClassColoredFalse, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setDimensionSpacing, setFilter, setInversionStatus, setSelectableWidth, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setUnselected, setUnselectedWithId, show, showInvalidRowsMessage, showMarker, swap, syncDimensionOrderWithVisible, throttleShowValues, toggleSelection, toggleSelectionWithId, uncolorRecord };
+export { clearSelection, colorRecord, createSvgString, deleteChart, disableInteractivity, drawChart, enableInteractivity, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelectableWith, getSelected, hide, hideMarker, invert, invertWithoutTransition, isDimensionCategorical, isRecordColored, isRecordInactive, isSelected, isSelectedWithId, loadCSV, move, moveByOne, realignToolbar, refresh, reset, saveAsSvg, setClassColoredFalse, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setDimensionSpacing, setFilter, setInversionStatus, setSelectableWidth, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setUnselected, setUnselectedWithId, show, showMarker, swap, syncDimensionOrderWithVisible, throttleShowValues, toggleSelection, toggleSelectionWithId, uncolorRecord };
 //# sourceMappingURL=spcd3.js.map

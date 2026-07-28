@@ -22,7 +22,8 @@ using [GSAP](https://github.com/greensock/GSAP) as a polyfill.
 Open terminal and execute the following command to install all the dependencies:
 
 ```
-yarn
+corepack enable
+yarn install
 ```
 
 ### Compile and Hot-Reload for Development
@@ -47,8 +48,8 @@ npx gulp clean
 <br/>
 
 `cleanAll` restores the project folder to its virgin state,
-by deleting the existing `dist/`, `package/` and `node_modules/` directories
-and the `yarn.lock` file:
+by deleting the existing `dist/`, `package/`, `node_modules/` and
+`src-tauri/target/` directories:
 
 ```
 npx gulp cleanAll
@@ -75,7 +76,7 @@ equivalent yarn script defined in `package.json`.
 
 Prerequisites: To build a native desktop app, Rust, Cargo and Tauri 2.0 needs to be installed.
 
-`tauri` builds a native desktop app with Tauri 2.0 and copies the executable to `package/`:
+`tauri` builds a native desktop app with Tauri 2.0 and copies the generated artifacts to `package/`.
 
 ```
 npx gulp tauri

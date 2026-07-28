@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "releaseDate": "2026-06-30",
   "type": "module",
+  "packageManager": "yarn@4.17.1",
   "scripts": {
     "dev": "vite",
     "preview": "vite preview",
     "build": "vite build",
     "tauri": "npx gulp tauri",
-    "tauriBundle": "npx gulp tauriBundle",
+    "cleanTauri": "npx gulp cleanTauri",
     "clean": "npx gulp clean",
     "cleanAll": "npx gulp cleanAll"
   },

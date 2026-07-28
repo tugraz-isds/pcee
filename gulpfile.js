@@ -1,6 +1,6 @@
 import gulp from "gulp";
 import { spawn } from "node:child_process";
-import { cp, mkdir, readFile, rm, stat } from "node:fs/promises";
+import { cp, mkdir, readFile, readdir, rm, stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -90,7 +90,7 @@ async function readCargoPackageName() {
 }
 
 function getPlatformFolderName() {
-  if (process.platform === "win32") return "windows";
+  if (process.platform === "win32") return "win";
   if (process.platform === "darwin") return "macos";
   return "linux";
 }
@@ -100,7 +100,102 @@ function getExecutableExtension() {
   return "";
 }
 
-async function packageTauriExecutable() {
+async function listFilesRecursive(directory) {
+  const entries = await readdir(directory, { withFileTypes: true });
+  const files = await Promise.all(
+    entries.map(async (entry) => {
+      const entryPath = path.join(directory, entry.name);
+      if (entry.isDirectory()) {
+        return listFilesRecursive(entryPath);
+      }
+      return [entryPath];
+    }),
+  );
+
+  return files.flat();
+}
+
+async function copyArtifacts(sourcePaths, targetDirectory) {
+  await mkdir(targetDirectory, { recursive: true });
+  await Promise.all(
+    sourcePaths.map(async (sourcePath) => {
+      const targetPath = path.join(targetDirectory, path.basename(sourcePath));
+      await cp(sourcePath, targetPath, { recursive: true });
+    }),
+  );
+}
+
+function isWindowsInstallerArtifact(filePath, executableName) {
+  const normalizedPath = filePath.toLowerCase();
+  const basename = path.basename(filePath).toLowerCase();
+  const executableBasename = executableName.toLowerCase();
+
+  if (basename === executableBasename) {
+    return true;
+  }
+
+  return (
+    (normalizedPath.includes(`${path.sep}bundle${path.sep}nsis${path.sep}`) &&
+      basename.endsWith(".exe")) ||
+    (normalizedPath.includes(`${path.sep}bundle${path.sep}msi${path.sep}`) &&
+      basename.endsWith(".msi"))
+  );
+}
+
+function isMacOsInstallerArtifact(filePath, executableName) {
+  const normalizedPath = filePath.toLowerCase();
+  const basename = path.basename(filePath).toLowerCase();
+  const executableBasename = executableName.toLowerCase();
+  const appBasename = executableBasename.replace(/\.[^.]+$/, ".app");
+
+  if (basename === executableBasename || basename === appBasename) {
+    return true;
+  }
+
+  return (
+    (normalizedPath.includes(`${path.sep}bundle${path.sep}dmg${path.sep}`) &&
+      basename.endsWith(".dmg")) ||
+    (normalizedPath.includes(`${path.sep}bundle${path.sep}macos${path.sep}`) &&
+      basename.endsWith(".app"))
+  );
+}
+
+function isLinuxInstallerArtifact(filePath, executableName) {
+  const normalizedPath = filePath.toLowerCase();
+  const basename = path.basename(filePath).toLowerCase();
+  const executableBasename = executableName.toLowerCase();
+
+  if (basename === executableBasename) {
+    return true;
+  }
+
+  return (
+    (normalizedPath.includes(
+      `${path.sep}bundle${path.sep}appimage${path.sep}`,
+    ) &&
+      basename.endsWith(".appimage")) ||
+    (normalizedPath.includes(`${path.sep}bundle${path.sep}deb${path.sep}`) &&
+      basename.endsWith(".deb")) ||
+    (normalizedPath.includes(`${path.sep}bundle${path.sep}rpm${path.sep}`) &&
+      basename.endsWith(".rpm")) ||
+    (normalizedPath.includes(`${path.sep}bundle${path.sep}app${path.sep}`) &&
+      basename.endsWith(".tar.gz"))
+  );
+}
+
+function getArtifactMatcher(executableName) {
+  if (process.platform === "win32") {
+    return (filePath) => isWindowsInstallerArtifact(filePath, executableName);
+  }
+
+  if (process.platform === "darwin") {
+    return (filePath) => isMacOsInstallerArtifact(filePath, executableName);
+  }
+
+  return (filePath) => isLinuxInstallerArtifact(filePath, executableName);
+}
+
+async function packageTauriArtifacts() {
   const tauriConfig = await readTauriConfig();
   const executableExtension = getExecutableExtension();
   const productName = tauriConfig.productName ?? null;
@@ -110,44 +205,62 @@ async function packageTauriExecutable() {
     cargoPackageName && `${cargoPackageName}${executableExtension}`,
   ].filter(Boolean);
 
-  let executableName = null;
-  let sourcePath = null;
-
-  for (const candidate of executableNames) {
-    const candidatePath = path.join(
-      __dirname,
-      "src-tauri",
-      "target",
-      "release",
-      candidate,
-    );
-
-    if (await pathExists(candidatePath)) {
-      executableName = candidate;
-      sourcePath = candidatePath;
-      break;
-    }
-  }
-
-  if (!executableName || !sourcePath) {
-    throw new Error(
-      `Built executable not found in src-tauri/target/release (checked: ${executableNames.join(", ")})`,
-    );
-  }
-
+  const releaseDirectory = path.join(
+    __dirname,
+    "src-tauri",
+    "target",
+    "release",
+  );
+  const bundleDirectory = path.join(releaseDirectory, "bundle");
   const platformFolder = path.join(
     __dirname,
     "package",
     getPlatformFolderName(),
   );
-  const targetPath = path.join(platformFolder, executableName);
 
-  await mkdir(platformFolder, { recursive: true });
-  await cp(sourcePath, targetPath, { recursive: true });
+  await removePaths([path.relative(__dirname, platformFolder)]);
+
+  let executableName = null;
+  let executablePath = null;
+
+  for (const candidate of executableNames) {
+    const candidatePath = path.join(releaseDirectory, candidate);
+    if (await pathExists(candidatePath)) {
+      executableName = candidate;
+      executablePath = candidatePath;
+      break;
+    }
+  }
+
+  if (!executableName || !executablePath) {
+    throw new Error(
+      `Built executable not found in src-tauri/target/release (checked: ${executableNames.join(", ")})`,
+    );
+  }
+
+  const bundleFiles = (await pathExists(bundleDirectory))
+    ? await listFilesRecursive(bundleDirectory)
+    : [];
+  const matchesArtifact = getArtifactMatcher(executableName);
+  const artifactPaths = [executablePath, ...bundleFiles].filter(
+    matchesArtifact,
+  );
+
+  if (artifactPaths.length === 0) {
+    throw new Error(
+      `No ${getPlatformFolderName()} Tauri artifacts found to package.`,
+    );
+  }
+
+  await copyArtifacts(artifactPaths, platformFolder);
 }
 
 export function clean() {
   return removePaths(["dist", ".vite", "package"]);
+}
+
+export function cleanTauri() {
+  return removePaths(["src-tauri/target"]);
 }
 
 export function build() {
@@ -155,16 +268,8 @@ export function build() {
 }
 
 export async function tauri() {
-  await runCommand(resolveBin("tauri"), ["build", "--no-bundle"]);
-  await packageTauriExecutable();
-}
-
-export function tauriBundle() {
-  return runCommand(resolveBin("tauri"), ["build"]);
-}
-
-export function tauriDev() {
-  return runCommand(resolveBin("tauri"), ["dev"]);
+  await runCommand(resolveBin("tauri"), ["build"]);
+  await packageTauriArtifacts();
 }
 
 export function cleanAll() {
@@ -173,16 +278,14 @@ export function cleanAll() {
     ".vite",
     "package",
     "node_modules",
-    "yarn.lock",
     "src-tauri/target",
   ]);
 }
 
 gulp.task("clean", clean);
+gulp.task("cleanTauri", cleanTauri);
 gulp.task("cleanAll", cleanAll);
 gulp.task("build", build);
 gulp.task("tauri", tauri);
-gulp.task("tauriBundle", tauriBundle);
-gulp.task("tauri:dev", tauriDev);
 
 export default build;
