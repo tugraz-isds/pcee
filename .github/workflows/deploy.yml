@@ -14,11 +14,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: yarn
+
       - name: Check Node version
         run: node -v
 
+      - name: Enable Corepack
+        run: corepack enable
+
       - name: Check Yarn version
-        run: yarn -v
+        run: corepack yarn -v
 
       - name: Show current directory
         run: pwd
@@ -30,10 +39,10 @@ jobs:
         run: cat vite.config.js
 
       - name: Install dependencies
-        run: yarn install
+        run: corepack yarn install --immutable
 
       - name: Build project
-        run: yarn build
+        run: corepack yarn build
 
       - name: List build output
         run: find dist -type f
