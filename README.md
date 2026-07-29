@@ -30,19 +30,23 @@ yarn install
 
 ```
 yarn dev
+or
+yarn exec vite
 ```
 
 ### Build And Development
 
 Gulp is used to automate repeatable tasks. The file [gulpfile.js](gulpfile.js)
-defines four public tasks:
+defines five public tasks:
 
 <br/>
 
 `clean` removes the existing `dist/` and `package/` directory in order to enable a clean rebuild of the project:
 
 ```
-npx gulp clean
+yarn clean
+or
+yarn exec gulp clean
 ```
 
 <br/>
@@ -52,7 +56,9 @@ by deleting the existing `dist/`, `package/`, `node_modules/` and
 `src-tauri/target/` directories:
 
 ```
-npx gulp cleanAll
+yarn cleanAll
+or
+yarn exec gulp cleanAll
 ```
 
 <br/>
@@ -61,7 +67,9 @@ npx gulp cleanAll
 and stores the generated files into the `dist/` folder:
 
 ```
-npx gulp build
+yarn build
+or
+yarn exec vite build
 ```
 
 To run the example, a live web server must be started in the
@@ -79,7 +87,17 @@ Prerequisites: To build a native desktop app, Rust, Cargo and Tauri 2.0 needs to
 `tauri` builds a native desktop app with Tauri 2.0 and copies the generated artifacts to `package/`.
 
 ```
-npx gulp tauri
+yarn tauri
+or
+yarn exec gulp tauri
+```
+
+`cleanTauri` removes the `src-tauri/target/` directory to enable a clean build of the native desktop app:
+
+```
+yarn cleanTauri
+# or
+yarn exec gulp cleanTauri
 ```
 
 ## Licence

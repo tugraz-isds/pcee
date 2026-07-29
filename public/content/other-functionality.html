@@ -4,26 +4,7 @@
   <p>
     The SPCD3 parallel coordinates component used in the chart also provides
     some additional functionality in its toolbar, which can be accessed pressing
-    the <svg
-      class="inline-icon"
-      width="18"
-      height="18"
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 6 6"
-    >
-      <polyline
-        points="1 0.75 3 2.75 1 4.75"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="0.25"
-      />
-      <polyline
-        points="3 0.75 5 2.75 3 4.75"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="0.25"
-      />
-    </svg>
+    the <svg class="inline-icon inline-icon--toolbar-toggle" width="18" height="18" viewBox="0 0 6 6"><use href="#toolbar-toggle-icon"></use></svg>
     button:
   </p>
   <ul>
@@ -35,57 +16,7 @@
       </p>
       <p class="liinstruction">
         Click the
-        <svg
-          class="inline-icon"
-          width="12"
-          height="12"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 10 10"
-        >
-          <rect
-            x="0.5"
-            y="0.5"
-            width="9"
-            height="9"
-            rx="1"
-            ry="1"
-            stroke="currentColor"
-            stroke-width="0.5"
-            fill="none"
-          />
-          <line
-            x1="0.5"
-            y1="3.3"
-            x2="9.5"
-            y2="3.3"
-            stroke="currentColor"
-            stroke-width="0.5"
-          />
-          <line
-            x1="0.5"
-            y1="6.6"
-            x2="9.5"
-            y2="6.6"
-            stroke="currentColor"
-            stroke-width="0.5"
-          />
-          <line
-            x1="3.3"
-            y1="0.5"
-            x2="3.3"
-            y2="9.5"
-            stroke="currentColor"
-            stroke-width="0.5"
-          />
-          <line
-            x1="6.6"
-            y1="0.5"
-            x2="6.6"
-            y2="9.5"
-            stroke="currentColor"
-            stroke-width="0.5"
-          />
-        </svg>
+        <svg class="inline-icon" width="12" height="12" viewBox="0 0 10 10"><use href="#show-table-icon"></use></svg>
         button and download the dataset as a CSV file.
       </p>
     </li>
@@ -98,24 +29,7 @@
       </p>
       <p class="liinstruction">
         Click the
-        <svg
-          width="12"
-          height="12"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 10 10"
-        >
-          <path
-            fill="currentColor"
-            d="M 4.65 7 L 4.65 1.4 L 5.25 1.4 L 5.25 7 z"
-          />
-          <polyline
-            points="2.07 5.00 4.93 7.14 7.79 5.00"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="0.5"
-          />
-          <path fill="currentColor" d="M 2 8.5 L 8 8.5 L 8 9 L 2 9 z" />
-        </svg>
+        <svg class="inline-icon" width="12" height="12" viewBox="0 0 10 10"><use href="#download-svg-icon"></use></svg>
         button and save the chart as SVG.
       </p>
     </li>
@@ -125,37 +39,7 @@
       <p>Draws the chart again, in case of any rendering issues.</p>
       <p class="liinstruction">
         Click the
-        <svg
-          width="12"
-          height="12"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 10 10"
-        >
-          <polyline
-            points="6.5 4 8.5 4 8.5 2"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="0.5"
-          />
-          <path
-            d="M8.5 4 L 7 2.5 A 3 3 0 0 0 2.5 2.5"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="0.5"
-          />
-          <polyline
-            points="3.5 6 1.5 6 1.5 8"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="0.5"
-          />
-          <path
-            d="M1.5 6 L 2.5 7 A 3 3 0 0 0 7 7"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="0.5"
-          />
-        </svg>
+        <svg class="inline-icon" width="12" height="12" viewBox="0 0 10 10"><use href="#refresh-chart-icon"></use></svg>
         button to redraw the chart (will generally not change the display).
       </p>
     </li>
@@ -165,35 +49,134 @@
       <p>Resets the chart to its original state.</p>
       <p class="liinstruction">
         Set a filter, then click the
-        <svg
-          width="12"
-          height="12"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 10 10"
-        >
-          <g transform="scale(1,0.833) translate(0,1.2)">
-            <path
-              d="M8 4 A4 3.5 0 1 1 2 4"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="0.5"
-            />
-            <polyline
-              points="3 5.5 2 4 0 4"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="0.5"
-            />
-            <path
-              d="M5 1 L 5 6.5"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="0.5"
-            />
-          </g>
-        </svg>
+        <svg class="inline-icon" width="12" height="12" viewBox="0 0 10 10"><use href="#reset-chart-icon"></use></svg>
         button to return the chart to its original state.
       </p>
     </li>
   </ul>
 </section>
+
+<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" hidden aria-hidden="true">
+  <defs>
+    <symbol id="toolbar-toggle-icon" viewBox="0 0 6 6">
+      <polyline
+        points="1 0.75 3 2.75 1 4.75"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="0.25"
+      />
+      <polyline
+        points="3 0.75 5 2.75 3 4.75"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="0.25"
+      />
+    </symbol>
+    <symbol id="show-table-icon" viewBox="0 0 10 10">
+      <rect
+        x="0.5"
+        y="0.5"
+        width="9"
+        height="9"
+        rx="1"
+        ry="1"
+        stroke="currentColor"
+        stroke-width="0.5"
+        fill="none"
+      />
+      <line
+        x1="0.5"
+        y1="3.3"
+        x2="9.5"
+        y2="3.3"
+        stroke="currentColor"
+        stroke-width="0.5"
+      />
+      <line
+        x1="0.5"
+        y1="6.6"
+        x2="9.5"
+        y2="6.6"
+        stroke="currentColor"
+        stroke-width="0.5"
+      />
+      <line
+        x1="3.3"
+        y1="0.5"
+        x2="3.3"
+        y2="9.5"
+        stroke="currentColor"
+        stroke-width="0.5"
+      />
+      <line
+        x1="6.6"
+        y1="0.5"
+        x2="6.6"
+        y2="9.5"
+        stroke="currentColor"
+        stroke-width="0.5"
+      />
+    </symbol>
+    <symbol id="download-svg-icon" viewBox="0 0 10 10">
+      <path
+        fill="currentColor"
+        d="M 4.65 7 L 4.65 1.4 L 5.25 1.4 L 5.25 7 z"
+      />
+      <polyline
+        points="2.07 5.00 4.93 7.14 7.79 5.00"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="0.5"
+      />
+      <path fill="currentColor" d="M 2 8.5 L 8 8.5 L 8 9 L 2 9 z" />
+    </symbol>
+    <symbol id="refresh-chart-icon" viewBox="0 0 10 10">
+      <polyline
+        points="6.5 4 8.5 4 8.5 2"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="0.5"
+      />
+      <path
+        d="M8.5 4 L 7 2.5 A 3 3 0 0 0 2.5 2.5"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="0.5"
+      />
+      <polyline
+        points="3.5 6 1.5 6 1.5 8"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="0.5"
+      />
+      <path
+        d="M1.5 6 L 2.5 7 A 3 3 0 0 0 7 7"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="0.5"
+      />
+    </symbol>
+    <symbol id="reset-chart-icon" viewBox="0 0 10 10">
+      <g transform="scale(1,0.833) translate(0,1.2)">
+        <path
+          d="M8 4 A4 3.5 0 1 1 2 4"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="0.5"
+        />
+        <polyline
+          points="3 5.5 2 4 0 4"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="0.5"
+        />
+        <path
+          d="M5 1 L 5 6.5"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="0.5"
+        />
+      </g>
+    </symbol>
+  </defs>
+</svg>

@@ -82,9 +82,12 @@ const OFFSET_PORTRAIT  = ['.sticky-header', '.chart-container'];
 const MIN_OVERLAP_PX = 56;
 const HYSTERESIS_PX  = 32;
 const IDLE_MS = 140;
+const DROPDOWN_LOCK_MS = 1800;
 const suppressUntil = ref(0);
 let idleTimer: number | null = null;
 let pendingSnap: HTMLElement | null = null;
+let pendingSnapId: string | null = null;
+let activeIdLockedUntil = 0;
 let lastScrollY = 0;
 let scrollDir: 1 | -1 | 0 = 0;
 
@@ -118,6 +121,26 @@ const setScrollY = (y: number, behavior: ScrollBehavior = 'auto'): void => {
   } else {
     (scroller.value as HTMLElement).scrollTo({ top: y, behavior });
   }
+}
+
+const getStickyHeaderGapPx = (): number => {
+  const gap = getComputedStyle(document.documentElement).getPropertyValue('--sticky-header-gap').trim();
+  if (!gap) return 0;
+
+  const numeric = Number.parseFloat(gap);
+  if (Number.isNaN(numeric)) return 0;
+
+  if (gap.endsWith('rem')) {
+    const rootFontSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+    return numeric * rootFontSize;
+  }
+
+  if (gap.endsWith('em')) {
+    const bodyFontSize = Number.parseFloat(getComputedStyle(document.body).fontSize) || 16;
+    return numeric * bodyFontSize;
+  }
+
+  return numeric;
 }
 
 const toRem = (value: number): string => {
@@ -181,7 +204,56 @@ const recalcPositions = (): void => {
   });
 }
 
+const isAtPendingSnapTarget = (scr: Window | HTMLElement): boolean => {
+  if (!pendingSnapId) return false;
+
+  const section = sections.value.find(s => s.id === pendingSnapId);
+  if (!section) {
+    pendingSnapId = null;
+    return false;
+  }
+
+  const anchor = (section.element.querySelector('[data-anchor],h1,h2,h3') as HTMLElement) || section.element;
+  const targetY = getTopPositionOfSection(anchor, scr) - totalOffsetPx();
+  return Math.abs(getScrollY(scr) - targetY) <= 24;
+}
+
+const shouldKeepPendingSnapActive = (scr: Window | HTMLElement): boolean => {
+  if (!pendingSnapId) return false;
+
+  const index = sections.value.findIndex(s => s.id === pendingSnapId);
+  if (index === -1) {
+    pendingSnapId = null;
+    return false;
+  }
+
+  const current = sections.value[index];
+  const next = sections.value[index + 1] ?? null;
+  const currentY = getScrollY(scr);
+  const currentStart = current.top - totalOffsetPx() - 24;
+
+  if (currentY < currentStart) return false;
+  if (!next) return true;
+
+  const nextStart = next.top - totalOffsetPx() - HYSTERESIS_PX;
+  return currentY < nextStart;
+}
+
 const findActiveSection = (scr: Window | HTMLElement): void => {
+  if (performance.now() < activeIdLockedUntil) {
+    return;
+  }
+
+  if (pendingSnapId && activeId.value === pendingSnapId && (
+    isAtPendingSnapTarget(scr) || shouldKeepPendingSnapActive(scr)
+  )) {
+    return;
+  }
+
+  if (pendingSnapId && activeId.value !== pendingSnapId) {
+    pendingSnapId = null;
+  }
+
   const vh = getViewportHeight(scr);
   const ratioBase = mode.value === 'portrait' ? 0.25 : 0.5;
   const ratio = ratioBase + (scrollDir === 1 ? +0.05 : scrollDir === -1 ? -0.05 : 0);
@@ -258,7 +330,7 @@ const totalOffsetPx = (): number => {
       baseline += height;
     }
   }
-  return Math.round(sum + 2);
+  return Math.round(sum + getStickyHeaderGapPx() + 2);
 }
 
 const measure = (elementSelector?: string): number => {
@@ -270,11 +342,16 @@ const measure = (elementSelector?: string): number => {
 const recomputeScrollOffset = (): void => {
   const list = mode.value === 'portrait' ? OFFSET_PORTRAIT : OFFSET_LANDSCAPE;
   const total = list.reduce((sum, sel) => sum + measure(sel), 0);
-  document.documentElement.style.setProperty('--scroll-offset', toRem(Math.round(total + 2)));
+  document.documentElement.style.setProperty(
+    '--scroll-offset',
+    toRem(Math.round(total + getStickyHeaderGapPx() + 2)),
+  );
 }
 
 const onChange = (e: Event): void => {
-  suppressUntil.value = performance.now() + 800;
+  const now = performance.now();
+  suppressUntil.value = now + DROPDOWN_LOCK_MS;
+  activeIdLockedUntil = now + DROPDOWN_LOCK_MS;
 
   const id = (e.target as HTMLSelectElement).value;
   const section = sections.value.find(x => x.id === id);
@@ -292,6 +369,7 @@ const onChange = (e: Event): void => {
   const y = Math.max(0, Math.min(initialY, maxY));
 
   pendingSnap = anchor;
+  pendingSnapId = id;
   setScrollY(y, properties.smooth ? 'smooth' : 'auto');
   activeId.value = id;
 };

@@ -7,11 +7,11 @@
   "scripts": {
     "dev": "vite",
     "preview": "vite preview",
-    "build": "vite build",
-    "tauri": "npx gulp tauri",
-    "cleanTauri": "npx gulp cleanTauri",
-    "clean": "npx gulp clean",
-    "cleanAll": "npx gulp cleanAll"
+    "build": "gulp build",
+    "tauri": "gulp tauri",
+    "cleanTauri": "gulp cleanTauri",
+    "clean": "gulp clean",
+    "cleanAll": "gulp cleanAll"
   },
   "repository": {
     "type": "git",

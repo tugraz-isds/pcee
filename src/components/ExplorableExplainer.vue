@@ -1098,8 +1098,20 @@ li p {
   font-size: 0.8em;
 }
 
-.liinstruction svg {
+.liinstruction svg,
+.inline-icon {
   display: inline-block;
+}
+
+.inline-icon {
+  vertical-align: -0.16em;
+}
+
+.inline-icon--record-filter {
+  vertical-align: -0.32em;
+}
+
+.inline-icon--toolbar-toggle {
   vertical-align: middle;
 }
 
