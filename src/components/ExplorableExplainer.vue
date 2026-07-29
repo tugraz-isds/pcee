@@ -83,11 +83,18 @@
     v-else
     class="header-spacer-polyfill"
   />
- <div class="explorable-explainer portrait-resizable">
+ <div
+    ref="explainerRoot"
+    class="explorable-explainer portrait-resizable"
+  >
     <div
+      ref="chartContainer"
       class="chart-container"
     >
-      <div class="main-chart">
+      <div
+        ref="mainChart"
+        class="main-chart"
+      >
         <NavigationDropdown :offset="60" />
         <div class="chart-wrapper">
           <h3 id="chart-title">
@@ -95,6 +102,15 @@
           </h3>
           <div id="spcd3-parallelcoords" />
         </div>
+        <button
+          type="button"
+          class="portrait-divider"
+          aria-label="Resize chart area"
+          @pointerdown="startPortraitResize"
+          @keydown="handlePortraitDividerKeydown"
+        >
+          <span class="portrait-divider-grip" />
+        </button>
       </div>
     </div>
     <div class="text-container">
@@ -148,6 +164,9 @@ const aboutText = ref('');
 const header = ref<HTMLElement | null>(null);
 const multiLine = ref<HTMLElement | null>(null);
 const singleLine = ref<HTMLElement | null>(null);
+const explainerRoot = ref<HTMLElement | null>(null);
+const chartContainer = ref<HTMLElement | null>(null);
+const mainChart = ref<HTMLElement | null>(null);
 const usageContainer = ref<HTMLDivElement | null>(null);
 const multipleViewsContainer = ref<HTMLDivElement | null>(null);
 const zoomSrc = ref<string | null>(null);
@@ -163,8 +182,156 @@ const releaseDate = new Date(packageInfo.releaseDate).toLocaleDateString('en-GB'
 });
 const repoUrl = packageInfo.repository.url;
 const DARK_MODE_MEDIA_QUERY = '(prefers-color-scheme: dark)';
+const PORTRAIT_RESIZE_QUERY = '(max-width: 60em) and (orientation: portrait)';
 const darkModeMediaQuery =
   typeof window !== 'undefined' ? window.matchMedia(DARK_MODE_MEDIA_QUERY) : null;
+const portraitResizeMediaQuery =
+  typeof window !== 'undefined' ? window.matchMedia(PORTRAIT_RESIZE_QUERY) : null;
+const MIN_PORTRAIT_CHART_HEIGHT = 300;
+const DEFAULT_PORTRAIT_CHART_RATIO = 0.68;
+const MIN_PORTRAIT_TEXT_HEIGHT = 180;
+let portraitResizeCleanup: (() => void) | null = null;
+
+const isPortraitResizeMode = (): boolean => {
+  return portraitResizeMediaQuery?.matches ?? false;
+}
+
+const getPortraitChartHeightBounds = (): { min: number; max: number } => {
+  const containerTop = mainChart.value?.getBoundingClientRect().top ?? 0;
+  const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+  const viewportMax = Math.max(MIN_PORTRAIT_CHART_HEIGHT, viewportHeight - containerTop - MIN_PORTRAIT_TEXT_HEIGHT);
+
+  const chartArea = document.getElementById('spcd3-parallelcoords') as HTMLDivElement | null;
+  const svgNode = document.getElementById('spcd3-pc_svg') as SVGSVGElement | null;
+  const mainChartRect = mainChart.value?.getBoundingClientRect() ?? null;
+  const chartAreaRect = chartArea?.getBoundingClientRect() ?? null;
+
+  let contentMax = viewportMax;
+  if (chartArea && svgNode && mainChartRect && chartAreaRect) {
+    const naturalWidth = Number.parseFloat(svgNode.getAttribute('width') ?? '');
+    const naturalHeight = Number.parseFloat(svgNode.getAttribute('height') ?? '');
+
+    if (
+      Number.isFinite(naturalWidth) &&
+      Number.isFinite(naturalHeight) &&
+      naturalWidth > 0 &&
+      naturalHeight > 0
+    ) {
+      const availableWidth = Math.max(220, chartArea.clientWidth - 12);
+      const widthLimitedScale = Math.min(availableWidth / naturalWidth, 1);
+      const usefulPlotHeight = Math.max(160, naturalHeight * widthLimitedScale + 20);
+      const chromeHeight = Math.max(0, mainChartRect.height - chartAreaRect.height);
+      contentMax = Math.max(MIN_PORTRAIT_CHART_HEIGHT, chromeHeight + usefulPlotHeight);
+    }
+  }
+
+  return {
+    min: MIN_PORTRAIT_CHART_HEIGHT,
+    max: Math.min(viewportMax, contentMax),
+  };
+}
+
+const updatePortraitChartFit = (): void => {
+  if (!explainerRoot.value || !isPortraitResizeMode()) return;
+
+  const chartArea = document.getElementById('spcd3-parallelcoords') as HTMLDivElement | null;
+  const svgNode = document.getElementById('spcd3-pc_svg') as SVGSVGElement | null;
+  if (!chartArea || !svgNode) return;
+
+  const naturalWidth = Number.parseFloat(svgNode.getAttribute('width') ?? '');
+  const naturalHeight = Number.parseFloat(svgNode.getAttribute('height') ?? '');
+  if (!Number.isFinite(naturalWidth) || !Number.isFinite(naturalHeight) || naturalWidth <= 0 || naturalHeight <= 0) {
+    return;
+  }
+
+  const availableWidth = Math.max(220, chartArea.clientWidth - 12);
+  const availableHeight = Math.max(160, chartArea.clientHeight - 20);
+  const fitScale = Math.min(availableWidth / naturalWidth, availableHeight / naturalHeight, 1);
+
+  explainerRoot.value.style.setProperty('--portrait-chart-width', `${Math.round(naturalWidth * fitScale)}px`);
+}
+
+const applyPortraitChartHeight = (nextHeight: number): void => {
+  if (!explainerRoot.value) return;
+  const bounds = getPortraitChartHeightBounds();
+  const clamped = Math.max(bounds.min, Math.min(nextHeight, bounds.max));
+  explainerRoot.value.style.setProperty('--portrait-chart-height', `${Math.round(clamped)}px`);
+  requestAnimationFrame(() => {
+    updatePortraitChartFit();
+    window.dispatchEvent(new Event('resize'));
+  });
+}
+
+const ensurePortraitChartHeight = (): void => {
+  if (!explainerRoot.value) return;
+  if (!isPortraitResizeMode()) {
+    explainerRoot.value.style.removeProperty('--portrait-chart-height');
+    explainerRoot.value.style.removeProperty('--portrait-chart-width');
+    return;
+  }
+
+  const existing = Number.parseFloat(
+    getComputedStyle(explainerRoot.value).getPropertyValue('--portrait-chart-height'),
+  );
+  if (!Number.isNaN(existing) && existing > 0) {
+    applyPortraitChartHeight(existing);
+    return;
+  }
+
+  const containerTop = mainChart.value?.getBoundingClientRect().top ?? 0;
+  const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+  const suggested = (viewportHeight - containerTop) * DEFAULT_PORTRAIT_CHART_RATIO;
+  applyPortraitChartHeight(suggested);
+}
+
+const stopPortraitResize = (): void => {
+  portraitResizeCleanup?.();
+  portraitResizeCleanup = null;
+}
+
+const startPortraitResize = (event: PointerEvent): void => {
+  if (!isPortraitResizeMode() || !mainChart.value) return;
+
+  event.preventDefault();
+  (event.currentTarget as HTMLElement | null)?.setPointerCapture?.(event.pointerId);
+  const startY = event.clientY;
+  const startHeight = mainChart.value.getBoundingClientRect().height;
+
+  const onMove = (moveEvent: PointerEvent): void => {
+    moveEvent.preventDefault();
+    const delta = moveEvent.clientY - startY;
+    applyPortraitChartHeight(startHeight + delta);
+  };
+
+  const onEnd = (): void => {
+    window.removeEventListener('pointermove', onMove);
+    window.removeEventListener('pointerup', onEnd);
+    window.removeEventListener('pointercancel', onEnd);
+    portraitResizeCleanup = null;
+  };
+
+  window.addEventListener('pointermove', onMove, { passive: false });
+  window.addEventListener('pointerup', onEnd);
+  window.addEventListener('pointercancel', onEnd);
+  portraitResizeCleanup = onEnd;
+}
+
+const handlePortraitDividerKeydown = (event: KeyboardEvent): void => {
+  if (!isPortraitResizeMode() || !mainChart.value) return;
+
+  const step = event.shiftKey ? 48 : 24;
+  const currentHeight = mainChart.value.getBoundingClientRect().height;
+
+  if (event.key === 'ArrowUp') {
+    event.preventDefault();
+    applyPortraitChartHeight(currentHeight - step);
+  }
+
+  if (event.key === 'ArrowDown') {
+    event.preventDefault();
+    applyPortraitChartHeight(currentHeight + step);
+  }
+}
 
 const applyTheme = (nextTheme: 'light' | 'dark'): void => {
   document.documentElement.dataset.theme = nextTheme;
@@ -317,12 +484,16 @@ window.addEventListener('scroll', () => {
     if (chart.style.visibility !== 'hidden') {
       chart.style.opacity = '1';
     }
+    requestAnimationFrame(updatePortraitChartFit);
     resetCurrentStep();
     
   }, 450);
 });
 
 onBeforeUnmount(() => {
+  stopPortraitResize();
+  portraitResizeMediaQuery?.removeEventListener('change', ensurePortraitChartHeight);
+  window.removeEventListener('resize', ensurePortraitChartHeight);
   if (usageContainer.value) {
     usageContainer.value.removeEventListener("click", handleClick);
   }
@@ -434,6 +605,13 @@ onMounted(async (): Promise<void> => {
     },
   });
   }
+
+  ensurePortraitChartHeight();
+  portraitResizeMediaQuery?.addEventListener('change', ensurePortraitChartHeight);
+  window.addEventListener('resize', () => {
+    ensurePortraitChartHeight();
+    requestAnimationFrame(updatePortraitChartFit);
+  });
 });
 
 </script>
@@ -872,6 +1050,10 @@ onMounted(async (): Promise<void> => {
   height: auto;
 }
 
+.portrait-divider {
+  display: none;
+}
+
 .text-container {
   flex: 1 1 23rem;
   min-width: 23rem;
@@ -917,8 +1099,16 @@ section {
 
 @media (max-width: 60em) and (orientation: portrait) {
   .explorable-explainer.portrait-resizable {
+    --portrait-chart-height: 25rem;
+    --portrait-chart-scale: 1;
+    --portrait-divider-hit-area: 0.9rem;
     flex-direction: column;
     gap: 0;
+  }
+
+  .chart-container {
+    block-size: calc(var(--portrait-chart-height) + var(--portrait-divider-hit-area));
+    min-width: 0;
   }
 
   .navigation-dropdown {
@@ -930,9 +1120,51 @@ section {
     top: var(--header-content-offset);
     left: 0.5rem;
     right: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    block-size: calc(var(--portrait-chart-height) + var(--portrait-divider-hit-area));
     margin-left: 0;
     z-index: 201;
     background: var(--page-background);
+  }
+
+  .chart-wrapper {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    align-items: center;
+    min-height: 0;
+    block-size: 100%;
+    overflow: clip;
+  }
+
+  .portrait-divider {
+    display: block;
+    position: relative;
+    z-index: 220;
+    align-self: center;
+    inline-size: min(5.5rem, 24vw);
+    block-size: var(--portrait-divider-hit-area);
+    appearance: none;
+    border: 0;
+    border-radius: 999rem;
+    background: transparent;
+    padding: 0;
+    cursor: ns-resize;
+    touch-action: none;
+    outline: none;
+    box-shadow: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .portrait-divider-grip {
+    display: block;
+    inline-size: 100%;
+    block-size: 0.18rem;
+    margin: 0 auto;
+    border-radius: 999rem;
+    background: color-mix(in srgb, var(--ui-border-color) 72%, var(--page-background));
   }
 
   .text-container {
@@ -941,7 +1173,33 @@ section {
   }
 
   #spcd3-parallelcoords {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
     touch-action: pan-y;
+    flex: 1 1 auto;
+    inline-size: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  #spcd3-parallelcoords .spcd3-chartWrapper {
+    flex: 0 0 auto;
+    inline-size: min(100%, var(--portrait-chart-width, 100%));
+    block-size: auto;
+    max-inline-size: 100%;
+    margin-inline: auto;
+    margin-left: auto;
+    margin-right: auto;
+    overflow: visible;
+  }
+
+  #spcd3-parallelcoords #spcd3-pc_svg {
+    display: block;
+    inline-size: 100%;
+    block-size: auto;
+    max-inline-size: 100%;
+    margin-inline: auto;
   }
 }
 
