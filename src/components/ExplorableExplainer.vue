@@ -65,16 +65,7 @@
       </div>
     </div>
   </div>
-  <div
-    v-if="zoomSrc"
-    class="image-zoom-overlay"
-    @click="zoomSrc = null"
-  >
-    <img
-      :src="zoomSrc"
-      :class="['image-zoom-preview', { 'image-zoom-preview-svg': isZoomSvg }]"
-    >
-  </div>
+ 
   <div
     v-if="supportsScrollDrivenAnimations"
     class="header-spacer-native"
@@ -355,6 +346,9 @@ const handleClick = (e: Event): void => {
   const target = e.target as HTMLElement;
   const img = target.closest("img") as HTMLImageElement | null;
   if (img) {
+    if (img.classList.contains('svg') || img.classList.contains('rslidy-slide-image')) {
+      return;
+    }
     zoomSrc.value = img.src;
   }
 }
