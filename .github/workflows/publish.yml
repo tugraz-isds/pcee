@@ -67,7 +67,7 @@ jobs:
         run: yarn tauri ${{ matrix.args }}
 
       - name: Show packaged files
-        run: find package -maxdepth 2 | sort
+        run: node -e "const fs=require('fs'); const path=require('path'); const walk=(dir, depth=0)=>{ if(!fs.existsSync(dir)){ console.log('missing', dir); return; } for (const entry of fs.readdirSync(dir,{withFileTypes:true})) { const full=path.join(dir, entry.name); console.log(full); if (entry.isDirectory() && depth < 4) walk(full, depth + 1); } }; walk('package');"
 
       - name: Upload macOS bundles
         if: ${{ matrix.platform == 'macos-latest' }}
@@ -112,9 +112,11 @@ jobs:
           path: release-assets
 
       - name: Show collected files
+        shell: bash
         run: find release-assets -type f | sort
 
       - name: Prepare release assets
+        shell: bash
         run: |
           mkdir -p release-assets/final
 
@@ -130,9 +132,11 @@ jobs:
           ' sh {} \;
 
       - name: Show prepared files
+        shell: bash
         run: find release-assets/final -type f | sort
 
       - name: Create or update draft release
+        shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -153,6 +157,7 @@ jobs:
           fi
 
       - name: Upload all assets to the draft release
+        shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

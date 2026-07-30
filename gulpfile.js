@@ -89,6 +89,17 @@ async function readCargoPackageName() {
   return packageName ?? null;
 }
 
+async function readDirectoryEntriesSafe(directory) {
+  try {
+    return await readdir(directory, { withFileTypes: true });
+  } catch (error) {
+    if (error?.code === "ENOENT") {
+      return [];
+    }
+    throw error;
+  }
+}
+
 function getPlatformFolderName() {
   if (process.platform === "win32") return "win";
   if (process.platform === "darwin") return "macos";
@@ -115,12 +126,63 @@ async function listFilesRecursive(directory) {
   return files.flat();
 }
 
+async function listArtifactCandidates(directory) {
+  const entries = await readDirectoryEntriesSafe(directory);
+  const candidates = await Promise.all(
+    entries.map(async (entry) => {
+      const entryPath = path.join(directory, entry.name);
+      if (entry.isDirectory()) {
+        return [entryPath, ...(await listArtifactCandidates(entryPath))];
+      }
+      return [entryPath];
+    }),
+  );
+
+  return candidates.flat();
+}
+
+async function findBuiltExecutable(releaseDirectory, executableNames) {
+  const normalizedCandidates = [
+    ...new Set(
+      executableNames.flatMap((name) => {
+        const lowered = name.toLowerCase();
+        return lowered === name ? [name] : [name, lowered];
+      }),
+    ),
+  ];
+
+  for (const candidate of normalizedCandidates) {
+    const candidatePath = path.join(releaseDirectory, candidate);
+    if (await pathExists(candidatePath)) {
+      return { executableName: candidate, executablePath: candidatePath };
+    }
+  }
+
+  const releaseEntries = await readDirectoryEntriesSafe(releaseDirectory);
+  const entryByLowerName = new Map(
+    releaseEntries.map((entry) => [entry.name.toLowerCase(), entry]),
+  );
+
+  for (const candidate of normalizedCandidates) {
+    const matchedEntry = entryByLowerName.get(candidate.toLowerCase());
+    if (matchedEntry?.isFile()) {
+      return {
+        executableName: matchedEntry.name,
+        executablePath: path.join(releaseDirectory, matchedEntry.name),
+      };
+    }
+  }
+
+  return null;
+}
+
 async function copyArtifacts(sourcePaths, targetDirectory) {
   await mkdir(targetDirectory, { recursive: true });
-  await Promise.all(
+  return Promise.all(
     sourcePaths.map(async (sourcePath) => {
       const targetPath = path.join(targetDirectory, path.basename(sourcePath));
       await cp(sourcePath, targetPath, { recursive: true });
+      return { sourcePath, targetPath };
     }),
   );
 }
@@ -183,29 +245,27 @@ function getRenamedArtifactFileName(filePath, executableName, releaseBaseName) {
 }
 
 async function renamePackagedArtifacts(
-  artifactPaths,
-  targetDirectory,
+  copiedArtifacts,
   executableName,
   releaseBaseName,
 ) {
   await Promise.all(
-    artifactPaths.map(async (artifactPath) => {
-      const currentTargetPath = path.join(
-        targetDirectory,
-        path.basename(artifactPath),
-      );
+    copiedArtifacts.map(async ({ sourcePath, targetPath }) => {
       const renamedFileName = getRenamedArtifactFileName(
-        artifactPath,
+        sourcePath,
         executableName,
         releaseBaseName,
       );
-      const renamedTargetPath = path.join(targetDirectory, renamedFileName);
+      const renamedTargetPath = path.join(
+        path.dirname(targetPath),
+        renamedFileName,
+      );
 
-      if (currentTargetPath === renamedTargetPath) {
+      if (targetPath === renamedTargetPath) {
         return;
       }
 
-      await rename(currentTargetPath, renamedTargetPath);
+      await rename(targetPath, renamedTargetPath);
     }),
   );
 }
@@ -231,7 +291,9 @@ function isMacOsInstallerArtifact(filePath, executableName) {
   const normalizedPath = filePath.toLowerCase();
   const basename = path.basename(filePath).toLowerCase();
   const executableBasename = executableName.toLowerCase();
-  const appBasename = executableBasename.replace(/\.[^.]+$/, ".app");
+  const appBasename = executableBasename.endsWith(".app")
+    ? executableBasename
+    : `${executableBasename}.app`;
 
   if (basename === executableBasename || basename === appBasename) {
     return true;
@@ -280,7 +342,72 @@ function getArtifactMatcher(executableName) {
   return (filePath) => isLinuxInstallerArtifact(filePath, executableName);
 }
 
-async function packageTauriArtifacts() {
+function removeNestedArtifacts(artifactPaths) {
+  const sortedPaths = [...artifactPaths].sort((left, right) => {
+    const lengthDifference = left.length - right.length;
+    if (lengthDifference !== 0) {
+      return lengthDifference;
+    }
+
+    return left.localeCompare(right);
+  });
+
+  return sortedPaths.filter((currentPath, index) => {
+    return !sortedPaths.slice(0, index).some((selectedPath) => {
+      return (
+        currentPath !== selectedPath &&
+        currentPath.startsWith(`${selectedPath}${path.sep}`)
+      );
+    });
+  });
+}
+
+function getTauriCliArgs() {
+  const rawArgs = process.argv.slice(2);
+  const args = [];
+
+  for (let index = 0; index < rawArgs.length; index += 1) {
+    const currentArg = rawArgs[index];
+
+    if (!currentArg.startsWith("-")) {
+      continue;
+    }
+
+    args.push(currentArg);
+
+    const nextArg = rawArgs[index + 1];
+    if (nextArg && !nextArg.startsWith("-")) {
+      args.push(nextArg);
+      index += 1;
+    }
+  }
+
+  return args;
+}
+
+function getTauriTarget(cliArgs) {
+  for (let index = 0; index < cliArgs.length; index += 1) {
+    const currentArg = cliArgs[index];
+
+    if (currentArg === "--target") {
+      return cliArgs[index + 1] ?? null;
+    }
+
+    if (currentArg.startsWith("--target=")) {
+      return currentArg.slice("--target=".length) || null;
+    }
+  }
+
+  return null;
+}
+
+function getReleaseDirectory(targetTriple) {
+  return targetTriple
+    ? path.join(__dirname, "src-tauri", "target", targetTriple, "release")
+    : path.join(__dirname, "src-tauri", "target", "release");
+}
+
+async function packageTauriArtifacts(targetTriple = null) {
   const tauriConfig = await readTauriConfig();
   const executableExtension = getExecutableExtension();
   const productName = tauriConfig.productName ?? null;
@@ -297,12 +424,7 @@ async function packageTauriArtifacts() {
 
   const releaseBaseName = getReleaseBaseName(productName, version);
 
-  const releaseDirectory = path.join(
-    __dirname,
-    "src-tauri",
-    "target",
-    "release",
-  );
+  const releaseDirectory = getReleaseDirectory(targetTriple);
   const bundleDirectory = path.join(releaseDirectory, "bundle");
   const platformFolder = path.join(
     __dirname,
@@ -312,30 +434,25 @@ async function packageTauriArtifacts() {
 
   await removePaths([path.relative(__dirname, platformFolder)]);
 
-  let executableName = null;
-  let executablePath = null;
+  const builtExecutable = await findBuiltExecutable(
+    releaseDirectory,
+    executableNames,
+  );
 
-  for (const candidate of executableNames) {
-    const candidatePath = path.join(releaseDirectory, candidate);
-    if (await pathExists(candidatePath)) {
-      executableName = candidate;
-      executablePath = candidatePath;
-      break;
-    }
-  }
-
-  if (!executableName || !executablePath) {
+  if (!builtExecutable) {
     throw new Error(
-      `Built executable not found in src-tauri/target/release (checked: ${executableNames.join(", ")})`,
+      `Built executable not found in ${path.relative(__dirname, releaseDirectory)} (checked: ${executableNames.join(", ")})`,
     );
   }
 
+  const { executableName, executablePath } = builtExecutable;
+
   const bundleFiles = (await pathExists(bundleDirectory))
-    ? await listFilesRecursive(bundleDirectory)
+    ? await listArtifactCandidates(bundleDirectory)
     : [];
   const matchesArtifact = getArtifactMatcher(executableName);
-  const artifactPaths = [executablePath, ...bundleFiles].filter(
-    matchesArtifact,
+  const artifactPaths = removeNestedArtifacts(
+    [executablePath, ...bundleFiles].filter(matchesArtifact),
   );
 
   if (artifactPaths.length === 0) {
@@ -344,9 +461,12 @@ async function packageTauriArtifacts() {
     );
   }
 
-  await copyArtifacts(artifactPaths, platformFolder);
-  await renamePackagedArtifacts(artifactPaths, platformFolder,
-    executableName, releaseBaseName);
+  const copiedArtifacts = await copyArtifacts(artifactPaths, platformFolder);
+  await renamePackagedArtifacts(
+    copiedArtifacts,
+    executableName,
+    releaseBaseName,
+  );
 }
 
 export function clean() {
@@ -362,8 +482,12 @@ export function build() {
 }
 
 export async function tauri() {
-  await runCommand(resolveBin("tauri"), ["build"]);
-  await packageTauriArtifacts();
+  const tauriCliArgs = getTauriCliArgs();
+  const tauriBuildArgs = ["build", ...tauriCliArgs];
+  const targetTriple = getTauriTarget(tauriCliArgs);
+
+  await runCommand(resolveBin("tauri"), tauriBuildArgs);
+  await packageTauriArtifacts(targetTriple);
 }
 
 export function cleanAll() {
