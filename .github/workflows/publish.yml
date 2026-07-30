@@ -123,26 +123,55 @@ jobs:
 
           find release-assets/windows -maxdepth 1 -type f -exec sh -c '
             src="$1"
-            ext=".${src##*.}"
-            cp "$src" "release-assets/final/pcee-v'"$VERSION"'-win$ext"
+            filename=$(basename "$src")
+            case "$filename" in
+              *.msi)
+                target="pcee-v'"$VERSION"'-win.msi"
+                ;;
+              *setup*.exe|*Setup*.exe)
+                target="pcee-v'"$VERSION"'-win-setup.exe"
+                ;;
+              *.exe)
+                target="pcee-v'"$VERSION"'-win.exe"
+                ;;
+              *)
+                exit 0
+                ;;
+            esac
+            cp "$src" "release-assets/final/$target"
           ' sh {} \;
 
           find release-assets/linux -maxdepth 1 -type f -exec sh -c '
             src="$1"
             filename=$(basename "$src")
-            ext=""
-            if [ "${filename#*.}" != "$filename" ]; then
-              ext=".${filename#*.}"
-            fi
-            cp "$src" "release-assets/final/pcee-v'"$VERSION"'-linux$ext"
+            case "$filename" in
+              *.AppImage)
+                target="pcee-v'"$VERSION"'-linux.AppImage"
+                ;;
+              *.deb)
+                target="pcee-v'"$VERSION"'-linux.deb"
+                ;;
+              *.rpm)
+                target="pcee-v'"$VERSION"'-linux.rpm"
+                ;;
+              *)
+                exit 0
+                ;;
+            esac
+            cp "$src" "release-assets/final/$target"
           ' sh {} \;
 
           find release-assets/macos-aarch64 -type d -name '*.app' -exec sh -c '
             app_path="$1"
             app_dir=$(dirname "$app_path")
-            zip_name="pcee-v'"$VERSION"'-mac.zip"
+            zip_name="pcee-v'"$VERSION"'-mac.app.zip"
             cd "$app_dir"
             zip -r "$OLDPWD/release-assets/final/$zip_name" "$(basename "$app_path")"
+          ' sh {} \;
+
+          find release-assets/macos-aarch64 -maxdepth 1 -type f -name '*.dmg' -exec sh -c '
+            src="$1"
+            cp "$src" "release-assets/final/pcee-v'"$VERSION"'-mac.dmg"
           ' sh {} \;
 
       - name: Show prepared files
