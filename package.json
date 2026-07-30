@@ -1,7 +1,7 @@
 {
   "name": "PCEE",
   "version": "1.0.0",
-  "releaseDate": "2026-06-30",
+  "releaseDate": "2026-07-30",
   "type": "module",
   "packageManager": "yarn@4.17.1",
   "scripts": {

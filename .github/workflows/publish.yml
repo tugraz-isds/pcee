@@ -120,7 +120,7 @@ jobs:
         run: |
           mkdir -p release-assets/final
 
-          find release-assets -type f ! -path 'release-assets/final/*' -exec cp {} release-assets/final/ \;
+          find release-assets -mindepth 2 -maxdepth 2 -type f ! -path 'release-assets/final/*' -exec cp {} release-assets/final/ \;
 
           find release-assets/macos-aarch64 -type d -name '*.app' -exec sh -c '
             app_path="$1"
