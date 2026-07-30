@@ -1,6 +1,6 @@
 import gulp from "gulp";
 import { spawn } from "node:child_process";
-import { cp, mkdir, readFile, readdir, rm, stat } from "node:fs/promises";
+import {cp, mkdir, readFile, readdir, rename, rm, stat} from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -125,6 +125,91 @@ async function copyArtifacts(sourcePaths, targetDirectory) {
   );
 }
 
+function sanitizeNamePart(value) {
+  return value.replace(/\s+/g, "-").toLowerCase();
+}
+
+function getReleaseBaseName(productName, version) {
+  return `${sanitizeNamePart(productName)}-v${version}`;
+}
+
+function getRenamedArtifactFileName(filePath, executableName, releaseBaseName) {
+  const normalizedPath = filePath.toLowerCase();
+  const basename = path.basename(filePath);
+  const extension = path.extname(filePath);
+
+  if (basename.toLowerCase() === executableName.toLowerCase()) {
+    return `${releaseBaseName}${extension}`;
+  }
+
+  if (normalizedPath.includes(`${path.sep}bundle${path.sep}nsis${path.sep}`)) {
+    return `${releaseBaseName}-setup${extension}`;
+  }
+
+  if (normalizedPath.includes(`${path.sep}bundle${path.sep}msi${path.sep}`)) {
+    return `${releaseBaseName}${extension}`;
+  }
+
+  if (normalizedPath.includes(`${path.sep}bundle${path.sep}dmg${path.sep}`)) {
+    return `${releaseBaseName}${extension}`;
+  }
+
+  if (normalizedPath.includes(`${path.sep}bundle${path.sep}macos${path.sep}`)) {
+    return `${releaseBaseName}${extension}`;
+  }
+
+  if (
+    normalizedPath.includes(`${path.sep}bundle${path.sep}appimage${path.sep}`)
+  ) {
+    return `${releaseBaseName}${extension}`;
+  }
+
+  if (normalizedPath.includes(`${path.sep}bundle${path.sep}deb${path.sep}`)) {
+    return `${releaseBaseName}${extension}`;
+  }
+
+  if (normalizedPath.includes(`${path.sep}bundle${path.sep}rpm${path.sep}`)) {
+    return `${releaseBaseName}${extension}`;
+  }
+
+  if (normalizedPath.includes(`${path.sep}bundle${path.sep}app${path.sep}`)) {
+    const compressedExtension = basename.endsWith(".tar.gz")
+      ? ".tar.gz"
+      : extension;
+    return `${releaseBaseName}${compressedExtension}`;
+  }
+
+  return basename;
+}
+
+async function renamePackagedArtifacts(
+  artifactPaths,
+  targetDirectory,
+  executableName,
+  releaseBaseName,
+) {
+  await Promise.all(
+    artifactPaths.map(async (artifactPath) => {
+      const currentTargetPath = path.join(
+        targetDirectory,
+        path.basename(artifactPath),
+      );
+      const renamedFileName = getRenamedArtifactFileName(
+        artifactPath,
+        executableName,
+        releaseBaseName,
+      );
+      const renamedTargetPath = path.join(targetDirectory, renamedFileName);
+
+      if (currentTargetPath === renamedTargetPath) {
+        return;
+      }
+
+      await rename(currentTargetPath, renamedTargetPath);
+    }),
+  );
+}
+
 function isWindowsInstallerArtifact(filePath, executableName) {
   const normalizedPath = filePath.toLowerCase();
   const basename = path.basename(filePath).toLowerCase();
@@ -199,11 +284,18 @@ async function packageTauriArtifacts() {
   const tauriConfig = await readTauriConfig();
   const executableExtension = getExecutableExtension();
   const productName = tauriConfig.productName ?? null;
+  const version = tauriConfig.version ?? null;
   const cargoPackageName = await readCargoPackageName();
   const executableNames = [
     productName && `${productName}${executableExtension}`,
     cargoPackageName && `${cargoPackageName}${executableExtension}`,
   ].filter(Boolean);
+
+  if (!productName || !version) {
+    throw new Error("Tauri productName and version are required for packaging.");
+  }
+
+  const releaseBaseName = getReleaseBaseName(productName, version);
 
   const releaseDirectory = path.join(
     __dirname,
@@ -253,6 +345,8 @@ async function packageTauriArtifacts() {
   }
 
   await copyArtifacts(artifactPaths, platformFolder);
+  await renamePackagedArtifacts(artifactPaths, platformFolder,
+    executableName, releaseBaseName);
 }
 
 export function clean() {
