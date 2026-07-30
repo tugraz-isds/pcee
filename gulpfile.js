@@ -362,6 +362,35 @@ function removeNestedArtifacts(artifactPaths) {
   });
 }
 
+function removeDuplicateArtifactNames(artifactPaths) {
+  const sortedPaths = [...artifactPaths].sort((left, right) => {
+    const depthDifference =
+      left.split(path.sep).length - right.split(path.sep).length;
+    if (depthDifference !== 0) {
+      return depthDifference;
+    }
+
+    const lengthDifference = left.length - right.length;
+    if (lengthDifference !== 0) {
+      return lengthDifference;
+    }
+
+    return left.localeCompare(right);
+  });
+
+  const seenNames = new Set();
+
+  return sortedPaths.filter((artifactPath) => {
+    const normalizedName = path.basename(artifactPath).toLowerCase();
+    if (seenNames.has(normalizedName)) {
+      return false;
+    }
+
+    seenNames.add(normalizedName);
+    return true;
+  });
+}
+
 function getTauriCliArgs() {
   const rawArgs = process.argv.slice(2);
   const args = [];
@@ -451,8 +480,8 @@ async function packageTauriArtifacts(targetTriple = null) {
     ? await listArtifactCandidates(bundleDirectory)
     : [];
   const matchesArtifact = getArtifactMatcher(executableName);
-  const artifactPaths = removeNestedArtifacts(
-    [executablePath, ...bundleFiles].filter(matchesArtifact),
+  const artifactPaths = removeDuplicateArtifactNames(
+    removeNestedArtifacts([executablePath, ...bundleFiles].filter(matchesArtifact)),
   );
 
   if (artifactPaths.length === 0) {
