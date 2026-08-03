@@ -69,7 +69,7 @@ and stores the generated files into the `dist/` folder:
 ```
 yarn build
 or
-yarn exec vite build
+yarn exec gulp build
 ```
 
 To run the example, a live web server must be started in the
