@@ -246,6 +246,10 @@ th {
   flex: 1 1 auto;
   min-width: 4rem;
   padding: 0.25rem 0.5rem;
+  background: transparent;
+  color: inherit;
+  border: 0;
+  border-radius: 0;
 }
 
 .header-button { 

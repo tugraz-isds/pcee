@@ -3080,6 +3080,12 @@ function getResetIcon() {
 function getDownloadButton() {
     return "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 10 10\">\n  <path fill=\"currentColor\" d=\"M 4.65 7 L 4.65 1.4 L 5.25 1.4 L 5.25 7 z\"/>\n  <polyline points=\"2.07 5.00 4.93 7.14 7.79 5.00\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"0.5\"/>\n  <path fill=\"currentColor\" d=\"M 2 8.5 L 8 8.5 L 8 9 L 2 9 z\"/>\n</svg>";
 }
+function getZoomButton() {
+    return "<?xml version=\"1.0\" encoding=\"utf-8\"?><!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->\n<svg width=\"800px\" height=\"800px\" viewBox=\"0 0 24 24\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path d=\"M10 17C13.866 17 17 13.866 17 10C17 6.13401 13.866 3 10 3C6.13401 3 3 6.13401 3 10C3 13.866 6.13401 17 10 17Z\" stroke=\"#000000\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>\n<path d=\"M20.9992 21L14.9492 14.95\" stroke=\"#000000\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>\n<path d=\"M6 10H14\" stroke=\"#000000\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>\n<path d=\"M10 6V14\" stroke=\"#000000\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>\n</svg>";
+}
+function getPanButton() {
+    return "<?xml version=\"1.0\" encoding=\"iso-8859-1\"?>\n<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->\n<svg fill=\"#000000\" height=\"800px\" width=\"800px\" version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" \n\t viewBox=\"0 0 485 485\" xml:space=\"preserve\">\n<g>\n\t<path d=\"M382.5,69.429c-7.441,0-14.5,1.646-20.852,4.573c-4.309-23.218-24.7-40.859-49.148-40.859\n\t\tc-7.68,0-14.958,1.744-21.467,4.852C285.641,16.205,265.932,0,242.5,0c-23.432,0-43.141,16.206-48.533,37.995\n\t\tc-6.508-3.107-13.787-4.852-21.467-4.852c-27.57,0-50,22.43-50,50v122.222c-6.129-2.686-12.891-4.187-20-4.187\n\t\tc-27.57,0-50,22.43-50,50V354c0,72.233,58.766,131,131,131h118c72.233,0,131-58.767,131-131V119.429\n\t\tC432.5,91.858,410.07,69.429,382.5,69.429z M402.5,354c0,55.691-45.309,101-101,101h-118c-55.691,0-101-45.309-101-101V251.178\n\t\tc0-11.028,8.972-20,20-20s20,8.972,20,20v80h30V83.143c0-11.028,8.972-20,20-20s20,8.972,20,20v158.035h30V50\n\t\tc0-11.028,8.972-20,20-20c11.028,0,20,8.972,20,20v191.178h30V83.143c0-11.028,8.972-20,20-20s20,8.972,20,20v158.035h30v-121.75\n\t\tc0-11.028,8.972-20,20-20s20,8.972,20,20V354z\"/>\n</g>\n</svg>";
+}
 
 function cleanString(stringValue) {
     let value = stringValue
@@ -3234,8 +3240,12 @@ let numberOfRecords;
 let numberOfDimensions;
 let resetContentData;
 let dimensionSpacingVar = null;
+let hoveredRecords = [];
 function setContent(contentdata) {
     resetContentData = contentdata;
+}
+function setHoveredRecords(records) {
+    hoveredRecords = records;
 }
 function setHoverLabel(label) {
     hoverlabel = label;
@@ -7131,6 +7141,22 @@ function hideDimensionMenu(dimension) {
     });
 }
 function getContextMenuLeftPosition(container, menuElement, clickX) {
+    const { width: menuWidth, containerRect } = getContextMenuMeasurements(container, menuElement);
+    const availableRightSpace = containerRect.width - clickX;
+    if (menuWidth > availableRightSpace) {
+        return Math.max(0, clickX - menuWidth);
+    }
+    return clickX;
+}
+function getContextMenuTopPosition(container, menuElement, clickY) {
+    const { height: menuHeight, containerRect } = getContextMenuMeasurements(container, menuElement);
+    const availableBottomSpace = containerRect.height - clickY;
+    if (menuHeight > availableBottomSpace) {
+        return Math.max(0, clickY - menuHeight);
+    }
+    return clickY;
+}
+function getContextMenuMeasurements(container, menuElement) {
     const containerRect = container.getBoundingClientRect();
     const previousDisplay = menuElement.style.display;
     const previousVisibility = menuElement.style.visibility;
@@ -7138,17 +7164,25 @@ function getContextMenuLeftPosition(container, menuElement, clickX) {
         menuElement.style.visibility = "hidden";
         menuElement.style.display = "block";
     }
-    const menuWidth = menuElement.getBoundingClientRect().width;
+    const menuRect = menuElement.getBoundingClientRect();
     menuElement.style.display = previousDisplay;
     menuElement.style.visibility = previousVisibility;
-    const availableRightSpace = containerRect.width - clickX;
-    if (menuWidth > availableRightSpace) {
-        return Math.max(0, clickX - menuWidth);
+    return {
+        width: menuRect.width,
+        height: menuRect.height,
+        containerRect,
+    };
+}
+function pxToRem$1(value) {
+    const rootFontSize = Number(getComputedStyle(document.documentElement).fontSize.replace("px", ""));
+    if (!Number.isFinite(rootFontSize) || rootFontSize <= 0) {
+        return value / 16;
     }
-    return clickX;
+    return value / rootFontSize;
 }
 function styleContextMenu(event) {
-    const container = document.querySelector("#spcd3-parallelcoords");
+    const container = document.querySelector("#spcd3-parallelcoords .spcd3-chartWrapper") ??
+        document.querySelector("#spcd3-parallelcoords");
     if (!container)
         return;
     const menuElement = document.querySelector("#contextmenu");
@@ -7158,9 +7192,10 @@ function styleContextMenu(event) {
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
     const left = getContextMenuLeftPosition(container, menuElement, x);
+    const top = getContextMenuTopPosition(container, menuElement, y);
     select("#contextmenu")
-        .style("left", left + "px")
-        .style("top", y + "px")
+        .style("left", pxToRem$1(left) + "rem")
+        .style("top", pxToRem$1(top) + "rem")
         .style("display", "block")
         .on("click", (event) => {
         event.stopPropagation();
@@ -7285,8 +7320,11 @@ function scroll(d) {
     }
 }
 function createContextMenu() {
-    let contextMenu = select("#spcd3-parallelcoords")
-        .append("g")
+    const menuHost = select("#spcd3-parallelcoords .spcd3-chartWrapper").empty()
+        ? select("#spcd3-parallelcoords")
+        : select("#spcd3-parallelcoords .spcd3-chartWrapper");
+    let contextMenu = menuHost
+        .append("div")
         .attr("class", "spcd3-contextmenu-dimensions")
         .attr("id", "contextmenu")
         .style("position", "absolute")
@@ -7444,8 +7482,11 @@ function createErrorMessage(modal, id) {
     modal.append(() => errorMessage);
 }
 function createContextMenuForRecords() {
-    let contextMenu = select("#spcd3-parallelcoords")
-        .append("g")
+    const menuHost = select("#spcd3-parallelcoords .spcd3-chartWrapper").empty()
+        ? select("#spcd3-parallelcoords")
+        : select("#spcd3-parallelcoords .spcd3-chartWrapper");
+    let contextMenu = menuHost
+        .append("div")
         .attr("class", "spcd3-contextmenu-records")
         .attr("id", "contextmenuRecords")
         .style("position", "absolute")
@@ -7466,16 +7507,29 @@ function createContextMenuItem(contextMenu, id, className, text, title) {
         .text(text);
 }
 function handleRecordContextMenu(contextMenu, event, d) {
-    const container = document.querySelector("#spcd3-parallelcoords");
+    const container = document.querySelector("#spcd3-parallelcoords .spcd3-chartWrapper") ??
+        document.querySelector("#spcd3-parallelcoords");
     if (!container)
         return;
     const menuElement = contextMenu.node();
     if (!menuElement)
         return;
     const rect = container.getBoundingClientRect();
-    const data = getAllPointerEventsData(event);
-    const cleanedItems = data.map((item) => cleanString(item).replace(/[.,]/g, ""));
-    if (cleanedItems.length > 1) {
+    const data = hoveredRecords.length > 0
+        ? hoveredRecords
+        : getAllPointerEventsData(event);
+    const cleanedItems = Array.from(new Set(data.map((item) => cleanString(item).replace(/[.,]/g, ""))));
+    const clickedRecord = d?.[hoverlabel]
+        ? cleanString(String(d[hoverlabel])).replace(/[.,]/g, "")
+        : null;
+    const targetRecords = cleanedItems.length > 0
+        ? cleanedItems
+        : clickedRecord != null
+            ? [clickedRecord]
+            : [];
+    if (targetRecords.length === 0)
+        return;
+    if (targetRecords.length > 1) {
         select("#selectRecord").text("Select Records");
         select("#unSelectRecord").text("Unselect Records");
         select("#toggleRecord").text("Toggle Selection");
@@ -7486,22 +7540,23 @@ function handleRecordContextMenu(contextMenu, event, d) {
         select("#toggleRecord").text("Toggle Selection");
     }
     const x = event.clientX - rect.left;
-    const y = (event.clientY - rect.top) / 16;
-    const left = getContextMenuLeftPosition(container, menuElement, x) / 16;
+    const y = event.clientY - rect.top;
+    const left = getContextMenuLeftPosition(container, menuElement, x);
+    const top = getContextMenuTopPosition(container, menuElement, y);
     contextMenu
-        .style("left", left + "rem")
-        .style("top", y + "rem")
+        .style("left", pxToRem$1(left) + "rem")
+        .style("top", pxToRem$1(top) + "rem")
         .style("display", "block")
         .on("click", (event) => {
         event.stopPropagation();
     });
     select("#selectRecord").on("click", (event) => {
-        setSelection(cleanedItems);
+        setSelection(targetRecords);
         event.stopPropagation();
         select("#contextmenuRecords").style("display", "none");
     });
     select("#unSelectRecord").on("click", (event) => {
-        cleanedItems.forEach((item) => {
+        targetRecords.forEach((item) => {
             setUnselected(item);
         });
         event.stopPropagation();
@@ -7510,7 +7565,7 @@ function handleRecordContextMenu(contextMenu, event, d) {
     select("#toggleRecord")
         .style("border-top", "0.08rem solid var(--spcd3-border-subtle)")
         .on("click", (event) => {
-        cleanedItems.forEach((item) => {
+        targetRecords.forEach((item) => {
             toggleSelection(item);
         });
         event.stopPropagation();
@@ -7521,13 +7576,13 @@ function handleRecordContextMenu(contextMenu, event, d) {
         .on("click", (event) => {
         let selectedRecords = [];
         selectedRecords = getSelected();
-        const records = [...selectedRecords, ...cleanedItems];
+        const records = [...selectedRecords, ...targetRecords];
         setSelection(records);
         event.stopPropagation();
         select("#contextmenuRecords").style("display", "none");
     });
     select("#removeSelection").on("click", (event) => {
-        cleanedItems.forEach((item) => {
+        targetRecords.forEach((item) => {
             setUnselected(item);
         });
         event.stopPropagation();
@@ -8187,7 +8242,78 @@ function setInvertIconToDownload(featureAxis) {
     });
 }
 
+const SVG_DOWNLOAD_SETTINGS_KEY = "spcd3:svg-download-settings";
+const EXAMPLE_UI_SETTINGS_KEY = "spcd3:example-ui-settings";
+const TAURI_SVG_SAVE_DIRECTORY_KEY = "spcd3:tauri-svg-save-directory";
+const DEFAULT_SVG_DOWNLOAD_SETTINGS = {
+    decimals: 2,
+    keepClasses: true,
+    includeUiControls: true,
+    includeDataValues: true,
+    convertSymbolsToPaths: false,
+};
+const DEFAULT_EXAMPLE_UI_SETTINGS = {
+    selectionSensitivityRem: 0.4,
+    dimensionSpacingRem: 6,
+    zoomFactor: 1,
+};
+function canUseLocalStorage() {
+    return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
+}
+function readJson(key, fallback) {
+    if (!canUseLocalStorage())
+        return fallback;
+    try {
+        const rawValue = window.localStorage.getItem(key);
+        if (!rawValue)
+            return fallback;
+        return { ...fallback, ...JSON.parse(rawValue) };
+    }
+    catch {
+        return fallback;
+    }
+}
+function writeJson(key, value) {
+    if (!canUseLocalStorage())
+        return;
+    try {
+        window.localStorage.setItem(key, JSON.stringify(value));
+    }
+    catch { }
+}
+function getSvgDownloadSettings() {
+    return readJson(SVG_DOWNLOAD_SETTINGS_KEY, DEFAULT_SVG_DOWNLOAD_SETTINGS);
+}
+function setSvgDownloadSettings(settings) {
+    writeJson(SVG_DOWNLOAD_SETTINGS_KEY, settings);
+}
+function getExampleUiSettings() {
+    return readJson(EXAMPLE_UI_SETTINGS_KEY, DEFAULT_EXAMPLE_UI_SETTINGS);
+}
+function setExampleUiSettings(settings) {
+    writeJson(EXAMPLE_UI_SETTINGS_KEY, settings);
+}
+function getTauriSvgSaveDirectory() {
+    if (!canUseLocalStorage())
+        return null;
+    try {
+        return window.localStorage.getItem(TAURI_SVG_SAVE_DIRECTORY_KEY);
+    }
+    catch {
+        return null;
+    }
+}
+function setTauriSvgSaveDirectory(directory) {
+    if (!canUseLocalStorage())
+        return;
+    try {
+        window.localStorage.setItem(TAURI_SVG_SAVE_DIRECTORY_KEY, directory);
+    }
+    catch { }
+}
+
 const DOWNLOAD_TOP_BALANCE_PADDING = 32;
+const DEFAULT_SVG_FILENAME = "parcoords.svg";
 function createSvgString(includeDataValues = false) {
     const orderedFeatures = parcoords.newFeatures.map((name) => ({
         name,
@@ -8250,7 +8376,7 @@ function saveAsSvg() {
     setOptionsAndDownload();
 }
 function setOptionsAndDownload() {
-    let name = "parcoords.svg";
+    const persistedSettings = getSvgDownloadSettings();
     const modalOverlay = document.createElement("div");
     modalOverlay.className = "spcd3-modal-overlay";
     modalOverlay.style.display = "block";
@@ -8284,7 +8410,7 @@ function setOptionsAndDownload() {
     input.type = "number";
     input.min = "0";
     input.max = "10";
-    input.value = "2";
+    input.value = persistedSettings.decimals.toString();
     input.id = "decimalsInput";
     rowDecimals.appendChild(label);
     rowDecimals.appendChild(input);
@@ -8297,7 +8423,7 @@ function setOptionsAndDownload() {
     inputKeepClasses.className = "spcd3-input";
     inputKeepClasses.type = "checkbox";
     inputKeepClasses.id = "keepClassesInput";
-    inputKeepClasses.checked = true;
+    inputKeepClasses.checked = persistedSettings.keepClasses;
     rowKeepClasses.appendChild(labelKeepClasses);
     rowKeepClasses.appendChild(inputKeepClasses);
     const rowIncludeUiControls = document.createElement("div");
@@ -8309,7 +8435,7 @@ function setOptionsAndDownload() {
     inputIncludeUiControls.className = "spcd3-input";
     inputIncludeUiControls.type = "checkbox";
     inputIncludeUiControls.id = "includeUiControlsInput";
-    inputIncludeUiControls.checked = true;
+    inputIncludeUiControls.checked = persistedSettings.includeUiControls;
     rowIncludeUiControls.appendChild(labelIncludeUiControls);
     rowIncludeUiControls.appendChild(inputIncludeUiControls);
     const rowIncludeDataValues = document.createElement("div");
@@ -8322,7 +8448,7 @@ function setOptionsAndDownload() {
     inputIncludeDataValues.className = "spcd3-input";
     inputIncludeDataValues.type = "checkbox";
     inputIncludeDataValues.id = "includeDataValuesInput";
-    inputIncludeDataValues.checked = true;
+    inputIncludeDataValues.checked = persistedSettings.includeDataValues;
     rowIncludeDataValues.appendChild(labelIncludeDataValues);
     rowIncludeDataValues.appendChild(inputIncludeDataValues);
     const rowConvertSymbols = document.createElement("div");
@@ -8334,7 +8460,7 @@ function setOptionsAndDownload() {
     inputConvertSymbols.className = "spcd3-input";
     inputConvertSymbols.type = "checkbox";
     inputConvertSymbols.id = "convertSymbolsInput";
-    inputConvertSymbols.checked = false;
+    inputConvertSymbols.checked = persistedSettings.convertSymbolsToPaths;
     rowConvertSymbols.appendChild(labelConvertSymbols);
     rowConvertSymbols.appendChild(inputConvertSymbols);
     const button = document.createElement("button");
@@ -8350,13 +8476,21 @@ function setOptionsAndDownload() {
     modalOverlay.appendChild(modal);
     document.body.appendChild(modalOverlay);
     input.focus();
-    button.addEventListener("click", () => {
+    button.addEventListener("click", async () => {
+        const name = DEFAULT_SVG_FILENAME;
         const decimals = parseInt(input.value);
         if (isNaN(decimals) || decimals < 0 || decimals > 10) {
             alert("Please enter a number between 2 and 10.");
             input.focus();
             return;
         }
+        setSvgDownloadSettings({
+            decimals,
+            keepClasses: inputKeepClasses.checked,
+            includeUiControls: inputIncludeUiControls.checked,
+            includeDataValues: inputIncludeDataValues.checked,
+            convertSymbolsToPaths: inputConvertSymbols.checked,
+        });
         let svgString = createSvgString(inputIncludeDataValues.checked);
         svgString = svgString.replaceAll("currentColor", "black");
         svgString = svgString.replaceAll('stroke="black"', "");
@@ -8383,17 +8517,27 @@ function setOptionsAndDownload() {
             collapseContent: true,
         });
         let preface = '<?xml version="1.0" standalone="no"?>\r\n';
-        let svgBlob = new Blob([preface, processedData], {
-            type: "image/svg+xml;charset=utf-8",
-        });
-        let svgUrl = URL.createObjectURL(svgBlob);
-        let downloadLink = document.createElement("a");
-        downloadLink.href = svgUrl;
-        downloadLink.download = name;
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        document.body.removeChild(downloadLink);
-        document.body.removeChild(modalOverlay);
+        const svgContent = `${preface}${processedData}`;
+        button.disabled = true;
+        try {
+            const savedInTauri = await saveSvgWithTauri(svgContent, name);
+            if (savedInTauri) {
+                document.body.removeChild(modalOverlay);
+                return;
+            }
+            const savedInBrowserPicker = await saveSvgWithBrowserFilePicker(svgContent, name);
+            if (!savedInBrowserPicker) {
+                downloadSvgInBrowser(svgContent, name);
+            }
+            document.body.removeChild(modalOverlay);
+        }
+        catch (error) {
+            console.error("Failed to save SVG", error);
+            alert("The SVG file could not be saved.");
+        }
+        finally {
+            button.disabled = false;
+        }
     });
     modalOverlay.addEventListener("click", (e) => {
         if (e.target === modalOverlay) {
@@ -8403,6 +8547,95 @@ function setOptionsAndDownload() {
     closeButton.addEventListener("click", () => {
         document.body.removeChild(modalOverlay);
     });
+}
+function getTauriGlobalApi() {
+    if (typeof window === "undefined")
+        return null;
+    return window.__TAURI__ ?? null;
+}
+async function saveSvgWithBrowserFilePicker(svgContent, suggestedFileName) {
+    if (typeof window === "undefined")
+        return false;
+    const browserWindow = window;
+    const showSaveFilePicker = browserWindow.showSaveFilePicker;
+    if (!showSaveFilePicker) {
+        return false;
+    }
+    try {
+        const fileHandle = await showSaveFilePicker({
+            id: "spcd3-svg-download",
+            suggestedName: suggestedFileName,
+            types: [
+                {
+                    description: "SVG files",
+                    accept: { "image/svg+xml": [".svg"] },
+                },
+            ],
+        });
+        const writable = await fileHandle.createWritable();
+        await writable.write(svgContent);
+        await writable.close();
+        return true;
+    }
+    catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+            return true;
+        }
+        console.warn("Browser file picker save failed, falling back to download", error);
+        return false;
+    }
+}
+async function saveSvgWithTauri(svgContent, suggestedFileName) {
+    const tauri = getTauriGlobalApi();
+    const save = tauri?.dialog?.save;
+    const writeTextFile = tauri?.fs?.writeTextFile;
+    if (!save || !writeTextFile) {
+        return false;
+    }
+    const defaultPath = await getTauriSvgDefaultPath(suggestedFileName);
+    const selectedPath = await save({
+        title: "Download Chart (SVG)",
+        defaultPath,
+        filters: [{ name: "SVG", extensions: ["svg"] }],
+    });
+    if (!selectedPath) {
+        return true;
+    }
+    await writeTextFile(selectedPath, svgContent);
+    await rememberTauriSvgSaveDirectory(selectedPath);
+    return true;
+}
+async function getTauriSvgDefaultPath(suggestedFileName) {
+    const tauri = getTauriGlobalApi();
+    const join = tauri?.path?.join;
+    const storedDirectory = getTauriSvgSaveDirectory();
+    if (join && storedDirectory) {
+        return await Promise.resolve(join(storedDirectory, suggestedFileName));
+    }
+    return suggestedFileName;
+}
+async function rememberTauriSvgSaveDirectory(selectedPath) {
+    const tauri = getTauriGlobalApi();
+    const dirname = tauri?.path?.dirname;
+    if (!dirname)
+        return;
+    const directory = await Promise.resolve(dirname(selectedPath));
+    if (directory) {
+        setTauriSvgSaveDirectory(directory);
+    }
+}
+function downloadSvgInBrowser(svgContent, filename) {
+    const svgBlob = new Blob([svgContent], {
+        type: "image/svg+xml;charset=utf-8",
+    });
+    const svgUrl = URL.createObjectURL(svgBlob);
+    const downloadLink = document.createElement("a");
+    downloadLink.href = svgUrl;
+    downloadLink.download = filename;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+    URL.revokeObjectURL(svgUrl);
 }
 function appendSymbol(defs, id, viewBox, paths) {
     const symbol = defs.append("symbol").attr("id", id).attr("viewBox", viewBox);
@@ -8521,6 +8754,10 @@ function parseSvgNumber(value, fallback = 0) {
     return Number.isNaN(parsed) ? fallback : parsed;
 }
 
+let chartModalState = null;
+const MIN_MODAL_SCALE = 0.5;
+const MAX_MODAL_SCALE = 3;
+const MODAL_SCALE_STEP = 0.25;
 function createToolbar(dataset) {
     const toolbarRow = select("#spcd3-toolbarRow");
     const { btn: toggleButton, tip: toggleTip } = makeIconButton(toolbarRow, {
@@ -8536,6 +8773,12 @@ function createToolbar(dataset) {
         iconHtml: getTableIcon(),
         tipText: "Show Table",
         onClick: () => showModalWithData(dataset),
+    });
+    makeIconButton(toolbar, {
+        id: "zoomModeButton",
+        iconHtml: getZoomButton(),
+        tipText: "Zoom Mode",
+        onClick: () => openZoomMode(dataset),
     });
     makeIconButton(toolbar, {
         id: "downloadButton",
@@ -8569,6 +8812,23 @@ function createToolbar(dataset) {
             : getExpandToolbarIcon();
         toggleButton.select("#toggleButtonicon").html(currentIcon);
     });
+}
+function closeChartModal() {
+    if (!chartModalState)
+        return;
+    const state = chartModalState;
+    window.removeEventListener("pointermove", state.onPointerMove);
+    window.removeEventListener("pointerup", state.onPointerUp);
+    window.removeEventListener("pointercancel", state.onPointerUp);
+    setPanMode(false);
+    state.chartWrapper.classList.remove("spcd3-chartWrapper--modal");
+    state.svg.style.inlineSize = state.previousSvgInlineSize;
+    state.svg.style.blockSize = state.previousSvgBlockSize;
+    state.tooltipElements.forEach((element) => element.remove());
+    state.originalParent.insertBefore(state.chartWrapper, state.placeholder);
+    state.placeholder.remove();
+    state.overlay.remove();
+    chartModalState = null;
 }
 function makeIconButton(parent, opts) {
     const { id, iconHtml, tipText, onClick } = opts;
@@ -8763,6 +9023,241 @@ function downloadCSV(dataset, filename = "data.csv") {
     link.click();
     document.body.removeChild(link);
 }
+function openZoomMode(dataset) {
+    if (chartModalState)
+        return;
+    const chartRoot = document.querySelector("#spcd3-parallelcoords");
+    const chartWrapper = chartRoot?.querySelector(".spcd3-chartWrapper");
+    if (!chartRoot || !chartWrapper || !chartWrapper.parentElement)
+        return;
+    const svg = chartWrapper.querySelector("#spcd3-pc_svg");
+    if (!svg)
+        return;
+    const baseSvgWidth = Number(svg.getAttribute("width")) ||
+        svg.viewBox.baseVal.width ||
+        svg.getBoundingClientRect().width;
+    const baseSvgHeight = Number(svg.getAttribute("height")) ||
+        svg.viewBox.baseVal.height ||
+        svg.getBoundingClientRect().height;
+    const originalParent = chartWrapper.parentElement;
+    const placeholder = document.createComment("spcd3-chart-modal-anchor");
+    originalParent.insertBefore(placeholder, chartWrapper);
+    const overlay = document.createElement("div");
+    overlay.className = "spcd3-chart-modal-overlay";
+    const panel = document.createElement("div");
+    panel.className = "spcd3-chart-modal";
+    overlay.appendChild(panel);
+    const header = document.createElement("div");
+    header.className = "spcd3-chart-modal-header";
+    panel.appendChild(header);
+    const controls = document.createElement("div");
+    controls.className = "spcd3-chart-modal-controls";
+    header.appendChild(controls);
+    const showTableButton = createModalIconControlButton(getTableIcon(), "Show Table");
+    const downloadButton = createModalIconControlButton(getDownloadButton(), "Download Chart (SVG)");
+    const resetButton = createModalIconControlButton(getResetIcon(), "Reset chart");
+    const zoomOutButton = createModalControlButton("−", "Zoom Out");
+    const zoomInButton = createModalControlButton("+", "Zoom In");
+    const panButton = createModalIconControlButton(getPanButton(), "Toggle Pan Mode");
+    panButton.setAttribute("aria-pressed", "false");
+    const zoomLabel = document.createElement("span");
+    zoomLabel.className = "spcd3-chart-modal-zoom-label";
+    const closeButton = document.createElement("span");
+    closeButton.className = "spcd3-close-button";
+    closeButton.innerHTML = "&times;";
+    controls.appendChild(zoomOutButton);
+    controls.appendChild(zoomInButton);
+    controls.appendChild(zoomLabel);
+    controls.appendChild(panButton);
+    controls.appendChild(showTableButton);
+    controls.appendChild(downloadButton);
+    controls.appendChild(resetButton);
+    panel.appendChild(closeButton);
+    const viewport = document.createElement("div");
+    viewport.className = "spcd3-chart-modal-viewport";
+    panel.appendChild(viewport);
+    chartWrapper.classList.add("spcd3-chartWrapper--modal");
+    viewport.appendChild(chartWrapper);
+    const onPointerMove = (event) => {
+        if (!chartModalState || !chartModalState.isDraggingPan)
+            return;
+        const deltaX = event.clientX - chartModalState.panStartX;
+        const deltaY = event.clientY - chartModalState.panStartY;
+        chartModalState.viewport.scrollLeft = chartModalState.panScrollLeft - deltaX;
+        chartModalState.viewport.scrollTop = chartModalState.panScrollTop - deltaY;
+    };
+    const onPointerUp = () => {
+        if (!chartModalState)
+            return;
+        chartModalState.isDraggingPan = false;
+        if (chartModalState.panMode) {
+            chartModalState.viewport.classList.remove("spcd3-chart-modal-viewport--dragging");
+        }
+    };
+    chartModalState = {
+        overlay,
+        panel,
+        viewport,
+        chartWrapper,
+        placeholder,
+        originalParent,
+        closeButton,
+        zoomInButton,
+        zoomOutButton,
+        resetButton,
+        panButton,
+        zoomLabel,
+        svg,
+        baseSvgWidth,
+        baseSvgHeight,
+        previousSvgInlineSize: svg.style.inlineSize,
+        previousSvgBlockSize: svg.style.blockSize,
+        scale: 1,
+        panMode: false,
+        isDraggingPan: false,
+        panStartX: 0,
+        panStartY: 0,
+        panScrollLeft: 0,
+        panScrollTop: 0,
+        tooltipElements: [
+            attachTooltip(showTableButton, "Show Table"),
+            attachTooltip(downloadButton, "Download Chart (SVG)"),
+            attachTooltip(resetButton, "Reset"),
+            attachTooltip(zoomOutButton, "Zoom Out"),
+            attachTooltip(zoomInButton, "Zoom In"),
+            attachTooltip(panButton, "Toggle Pan Mode"),
+        ],
+        onPointerMove,
+        onPointerUp,
+    };
+    closeButton.addEventListener("click", closeChartModal);
+    closeButton.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            closeChartModal();
+        }
+    });
+    overlay.addEventListener("click", (event) => {
+        if (event.target === overlay) {
+            closeChartModal();
+        }
+    });
+    showTableButton.addEventListener("click", () => {
+        showModalWithData(dataset);
+    });
+    downloadButton.addEventListener("click", () => {
+        saveAsSvg();
+    });
+    resetButton.addEventListener("click", () => {
+        const modalDataset = resetContentData ?? dataset;
+        reset();
+        requestAnimationFrame(() => {
+            openZoomMode(modalDataset);
+        });
+    });
+    zoomOutButton.addEventListener("click", () => {
+        setChartModalScale((chartModalState?.scale ?? 1) - MODAL_SCALE_STEP);
+    });
+    zoomInButton.addEventListener("click", () => {
+        setChartModalScale((chartModalState?.scale ?? 1) + MODAL_SCALE_STEP);
+    });
+    panButton.addEventListener("click", () => {
+        setPanMode(!(chartModalState?.panMode ?? false));
+    });
+    viewport.addEventListener("pointerdown", (event) => {
+        if (!chartModalState?.panMode)
+            return;
+        if (event.button !== 0)
+            return;
+        event.preventDefault();
+        chartModalState.isDraggingPan = true;
+        chartModalState.panStartX = event.clientX;
+        chartModalState.panStartY = event.clientY;
+        chartModalState.panScrollLeft = chartModalState.viewport.scrollLeft;
+        chartModalState.panScrollTop = chartModalState.viewport.scrollTop;
+        chartModalState.viewport.classList.add("spcd3-chart-modal-viewport--dragging");
+    });
+    document.body.appendChild(overlay);
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("pointercancel", onPointerUp);
+    setChartModalScale(1);
+}
+function createModalControlButton(text, ariaLabel) {
+    const button = document.createElement("button");
+    button.className = "spcd3-button spcd3-chart-modal-control";
+    button.type = "button";
+    button.setAttribute("aria-label", ariaLabel);
+    button.textContent = text;
+    return button;
+}
+function createModalIconControlButton(iconHtml, ariaLabel) {
+    const button = document.createElement("button");
+    button.className = "spcd3-button spcd3-chart-modal-control spcd3-chart-modal-control--icon";
+    button.type = "button";
+    button.setAttribute("aria-label", ariaLabel);
+    const iconElement = document.createElement("span");
+    iconElement.className = "spcd3-toolbar-buttonicon";
+    iconElement.innerHTML = iconHtml;
+    iconElement
+        .querySelectorAll("svg")
+        .forEach((svgElement) => svgElement.classList.add("spcd3-toolbar-svg"));
+    button.appendChild(iconElement);
+    return button;
+}
+function attachTooltip(button, text) {
+    const tip = document.createElement("span");
+    tip.className = "spcd3-toolbar-buttontip";
+    tip.setAttribute("popover", "manual");
+    tip.textContent = text;
+    document.body.appendChild(tip);
+    function show() {
+        if (!tip.matches(":popover-open")) {
+            tip.showPopover();
+        }
+        positionTip(button, tip);
+    }
+    function hide() {
+        if (tip.matches(":popover-open")) {
+            tip.hidePopover();
+        }
+    }
+    button.addEventListener("mouseenter", show);
+    button.addEventListener("mouseleave", hide);
+    button.addEventListener("focus", show);
+    button.addEventListener("blur", hide);
+    return tip;
+}
+function setChartModalScale(nextScale) {
+    if (!chartModalState)
+        return;
+    const scale = Math.min(MAX_MODAL_SCALE, Math.max(MIN_MODAL_SCALE, nextScale));
+    chartModalState.scale = scale;
+    chartModalState.svg.style.inlineSize = `${pxToRem(chartModalState.baseSvgWidth * scale)}rem`;
+    chartModalState.svg.style.blockSize = `${pxToRem(chartModalState.baseSvgHeight * scale)}rem`;
+    chartModalState.zoomLabel.textContent = `${Math.round(scale * 100)}%`;
+}
+function setPanMode(isActive) {
+    if (!chartModalState)
+        return;
+    chartModalState.panMode = isActive;
+    chartModalState.isDraggingPan = false;
+    chartModalState.panButton.setAttribute("aria-pressed", String(isActive));
+    chartModalState.panButton.classList.toggle("is-active", isActive);
+    chartModalState.viewport.classList.toggle("spcd3-chart-modal-viewport--pannable", isActive);
+    chartModalState.viewport.classList.remove("spcd3-chart-modal-viewport--dragging");
+    chartModalState.svg.style.pointerEvents = isActive ? "none" : "";
+    chartModalState.zoomLabel.textContent = `${Math.round(chartModalState.scale * 100)}%`;
+    select("#contextmenu").style("display", "none");
+    select("#contextmenuRecords").style("display", "none");
+}
+function pxToRem(value) {
+    const rootFontSize = Number(getComputedStyle(document.documentElement).fontSize.replace("px", ""));
+    if (!Number.isFinite(rootFontSize) || rootFontSize <= 0) {
+        return value / 16;
+    }
+    return value / rootFontSize;
+}
 
 //---------- IO Functions ----------
 function drawChart(content) {
@@ -8840,6 +9335,7 @@ function refresh() {
     }
 }
 function deleteChart() {
+    closeChartModal();
     select("#spcd3-pc_svg").remove();
     select("#contextmenu").remove();
     select("#contextmenuRecords").remove();
@@ -9007,6 +9503,7 @@ function alignToolbarWithLeftmostAxisLabels() {
 function handlePointerEnter(event, d) {
     doNotHighlight();
     const data = getAllPointerEventsData(event);
+    setHoveredRecords(data);
     const tooltipLabel = selectAll(".spcd3-tooltip-label");
     highlight(data);
     createTooltipForLabel(data, tooltipLabel, event);
@@ -9023,6 +9520,7 @@ function handlePointerEnter(event, d) {
 }
 function handlePointerLeaveOrOut() {
     doNotHighlight();
+    setHoveredRecords([]);
     selectAll(".spcd3-tooltip-label").style("visibility", "hidden");
     cleanTooltip();
 }
@@ -9115,7 +9613,7 @@ function setActivePathLines(svg, content, parcoords) {
         .on("pointerout", handlePointerLeaveOrOut)
         .on("click", handleClick)
         .on("contextmenu", function (event, d) {
-        handleRecordContextMenu(contextMenuRecords, event);
+        handleRecordContextMenu(contextMenuRecords, event, d);
         select("#contextmenu").style("display", "none");
     });
     return g
@@ -9737,5 +10235,5 @@ function escapeCsvCell(value) {
     return value;
 }
 
-export { clearSelection, colorRecord, createSvgString, deleteChart, disableInteractivity, drawChart, enableInteractivity, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelectableWith, getSelected, hide, hideMarker, invert, invertWithoutTransition, isDimensionCategorical, isRecordColored, isRecordInactive, isSelected, isSelectedWithId, loadCSV, move, moveByOne, realignToolbar, refresh, reset, saveAsSvg, setClassColoredFalse, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setDimensionSpacing, setFilter, setInversionStatus, setSelectableWidth, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setUnselected, setUnselectedWithId, show, showMarker, swap, syncDimensionOrderWithVisible, throttleShowValues, toggleSelection, toggleSelectionWithId, uncolorRecord };
+export { clearSelection, colorRecord, createSvgString, deleteChart, disableInteractivity, drawChart, enableInteractivity, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getExampleUiSettings, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelectableWith, getSelected, getSvgDownloadSettings, getTauriSvgSaveDirectory, hide, hideMarker, invert, invertWithoutTransition, isDimensionCategorical, isRecordColored, isRecordInactive, isSelected, isSelectedWithId, loadCSV, move, moveByOne, realignToolbar, refresh, reset, saveAsSvg, setClassColoredFalse, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setDimensionSpacing, setExampleUiSettings, setFilter, setInversionStatus, setSelectableWidth, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setSvgDownloadSettings, setTauriSvgSaveDirectory, setUnselected, setUnselectedWithId, show, showMarker, swap, syncDimensionOrderWithVisible, throttleShowValues, toggleSelection, toggleSelectionWithId, uncolorRecord };
 //# sourceMappingURL=spcd3.js.map

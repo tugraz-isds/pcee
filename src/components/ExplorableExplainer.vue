@@ -161,7 +161,6 @@ const mainChart = ref<HTMLElement | null>(null);
 const usageContainer = ref<HTMLDivElement | null>(null);
 const multipleViewsContainer = ref<HTMLDivElement | null>(null);
 const zoomSrc = ref<string | null>(null);
-const isZoomSvg = computed(() => /\.svg(?:[?#].*)?$/i.test(zoomSrc.value ?? ''));
 const showAbout = ref(false);
 let lastStep = -1;
 const appVersion = packageInfo.version;
@@ -1408,9 +1407,15 @@ button {
 
 figure {
   flex: 1 1 8em;
+  min-width: 0;
   text-align: center;
   margin: 0;
   cursor: zoom-in;
+}
+
+.figure-row img {
+  max-width: 100%;
+  height: auto;
 }
 
 :root[data-theme='dark'] .figure-row img[src*="correlation-"],
