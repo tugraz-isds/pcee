@@ -124,6 +124,74 @@
     v-html="multipleViewsText"
   />
   <div v-html="referencesDatasetText" />
+  <Teleport to="body">
+    <div
+      v-if="isImageViewerOpen"
+      class="image-viewer-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Image viewer"
+      @click.self="closeImageViewer"
+      @wheel.prevent="handleImageViewerWheel"
+    >
+      <div
+        ref="imageViewerContainer"
+        class="image-viewer-container"
+        @pointerdown="startImageDrag"
+        @pointermove="dragImage"
+        @pointerup="stopImageDrag"
+        @pointercancel="stopImageDrag"
+      >
+        <img
+          ref="imageViewerImage"
+          :src="zoomSrc ?? ''"
+          :class="[
+            'image-viewer-image',
+            { 'image-viewer-image-svg': zoomSrc?.toLowerCase().endsWith('.svg') },
+          ]"
+          :style="imageViewerStyle"
+          draggable="false"
+          @load="initializeImageViewer"
+        >
+      </div>
+      <button
+        type="button"
+        class="image-viewer-button image-viewer-reset"
+        title="Reset zoom"
+        aria-label="Reset zoom"
+        @click="resetImageZoom"
+      >
+        ⧉
+      </button>
+      <button
+        type="button"
+        class="image-viewer-button image-viewer-zoom-out"
+        title="Zoom out"
+        aria-label="Zoom out"
+        @click="zoomOutImage"
+      >
+        −
+      </button>
+      <button
+        type="button"
+        class="image-viewer-button image-viewer-zoom-in"
+        title="Zoom in"
+        aria-label="Zoom in"
+        @click="zoomInImage"
+      >
+        +
+      </button>
+      <button
+        type="button"
+        class="image-viewer-button image-viewer-close"
+        title="Close image viewer"
+        aria-label="Close image viewer"
+        @click="closeImageViewer"
+      >
+        ×
+      </button>
+    </div>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
@@ -161,7 +229,19 @@ const mainChart = ref<HTMLElement | null>(null);
 const usageContainer = ref<HTMLDivElement | null>(null);
 const multipleViewsContainer = ref<HTMLDivElement | null>(null);
 const zoomSrc = ref<string | null>(null);
+const isImageViewerOpen = ref(false);
+const imageViewerContainer = ref<HTMLDivElement | null>(null);
+const imageViewerImage = ref<HTMLImageElement | null>(null);
+const imageZoomFactor = ref(1);
+const initialImageZoomFactor = ref(1);
+const imageWidth = ref(0);
+const imageHeight = ref(0);
+const imageOffsetX = ref(0);
+const imageOffsetY = ref(0);
 const showAbout = ref(false);
+let activeImagePointerId: number | null = null;
+let imageDragStartX = 0;
+let imageDragStartY = 0;
 let lastStep = -1;
 const appVersion = packageInfo.version;
 const releaseDate = new Date(packageInfo.releaseDate).toLocaleDateString('en-GB', {
@@ -345,12 +425,140 @@ const handleClick = (e: Event): void => {
   const target = e.target as HTMLElement;
   const img = target.closest("img") as HTMLImageElement | null;
   if (img) {
-    if (img.classList.contains('svg') || img.classList.contains('rslidy-slide-image')) {
+    if (img.classList.contains('svg')) {
       return;
     }
-    zoomSrc.value = img.src;
+    openImageViewer(img.src);
   }
 }
+
+const imageViewerStyle = computed(() => ({
+  width: `${imageWidth.value * imageZoomFactor.value}px`,
+  height: `${imageHeight.value * imageZoomFactor.value}px`,
+  left: `${imageOffsetX.value}px`,
+  top: `${imageOffsetY.value}px`,
+}));
+
+const openImageViewer = (src: string): void => {
+  zoomSrc.value = src;
+  isImageViewerOpen.value = true;
+};
+
+const closeImageViewer = (): void => {
+  isImageViewerOpen.value = false;
+  activeImagePointerId = null;
+};
+
+const applyImageOffset = (center: boolean): void => {
+  const container = imageViewerContainer.value;
+  if (!container) return;
+
+  const containerWidth = container.clientWidth;
+  const containerHeight = container.clientHeight;
+  const currentImageWidth = imageWidth.value * imageZoomFactor.value;
+  const currentImageHeight = imageHeight.value * imageZoomFactor.value;
+
+  if (center || currentImageWidth <= containerWidth) {
+    imageOffsetX.value = (containerWidth - currentImageWidth) / 2;
+  }
+  else {
+    imageOffsetX.value = Math.min(0, Math.max(containerWidth - currentImageWidth, imageOffsetX.value));
+  }
+
+  if (center || currentImageHeight <= containerHeight) {
+    imageOffsetY.value = (containerHeight - currentImageHeight) / 2;
+  }
+  else {
+    imageOffsetY.value = Math.min(0, Math.max(containerHeight - currentImageHeight, imageOffsetY.value));
+  }
+};
+
+const resetImageZoom = (): void => {
+  if (!imageWidth.value || !imageHeight.value || !imageViewerContainer.value) return;
+
+  const container = imageViewerContainer.value;
+  const imageAspectRatio = imageWidth.value / imageHeight.value;
+  const containerAspectRatio = container.clientWidth / container.clientHeight;
+
+  initialImageZoomFactor.value = containerAspectRatio > imageAspectRatio
+    ? container.clientHeight / imageHeight.value
+    : container.clientWidth / imageWidth.value;
+  imageZoomFactor.value = initialImageZoomFactor.value;
+  applyImageOffset(true);
+};
+
+const initializeImageViewer = (event: Event): void => {
+  const image = event.target as HTMLImageElement;
+  imageWidth.value = image.naturalWidth;
+  imageHeight.value = image.naturalHeight;
+  resetImageZoom();
+};
+
+const zoomImage = (factor: number, clientX?: number, clientY?: number): void => {
+  const container = imageViewerContainer.value;
+  if (!container || !initialImageZoomFactor.value) return;
+
+  const nextZoomFactor = Math.max(
+    initialImageZoomFactor.value / 10,
+    imageZoomFactor.value * factor,
+  );
+  if (nextZoomFactor === imageZoomFactor.value) return;
+
+  const bounds = container.getBoundingClientRect();
+  const pivotX = clientX == null ? container.clientWidth / 2 : clientX - bounds.left;
+  const pivotY = clientY == null ? container.clientHeight / 2 : clientY - bounds.top;
+  const zoomRatio = nextZoomFactor / imageZoomFactor.value;
+
+  imageOffsetX.value = pivotX - (pivotX - imageOffsetX.value) * zoomRatio;
+  imageOffsetY.value = pivotY - (pivotY - imageOffsetY.value) * zoomRatio;
+  imageZoomFactor.value = nextZoomFactor;
+  applyImageOffset(false);
+};
+
+const zoomInImage = (): void => zoomImage(1.2);
+const zoomOutImage = (): void => zoomImage(1 / 1.2);
+
+const handleImageViewerWheel = (event: WheelEvent): void => {
+  zoomImage(event.deltaY < 0 ? 1.2 : 1 / 1.2, event.clientX, event.clientY);
+};
+
+const startImageDrag = (event: PointerEvent): void => {
+  if (event.button !== 0) return;
+
+  activeImagePointerId = event.pointerId;
+  imageDragStartX = event.clientX;
+  imageDragStartY = event.clientY;
+  (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+};
+
+const dragImage = (event: PointerEvent): void => {
+  if (activeImagePointerId !== event.pointerId) return;
+
+  imageOffsetX.value += event.clientX - imageDragStartX;
+  imageOffsetY.value += event.clientY - imageDragStartY;
+  imageDragStartX = event.clientX;
+  imageDragStartY = event.clientY;
+  applyImageOffset(false);
+};
+
+const stopImageDrag = (event: PointerEvent): void => {
+  if (activeImagePointerId !== event.pointerId) return;
+
+  activeImagePointerId = null;
+  (event.currentTarget as HTMLElement).releasePointerCapture(event.pointerId);
+};
+
+const handleImageViewerKeydown = (event: KeyboardEvent): void => {
+  if (event.key === 'Escape' && isImageViewerOpen.value) {
+    closeImageViewer();
+  }
+};
+
+const resizeImageViewer = (): void => {
+  if (isImageViewerOpen.value) {
+    applyImageOffset(true);
+  }
+};
 
 const isPortrait = (): boolean => {
   return window.innerHeight > window.innerWidth;
@@ -487,6 +695,8 @@ onBeforeUnmount(() => {
   stopPortraitResize();
   portraitResizeMediaQuery?.removeEventListener('change', ensurePortraitChartHeight);
   window.removeEventListener('resize', ensurePortraitChartHeight);
+  window.removeEventListener('resize', resizeImageViewer);
+  window.removeEventListener('keydown', handleImageViewerKeydown);
   if (usageContainer.value) {
     usageContainer.value.removeEventListener("click", handleClick);
   }
@@ -500,6 +710,8 @@ onBeforeUnmount(() => {
 onMounted(async (): Promise<void> => {
   syncThemeWithSystemPreference();
   darkModeMediaQuery?.addEventListener('change', syncThemeWithSystemPreference);
+  window.addEventListener('resize', resizeImageViewer);
+  window.addEventListener('keydown', handleImageViewerKeydown);
   initalLoadOfDataset();
   loadContent(introText, 'content/introduction.html');
   loadContent(financeDatasetText, 'content/data-finance.html');
@@ -703,32 +915,84 @@ onMounted(async (): Promise<void> => {
   filter: var(--toolbar-icon-filter);
 }
 
-.image-zoom-overlay {
+.image-viewer-overlay {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: clamp(1rem, 4vw, 3rem);
-  background: rgb(0 0 0 / 70%);
+  overflow: hidden;
+  background: rgb(0 0 0 / 90%);
+  user-select: none;
 }
 
-.image-zoom-preview {
-  width: auto;
-  height: auto;
-  max-width: 90vw;
-  max-height: 90vh;
-  object-fit: contain;
-  cursor: zoom-out;
+.image-viewer-container {
+  position: relative;
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: hidden;
+  cursor: grab;
 }
 
-.image-zoom-preview-svg {
+.image-viewer-container:active {
+  cursor: grabbing;
+}
+
+.image-viewer-image {
+  position: absolute;
+  max-width: none;
+  max-height: none;
+  background: #ffffff;
+  cursor: inherit;
+  touch-action: none;
+}
+
+.image-viewer-image-svg {
   box-sizing: border-box;
   padding: clamp(0.75rem, 2vw, 1.5rem);
   background: var(--image-zoom-svg-background);
-  border: 1px solid var(--ui-border-color);
+  border: 0.0625rem solid var(--ui-border-color);
   border-radius: 0.5rem;
+}
+
+.image-viewer-button {
+  position: fixed;
+  z-index: 1;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #f1f1f1;
+  padding: 0;
+  font-size: 1.5rem;
+  font-weight: bold;
+  line-height: 1;
+  text-shadow: -0.0625rem -0.0625rem 0 #000, 0.0625rem -0.0625rem 0 #000,
+    -0.0625rem 0.0625rem 0 #000, 0.125rem 0.125rem 0 #000;
+  cursor: pointer;
+}
+
+.image-viewer-button:hover,
+.image-viewer-button:focus-visible {
+  color: #bbbbbb;
+}
+
+.image-viewer-close {
+  top: 1rem;
+  right: 1rem;
+}
+
+.image-viewer-zoom-in {
+  right: 1rem;
+  bottom: 1rem;
+}
+
+.image-viewer-zoom-out {
+  right: 3rem;
+  bottom: 1rem;
+}
+
+.image-viewer-reset {
+  right: 5rem;
+  bottom: 1rem;
 }
 
 .multi-line,
