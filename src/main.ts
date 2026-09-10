@@ -21,6 +21,8 @@ const setZoom = async (nextZoom: number): Promise<void> => {
 }
 
 const handleZoomShortcut = (event: KeyboardEvent): void => {
+  if (!isTauri()) return;
+
   if (!event.metaKey && !event.ctrlKey) return;
 
   if (event.key === '+' || event.key === '=') {
@@ -36,6 +38,8 @@ const handleZoomShortcut = (event: KeyboardEvent): void => {
 }
 
 const handleZoomWheel = (event: WheelEvent): void => {
+  if (!isTauri()) return;
+
   if (!event.metaKey && !event.ctrlKey) return;
 
   event.preventDefault();

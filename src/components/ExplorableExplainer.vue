@@ -1623,11 +1623,15 @@ li p {
 }
 
 .inline-icon--record-filter {
-  vertical-align: -0.32em;
+  vertical-align: -0.48em;
 }
 
 .inline-icon--toolbar-toggle {
-  vertical-align: middle;
+  vertical-align: -0.25em;
+}
+
+.inline-icon--text-centered {
+  vertical-align: -0.09em;
 }
 
 /* Buttons */
@@ -1680,6 +1684,13 @@ figure {
 .figure-row img {
   max-width: 100%;
   height: auto;
+}
+
+.multiple-views-image {
+  width: 100%;
+  height: auto;
+  padding-left: 1rem;
+  padding-top: 1rem;
 }
 
 :root[data-theme='dark'] .figure-row img[src*="correlation-"],
