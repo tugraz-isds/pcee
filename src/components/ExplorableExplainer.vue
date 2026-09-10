@@ -60,7 +60,7 @@
           PCEE version: {{ appVersion }}&nbsp;&nbsp;{{ releaseDate }}
         </p>
         <p class="about-copy">
-          SPCD3 version: 1.0.0&nbsp;&nbsp;30 Jun 2026
+          SPCD3 version: 1.0.0&nbsp;&nbsp;26 Jul 2026
         </p>
       </div>
     </div>

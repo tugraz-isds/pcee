@@ -1,4 +1,9 @@
 // SPCD3 version 1.0.0 ESM
+import { isTauri } from "@tauri-apps/api/core";
+import { dirname, join } from "@tauri-apps/api/path";
+import { save as saveWithNativeDialog } from "@tauri-apps/plugin-dialog";
+import { writeTextFile } from "@tauri-apps/plugin-fs";
+
 var xhtml = "http://www.w3.org/1999/xhtml";
 
 var namespaces = {
@@ -8548,11 +8553,6 @@ function setOptionsAndDownload() {
         document.body.removeChild(modalOverlay);
     });
 }
-function getTauriGlobalApi() {
-    if (typeof window === "undefined")
-        return null;
-    return window.__TAURI__ ?? null;
-}
 async function saveSvgWithBrowserFilePicker(svgContent, suggestedFileName) {
     if (typeof window === "undefined")
         return false;
@@ -8586,14 +8586,11 @@ async function saveSvgWithBrowserFilePicker(svgContent, suggestedFileName) {
     }
 }
 async function saveSvgWithTauri(svgContent, suggestedFileName) {
-    const tauri = getTauriGlobalApi();
-    const save = tauri?.dialog?.save;
-    const writeTextFile = tauri?.fs?.writeTextFile;
-    if (!save || !writeTextFile) {
+    if (!isTauri()) {
         return false;
     }
-    const defaultPath = await getTauriSvgDefaultPath(suggestedFileName);
-    const selectedPath = await save({
+    const defaultPath = await getTauriSvgDefaultPath(suggestedFileName, join);
+    const selectedPath = await saveWithNativeDialog({
         title: "Download Chart (SVG)",
         defaultPath,
         filters: [{ name: "SVG", extensions: ["svg"] }],
@@ -8602,23 +8599,17 @@ async function saveSvgWithTauri(svgContent, suggestedFileName) {
         return true;
     }
     await writeTextFile(selectedPath, svgContent);
-    await rememberTauriSvgSaveDirectory(selectedPath);
+    await rememberTauriSvgSaveDirectory(selectedPath, dirname);
     return true;
 }
-async function getTauriSvgDefaultPath(suggestedFileName) {
-    const tauri = getTauriGlobalApi();
-    const join = tauri?.path?.join;
+async function getTauriSvgDefaultPath(suggestedFileName, join) {
     const storedDirectory = getTauriSvgSaveDirectory();
-    if (join && storedDirectory) {
+    if (storedDirectory) {
         return await Promise.resolve(join(storedDirectory, suggestedFileName));
     }
     return suggestedFileName;
 }
-async function rememberTauriSvgSaveDirectory(selectedPath) {
-    const tauri = getTauriGlobalApi();
-    const dirname = tauri?.path?.dirname;
-    if (!dirname)
-        return;
+async function rememberTauriSvgSaveDirectory(selectedPath, dirname) {
     const directory = await Promise.resolve(dirname(selectedPath));
     if (directory) {
         setTauriSvgSaveDirectory(directory);
