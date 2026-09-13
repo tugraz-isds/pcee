@@ -78,7 +78,7 @@ const mqlPortrait = window.matchMedia(getConfig('portrait').query);
 const mqlLandscape = window.matchMedia(getConfig('landscape').query);
 
 const OFFSET_LANDSCAPE = ['.sticky-header'];
-const OFFSET_PORTRAIT  = ['.sticky-header', '.chart-container'];
+const OFFSET_PORTRAIT  = ['.sticky-header', '.main-chart', '.portrait-sheet-controls'];
 const MIN_OVERLAP_PX = 56;
 const HYSTERESIS_PX  = 32;
 const IDLE_MS = 140;
@@ -312,8 +312,15 @@ const onScroll = (): void => {
 };
 
 const totalOffsetPx = (): number => {
-  const order = mode.value === 'portrait' ? ['.sticky-header', '.chart-container']
-    : ['.sticky-header'];
+  if (mode.value === 'portrait') {
+    return Math.round(
+      OFFSET_PORTRAIT.reduce((sum, selector) => sum + measure(selector), 0) +
+      getStickyHeaderGapPx() +
+      2,
+    );
+  }
+
+  const order = ['.sticky-header'];
 
   let baseline = 0;
   let sum = 0;
@@ -488,5 +495,13 @@ onMounted(async () => {
 .navigation-dropdown:focus {
   outline: none;
   box-shadow: 0 0 0 0.1rem var(--ui-border-color);
+}
+
+@media (max-width: 60em) and (orientation: portrait) {
+  .navigation-dropdown {
+    margin-block: 0.15rem;
+    padding: 0.2rem 0.45rem;
+    font-size: 0.7rem;
+  }
 }
 </style>

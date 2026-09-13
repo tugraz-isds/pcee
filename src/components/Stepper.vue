@@ -176,7 +176,8 @@ const goToStep = (index: number): void => {
   currentStep.value = index;
 }
 
-const next = (): void => {
+const next = (event: MouseEvent): void => {
+  (event.currentTarget as HTMLButtonElement).blur();
   spcd3.disableInteractivity();
   currentStep.value++;
 }
@@ -384,6 +385,12 @@ onMounted(async (): Promise<void> => {
   animation: slide-in-from-bottom ease-out forwards;
   animation-timeline: scroll();
   animation-range: 0vh 100vh;
+}
+
+@media (max-width: 60em) and (orientation: portrait) {
+  .stepper {
+    overflow-anchor: none;
+  }
 }
 
 .buttons {
