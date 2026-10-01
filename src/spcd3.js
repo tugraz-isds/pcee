@@ -1,9 +1,4 @@
 // SPCD3 version 1.0.0 ESM
-import { isTauri } from "@tauri-apps/api/core";
-import { dirname, join } from "@tauri-apps/api/path";
-import { save as saveWithNativeDialog } from "@tauri-apps/plugin-dialog";
-import { writeTextFile } from "@tauri-apps/plugin-fs";
-
 var xhtml = "http://www.w3.org/1999/xhtml";
 
 var namespaces = {
@@ -3085,12 +3080,6 @@ function getResetIcon() {
 function getDownloadButton() {
     return "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 10 10\">\n  <path fill=\"currentColor\" d=\"M 4.65 7 L 4.65 1.4 L 5.25 1.4 L 5.25 7 z\"/>\n  <polyline points=\"2.07 5.00 4.93 7.14 7.79 5.00\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"0.5\"/>\n  <path fill=\"currentColor\" d=\"M 2 8.5 L 8 8.5 L 8 9 L 2 9 z\"/>\n</svg>";
 }
-function getZoomButton() {
-    return "<?xml version=\"1.0\" encoding=\"utf-8\"?><!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->\n<svg width=\"800px\" height=\"800px\" viewBox=\"0 0 24 24\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path d=\"M10 17C13.866 17 17 13.866 17 10C17 6.13401 13.866 3 10 3C6.13401 3 3 6.13401 3 10C3 13.866 6.13401 17 10 17Z\" stroke=\"#000000\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>\n<path d=\"M20.9992 21L14.9492 14.95\" stroke=\"#000000\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>\n<path d=\"M6 10H14\" stroke=\"#000000\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>\n<path d=\"M10 6V14\" stroke=\"#000000\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>\n</svg>";
-}
-function getPanButton() {
-    return "<?xml version=\"1.0\" encoding=\"iso-8859-1\"?>\n<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->\n<svg fill=\"#000000\" height=\"800px\" width=\"800px\" version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" \n\t viewBox=\"0 0 485 485\" xml:space=\"preserve\">\n<g>\n\t<path d=\"M382.5,69.429c-7.441,0-14.5,1.646-20.852,4.573c-4.309-23.218-24.7-40.859-49.148-40.859\n\t\tc-7.68,0-14.958,1.744-21.467,4.852C285.641,16.205,265.932,0,242.5,0c-23.432,0-43.141,16.206-48.533,37.995\n\t\tc-6.508-3.107-13.787-4.852-21.467-4.852c-27.57,0-50,22.43-50,50v122.222c-6.129-2.686-12.891-4.187-20-4.187\n\t\tc-27.57,0-50,22.43-50,50V354c0,72.233,58.766,131,131,131h118c72.233,0,131-58.767,131-131V119.429\n\t\tC432.5,91.858,410.07,69.429,382.5,69.429z M402.5,354c0,55.691-45.309,101-101,101h-118c-55.691,0-101-45.309-101-101V251.178\n\t\tc0-11.028,8.972-20,20-20s20,8.972,20,20v80h30V83.143c0-11.028,8.972-20,20-20s20,8.972,20,20v158.035h30V50\n\t\tc0-11.028,8.972-20,20-20c11.028,0,20,8.972,20,20v191.178h30V83.143c0-11.028,8.972-20,20-20s20,8.972,20,20v158.035h30v-121.75\n\t\tc0-11.028,8.972-20,20-20s20,8.972,20,20V354z\"/>\n</g>\n</svg>";
-}
 
 function cleanString(stringValue) {
     let value = stringValue
@@ -4720,8 +4709,10 @@ function calculateChartLayout(header, dataset) {
     const dimensionLabelWidth = getTextWidthSVG(longestDimensionLabel, "0.7rem Verdana");
     const tickLabelWidth = getTextWidthSVG(longestTickLabel, "0.75rem Verdana");
     const axisGap = dimensionSpacingVar ?? Math.max(96, Math.ceil(dimensionLabelWidth + 56));
-    const leftPadding = Math.max(72, Math.ceil(tickLabelWidth + 44));
-    const rightPadding = Math.max(48, Math.ceil(dimensionLabelWidth / 2 + 36));
+    const requiredLeftPadding = Math.max(72, Math.ceil(tickLabelWidth + 44));
+    const requiredRightPadding = Math.max(48, Math.ceil(dimensionLabelWidth / 2 + 36));
+    const leftPadding = requiredLeftPadding;
+    const rightPadding = requiredRightPadding;
     const chartWidth = Math.ceil(leftPadding + rightPadding + Math.max(0, n - 1) * axisGap);
     return { axisGap, chartWidth, leftPadding, rightPadding };
 }
@@ -5019,6 +5010,1992 @@ function cleanTooltipSelect() {
     selectAll('.spcd3-tip-layer[data-tooltip-type="selected"]').remove();
 }
 
+function getDefaultExportFromCjs (x) {
+	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
+}
+
+var cjs$2 = {exports: {}};
+
+var cjs$1 = {exports: {}};
+
+var hasRequiredCjs$1;
+
+function requireCjs$1 () {
+	if (hasRequiredCjs$1) return cjs$1.exports;
+	hasRequiredCjs$1 = 1;
+	(function (module, exports) {
+		Object.defineProperty(exports, "__esModule", { value: true });
+		exports.ParsingError = void 0;
+		class ParsingError extends Error {
+		    constructor(message, cause) {
+		        super(message);
+		        this.cause = cause;
+		    }
+		}
+		exports.ParsingError = ParsingError;
+		let parsingState;
+		function nextChild() {
+		    return element(false) || text() || comment() || cdata() || processingInstruction();
+		}
+		function nextRootChild() {
+		    match(/\s*/);
+		    return element(true) || comment() || doctype() || processingInstruction();
+		}
+		function parseDocument() {
+		    const declaration = processingInstruction();
+		    const children = [];
+		    let documentRootNode;
+		    let child = nextRootChild();
+		    while (child) {
+		        if (child.node.type === 'Element') {
+		            if (documentRootNode) {
+		                throw new Error('Found multiple root nodes');
+		            }
+		            documentRootNode = child.node;
+		        }
+		        if (!child.excluded) {
+		            children.push(child.node);
+		        }
+		        child = nextRootChild();
+		    }
+		    if (!documentRootNode) {
+		        throw new ParsingError('Failed to parse XML', 'Root Element not found');
+		    }
+		    if (parsingState.xml.length !== 0) {
+		        throw new ParsingError('Failed to parse XML', 'Not Well-Formed XML');
+		    }
+		    return {
+		        declaration: declaration ? declaration.node : null,
+		        root: documentRootNode,
+		        children
+		    };
+		}
+		function processingInstruction() {
+		    const m = match(/^<\?([\w-:.]+)\s*/);
+		    if (!m)
+		        return;
+		    // tag
+		    const node = {
+		        name: m[1],
+		        type: 'ProcessingInstruction',
+		        content: ''
+		    };
+		    const endMarkerIndex = parsingState.xml.indexOf('?>');
+		    if (endMarkerIndex > -1) {
+		        node.content = parsingState.xml.substring(0, endMarkerIndex).trim();
+		        parsingState.xml = parsingState.xml.slice(endMarkerIndex);
+		    }
+		    else {
+		        throw new ParsingError('Failed to parse XML', 'ProcessingInstruction closing tag not found');
+		    }
+		    match(/\?>/);
+		    return {
+		        excluded: parsingState.options.filter(node) === false,
+		        node
+		    };
+		}
+		function element(matchRoot) {
+		    const m = match(/^<([^?!</>\s]+)\s*/);
+		    if (!m)
+		        return;
+		    // name
+		    const node = {
+		        type: 'Element',
+		        name: m[1],
+		        attributes: {},
+		        children: []
+		    };
+		    const excluded = matchRoot ? false : parsingState.options.filter(node) === false;
+		    // attributes
+		    while (!(eos() || is('>') || is('?>') || is('/>'))) {
+		        const attr = attribute();
+		        if (attr) {
+		            node.attributes[attr.name] = attr.value;
+		        }
+		        else {
+		            return;
+		        }
+		    }
+		    // self closing tag
+		    if (match(/^\s*\/>/)) {
+		        node.children = null;
+		        return {
+		            excluded,
+		            node
+		        };
+		    }
+		    match(/\??>/);
+		    // children
+		    let child = nextChild();
+		    while (child) {
+		        if (!child.excluded) {
+		            node.children.push(child.node);
+		        }
+		        child = nextChild();
+		    }
+		    // closing
+		    if (parsingState.options.strictMode) {
+		        const closingTag = `</${node.name}>`;
+		        if (parsingState.xml.startsWith(closingTag)) {
+		            parsingState.xml = parsingState.xml.slice(closingTag.length);
+		        }
+		        else {
+		            throw new ParsingError('Failed to parse XML', `Closing tag not matching "${closingTag}"`);
+		        }
+		    }
+		    else {
+		        match(/^<\/[\p{L}\p{M}\w\-:.]+\s*>/u);
+		    }
+		    return {
+		        excluded,
+		        node
+		    };
+		}
+		function doctype() {
+		    const m = match(/^<!DOCTYPE\s+\S+\s+SYSTEM[^>]*>/) ||
+		        match(/^<!DOCTYPE\s+\S+\s+PUBLIC[^>]*>/) ||
+		        match(/^<!DOCTYPE\s+\S+\s*\[[^\]]*]>/) ||
+		        match(/^<!DOCTYPE\s+\S+\s*>/);
+		    if (m) {
+		        const node = {
+		            type: 'DocumentType',
+		            content: m[0]
+		        };
+		        return {
+		            excluded: parsingState.options.filter(node) === false,
+		            node
+		        };
+		    }
+		}
+		function cdata() {
+		    if (parsingState.xml.startsWith('<![CDATA[')) {
+		        const endPositionStart = parsingState.xml.indexOf(']]>');
+		        if (endPositionStart > -1) {
+		            const endPositionFinish = endPositionStart + 3;
+		            const node = {
+		                type: 'CDATA',
+		                content: parsingState.xml.substring(0, endPositionFinish)
+		            };
+		            parsingState.xml = parsingState.xml.slice(endPositionFinish);
+		            return {
+		                excluded: parsingState.options.filter(node) === false,
+		                node
+		            };
+		        }
+		    }
+		}
+		function comment() {
+		    const m = match(/^<!--[\s\S]*?-->/);
+		    if (m) {
+		        const node = {
+		            type: 'Comment',
+		            content: m[0]
+		        };
+		        return {
+		            excluded: parsingState.options.filter(node) === false,
+		            node
+		        };
+		    }
+		}
+		function text() {
+		    const m = match(/^([^<]+)/);
+		    if (m) {
+		        const node = {
+		            type: 'Text',
+		            content: m[1]
+		        };
+		        return {
+		            excluded: parsingState.options.filter(node) === false,
+		            node
+		        };
+		    }
+		}
+		function attribute() {
+		    const m = match(/([^=]+)\s*=\s*("[^"]*"|'[^']*'|[^>\s]+)\s*/);
+		    if (m) {
+		        return {
+		            name: m[1].trim(),
+		            value: stripQuotes(m[2].trim())
+		        };
+		    }
+		}
+		function stripQuotes(val) {
+		    return val.replace(/^['"]|['"]$/g, '');
+		}
+		/**
+		 * Match `re` and advance the string.
+		 */
+		function match(re) {
+		    const m = parsingState.xml.match(re);
+		    if (m) {
+		        parsingState.xml = parsingState.xml.slice(m[0].length);
+		        return m;
+		    }
+		}
+		/**
+		 * End-of-source.
+		 */
+		function eos() {
+		    return 0 === parsingState.xml.length;
+		}
+		/**
+		 * Check for `prefix`.
+		 */
+		function is(prefix) {
+		    return 0 === parsingState.xml.indexOf(prefix);
+		}
+		/**
+		 * Parse the given XML string into an object.
+		 */
+		function parseXml(xml, options = {}) {
+		    xml = xml.trim();
+		    const filter = options.filter || (() => true);
+		    parsingState = {
+		        xml,
+		        options: Object.assign(Object.assign({}, options), { filter, strictMode: options.strictMode === true })
+		    };
+		    return parseDocument();
+		}
+		{
+		    module.exports = parseXml;
+		}
+		exports.default = parseXml;
+		
+	} (cjs$1, cjs$1.exports));
+	return cjs$1.exports;
+}
+
+var cjs = cjs$2.exports;
+
+var hasRequiredCjs;
+
+function requireCjs () {
+	if (hasRequiredCjs) return cjs$2.exports;
+	hasRequiredCjs = 1;
+	(function (module, exports) {
+		var __importDefault = (cjs && cjs.__importDefault) || function (mod) {
+		    return (mod && mod.__esModule) ? mod : { "default": mod };
+		};
+		Object.defineProperty(exports, "__esModule", { value: true });
+		const xml_parser_xo_1 = __importDefault(/*@__PURE__*/ requireCjs$1());
+		function newLine(state) {
+		    if (!state.options.indentation && !state.options.lineSeparator)
+		        return;
+		    state.content += state.options.lineSeparator;
+		    let i;
+		    for (i = 0; i < state.level; i++) {
+		        state.content += state.options.indentation;
+		    }
+		}
+		function indent(state) {
+		    state.content = state.content.replace(/ +$/, '');
+		    let i;
+		    for (i = 0; i < state.level; i++) {
+		        state.content += state.options.indentation;
+		    }
+		}
+		function appendContent(state, content) {
+		    state.content += content;
+		}
+		function processNode(node, state, preserveSpace) {
+		    if (node.type === 'Element') {
+		        processElementNode(node, state, preserveSpace);
+		    }
+		    else if (node.type === 'ProcessingInstruction') {
+		        processProcessingIntruction(node, state);
+		    }
+		    else if (typeof node.content === 'string') {
+		        processContent(node.content, state, preserveSpace);
+		    }
+		    else {
+		        throw new Error('Unknown node type: ' + node.type);
+		    }
+		}
+		function processContent(content, state, preserveSpace) {
+		    if (!preserveSpace) {
+		        const trimmedContent = content.trim();
+		        if (state.options.lineSeparator) {
+		            content = trimmedContent;
+		        }
+		        else if (trimmedContent.length === 0) {
+		            content = trimmedContent;
+		        }
+		    }
+		    if (content.length > 0) {
+		        if (!preserveSpace && state.content.length > 0) {
+		            newLine(state);
+		        }
+		        appendContent(state, content);
+		    }
+		}
+		function isPathMatchingIgnoredPaths(path, ignoredPaths) {
+		    const fullPath = '/' + path.join('/');
+		    const pathLastPart = path[path.length - 1];
+		    return ignoredPaths.includes(pathLastPart) || ignoredPaths.includes(fullPath);
+		}
+		function processElementNode(node, state, preserveSpace) {
+		    state.path.push(node.name);
+		    if (!preserveSpace && state.content.length > 0) {
+		        newLine(state);
+		    }
+		    appendContent(state, '<' + node.name);
+		    processAttributes(state, node.attributes);
+		    if (node.children === null || (state.options.forceSelfClosingEmptyTag && node.children.length === 0)) {
+		        const selfClosingNodeClosingTag = state.options.whiteSpaceAtEndOfSelfclosingTag ? ' />' : '/>';
+		        // self-closing node
+		        appendContent(state, selfClosingNodeClosingTag);
+		    }
+		    else if (node.children.length === 0) {
+		        // empty node
+		        appendContent(state, '></' + node.name + '>');
+		    }
+		    else {
+		        const nodeChildren = node.children;
+		        appendContent(state, '>');
+		        state.level++;
+		        let nodePreserveSpace = node.attributes['xml:space'] === 'preserve' || preserveSpace;
+		        let ignoredPath = false;
+		        if (!nodePreserveSpace && state.options.ignoredPaths) {
+		            ignoredPath = isPathMatchingIgnoredPaths(state.path, state.options.ignoredPaths);
+		            nodePreserveSpace = ignoredPath;
+		        }
+		        if (!nodePreserveSpace && state.options.collapseContent) {
+		            let containsTextNodes = false;
+		            let containsTextNodesWithLineBreaks = false;
+		            let containsNonTextNodes = false;
+		            nodeChildren.forEach(function (child, index) {
+		                if (child.type === 'Text') {
+		                    if (child.content.includes('\n')) {
+		                        containsTextNodesWithLineBreaks = true;
+		                        child.content = child.content.trim();
+		                    }
+		                    else if ((index === 0 || index === nodeChildren.length - 1) && !preserveSpace) {
+		                        if (child.content.trim().length === 0) {
+		                            // If the text node is at the start or end and is empty, it should be ignored when formatting
+		                            child.content = '';
+		                        }
+		                    }
+		                    // If there is some content or whitespaces have been removed and there is no other siblings
+		                    if (child.content.trim().length > 0 || nodeChildren.length === 1) {
+		                        containsTextNodes = true;
+		                    }
+		                }
+		                else if (child.type === 'CDATA') {
+		                    containsTextNodes = true;
+		                }
+		                else {
+		                    containsNonTextNodes = true;
+		                }
+		            });
+		            if (containsTextNodes && (!containsNonTextNodes || !containsTextNodesWithLineBreaks)) {
+		                nodePreserveSpace = true;
+		            }
+		        }
+		        nodeChildren.forEach(function (child) {
+		            processNode(child, state, preserveSpace || nodePreserveSpace);
+		        });
+		        state.level--;
+		        if (!preserveSpace && !nodePreserveSpace) {
+		            newLine(state);
+		        }
+		        if (ignoredPath) {
+		            indent(state);
+		        }
+		        appendContent(state, '</' + node.name + '>');
+		    }
+		    state.path.pop();
+		}
+		function processAttributes(state, attributes) {
+		    Object.keys(attributes).forEach(function (attr) {
+		        if (state.options.attributeQuotes === 'single') {
+		            const escaped = attributes[attr].replace(/'/g, '&apos;');
+		            appendContent(state, ' ' + attr + '=\'' + escaped + '\'');
+		        }
+		        else {
+		            const escaped = attributes[attr].replace(/"/g, '&quot;');
+		            appendContent(state, ' ' + attr + '="' + escaped + '"');
+		        }
+		    });
+		}
+		function processProcessingIntruction(node, state) {
+		    if (state.content.length > 0) {
+		        newLine(state);
+		    }
+		    appendContent(state, '<?' + node.name);
+		    appendContent(state, ' ' + node.content.trim());
+		    appendContent(state, '?>');
+		}
+		/**
+		 * Converts the given XML into human readable format.
+		 */
+		function formatXml(xml, options = {}) {
+		    options.indentation = 'indentation' in options ? options.indentation : '    ';
+		    options.collapseContent = options.collapseContent === true;
+		    options.lineSeparator = 'lineSeparator' in options ? options.lineSeparator : '\r\n';
+		    options.whiteSpaceAtEndOfSelfclosingTag = options.whiteSpaceAtEndOfSelfclosingTag === true;
+		    options.throwOnFailure = options.throwOnFailure !== false;
+		    options.attributeQuotes = 'attributeQuotes' in options ? options.attributeQuotes : 'double';
+		    try {
+		        const parsedXml = (0, xml_parser_xo_1.default)(xml, { filter: options.filter, strictMode: options.strictMode });
+		        const state = { content: '', level: 0, options: options, path: [] };
+		        if (parsedXml.declaration) {
+		            processProcessingIntruction(parsedXml.declaration, state);
+		        }
+		        parsedXml.children.forEach(function (child) {
+		            processNode(child, state, false);
+		        });
+		        if (!options.lineSeparator) {
+		            return state.content;
+		        }
+		        return state.content
+		            .replace(/\r\n/g, '\n')
+		            .replace(/\n/g, options.lineSeparator);
+		    }
+		    catch (err) {
+		        if (options.throwOnFailure) {
+		            throw err;
+		        }
+		        return xml;
+		    }
+		}
+		formatXml.minify = (xml, options = {}) => {
+		    return formatXml(xml, Object.assign(Object.assign({}, options), { indentation: '', lineSeparator: '' }));
+		};
+		{
+		    module.exports = formatXml;
+		}
+		exports.default = formatXml;
+		
+	} (cjs$2, cjs$2.exports));
+	return cjs$2.exports;
+}
+
+var cjsExports = /*@__PURE__*/ requireCjs();
+var xmlFormat = /*@__PURE__*/getDefaultExportFromCjs(cjsExports);
+
+/******************************************************************************
+Copyright (c) Microsoft Corporation.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+***************************************************************************** */
+/* global Reflect, Promise, SuppressedError, Symbol, Iterator */
+
+
+typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
+    var e = new Error(message);
+    return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+};
+
+/**
+ * Sends a message to the backend.
+ * @example
+ * ```typescript
+ * import { invoke } from '@tauri-apps/api/core';
+ * await invoke('login', { user: 'tauri', password: 'poiwe3h4r5ip3yrhtew9ty' });
+ * ```
+ *
+ * @param cmd The command name.
+ * @param args The optional arguments to pass to the command.
+ * @param options The request options.
+ * @return A promise resolving or rejecting to the backend response.
+ *
+ * @since 1.0.0
+ */
+async function invoke(cmd, args = {}, options) {
+    return window.__TAURI_INTERNALS__.invoke(cmd, args, options);
+}
+function isTauri() {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+    return !!(globalThis || window).isTauri;
+}
+
+// Copyright 2019-2024 Tauri Programme within The Commons Conservancy
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
+/**
+ * The path module provides utilities for working with file and directory paths.
+ *
+ * This package is also accessible with `window.__TAURI__.path` when [`app.withGlobalTauri`](https://v2.tauri.app/reference/config/#withglobaltauri) in `tauri.conf.json` is set to `true`.
+ *
+ * It is recommended to allowlist only the APIs you use for optimal bundle size and security.
+ * @module
+ */
+/**
+ * @since 2.0.0
+ */
+var BaseDirectory;
+(function (BaseDirectory) {
+    /**
+     * @see {@link audioDir} for more information.
+     */
+    BaseDirectory[BaseDirectory["Audio"] = 1] = "Audio";
+    /**
+     * @see {@link cacheDir} for more information.
+     */
+    BaseDirectory[BaseDirectory["Cache"] = 2] = "Cache";
+    /**
+     * @see {@link configDir} for more information.
+     */
+    BaseDirectory[BaseDirectory["Config"] = 3] = "Config";
+    /**
+     * @see {@link dataDir} for more information.
+     */
+    BaseDirectory[BaseDirectory["Data"] = 4] = "Data";
+    /**
+     * @see {@link localDataDir} for more information.
+     */
+    BaseDirectory[BaseDirectory["LocalData"] = 5] = "LocalData";
+    /**
+     * @see {@link documentDir} for more information.
+     */
+    BaseDirectory[BaseDirectory["Document"] = 6] = "Document";
+    /**
+     * @see {@link downloadDir} for more information.
+     */
+    BaseDirectory[BaseDirectory["Download"] = 7] = "Download";
+    /**
+     * @see {@link pictureDir} for more information.
+     */
+    BaseDirectory[BaseDirectory["Picture"] = 8] = "Picture";
+    /**
+     * @see {@link publicDir} for more information.
+     */
+    BaseDirectory[BaseDirectory["Public"] = 9] = "Public";
+    /**
+     * @see {@link videoDir} for more information.
+     */
+    BaseDirectory[BaseDirectory["Video"] = 10] = "Video";
+    /**
+     * @see {@link resourceDir} for more information.
+     */
+    BaseDirectory[BaseDirectory["Resource"] = 11] = "Resource";
+    /**
+     * @see {@link tempDir} for more information.
+     */
+    BaseDirectory[BaseDirectory["Temp"] = 12] = "Temp";
+    /**
+     * @see {@link appConfigDir} for more information.
+     */
+    BaseDirectory[BaseDirectory["AppConfig"] = 13] = "AppConfig";
+    /**
+     * @see {@link appDataDir} for more information.
+     */
+    BaseDirectory[BaseDirectory["AppData"] = 14] = "AppData";
+    /**
+     * @see {@link appLocalDataDir} for more information.
+     */
+    BaseDirectory[BaseDirectory["AppLocalData"] = 15] = "AppLocalData";
+    /**
+     * @see {@link appCacheDir} for more information.
+     */
+    BaseDirectory[BaseDirectory["AppCache"] = 16] = "AppCache";
+    /**
+     * @see {@link appLogDir} for more information.
+     */
+    BaseDirectory[BaseDirectory["AppLog"] = 17] = "AppLog";
+    /**
+     * @see {@link desktopDir} for more information.
+     */
+    BaseDirectory[BaseDirectory["Desktop"] = 18] = "Desktop";
+    /**
+     * @see {@link executableDir} for more information.
+     */
+    BaseDirectory[BaseDirectory["Executable"] = 19] = "Executable";
+    /**
+     * @see {@link fontDir} for more information.
+     */
+    BaseDirectory[BaseDirectory["Font"] = 20] = "Font";
+    /**
+     * @see {@link homeDir} for more information.
+     */
+    BaseDirectory[BaseDirectory["Home"] = 21] = "Home";
+    /**
+     * @see {@link runtimeDir} for more information.
+     */
+    BaseDirectory[BaseDirectory["Runtime"] = 22] = "Runtime";
+    /**
+     * @see {@link templateDir} for more information.
+     */
+    BaseDirectory[BaseDirectory["Template"] = 23] = "Template";
+})(BaseDirectory || (BaseDirectory = {}));
+/**
+ *  Joins all given `path` segments together using the platform-specific separator as a delimiter, then normalizes the resulting path.
+ * @example
+ * ```typescript
+ * import { join, appDataDir } from '@tauri-apps/api/path';
+ * const appDataDirPath = await appDataDir();
+ * const path = await join(appDataDirPath, 'users', 'tauri', 'avatar.png');
+ * ```
+ *
+ * @since 1.0.0
+ */
+async function join(...paths) {
+    return invoke('plugin:path|join', { paths });
+}
+/**
+ * Returns the parent directory of a given `path`. Trailing directory separators are ignored.
+ * @example
+ * ```typescript
+ * import { dirname } from '@tauri-apps/api/path';
+ * const dir = await dirname('/path/to/somedir/');
+ * assert(dir === '/path/to');
+ * ```
+ *
+ * @since 1.0.0
+ */
+async function dirname(path) {
+    return invoke('plugin:path|dirname', { path });
+}
+
+/**
+ * Open a file/directory save dialog.
+ *
+ * The selected path is added to the filesystem and asset protocol scopes.
+ * When security is more important than the easy of use of this API,
+ * prefer writing a dedicated command instead.
+ *
+ * Note that the scope change is not persisted, so the values are cleared when the application is restarted.
+ * You can save it to the filesystem using [tauri-plugin-persisted-scope](https://github.com/tauri-apps/tauri-plugin-persisted-scope).
+ * @example
+ * ```typescript
+ * import { save } from '@tauri-apps/plugin-dialog';
+ * const filePath = await save({
+ *   filters: [{
+ *     name: 'Image',
+ *     extensions: ['png', 'jpeg']
+ *   }]
+ * });
+ * ```
+ *
+ * @returns A promise resolving to the selected path.
+ *
+ * @since 2.0.0
+ */
+async function save(options = {}) {
+    if (typeof options === 'object') {
+        Object.freeze(options);
+    }
+    return await invoke('plugin:dialog|save', { options });
+}
+
+// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
+/**
+ * Access the file system.
+ *
+ * ## iOS security-scoped resources
+ *
+ * On iOS, the `fs` plugin automatically manages access to security-scoped resources when a file URL is accessed.
+ * This is required for files outside the app's sandbox (e.g., from file picker).
+ *
+ * @example
+ * ```typescript
+ * import { open } from '@tauri-apps/plugin-fs';
+ *
+ * const file = await open('file:///path/to/file.txt');
+ * await file.close();
+ * ```
+ *
+ * ## Security
+ *
+ * This module prevents path traversal, not allowing parent directory accessors to be used
+ * (i.e. "/usr/path/to/../file" or "../path/to/file" paths are not allowed).
+ * Paths accessed with this API must be either relative to one of the {@link BaseDirectory | base directories}
+ * or created with the {@link https://v2.tauri.app/reference/javascript/api/namespacepath/ | path API}.
+ *
+ * The API has a scope configuration that forces you to restrict the paths that can be accessed using glob patterns.
+ *
+ * The scope configuration is an array of glob patterns describing file/directory paths that are allowed.
+ * For instance, this scope configuration allows **all** enabled `fs` APIs to (only) access files in the
+ * *databases* directory of the {@link https://v2.tauri.app/reference/javascript/api/namespacepath/#appdatadir | `$APPDATA` directory}:
+ * ```json
+ * {
+ *   "permissions": [
+ *     {
+ *       "identifier": "fs:scope",
+ *       "allow": [{ "path": "$APPDATA/databases/*" }]
+ *     }
+ *   ]
+ * }
+ * ```
+ *
+ * Scopes can also be applied to specific `fs` APIs by using the API's identifier instead of `fs:scope`:
+ * ```json
+ * {
+ *   "permissions": [
+ *     {
+ *       "identifier": "fs:allow-exists",
+ *       "allow": [{ "path": "$APPDATA/databases/*" }]
+ *     }
+ *   ]
+ * }
+ * ```
+ *
+ * Notice the use of the `$APPDATA` variable. The value is injected at runtime, resolving to the {@link https://v2.tauri.app/reference/javascript/api/namespacepath/#appdatadir | app data directory}.
+ *
+ * The available variables are:
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#appconfigdir | $APPCONFIG},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#appdatadir | $APPDATA},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#applocaldatadir | $APPLOCALDATA},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#appcachedir | $APPCACHE},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#applogdir | $APPLOG},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#audiodir | $AUDIO},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#cachedir | $CACHE},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#configdir | $CONFIG},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#datadir | $DATA},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#localdatadir | $LOCALDATA},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#desktopdir | $DESKTOP},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#documentdir | $DOCUMENT},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#downloaddir | $DOWNLOAD},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#executabledir | $EXE},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#fontdir | $FONT},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#homedir | $HOME},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#picturedir | $PICTURE},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#publicdir | $PUBLIC},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#runtimedir | $RUNTIME},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#templatedir | $TEMPLATE},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#videodir | $VIDEO},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#resourcedir | $RESOURCE},
+ * {@linkcode https://v2.tauri.app/reference/javascript/api/namespacepath/#tempdir | $TEMP}.
+ *
+ * Trying to execute any API with a URL not configured on the scope results in a promise rejection due to denied access.
+ *
+ * @module
+ */
+var SeekMode;
+(function (SeekMode) {
+    SeekMode[SeekMode["Start"] = 0] = "Start";
+    SeekMode[SeekMode["Current"] = 1] = "Current";
+    SeekMode[SeekMode["End"] = 2] = "End";
+})(SeekMode || (SeekMode = {}));
+/**
+  * Writes UTF-8 string `data` to the given `path`, by default creating a new file if needed, else overwriting.
+    @example
+  * ```typescript
+  * import { writeTextFile, BaseDirectory } from '@tauri-apps/plugin-fs';
+  *
+  * await writeTextFile('file.txt', "Hello world", { baseDir: BaseDirectory.AppLocalData });
+  * ```
+  *
+  * @since 2.0.0
+  */
+async function writeTextFile(path, data, options) {
+    if (path instanceof URL && path.protocol !== 'file:') {
+        throw new TypeError('Must be a file URL.');
+    }
+    const encoder = new TextEncoder();
+    await invoke('plugin:fs|write_text_file', encoder.encode(data), {
+        headers: {
+            path: encodeURIComponent(path instanceof URL ? path.toString() : path),
+            options: JSON.stringify(options)
+        }
+    });
+}
+
+const DOWNLOAD_BRUSH_ARROW_WIDTH = 11;
+const DOWNLOAD_BRUSH_ARROW_HEIGHT = 8;
+const DOWNLOAD_BRUSH_ARROW_X = -4.5;
+const DOWNLOAD_INVERT_ARROW_WIDTH = 6.8;
+const DOWNLOAD_INVERT_ARROW_HEIGHT = 11;
+const DOWNLOAD_INVERT_ARROW_X = -3.4;
+function getRenderedDimensionLabelFontSize(dimensionName) {
+    const axis = document.getElementById("dimension_axis_" + cleanString(dimensionName));
+    const label = axis?.parentElement?.querySelector(":scope > text.dimension");
+    return label ? getComputedStyle(label).fontSize : null;
+}
+function setActivePathLinesToDownload(svg) {
+    svg
+        .append("g")
+        .attr("class", "records")
+        .style("opacity", "0.5")
+        .style("stroke", "rgb(0, 129, 175)")
+        .style("opacity", "0.6")
+        .style("stroke-width", "2")
+        .style("fill", "none")
+        .selectAll("path")
+        .data(parcoords.data)
+        .enter()
+        .append("path")
+        .attr("id", (d) => {
+        return cleanString(d[key]);
+    })
+        .each(function (d) {
+        select(this).attr("d", linePath(d, parcoords.newFeatures));
+    });
+    const records = getAllRecords();
+    records.forEach((element) => {
+        const cleanRecord = cleanString(element);
+        const isSelected$1 = isSelected(cleanRecord);
+        if (isSelected$1) {
+            svg
+                .select("#" + cleanRecord)
+                .style("stroke", "rgb(255, 165, 0)")
+                .style("opacity", "1");
+        }
+        const dimNameToCheck = select("#" + cleanRecord).text();
+        if (dimNameToCheck != "") {
+            svg
+                .select("#" + cleanRecord)
+                .style("stroke", "lightgrey")
+                .style("stroke-opacity", "0.4");
+        }
+    });
+}
+function setFeatureAxisToDownload(svg, yAxis, yScales, xScales) {
+    const orderedFeatures = parcoords.newFeatures.map((name) => ({
+        name,
+    }));
+    const hiddenDims = getAllHiddenDimensionNames();
+    let featureAxis = svg
+        .selectAll("g.feature")
+        .data(orderedFeatures)
+        .enter()
+        .append("g")
+        .attr("transform", (d) => "translate(" + xScales(d.name) + ")");
+    featureAxis.append("g").each(function (d) {
+        const processedDimensionName = cleanString(d.name);
+        const max = getCurrentMaxRange(d.name);
+        const min = getCurrentMinRange(d.name);
+        const inversionStatus = getInversionStatus(d.name);
+        if (!isDimensionCategorical(d.name)) {
+            if (inversionStatus === "ascending") {
+                yScales[d.name].domain([min, max]);
+                yAxis = setupYAxis(yScales, parcoords.newDataset, hiddenDims);
+                select(this)
+                    .attr("id", "dimension_axis_" + processedDimensionName)
+                    .call(yAxis[d.name].scale(yScales[d.name].domain(yScales[d.name].domain())));
+            }
+            else {
+                yScales[d.name].domain([min, max]);
+                yAxis = setupYAxis(yScales, parcoords.newDataset, hiddenDims);
+                select(this)
+                    .attr("id", "dimension_axis_" + processedDimensionName)
+                    .call(yAxis[d.name].scale(yScales[d.name].domain(yScales[d.name].domain().reverse())));
+            }
+        }
+        else {
+            if (inversionStatus === "ascending") {
+                select(this)
+                    .attr("id", "dimension_axis_" + processedDimensionName)
+                    .call(yAxis[d.name]);
+            }
+            else {
+                const scale = yScales[d.name];
+                scale.domain([...scale.domain()].reverse());
+                select(this)
+                    .attr("id", "dimension_axis_" + processedDimensionName)
+                    .call(yAxis[d.name]);
+            }
+        }
+    });
+    featureAxis
+        .append("text")
+        .attr("class", "dimension")
+        .attr("text-anchor", "middle")
+        .attr("y", 18)
+        .text((d) => d.name.length > 10 ? d.name.substr(0, 10) + "..." : d.name)
+        .attr("font-size", (d) => getRenderedDimensionLabelFontSize(d.name));
+    featureAxis
+        .selectAll(".tick text")
+        .attr("dy", 0)
+        .attr("dominant-baseline", "middle");
+    setBrushDownToDownload(featureAxis);
+    setBrushUpToDownload(featureAxis);
+    setRectToDragToDownload(featureAxis);
+    setInvertIconToDownload(featureAxis);
+}
+function setSelectedRecordValuesToDownload(svg, xScales, yScales) {
+    const selectedRecords = getSelected();
+    if (selectedRecords.length === 0)
+        return;
+    const selectedDataset = parcoords.newDataset.filter((record) => selectedRecords.includes(record[hoverlabel]) &&
+        !isRecordColored(record[hoverlabel]));
+    if (selectedDataset.length === 0)
+        return;
+    selectedDataset.forEach((record) => {
+        createToolTipForValues(record, true, svg, xScales, yScales);
+    });
+}
+function setBrushDownToDownload(featureAxis) {
+    featureAxis.each(function (d) {
+        const processedDimensionName = cleanString(d.name);
+        const item = parcoords.currentPosOfDims.find((object) => object.key == d.name);
+        select(this)
+            .append("g")
+            .append("use")
+            .attr("id", "triangle_down_" + processedDimensionName)
+            .attr("y", item.top == 50 ? 41 : item.top - DOWNLOAD_BRUSH_ARROW_HEIGHT)
+            .attr("x", DOWNLOAD_BRUSH_ARROW_X)
+            .attr("width", DOWNLOAD_BRUSH_ARROW_WIDTH)
+            .attr("height", DOWNLOAD_BRUSH_ARROW_HEIGHT)
+            .attr("href", "#brush_image_bottom");
+    });
+}
+function setBrushUpToDownload(featureAxis) {
+    featureAxis.each(function (d) {
+        const processedDimensionName = cleanString(d.name);
+        const item = parcoords.currentPosOfDims.find((object) => object.key == d.name);
+        select(this)
+            .append("g")
+            .append("use")
+            .attr("id", "triangle_up_" + processedDimensionName)
+            .attr("y", item.bottom)
+            .attr("x", DOWNLOAD_BRUSH_ARROW_X)
+            .attr("width", DOWNLOAD_BRUSH_ARROW_WIDTH)
+            .attr("height", DOWNLOAD_BRUSH_ARROW_HEIGHT)
+            .attr("href", "#brush_image_top");
+    });
+}
+function setRectToDragToDownload(featureAxis) {
+    featureAxis.each(function (d) {
+        const processedDimensionName = cleanString(d.name);
+        const item = parcoords.currentPosOfDims.find((object) => object.key == d.name);
+        let height = item.bottom - item.top;
+        const isIdle = item.top == 50 && item.bottom == 350;
+        select(this)
+            .append("g")
+            .append("rect")
+            .attr("id", "rect_" + processedDimensionName)
+            .attr("width", 12)
+            .attr("height", height)
+            .attr("x", -6)
+            .attr("y", item.top)
+            .attr("fill", isIdle ? BRUSH_IDLE_FILL : BRUSH_ACTIVE_FILL)
+            .attr("opacity", isIdle ? "0.5" : "0.7");
+    });
+}
+function setInvertIconToDownload(featureAxis) {
+    featureAxis
+        .append("svg")
+        .attr("y", 24)
+        .attr("x", DOWNLOAD_INVERT_ARROW_X)
+        .append("use")
+        .attr("width", DOWNLOAD_INVERT_ARROW_WIDTH)
+        .attr("height", DOWNLOAD_INVERT_ARROW_HEIGHT)
+        .attr("y", 0)
+        .attr("x", 0)
+        .each(function (d) {
+        const processedDimensionName = cleanString(d.name);
+        if (getInversionStatus(processedDimensionName) == "descending") {
+            select(this).attr("href", "#arrow_image_down");
+        }
+        else {
+            select(this).attr("href", "#arrow_image_up");
+        }
+    });
+}
+
+const SVG_DOWNLOAD_SETTINGS_KEY = "spcd3:svg-download-settings";
+const EXAMPLE_UI_SETTINGS_KEY = "spcd3:example-ui-settings";
+const CHART_ZOOM_SCALE_KEY = "spcd3:chart-zoom-scale";
+const TAURI_SVG_SAVE_DIRECTORY_KEY = "spcd3:tauri-svg-save-directory";
+const DEFAULT_SVG_DOWNLOAD_SETTINGS = {
+    decimals: 2,
+    keepClasses: true,
+    includeUiControls: true,
+    includeDataValues: true,
+    convertSymbolsToPaths: false,
+};
+const DEFAULT_EXAMPLE_UI_SETTINGS = {
+    selectionSensitivityRem: 0.4,
+    dimensionSpacingRem: 6,
+    zoomFactor: 1,
+};
+function canUseLocalStorage() {
+    return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
+}
+function readJson(key, fallback) {
+    if (!canUseLocalStorage())
+        return fallback;
+    try {
+        const rawValue = window.localStorage.getItem(key);
+        if (!rawValue)
+            return fallback;
+        return { ...fallback, ...JSON.parse(rawValue) };
+    }
+    catch {
+        return fallback;
+    }
+}
+function writeJson(key, value) {
+    if (!canUseLocalStorage())
+        return;
+    try {
+        window.localStorage.setItem(key, JSON.stringify(value));
+    }
+    catch { }
+}
+function getSvgDownloadSettings() {
+    return readJson(SVG_DOWNLOAD_SETTINGS_KEY, DEFAULT_SVG_DOWNLOAD_SETTINGS);
+}
+function setSvgDownloadSettings(settings) {
+    writeJson(SVG_DOWNLOAD_SETTINGS_KEY, settings);
+}
+function getExampleUiSettings() {
+    return readJson(EXAMPLE_UI_SETTINGS_KEY, DEFAULT_EXAMPLE_UI_SETTINGS);
+}
+function setExampleUiSettings(settings) {
+    writeJson(EXAMPLE_UI_SETTINGS_KEY, settings);
+}
+function getChartZoomScale() {
+    if (!canUseLocalStorage())
+        return 1;
+    try {
+        const rawScale = window.localStorage.getItem(CHART_ZOOM_SCALE_KEY);
+        if (rawScale === null)
+            return 1;
+        const scale = Number(rawScale);
+        return Number.isFinite(scale) ? scale : 1;
+    }
+    catch {
+        return 1;
+    }
+}
+function setChartZoomScale(scale) {
+    if (!Number.isFinite(scale) || !canUseLocalStorage())
+        return;
+    try {
+        window.localStorage.setItem(CHART_ZOOM_SCALE_KEY, String(scale));
+    }
+    catch { }
+}
+function getTauriSvgSaveDirectory() {
+    if (!canUseLocalStorage())
+        return null;
+    try {
+        return window.localStorage.getItem(TAURI_SVG_SAVE_DIRECTORY_KEY);
+    }
+    catch {
+        return null;
+    }
+}
+function setTauriSvgSaveDirectory(directory) {
+    if (!canUseLocalStorage())
+        return;
+    try {
+        window.localStorage.setItem(TAURI_SVG_SAVE_DIRECTORY_KEY, directory);
+    }
+    catch { }
+}
+
+const DOWNLOAD_TOP_BALANCE_PADDING = 32;
+const DEFAULT_SVG_FILENAME = "parcoords.svg";
+function createSvgString(includeDataValues = false) {
+    const orderedFeatures = parcoords.newFeatures.map((name) => ({
+        name,
+    }));
+    const layout = calculateChartLayout(orderedFeatures, parcoords.newDataset);
+    const leftBalancePadding = Math.max(0, layout.rightPadding - layout.leftPadding);
+    const rightBalancePadding = Math.max(0, layout.leftPadding - layout.rightPadding);
+    const hiddenDims = getAllHiddenDimensionNames();
+    let yScalesForDownload = setupYScales(parcoords.features, parcoords.newDataset);
+    let yAxisForDownload = setupYAxis(yScalesForDownload, parcoords.newDataset, hiddenDims);
+    let xScalesForDownload = setupXScales(orderedFeatures, parcoords.newDataset);
+    let svg = create$1("svg")
+        .attr("xmlns", "http://www.w3.org/2000/svg")
+        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
+        .attr("viewBox", [
+        -leftBalancePadding,
+        -DOWNLOAD_TOP_BALANCE_PADDING,
+        width + leftBalancePadding + rightBalancePadding,
+        height + DOWNLOAD_TOP_BALANCE_PADDING,
+    ])
+        .attr("font-family", "Verdana, sans-serif");
+    const contentRoot = svg.append("g");
+    let defs = svg.append("defs");
+    appendSymbol(defs, "arrow_image_up", "0 0 6 10", [
+        {
+            fill: "black",
+            d: "M 0 4 L 3 0 L 6 4 L 4 4 L 4 10 L 2 10 L 2 4 Z",
+        },
+    ]);
+    appendSymbol(defs, "arrow_image_down", "0 0 6 10", [
+        {
+            fill: "black",
+            d: "M 0 6 L 2 6 L 2 0 L 4 0 L 4 6 L 6 6 L 3 10 Z",
+        },
+    ]);
+    appendSymbol(defs, "brush_image_top", "0 0 100 86", [
+        {
+            fill: "rgb(242, 242, 76)",
+            stroke: "black",
+            strokeWidth: "7",
+            d: "M 7 79 L 50 7 L 93 79 Z",
+        },
+    ]);
+    appendSymbol(defs, "brush_image_bottom", "0 0 100 86", [
+        {
+            fill: "rgb(242, 242, 76)",
+            stroke: "black",
+            strokeWidth: "7",
+            d: "M 7 7 L 93 7 L 50 79 Z",
+        },
+    ]);
+    setFeatureAxisToDownload(contentRoot, yAxisForDownload, yScalesForDownload, xScalesForDownload);
+    setActivePathLinesToDownload(contentRoot);
+    if (includeDataValues) {
+        setSelectedRecordValuesToDownload(contentRoot, xScalesForDownload, yScalesForDownload);
+    }
+    return svg.node().outerHTML;
+}
+function saveAsSvg() {
+    setOptionsAndDownload();
+}
+function setOptionsAndDownload() {
+    const persistedSettings = getSvgDownloadSettings();
+    const modalOverlay = document.createElement("div");
+    modalOverlay.className = "spcd3-modal-overlay";
+    modalOverlay.style.display = "block";
+    const modal = document.createElement("div");
+    modal.className = "spcd3-modal";
+    modal.style.display = "block";
+    modal.style.width = "30vw";
+    const header = document.createElement("div");
+    header.className = "spcd3-modal-header";
+    header.style.paddingLeft = "0";
+    const title = document.createElement("div");
+    title.textContent = "Download Chart (SVG)";
+    title.className = "spcd3-modal-title";
+    title.style.paddingLeft = "0";
+    const closeButton = document.createElement("span");
+    closeButton.innerHTML = "&times;";
+    closeButton.className = "spcd3-close-button";
+    modal.appendChild(title);
+    modal.appendChild(closeButton);
+    modal.appendChild(header);
+    const form = document.createElement("div");
+    form.className = "spcd3-form";
+    const rowDecimals = document.createElement("div");
+    rowDecimals.className = "spcd3-options-div";
+    const label = document.createElement("label");
+    label.className = "spcd3-label";
+    label.textContent = "Decimals places (0-10): ";
+    label.htmlFor = "decimalsInput";
+    const input = document.createElement("input");
+    input.className = "spcd3-input";
+    input.type = "number";
+    input.min = "0";
+    input.max = "10";
+    input.value = persistedSettings.decimals.toString();
+    input.id = "decimalsInput";
+    rowDecimals.appendChild(label);
+    rowDecimals.appendChild(input);
+    const rowKeepClasses = document.createElement("div");
+    rowKeepClasses.className = "spcd3-options-div";
+    const labelKeepClasses = document.createElement("label");
+    labelKeepClasses.className = "spcd3-label";
+    labelKeepClasses.textContent = "Keep classes: ";
+    const inputKeepClasses = document.createElement("input");
+    inputKeepClasses.className = "spcd3-input";
+    inputKeepClasses.type = "checkbox";
+    inputKeepClasses.id = "keepClassesInput";
+    inputKeepClasses.checked = persistedSettings.keepClasses;
+    rowKeepClasses.appendChild(labelKeepClasses);
+    rowKeepClasses.appendChild(inputKeepClasses);
+    const rowIncludeUiControls = document.createElement("div");
+    rowIncludeUiControls.className = "spcd3-options-div";
+    const labelIncludeUiControls = document.createElement("label");
+    labelIncludeUiControls.className = "spcd3-label";
+    labelIncludeUiControls.textContent = "Include UI controls: ";
+    const inputIncludeUiControls = document.createElement("input");
+    inputIncludeUiControls.className = "spcd3-input";
+    inputIncludeUiControls.type = "checkbox";
+    inputIncludeUiControls.id = "includeUiControlsInput";
+    inputIncludeUiControls.checked = persistedSettings.includeUiControls;
+    rowIncludeUiControls.appendChild(labelIncludeUiControls);
+    rowIncludeUiControls.appendChild(inputIncludeUiControls);
+    const rowIncludeDataValues = document.createElement("div");
+    rowIncludeDataValues.className = "spcd3-options-div";
+    const labelIncludeDataValues = document.createElement("label");
+    labelIncludeDataValues.className = "spcd3-label";
+    labelIncludeDataValues.textContent =
+        "Include data values of selected records: ";
+    const inputIncludeDataValues = document.createElement("input");
+    inputIncludeDataValues.className = "spcd3-input";
+    inputIncludeDataValues.type = "checkbox";
+    inputIncludeDataValues.id = "includeDataValuesInput";
+    inputIncludeDataValues.checked = persistedSettings.includeDataValues;
+    rowIncludeDataValues.appendChild(labelIncludeDataValues);
+    rowIncludeDataValues.appendChild(inputIncludeDataValues);
+    const rowConvertSymbols = document.createElement("div");
+    rowConvertSymbols.className = "spcd3-options-div";
+    const labelConvertSymbols = document.createElement("label");
+    labelConvertSymbols.className = "spcd3-label";
+    labelConvertSymbols.textContent = "Convert symbols to paths: ";
+    const inputConvertSymbols = document.createElement("input");
+    inputConvertSymbols.className = "spcd3-input";
+    inputConvertSymbols.type = "checkbox";
+    inputConvertSymbols.id = "convertSymbolsInput";
+    inputConvertSymbols.checked = persistedSettings.convertSymbolsToPaths;
+    rowConvertSymbols.appendChild(labelConvertSymbols);
+    rowConvertSymbols.appendChild(inputConvertSymbols);
+    const button = document.createElement("button");
+    button.textContent = "Download";
+    button.className = "spcd3-button spcd3-generic-button";
+    form.appendChild(rowDecimals);
+    form.appendChild(rowKeepClasses);
+    form.appendChild(rowIncludeUiControls);
+    form.appendChild(rowIncludeDataValues);
+    form.appendChild(rowConvertSymbols);
+    form.appendChild(button);
+    modal.appendChild(form);
+    modalOverlay.appendChild(modal);
+    document.body.appendChild(modalOverlay);
+    input.focus();
+    button.addEventListener("click", async () => {
+        const name = DEFAULT_SVG_FILENAME;
+        const decimals = parseInt(input.value);
+        if (isNaN(decimals) || decimals < 0 || decimals > 10) {
+            alert("Please enter a number between 2 and 10.");
+            input.focus();
+            return;
+        }
+        setSvgDownloadSettings({
+            decimals,
+            keepClasses: inputKeepClasses.checked,
+            includeUiControls: inputIncludeUiControls.checked,
+            includeDataValues: inputIncludeDataValues.checked,
+            convertSymbolsToPaths: inputConvertSymbols.checked,
+        });
+        let svgString = createSvgString(inputIncludeDataValues.checked);
+        svgString = svgString.replaceAll("currentColor", "black");
+        svgString = svgString.replaceAll('stroke="black"', "");
+        svgString = svgString.replaceAll('fill="black"', "");
+        svgString = svgString.replaceAll('dy="0"', "");
+        svgString = svgString.replaceAll('fill="none" font-size="10" font-family="sans-serif" text-anchor="end"', 'fill="none" font-size="8" text-anchor="end" stroke="black"');
+        svgString = svgString.replaceAll("domain", "dimension");
+        svgString = svgString.replaceAll('class="tick" opacity="1"', 'class="tick" fill="black" stroke="none"');
+        let updatedSVG = roundDecimals(svgString, decimals);
+        updatedSVG = updatedSVG.replaceAll('class="records" style="opacity: 1; stroke: rgba(0, 129, 175, 1); stroke-width: 2; fill: none;"', 'class="records" style="opacity: 0.5; stroke: rgba(0, 129, 175, 0.8); stroke-width: 2; fill: none;"');
+        if (!inputKeepClasses.checked) {
+            updatedSVG = removeClasses(updatedSVG);
+        }
+        if (!inputIncludeUiControls.checked) {
+            updatedSVG = removeUiControls(updatedSVG);
+            updatedSVG = updatedSVG.replaceAll('<svg y="25" x="-6"><use width="12" height="12" y="0" x="0" href="#arrow_image_up"></use></svg>', "");
+        }
+        if (inputConvertSymbols.checked) {
+            updatedSVG = convertSymbolsToPaths(updatedSVG);
+        }
+        let processedData = xmlFormat(updatedSVG, {
+            indentation: "  ",
+            collapseContent: true,
+        });
+        let preface = '<?xml version="1.0" standalone="no"?>\r\n';
+        const svgContent = `${preface}${processedData}`;
+        button.disabled = true;
+        try {
+            const savedInTauri = await saveSvgWithTauri(svgContent, name);
+            if (savedInTauri) {
+                document.body.removeChild(modalOverlay);
+                return;
+            }
+            const savedInBrowserPicker = await saveSvgWithBrowserFilePicker(svgContent, name);
+            if (!savedInBrowserPicker) {
+                downloadSvgInBrowser(svgContent, name);
+            }
+            document.body.removeChild(modalOverlay);
+        }
+        catch (error) {
+            console.error("Failed to save SVG", error);
+            alert("The SVG file could not be saved.");
+        }
+        finally {
+            button.disabled = false;
+        }
+    });
+    modalOverlay.addEventListener("click", (e) => {
+        if (e.target === modalOverlay) {
+            document.body.removeChild(modalOverlay);
+        }
+    });
+    closeButton.addEventListener("click", () => {
+        document.body.removeChild(modalOverlay);
+    });
+}
+async function saveSvgWithBrowserFilePicker(svgContent, suggestedFileName) {
+    if (typeof window === "undefined")
+        return false;
+    const browserWindow = window;
+    const showSaveFilePicker = browserWindow.showSaveFilePicker;
+    if (!showSaveFilePicker) {
+        return false;
+    }
+    try {
+        const fileHandle = await showSaveFilePicker({
+            id: "spcd3-svg-download",
+            suggestedName: suggestedFileName,
+            types: [
+                {
+                    description: "SVG files",
+                    accept: { "image/svg+xml": [".svg"] },
+                },
+            ],
+        });
+        const writable = await fileHandle.createWritable();
+        await writable.write(svgContent);
+        await writable.close();
+        return true;
+    }
+    catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+            return true;
+        }
+        console.warn("Browser file picker save failed, falling back to download", error);
+        return false;
+    }
+}
+async function saveSvgWithTauri(svgContent, suggestedFileName) {
+    if (!isTauri()) {
+        return false;
+    }
+    const defaultPath = await getTauriSvgDefaultPath(suggestedFileName, join);
+    const selectedPath = await save({
+        title: "Download Chart (SVG)",
+        defaultPath,
+        filters: [{ name: "SVG", extensions: ["svg"] }],
+    });
+    if (!selectedPath) {
+        return true;
+    }
+    await writeTextFile(selectedPath, svgContent);
+    await rememberTauriSvgSaveDirectory(selectedPath, dirname);
+    return true;
+}
+async function getTauriSvgDefaultPath(suggestedFileName, join) {
+    const storedDirectory = getTauriSvgSaveDirectory();
+    if (storedDirectory) {
+        return await join(storedDirectory, suggestedFileName);
+    }
+    return suggestedFileName;
+}
+async function rememberTauriSvgSaveDirectory(selectedPath, dirname) {
+    const directory = await dirname(selectedPath);
+    if (directory) {
+        setTauriSvgSaveDirectory(directory);
+    }
+}
+function downloadSvgInBrowser(svgContent, filename) {
+    const svgBlob = new Blob([svgContent], {
+        type: "image/svg+xml;charset=utf-8",
+    });
+    const svgUrl = URL.createObjectURL(svgBlob);
+    const downloadLink = document.createElement("a");
+    downloadLink.href = svgUrl;
+    downloadLink.download = filename;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+    URL.revokeObjectURL(svgUrl);
+}
+function appendSymbol(defs, id, viewBox, paths) {
+    const symbol = defs.append("symbol").attr("id", id).attr("viewBox", viewBox);
+    paths.forEach((pathDefinition) => {
+        const path = symbol.append("path").attr("d", pathDefinition.d);
+        if (pathDefinition.fill) {
+            path.attr("fill", pathDefinition.fill);
+        }
+        if (pathDefinition.stroke) {
+            path.attr("stroke", pathDefinition.stroke);
+        }
+        if (pathDefinition.strokeWidth) {
+            path.attr("stroke-width", pathDefinition.strokeWidth);
+        }
+    });
+}
+function roundDecimals(svgString, decimals) {
+    return svgString.replace(/(\d*\.\d+)/g, (match) => {
+        return parseFloat(match).toFixed(decimals);
+    });
+}
+function removeClasses(svgString) {
+    return svgString.replace(/\sclass="[^"]*"/g, "");
+}
+function removeUiControls(svgString) {
+    svgString = svgString.replace(/<defs[\s\S]*?<\/defs>/g, "");
+    svgString = svgString.replace(/<g><use[\s\S]*?<\/use><\/g>/g, "");
+    svgString = svgString.replace(/<g><rect[\s\S]*?<\/rect><\/g>/g, "");
+    svgString = svgString.replace(/y\s*=\s*["']?18["']?/g, 'y="29"');
+    return svgString;
+}
+function convertSymbolsToPaths(svgString) {
+    const parser = new DOMParser();
+    const documentSvg = parser.parseFromString(svgString, "image/svg+xml");
+    const svgRoot = documentSvg.documentElement;
+    const defs = svgRoot.querySelector("defs");
+    if (!defs)
+        return svgString;
+    const symbols = new Map();
+    defs.querySelectorAll("symbol").forEach((symbol) => {
+        const id = symbol.getAttribute("id");
+        if (id) {
+            symbols.set(id, symbol);
+        }
+    });
+    svgRoot.querySelectorAll("use").forEach((useNode) => {
+        const href = useNode.getAttribute("href") || useNode.getAttribute("xlink:href");
+        if (!href || !href.startsWith("#"))
+            return;
+        const symbol = symbols.get(href.slice(1));
+        if (!symbol)
+            return;
+        const replacement = createPathsFromSymbol(documentSvg, symbol, useNode);
+        const parent = useNode.parentElement;
+        if (!parent)
+            return;
+        if (parent.tagName.toLowerCase() === "svg" &&
+            parent.childElementCount === 1 &&
+            parent.parentElement) {
+            parent.parentElement.replaceChild(replacement, parent);
+        }
+        else {
+            parent.replaceChild(replacement, useNode);
+        }
+    });
+    defs.remove();
+    return new XMLSerializer().serializeToString(svgRoot);
+}
+function createPathsFromSymbol(documentSvg, symbol, useNode) {
+    const group = documentSvg.createElementNS("http://www.w3.org/2000/svg", "g");
+    const symbolSvgParent = useNode.parentElement?.tagName.toLowerCase() === "svg"
+        ? useNode.parentElement
+        : null;
+    const symbolX = parseSvgNumber(symbolSvgParent?.getAttribute("x"));
+    const symbolY = parseSvgNumber(symbolSvgParent?.getAttribute("y"));
+    const useX = parseSvgNumber(useNode.getAttribute("x"));
+    const useY = parseSvgNumber(useNode.getAttribute("y"));
+    const width = parseSvgNumber(useNode.getAttribute("width"), 0);
+    const height = parseSvgNumber(useNode.getAttribute("height"), 0);
+    const [minX, minY, viewBoxWidth, viewBoxHeight] = parseViewBox(symbol.getAttribute("viewBox"));
+    const scaleX = viewBoxWidth === 0 ? 1 : width / viewBoxWidth;
+    const scaleY = viewBoxHeight === 0 ? 1 : height / viewBoxHeight;
+    const transforms = [
+        `translate(${symbolX + useX} ${symbolY + useY})`,
+        `scale(${scaleX} ${scaleY})`,
+    ];
+    if (minX !== 0 || minY !== 0) {
+        transforms.push(`translate(${-minX} ${-minY})`);
+    }
+    group.setAttribute("transform", transforms.join(" "));
+    symbol.querySelectorAll("path").forEach((pathNode) => {
+        const path = documentSvg.createElementNS("http://www.w3.org/2000/svg", "path");
+        Array.from(pathNode.attributes).forEach((attribute) => {
+            path.setAttribute(attribute.name, attribute.value);
+        });
+        group.appendChild(path);
+    });
+    return group;
+}
+function parseViewBox(viewBox) {
+    if (!viewBox)
+        return [0, 0, 0, 0];
+    const values = viewBox
+        .trim()
+        .split(/[\s,]+/)
+        .map((value) => Number.parseFloat(value));
+    if (values.length !== 4 || values.some((value) => Number.isNaN(value))) {
+        return [0, 0, 0, 0];
+    }
+    return [values[0], values[1], values[2], values[3]];
+}
+function parseSvgNumber(value, fallback = 0) {
+    if (value == null || value === "")
+        return fallback;
+    const parsed = Number.parseFloat(value);
+    return Number.isNaN(parsed) ? fallback : parsed;
+}
+
+let chartZoomState = null;
+const MIN_CHART_SCALE = 0.1;
+const MAX_CHART_SCALE = 3;
+const CHART_SCALE_STEP = 0.25;
+function createToolbar(dataset) {
+    const toolbarRow = select("#spcd3-toolbarRow");
+    const { btn: toggleButton, tip: toggleTip } = makeIconButton(toolbarRow, {
+        id: "toggleButton",
+        iconHtml: getExpandToolbarIcon(),
+        tipText: "Expand Toolbar",
+    });
+    const toolbar = toolbarRow
+        .append("div")
+        .attr("id", "spcd3-toolbar")
+        .attr("class", "spcd3-toolbar");
+    makeIconButton(toolbar, {
+        iconHtml: getTableIcon(),
+        tipText: "Show Table",
+        onClick: () => showModalWithData(dataset),
+    });
+    const { btn: zoomOutButton } = makeTextButton(toolbar, {
+        id: "zoomOutButton",
+        text: "−",
+        tipText: "Zoom Out",
+    });
+    const zoomControl = toolbar
+        .append("span")
+        .attr("class", "spcd3-toolbar-zoom-label");
+    const zoomInput = zoomControl
+        .append("span")
+        .attr("class", "spcd3-toolbar-zoom-input")
+        .attr("contenteditable", "true")
+        .attr("role", "textbox")
+        .attr("tabindex", "0")
+        .attr("aria-label", "Zoom percentage")
+        .text("100");
+    zoomControl.append("span").attr("aria-hidden", "true").text("%");
+    const { btn: zoomInButton } = makeTextButton(toolbar, {
+        id: "zoomInButton",
+        text: "+",
+        tipText: "Zoom In",
+    });
+    makeIconButton(toolbar, {
+        id: "downloadButton",
+        iconHtml: getDownloadButton(),
+        tipText: "Download Chart (SVG)",
+        onClick: saveAsSvg,
+    });
+    enableChartZoom(zoomInButton.node(), zoomOutButton.node(), zoomInput.node());
+    makeIconButton(toolbar, {
+        id: "refreshButton",
+        iconHtml: getRefreshIcon(),
+        tipText: "Refresh",
+        onClick: refresh,
+    });
+    makeIconButton(toolbar, {
+        id: "resetButton",
+        iconHtml: getResetIcon(),
+        tipText: "Reset",
+        onClick: reset,
+    });
+    let isExpanded = false;
+    toggleButton.on("click", () => {
+        isExpanded = !isExpanded;
+        toolbar
+            .style("max-width", isExpanded ? "12.5rem" : "0")
+            .style("opacity", isExpanded ? "1" : "0")
+            .style("pointer-events", isExpanded ? "auto" : "none")
+            .style("overflow", isExpanded ? "visible" : "hidden");
+        toggleTip.text(isExpanded ? "Collapse Toolbar" : "Expand Toolbar");
+        const currentIcon = isExpanded
+            ? getCollapseToolbarIcon()
+            : getExpandToolbarIcon();
+        toggleButton.select("#toggleButtonicon").html(currentIcon);
+    });
+}
+function closeChartModal() {
+    if (!chartZoomState)
+        return;
+    const state = chartZoomState;
+    window.removeEventListener("pointermove", state.onPointerMove);
+    window.removeEventListener("pointerup", state.onPointerUp);
+    window.removeEventListener("pointercancel", state.onPointerUp);
+    state.chartWrapper.removeEventListener("pointerdown", state.onPointerDown);
+    state.chartWrapper.removeEventListener("click", state.onClickCapture, true);
+    state.chartWrapper.removeEventListener("wheel", state.onWheel);
+    window.removeEventListener("resize", state.onResize);
+    state.svg.style.inlineSize = state.previousSvgInlineSize;
+    state.svg.style.blockSize = state.previousSvgBlockSize;
+    state.chartWrapper.style.blockSize = state.previousChartWrapperBlockSize;
+    state.chartWrapper.classList.remove("spcd3-chartWrapper--pannable");
+    chartZoomState = null;
+}
+function makeIconButton(parent, opts) {
+    const { id, iconHtml, tipText, onClick } = opts;
+    const btn = parent
+        .append("button")
+        .attr("class", "spcd3-toolbar-button")
+        .attr("type", "button")
+        .attr("id", id ?? null);
+    if (onClick)
+        btn.on("click", onClick);
+    btn
+        .append("span")
+        .attr("class", "spcd3-toolbar-buttonicon")
+        .attr("id", `${id}icon`)
+        .html(iconHtml);
+    btn
+        .select(".spcd3-toolbar-buttonicon")
+        .selectAll("svg")
+        .attr("class", "spcd3-toolbar-svg");
+    const tip = parent
+        .append("span")
+        .attr("class", "spcd3-toolbar-buttontip")
+        .attr("id", `${id}tip`)
+        .attr("popover", "manual")
+        .text(tipText ?? "");
+    const btnNode = btn.node();
+    const tipNode = tip.node();
+    function show() {
+        if (!tipNode)
+            return;
+        if (!tipNode.matches(":popover-open")) {
+            tipNode.showPopover();
+        }
+        positionTip(btnNode, tipNode);
+    }
+    function hide() {
+        if (!tipNode)
+            return;
+        if (tipNode.matches(":popover-open")) {
+            tipNode.hidePopover();
+        }
+    }
+    btn
+        .on("mouseenter", show)
+        .on("mouseleave", hide)
+        .on("focus", show)
+        .on("blur", hide);
+    select(window).on(`resize.${id}`, () => {
+        if (tipNode?.matches(":popover-open")) {
+            positionTip(btnNode, tipNode);
+        }
+    });
+    select(window).on(`scroll.${id}`, () => {
+        if (tipNode?.matches(":popover-open")) {
+            positionTip(btnNode, tipNode);
+        }
+    });
+    return { btn, tip };
+}
+function makeTextButton(parent, opts) {
+    const { id, text, tipText } = opts;
+    const btn = parent
+        .append("button")
+        .attr("class", "spcd3-toolbar-button spcd3-toolbar-textbutton")
+        .attr("type", "button")
+        .attr("id", id)
+        .attr("aria-label", tipText)
+        .text(text);
+    const tip = parent
+        .append("span")
+        .attr("class", "spcd3-toolbar-buttontip")
+        .attr("id", `${id}tip`)
+        .attr("popover", "manual")
+        .text(tipText);
+    const btnNode = btn.node();
+    const tipNode = tip.node();
+    const show = () => {
+        if (!tipNode)
+            return;
+        if (!tipNode.matches(":popover-open"))
+            tipNode.showPopover();
+        positionTip(btnNode, tipNode);
+    };
+    const hide = () => {
+        if (tipNode?.matches(":popover-open"))
+            tipNode.hidePopover();
+    };
+    btn.on("mouseenter", show).on("mouseleave", hide).on("focus", show).on("blur", hide);
+    return { btn, tip };
+}
+function positionTip(btnNode, tipNode) {
+    if (!btnNode || !tipNode)
+        return;
+    const rect = btnNode.getBoundingClientRect();
+    const gap = 8;
+    tipNode.style.left = "0";
+    tipNode.style.top = "0";
+    const tipRect = tipNode.getBoundingClientRect();
+    let left = rect.left + rect.width / 2 - tipRect.width / 2;
+    let top = rect.bottom + gap;
+    const padding = 0.5;
+    if (left < padding)
+        left = padding;
+    if (left + tipRect.width > window.innerWidth - padding) {
+        left = window.innerWidth - tipRect.width - padding;
+    }
+    if (top + tipRect.height > window.innerHeight - padding) {
+        top = rect.top - tipRect.height - gap;
+    }
+    if (top < padding)
+        top = padding;
+    tipNode.style.left = `${left / 16}rem`;
+    tipNode.style.top = `${top / 16}rem`;
+}
+function showModalWithData(dataset) {
+    const overlay = select("body")
+        .append("div")
+        .attr("class", "spcd3-modal-tableoverlay")
+        .attr("id", "modalTableOverlay");
+    overlay.on("click", () => {
+        overlay.style("display", "none");
+        modal.style("display", "none");
+    });
+    const modal = select("body")
+        .append("div")
+        .attr("class", "spcd3-modal-tabledata")
+        .attr("id", "dataModal");
+    const saveAsCSV = document.createElement("button");
+    saveAsCSV.className = "spcd3-button spcd3-save-csv-button";
+    saveAsCSV.id = "saveAsCsv";
+    saveAsCSV.textContent = "Download as CSV";
+    modal.append(() => saveAsCSV);
+    saveAsCSV.addEventListener("click", () => {
+        const reservedArray = dataset.map((entry) => {
+            const entries = Object.entries(entry).reverse();
+            return Object.fromEntries(entries);
+        });
+        downloadCSV(reservedArray);
+    });
+    const closeButton = document.createElement("span");
+    closeButton.className = "spcd3-close-button";
+    closeButton.innerHTML = "&times;";
+    closeButton.style.marginBottom = "1rem";
+    modal.append(() => closeButton);
+    const dimensionsElement = document.createElement("div");
+    dimensionsElement.textContent = `Dataset has ${numberOfDimensions} dimensions and ${numberOfRecords} records.`;
+    dimensionsElement.style.marginBottom = "1rem";
+    modal.append(() => dimensionsElement);
+    const scrollWrapper = document.createElement("div");
+    scrollWrapper.className = "spcd3-scroll-wrapper";
+    const tableContainer = document.createElement("table");
+    tableContainer.className = "spcd3-tablecontainer";
+    scrollWrapper.appendChild(tableContainer);
+    modal.append(() => scrollWrapper);
+    generateTable(dataset, tableContainer);
+    closeButton.addEventListener("click", () => {
+        modal.style("display", "none");
+        overlay.style("display", "none");
+    });
+}
+function generateTable(dataset, table) {
+    const reservedArray = dataset.map((entry) => {
+        const entries = Object.entries(entry).reverse();
+        return Object.fromEntries(entries);
+    });
+    const headers = Object.keys(reservedArray[0]);
+    const thead = document.createElement("thead");
+    const headRow = document.createElement("tr");
+    headers.forEach((header) => {
+        const th = document.createElement("th");
+        th.innerText = header.charAt(0).toUpperCase() + header.slice(1);
+        th.className = "spcd3-th";
+        const isNumericCol = reservedArray.every((row) => {
+            const val = row[header];
+            return !isNaN(parseFloat(val)) && isFinite(val);
+        });
+        th.style.textAlign = isNumericCol ? "right" : "left";
+        headRow.appendChild(th);
+    });
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+    const tbody = document.createElement("tbody");
+    reservedArray.forEach((obj) => {
+        const row = document.createElement("tr");
+        headers.forEach((key) => {
+            const td = document.createElement("td");
+            const value = obj[key];
+            td.innerText = value;
+            td.className = "spcd3-td";
+            if (!isNaN(parseFloat(value)) && isFinite(value)) {
+                td.style.textAlign = "right";
+            }
+            else {
+                td.style.textAlign = "left";
+            }
+            row.appendChild(td);
+        });
+        tbody.appendChild(row);
+    });
+    table.appendChild(tbody);
+}
+function downloadCSV(dataset, filename = "data.csv") {
+    if (!dataset || !dataset.length)
+        return;
+    const keys = Object.keys(dataset[0]);
+    const csvRows = [];
+    csvRows.push(keys.join(","));
+    dataset.forEach((row) => {
+        const values = keys.map((k) => {
+            const value = row[k];
+            return typeof value === "string" && value.includes(",")
+                ? `"${value}"`
+                : value;
+        });
+        csvRows.push(values.join(","));
+    });
+    const csvContent = csvRows.join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+function enableChartZoom(zoomInButton, zoomOutButton, zoomInput) {
+    if (!zoomInButton || !zoomOutButton || !zoomInput)
+        return;
+    const chartWrapper = document.querySelector(".spcd3-chartWrapper");
+    const svg = chartWrapper?.querySelector("#spcd3-pc_svg");
+    if (!chartWrapper || !svg)
+        return;
+    const baseSvgWidth = Number(svg.getAttribute("width")) || svg.viewBox.baseVal.width;
+    const baseSvgHeight = Number(svg.getAttribute("height")) || svg.viewBox.baseVal.height;
+    const toolbarHeight = chartWrapper.querySelector("#spcd3-toolbarRow")?.getBoundingClientRect().height || 0;
+    const onPointerMove = (event) => {
+        const state = chartZoomState;
+        if (!state?.isDraggingPan)
+            return;
+        state.didPan ||= Math.hypot(event.clientX - state.panStartX, event.clientY - state.panStartY) > 3;
+        state.chartWrapper.scrollLeft = state.panScrollLeft - (event.clientX - state.panStartX);
+        state.chartWrapper.scrollTop = state.panScrollTop - (event.clientY - state.panStartY);
+    };
+    const onPointerUp = () => {
+        const state = chartZoomState;
+        if (!state)
+            return;
+        state.isDraggingPan = false;
+        state.chartWrapper.classList.remove("spcd3-chartWrapper--dragging");
+    };
+    const onPointerDown = (event) => {
+        if (event.button !== 0 && event.button !== 2)
+            return;
+        // Only empty SVG space starts panning; paths and axes retain their interactions.
+        if (event.target !== svg)
+            return;
+        const state = chartZoomState;
+        if (!state)
+            return;
+        event.preventDefault();
+        state.isDraggingPan = true;
+        state.didPan = false;
+        state.panStartX = event.clientX;
+        state.panStartY = event.clientY;
+        state.panScrollLeft = chartWrapper.scrollLeft;
+        state.panScrollTop = chartWrapper.scrollTop;
+        chartWrapper.classList.add("spcd3-chartWrapper--dragging");
+    };
+    const onClickCapture = (event) => {
+        const state = chartZoomState;
+        if (state?.didPan) {
+            state.didPan = false;
+            event.stopPropagation();
+        }
+    };
+    const onWheel = (event) => {
+        event.preventDefault();
+        const direction = event.deltaY < 0 ? 1 : -1;
+        setChartScale((chartZoomState?.scale ?? 1) + direction * CHART_SCALE_STEP);
+    };
+    const onResize = () => {
+        if (shouldFitChartToViewport(chartWrapper)) {
+            requestAnimationFrame(fitChartToViewport);
+        }
+    };
+    chartZoomState = {
+        chartWrapper, zoomInButton, zoomOutButton, zoomInput, svg, baseSvgWidth, baseSvgHeight, toolbarHeight,
+        previousSvgInlineSize: svg.style.inlineSize, previousSvgBlockSize: svg.style.blockSize,
+        previousChartWrapperBlockSize: chartWrapper.style.blockSize,
+        scale: 1, isDraggingPan: false, didPan: false, panStartX: 0, panStartY: 0,
+        panScrollLeft: 0, panScrollTop: 0, onPointerMove, onPointerUp, onPointerDown, onClickCapture, onWheel, onResize,
+    };
+    chartWrapper.classList.add("spcd3-chartWrapper--pannable");
+    chartWrapper.addEventListener("pointerdown", onPointerDown);
+    chartWrapper.addEventListener("click", onClickCapture, true);
+    chartWrapper.addEventListener("wheel", onWheel, { passive: false });
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("pointercancel", onPointerUp);
+    window.addEventListener("resize", onResize);
+    zoomOutButton.addEventListener("click", () => setChartScale((chartZoomState?.scale ?? 1) - CHART_SCALE_STEP));
+    zoomInButton.addEventListener("click", () => setChartScale((chartZoomState?.scale ?? 1) + CHART_SCALE_STEP));
+    zoomInput.addEventListener("blur", () => setChartScaleFromInput());
+    zoomInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            setChartScaleFromInput();
+            zoomInput.blur();
+        }
+    });
+    if (shouldFitChartToViewport(chartWrapper)) {
+        fitChartToViewport();
+    }
+    else {
+        setChartScale(1);
+    }
+}
+function shouldFitChartToViewport(chartWrapper) {
+    return (chartWrapper.parentElement?.dataset.spcd3FitChartToViewport !== "false");
+}
+function fitChartToViewport() {
+    const state = chartZoomState;
+    if (!state)
+        return;
+    state.chartWrapper.style.inlineSize = "";
+    const toolbarHeight = state.chartWrapper.querySelector("#spcd3-toolbarRow")?.getBoundingClientRect().height || 0;
+    const chartViewport = state.chartWrapper.parentElement;
+    const viewportStyle = chartViewport ? getComputedStyle(chartViewport) : null;
+    const hasConstrainedHeight = viewportStyle && ["auto", "scroll", "hidden", "clip"].includes(viewportStyle.overflowY);
+    const availableViewportHeight = hasConstrainedHeight && chartViewport && chartViewport.clientHeight > toolbarHeight
+        ? chartViewport.clientHeight - toolbarHeight
+        : Infinity;
+    const scale = Math.max(MIN_CHART_SCALE, Math.min(MAX_CHART_SCALE, state.chartWrapper.clientWidth / state.baseSvgWidth, availableViewportHeight / state.baseSvgHeight));
+    state.chartWrapper.style.blockSize = `${pxToRem$1(toolbarHeight + state.baseSvgHeight * scale)}rem`;
+    state.chartWrapper.scrollLeft = 0;
+    state.chartWrapper.scrollTop = 0;
+    setChartScale(scale);
+    realignToolbar();
+}
+function updateChartZoomBaseWidth(width) {
+    if (!chartZoomState)
+        return;
+    chartZoomState.baseSvgWidth = width;
+    if (shouldFitChartToViewport(chartZoomState.chartWrapper)) {
+        fitChartToViewport();
+    }
+    else {
+        setChartScale(chartZoomState.scale);
+    }
+}
+function setChartScaleFromInput() {
+    const state = chartZoomState;
+    if (!state)
+        return;
+    const percentage = Number(state.zoomInput.textContent?.trim().replace(/%$/, ""));
+    if (Number.isFinite(percentage)) {
+        setChartScale(percentage / 100);
+    }
+    else {
+        state.zoomInput.textContent = String(Math.round(state.scale * 100));
+    }
+}
+function setChartScale(nextScale) {
+    const state = chartZoomState;
+    if (!state)
+        return;
+    const scale = Math.min(MAX_CHART_SCALE, Math.max(MIN_CHART_SCALE, nextScale));
+    state.scale = scale;
+    state.svg.style.inlineSize = `${pxToRem$1(state.baseSvgWidth * scale)}rem`;
+    state.svg.style.blockSize = `${pxToRem$1(state.baseSvgHeight * scale)}rem`;
+    if (!shouldFitChartToViewport(state.chartWrapper)) {
+        const toolbarHeight = state.chartWrapper
+            .querySelector("#spcd3-toolbarRow")
+            ?.getBoundingClientRect().height ?? 0;
+        state.chartWrapper.style.blockSize = `${pxToRem$1(toolbarHeight + state.baseSvgHeight * scale)}rem`;
+    }
+    state.zoomInput.textContent = String(Math.round(scale * 100));
+    state.zoomInButton.disabled = scale >= MAX_CHART_SCALE;
+    state.zoomOutButton.disabled = scale <= MIN_CHART_SCALE;
+    setChartZoomScale(scale);
+}
+function pxToRem$1(value) {
+    const rootFontSize = Number(getComputedStyle(document.documentElement).fontSize.replace("px", ""));
+    if (!Number.isFinite(rootFontSize) || rootFontSize <= 0) {
+        return value / 16;
+    }
+    return value / rootFontSize;
+}
+
 const BRUSH_STATE_EPSILON$1 = 0.75;
 const FILTER_STATE_EPSILON$1 = 0.75;
 const AXIS_VISIBILITY_DURATION = 1500;
@@ -5098,7 +7075,8 @@ function refreshChartLayoutForVisibleDimensions() {
         .attr("width", layout.chartWidth)
         .attr("viewBox", [0, 0, layout.chartWidth, height])
         .style("inline-size", pixelsToRem(layout.chartWidth));
-    select(".spcd3-chartWrapper").style("inline-size", pixelsToRem(layout.chartWidth));
+    select(".spcd3-chartWrapper").style("inline-size", null);
+    updateChartZoomBaseWidth(layout.chartWidth);
     select(".spcd3-brush-overlay").attr("width", layout.chartWidth);
 }
 function refreshRecordPathsForVisibleDimensions() {
@@ -5883,7 +7861,8 @@ function setDimensionSpacing(spacingRem) {
         .attr("width", layout.chartWidth)
         .attr("viewBox", [0, 0, layout.chartWidth, height])
         .style("inline-size", pixelsToRem(layout.chartWidth));
-    select(".spcd3-chartWrapper").style("inline-size", pixelsToRem(layout.chartWidth));
+    select(".spcd3-chartWrapper").style("inline-size", null);
+    updateChartZoomBaseWidth(layout.chartWidth);
     select("#spcd3-pc_svg .plot > rect").attr("width", layout.chartWidth);
     selectAll(".dimensions")
         .transition()
@@ -7178,7 +9157,7 @@ function getContextMenuMeasurements(container, menuElement) {
         containerRect,
     };
 }
-function pxToRem$1(value) {
+function pxToRem(value) {
     const rootFontSize = Number(getComputedStyle(document.documentElement).fontSize.replace("px", ""));
     if (!Number.isFinite(rootFontSize) || rootFontSize <= 0) {
         return value / 16;
@@ -7199,8 +9178,8 @@ function styleContextMenu(event) {
     const left = getContextMenuLeftPosition(container, menuElement, x);
     const top = getContextMenuTopPosition(container, menuElement, y);
     select("#contextmenu")
-        .style("left", pxToRem$1(left) + "rem")
-        .style("top", pxToRem$1(top) + "rem")
+        .style("left", pxToRem(left) + "rem")
+        .style("top", pxToRem(top) + "rem")
         .style("display", "block")
         .on("click", (event) => {
         event.stopPropagation();
@@ -7511,14 +9490,14 @@ function createContextMenuItem(contextMenu, id, className, text, title) {
         .attr("title", title)
         .text(text);
 }
-function handleRecordContextMenu(contextMenu, event, d) {
+function handleRecordContextMenu(contextMenu, event, d, onClose) {
     const container = document.querySelector("#spcd3-parallelcoords .spcd3-chartWrapper") ??
         document.querySelector("#spcd3-parallelcoords");
     if (!container)
-        return;
+        return false;
     const menuElement = contextMenu.node();
     if (!menuElement)
-        return;
+        return false;
     const rect = container.getBoundingClientRect();
     const data = hoveredRecords.length > 0
         ? hoveredRecords
@@ -7533,7 +9512,7 @@ function handleRecordContextMenu(contextMenu, event, d) {
             ? [clickedRecord]
             : [];
     if (targetRecords.length === 0)
-        return;
+        return false;
     if (targetRecords.length > 1) {
         select("#selectRecord").text("Select Records");
         select("#unSelectRecord").text("Unselect Records");
@@ -7549,23 +9528,27 @@ function handleRecordContextMenu(contextMenu, event, d) {
     const left = getContextMenuLeftPosition(container, menuElement, x);
     const top = getContextMenuTopPosition(container, menuElement, y);
     contextMenu
-        .style("left", pxToRem$1(left) + "rem")
-        .style("top", pxToRem$1(top) + "rem")
+        .style("left", pxToRem(left) + "rem")
+        .style("top", pxToRem(top) + "rem")
         .style("display", "block")
         .on("click", (event) => {
         event.stopPropagation();
     });
+    const closeMenu = () => {
+        select("#contextmenuRecords").style("display", "none");
+        onClose();
+    };
     select("#selectRecord").on("click", (event) => {
         setSelection(targetRecords);
         event.stopPropagation();
-        select("#contextmenuRecords").style("display", "none");
+        closeMenu();
     });
     select("#unSelectRecord").on("click", (event) => {
         targetRecords.forEach((item) => {
             setUnselected(item);
         });
         event.stopPropagation();
-        select("#contextmenuRecords").style("display", "none");
+        closeMenu();
     });
     select("#toggleRecord")
         .style("border-top", "0.08rem solid var(--spcd3-border-subtle)")
@@ -7574,7 +9557,7 @@ function handleRecordContextMenu(contextMenu, event, d) {
             toggleSelection(item);
         });
         event.stopPropagation();
-        select("#contextmenuRecords").style("display", "none");
+        closeMenu();
     });
     select("#addSelection")
         .style("border-top", "0.08rem solid var(--spcd3-border-subtle)")
@@ -7584,1682 +9567,18 @@ function handleRecordContextMenu(contextMenu, event, d) {
         const records = [...selectedRecords, ...targetRecords];
         setSelection(records);
         event.stopPropagation();
-        select("#contextmenuRecords").style("display", "none");
+        closeMenu();
     });
     select("#removeSelection").on("click", (event) => {
         targetRecords.forEach((item) => {
             setUnselected(item);
         });
         event.stopPropagation();
-        select("#contextmenuRecords").style("display", "none");
+        closeMenu();
     });
     selectAll(".contextmenu").style("padding", 0.35 + "rem");
     event.preventDefault();
-}
-
-function getDefaultExportFromCjs (x) {
-	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
-}
-
-var cjs$2 = {exports: {}};
-
-var cjs$1 = {exports: {}};
-
-var hasRequiredCjs$1;
-
-function requireCjs$1 () {
-	if (hasRequiredCjs$1) return cjs$1.exports;
-	hasRequiredCjs$1 = 1;
-	(function (module, exports) {
-		Object.defineProperty(exports, "__esModule", { value: true });
-		exports.ParsingError = void 0;
-		class ParsingError extends Error {
-		    constructor(message, cause) {
-		        super(message);
-		        this.cause = cause;
-		    }
-		}
-		exports.ParsingError = ParsingError;
-		let parsingState;
-		function nextChild() {
-		    return element(false) || text() || comment() || cdata() || processingInstruction();
-		}
-		function nextRootChild() {
-		    match(/\s*/);
-		    return element(true) || comment() || doctype() || processingInstruction();
-		}
-		function parseDocument() {
-		    const declaration = processingInstruction();
-		    const children = [];
-		    let documentRootNode;
-		    let child = nextRootChild();
-		    while (child) {
-		        if (child.node.type === 'Element') {
-		            if (documentRootNode) {
-		                throw new Error('Found multiple root nodes');
-		            }
-		            documentRootNode = child.node;
-		        }
-		        if (!child.excluded) {
-		            children.push(child.node);
-		        }
-		        child = nextRootChild();
-		    }
-		    if (!documentRootNode) {
-		        throw new ParsingError('Failed to parse XML', 'Root Element not found');
-		    }
-		    if (parsingState.xml.length !== 0) {
-		        throw new ParsingError('Failed to parse XML', 'Not Well-Formed XML');
-		    }
-		    return {
-		        declaration: declaration ? declaration.node : null,
-		        root: documentRootNode,
-		        children
-		    };
-		}
-		function processingInstruction() {
-		    const m = match(/^<\?([\w-:.]+)\s*/);
-		    if (!m)
-		        return;
-		    // tag
-		    const node = {
-		        name: m[1],
-		        type: 'ProcessingInstruction',
-		        content: ''
-		    };
-		    const endMarkerIndex = parsingState.xml.indexOf('?>');
-		    if (endMarkerIndex > -1) {
-		        node.content = parsingState.xml.substring(0, endMarkerIndex).trim();
-		        parsingState.xml = parsingState.xml.slice(endMarkerIndex);
-		    }
-		    else {
-		        throw new ParsingError('Failed to parse XML', 'ProcessingInstruction closing tag not found');
-		    }
-		    match(/\?>/);
-		    return {
-		        excluded: parsingState.options.filter(node) === false,
-		        node
-		    };
-		}
-		function element(matchRoot) {
-		    const m = match(/^<([^?!</>\s]+)\s*/);
-		    if (!m)
-		        return;
-		    // name
-		    const node = {
-		        type: 'Element',
-		        name: m[1],
-		        attributes: {},
-		        children: []
-		    };
-		    const excluded = matchRoot ? false : parsingState.options.filter(node) === false;
-		    // attributes
-		    while (!(eos() || is('>') || is('?>') || is('/>'))) {
-		        const attr = attribute();
-		        if (attr) {
-		            node.attributes[attr.name] = attr.value;
-		        }
-		        else {
-		            return;
-		        }
-		    }
-		    // self closing tag
-		    if (match(/^\s*\/>/)) {
-		        node.children = null;
-		        return {
-		            excluded,
-		            node
-		        };
-		    }
-		    match(/\??>/);
-		    // children
-		    let child = nextChild();
-		    while (child) {
-		        if (!child.excluded) {
-		            node.children.push(child.node);
-		        }
-		        child = nextChild();
-		    }
-		    // closing
-		    if (parsingState.options.strictMode) {
-		        const closingTag = `</${node.name}>`;
-		        if (parsingState.xml.startsWith(closingTag)) {
-		            parsingState.xml = parsingState.xml.slice(closingTag.length);
-		        }
-		        else {
-		            throw new ParsingError('Failed to parse XML', `Closing tag not matching "${closingTag}"`);
-		        }
-		    }
-		    else {
-		        match(/^<\/[\p{L}\p{M}\w\-:.]+\s*>/u);
-		    }
-		    return {
-		        excluded,
-		        node
-		    };
-		}
-		function doctype() {
-		    const m = match(/^<!DOCTYPE\s+\S+\s+SYSTEM[^>]*>/) ||
-		        match(/^<!DOCTYPE\s+\S+\s+PUBLIC[^>]*>/) ||
-		        match(/^<!DOCTYPE\s+\S+\s*\[[^\]]*]>/) ||
-		        match(/^<!DOCTYPE\s+\S+\s*>/);
-		    if (m) {
-		        const node = {
-		            type: 'DocumentType',
-		            content: m[0]
-		        };
-		        return {
-		            excluded: parsingState.options.filter(node) === false,
-		            node
-		        };
-		    }
-		}
-		function cdata() {
-		    if (parsingState.xml.startsWith('<![CDATA[')) {
-		        const endPositionStart = parsingState.xml.indexOf(']]>');
-		        if (endPositionStart > -1) {
-		            const endPositionFinish = endPositionStart + 3;
-		            const node = {
-		                type: 'CDATA',
-		                content: parsingState.xml.substring(0, endPositionFinish)
-		            };
-		            parsingState.xml = parsingState.xml.slice(endPositionFinish);
-		            return {
-		                excluded: parsingState.options.filter(node) === false,
-		                node
-		            };
-		        }
-		    }
-		}
-		function comment() {
-		    const m = match(/^<!--[\s\S]*?-->/);
-		    if (m) {
-		        const node = {
-		            type: 'Comment',
-		            content: m[0]
-		        };
-		        return {
-		            excluded: parsingState.options.filter(node) === false,
-		            node
-		        };
-		    }
-		}
-		function text() {
-		    const m = match(/^([^<]+)/);
-		    if (m) {
-		        const node = {
-		            type: 'Text',
-		            content: m[1]
-		        };
-		        return {
-		            excluded: parsingState.options.filter(node) === false,
-		            node
-		        };
-		    }
-		}
-		function attribute() {
-		    const m = match(/([^=]+)\s*=\s*("[^"]*"|'[^']*'|[^>\s]+)\s*/);
-		    if (m) {
-		        return {
-		            name: m[1].trim(),
-		            value: stripQuotes(m[2].trim())
-		        };
-		    }
-		}
-		function stripQuotes(val) {
-		    return val.replace(/^['"]|['"]$/g, '');
-		}
-		/**
-		 * Match `re` and advance the string.
-		 */
-		function match(re) {
-		    const m = parsingState.xml.match(re);
-		    if (m) {
-		        parsingState.xml = parsingState.xml.slice(m[0].length);
-		        return m;
-		    }
-		}
-		/**
-		 * End-of-source.
-		 */
-		function eos() {
-		    return 0 === parsingState.xml.length;
-		}
-		/**
-		 * Check for `prefix`.
-		 */
-		function is(prefix) {
-		    return 0 === parsingState.xml.indexOf(prefix);
-		}
-		/**
-		 * Parse the given XML string into an object.
-		 */
-		function parseXml(xml, options = {}) {
-		    xml = xml.trim();
-		    const filter = options.filter || (() => true);
-		    parsingState = {
-		        xml,
-		        options: Object.assign(Object.assign({}, options), { filter, strictMode: options.strictMode === true })
-		    };
-		    return parseDocument();
-		}
-		{
-		    module.exports = parseXml;
-		}
-		exports.default = parseXml;
-		
-	} (cjs$1, cjs$1.exports));
-	return cjs$1.exports;
-}
-
-var cjs = cjs$2.exports;
-
-var hasRequiredCjs;
-
-function requireCjs () {
-	if (hasRequiredCjs) return cjs$2.exports;
-	hasRequiredCjs = 1;
-	(function (module, exports) {
-		var __importDefault = (cjs && cjs.__importDefault) || function (mod) {
-		    return (mod && mod.__esModule) ? mod : { "default": mod };
-		};
-		Object.defineProperty(exports, "__esModule", { value: true });
-		const xml_parser_xo_1 = __importDefault(/*@__PURE__*/ requireCjs$1());
-		function newLine(state) {
-		    if (!state.options.indentation && !state.options.lineSeparator)
-		        return;
-		    state.content += state.options.lineSeparator;
-		    let i;
-		    for (i = 0; i < state.level; i++) {
-		        state.content += state.options.indentation;
-		    }
-		}
-		function indent(state) {
-		    state.content = state.content.replace(/ +$/, '');
-		    let i;
-		    for (i = 0; i < state.level; i++) {
-		        state.content += state.options.indentation;
-		    }
-		}
-		function appendContent(state, content) {
-		    state.content += content;
-		}
-		function processNode(node, state, preserveSpace) {
-		    if (node.type === 'Element') {
-		        processElementNode(node, state, preserveSpace);
-		    }
-		    else if (node.type === 'ProcessingInstruction') {
-		        processProcessingIntruction(node, state);
-		    }
-		    else if (typeof node.content === 'string') {
-		        processContent(node.content, state, preserveSpace);
-		    }
-		    else {
-		        throw new Error('Unknown node type: ' + node.type);
-		    }
-		}
-		function processContent(content, state, preserveSpace) {
-		    if (!preserveSpace) {
-		        const trimmedContent = content.trim();
-		        if (state.options.lineSeparator) {
-		            content = trimmedContent;
-		        }
-		        else if (trimmedContent.length === 0) {
-		            content = trimmedContent;
-		        }
-		    }
-		    if (content.length > 0) {
-		        if (!preserveSpace && state.content.length > 0) {
-		            newLine(state);
-		        }
-		        appendContent(state, content);
-		    }
-		}
-		function isPathMatchingIgnoredPaths(path, ignoredPaths) {
-		    const fullPath = '/' + path.join('/');
-		    const pathLastPart = path[path.length - 1];
-		    return ignoredPaths.includes(pathLastPart) || ignoredPaths.includes(fullPath);
-		}
-		function processElementNode(node, state, preserveSpace) {
-		    state.path.push(node.name);
-		    if (!preserveSpace && state.content.length > 0) {
-		        newLine(state);
-		    }
-		    appendContent(state, '<' + node.name);
-		    processAttributes(state, node.attributes);
-		    if (node.children === null || (state.options.forceSelfClosingEmptyTag && node.children.length === 0)) {
-		        const selfClosingNodeClosingTag = state.options.whiteSpaceAtEndOfSelfclosingTag ? ' />' : '/>';
-		        // self-closing node
-		        appendContent(state, selfClosingNodeClosingTag);
-		    }
-		    else if (node.children.length === 0) {
-		        // empty node
-		        appendContent(state, '></' + node.name + '>');
-		    }
-		    else {
-		        const nodeChildren = node.children;
-		        appendContent(state, '>');
-		        state.level++;
-		        let nodePreserveSpace = node.attributes['xml:space'] === 'preserve' || preserveSpace;
-		        let ignoredPath = false;
-		        if (!nodePreserveSpace && state.options.ignoredPaths) {
-		            ignoredPath = isPathMatchingIgnoredPaths(state.path, state.options.ignoredPaths);
-		            nodePreserveSpace = ignoredPath;
-		        }
-		        if (!nodePreserveSpace && state.options.collapseContent) {
-		            let containsTextNodes = false;
-		            let containsTextNodesWithLineBreaks = false;
-		            let containsNonTextNodes = false;
-		            nodeChildren.forEach(function (child, index) {
-		                if (child.type === 'Text') {
-		                    if (child.content.includes('\n')) {
-		                        containsTextNodesWithLineBreaks = true;
-		                        child.content = child.content.trim();
-		                    }
-		                    else if ((index === 0 || index === nodeChildren.length - 1) && !preserveSpace) {
-		                        if (child.content.trim().length === 0) {
-		                            // If the text node is at the start or end and is empty, it should be ignored when formatting
-		                            child.content = '';
-		                        }
-		                    }
-		                    // If there is some content or whitespaces have been removed and there is no other siblings
-		                    if (child.content.trim().length > 0 || nodeChildren.length === 1) {
-		                        containsTextNodes = true;
-		                    }
-		                }
-		                else if (child.type === 'CDATA') {
-		                    containsTextNodes = true;
-		                }
-		                else {
-		                    containsNonTextNodes = true;
-		                }
-		            });
-		            if (containsTextNodes && (!containsNonTextNodes || !containsTextNodesWithLineBreaks)) {
-		                nodePreserveSpace = true;
-		            }
-		        }
-		        nodeChildren.forEach(function (child) {
-		            processNode(child, state, preserveSpace || nodePreserveSpace);
-		        });
-		        state.level--;
-		        if (!preserveSpace && !nodePreserveSpace) {
-		            newLine(state);
-		        }
-		        if (ignoredPath) {
-		            indent(state);
-		        }
-		        appendContent(state, '</' + node.name + '>');
-		    }
-		    state.path.pop();
-		}
-		function processAttributes(state, attributes) {
-		    Object.keys(attributes).forEach(function (attr) {
-		        if (state.options.attributeQuotes === 'single') {
-		            const escaped = attributes[attr].replace(/'/g, '&apos;');
-		            appendContent(state, ' ' + attr + '=\'' + escaped + '\'');
-		        }
-		        else {
-		            const escaped = attributes[attr].replace(/"/g, '&quot;');
-		            appendContent(state, ' ' + attr + '="' + escaped + '"');
-		        }
-		    });
-		}
-		function processProcessingIntruction(node, state) {
-		    if (state.content.length > 0) {
-		        newLine(state);
-		    }
-		    appendContent(state, '<?' + node.name);
-		    appendContent(state, ' ' + node.content.trim());
-		    appendContent(state, '?>');
-		}
-		/**
-		 * Converts the given XML into human readable format.
-		 */
-		function formatXml(xml, options = {}) {
-		    options.indentation = 'indentation' in options ? options.indentation : '    ';
-		    options.collapseContent = options.collapseContent === true;
-		    options.lineSeparator = 'lineSeparator' in options ? options.lineSeparator : '\r\n';
-		    options.whiteSpaceAtEndOfSelfclosingTag = options.whiteSpaceAtEndOfSelfclosingTag === true;
-		    options.throwOnFailure = options.throwOnFailure !== false;
-		    options.attributeQuotes = 'attributeQuotes' in options ? options.attributeQuotes : 'double';
-		    try {
-		        const parsedXml = (0, xml_parser_xo_1.default)(xml, { filter: options.filter, strictMode: options.strictMode });
-		        const state = { content: '', level: 0, options: options, path: [] };
-		        if (parsedXml.declaration) {
-		            processProcessingIntruction(parsedXml.declaration, state);
-		        }
-		        parsedXml.children.forEach(function (child) {
-		            processNode(child, state, false);
-		        });
-		        if (!options.lineSeparator) {
-		            return state.content;
-		        }
-		        return state.content
-		            .replace(/\r\n/g, '\n')
-		            .replace(/\n/g, options.lineSeparator);
-		    }
-		    catch (err) {
-		        if (options.throwOnFailure) {
-		            throw err;
-		        }
-		        return xml;
-		    }
-		}
-		formatXml.minify = (xml, options = {}) => {
-		    return formatXml(xml, Object.assign(Object.assign({}, options), { indentation: '', lineSeparator: '' }));
-		};
-		{
-		    module.exports = formatXml;
-		}
-		exports.default = formatXml;
-		
-	} (cjs$2, cjs$2.exports));
-	return cjs$2.exports;
-}
-
-var cjsExports = /*@__PURE__*/ requireCjs();
-var xmlFormat = /*@__PURE__*/getDefaultExportFromCjs(cjsExports);
-
-const DOWNLOAD_BRUSH_ARROW_WIDTH = 11;
-const DOWNLOAD_BRUSH_ARROW_HEIGHT = 8;
-const DOWNLOAD_BRUSH_ARROW_X = -4.5;
-const DOWNLOAD_INVERT_ARROW_WIDTH = 6.8;
-const DOWNLOAD_INVERT_ARROW_HEIGHT = 11;
-const DOWNLOAD_INVERT_ARROW_X = -3.4;
-function setActivePathLinesToDownload(svg) {
-    svg
-        .append("g")
-        .attr("class", "records")
-        .style("opacity", "0.5")
-        .style("stroke", "rgb(0, 129, 175)")
-        .style("opacity", "0.6")
-        .style("stroke-width", "2")
-        .style("fill", "none")
-        .selectAll("path")
-        .data(parcoords.data)
-        .enter()
-        .append("path")
-        .attr("id", (d) => {
-        return cleanString(d[key]);
-    })
-        .each(function (d) {
-        select(this).attr("d", linePath(d, parcoords.newFeatures));
-    });
-    const records = getAllRecords();
-    records.forEach((element) => {
-        const cleanRecord = cleanString(element);
-        const isSelected$1 = isSelected(cleanRecord);
-        if (isSelected$1) {
-            svg
-                .select("#" + cleanRecord)
-                .style("stroke", "rgb(255, 165, 0)")
-                .style("opacity", "1");
-        }
-        const dimNameToCheck = select("#" + cleanRecord).text();
-        if (dimNameToCheck != "") {
-            svg
-                .select("#" + cleanRecord)
-                .style("stroke", "lightgrey")
-                .style("stroke-opacity", "0.4");
-        }
-    });
-}
-function setFeatureAxisToDownload(svg, yAxis, yScales, xScales) {
-    const orderedFeatures = parcoords.newFeatures.map((name) => ({
-        name,
-    }));
-    const hiddenDims = getAllHiddenDimensionNames();
-    let featureAxis = svg
-        .selectAll("g.feature")
-        .data(orderedFeatures)
-        .enter()
-        .append("g")
-        .attr("transform", (d) => "translate(" + xScales(d.name) + ")");
-    featureAxis.append("g").each(function (d) {
-        const processedDimensionName = cleanString(d.name);
-        const max = getCurrentMaxRange(d.name);
-        const min = getCurrentMinRange(d.name);
-        const inversionStatus = getInversionStatus(d.name);
-        if (!isDimensionCategorical(d.name)) {
-            if (inversionStatus === "ascending") {
-                yScales[d.name].domain([min, max]);
-                yAxis = setupYAxis(yScales, parcoords.newDataset, hiddenDims);
-                select(this)
-                    .attr("id", "dimension_axis_" + processedDimensionName)
-                    .call(yAxis[d.name].scale(yScales[d.name].domain(yScales[d.name].domain())));
-            }
-            else {
-                yScales[d.name].domain([min, max]);
-                yAxis = setupYAxis(yScales, parcoords.newDataset, hiddenDims);
-                select(this)
-                    .attr("id", "dimension_axis_" + processedDimensionName)
-                    .call(yAxis[d.name].scale(yScales[d.name].domain(yScales[d.name].domain().reverse())));
-            }
-        }
-        else {
-            if (inversionStatus === "ascending") {
-                select(this)
-                    .attr("id", "dimension_axis_" + processedDimensionName)
-                    .call(yAxis[d.name]);
-            }
-            else {
-                const scale = yScales[d.name];
-                scale.domain([...scale.domain()].reverse());
-                select(this)
-                    .attr("id", "dimension_axis_" + processedDimensionName)
-                    .call(yAxis[d.name]);
-            }
-        }
-    });
-    featureAxis
-        .append("text")
-        .attr("text-anchor", "middle")
-        .attr("y", 18)
-        .text((d) => d.name.length > 10 ? d.name.substr(0, 10) + "..." : d.name)
-        .style("font-size", "12");
-    featureAxis
-        .selectAll(".tick text")
-        .attr("dy", 0)
-        .attr("dominant-baseline", "middle");
-    setBrushDownToDownload(featureAxis);
-    setBrushUpToDownload(featureAxis);
-    setRectToDragToDownload(featureAxis);
-    setInvertIconToDownload(featureAxis);
-}
-function setSelectedRecordValuesToDownload(svg, xScales, yScales) {
-    const selectedRecords = getSelected();
-    if (selectedRecords.length === 0)
-        return;
-    const selectedDataset = parcoords.newDataset.filter((record) => selectedRecords.includes(record[hoverlabel]) &&
-        !isRecordColored(record[hoverlabel]));
-    if (selectedDataset.length === 0)
-        return;
-    selectedDataset.forEach((record) => {
-        createToolTipForValues(record, true, svg, xScales, yScales);
-    });
-}
-function setBrushDownToDownload(featureAxis) {
-    featureAxis.each(function (d) {
-        const processedDimensionName = cleanString(d.name);
-        const item = parcoords.currentPosOfDims.find((object) => object.key == d.name);
-        select(this)
-            .append("g")
-            .append("use")
-            .attr("id", "triangle_down_" + processedDimensionName)
-            .attr("y", item.top == 50 ? 41 : item.top - DOWNLOAD_BRUSH_ARROW_HEIGHT)
-            .attr("x", DOWNLOAD_BRUSH_ARROW_X)
-            .attr("width", DOWNLOAD_BRUSH_ARROW_WIDTH)
-            .attr("height", DOWNLOAD_BRUSH_ARROW_HEIGHT)
-            .attr("href", "#brush_image_bottom");
-    });
-}
-function setBrushUpToDownload(featureAxis) {
-    featureAxis.each(function (d) {
-        const processedDimensionName = cleanString(d.name);
-        const item = parcoords.currentPosOfDims.find((object) => object.key == d.name);
-        select(this)
-            .append("g")
-            .append("use")
-            .attr("id", "triangle_up_" + processedDimensionName)
-            .attr("y", item.bottom)
-            .attr("x", DOWNLOAD_BRUSH_ARROW_X)
-            .attr("width", DOWNLOAD_BRUSH_ARROW_WIDTH)
-            .attr("height", DOWNLOAD_BRUSH_ARROW_HEIGHT)
-            .attr("href", "#brush_image_top");
-    });
-}
-function setRectToDragToDownload(featureAxis) {
-    featureAxis.each(function (d) {
-        const processedDimensionName = cleanString(d.name);
-        const item = parcoords.currentPosOfDims.find((object) => object.key == d.name);
-        let height = item.bottom - item.top;
-        const isIdle = item.top == 50 && item.bottom == 350;
-        select(this)
-            .append("g")
-            .append("rect")
-            .attr("id", "rect_" + processedDimensionName)
-            .attr("width", 12)
-            .attr("height", height)
-            .attr("x", -6)
-            .attr("y", item.top)
-            .attr("fill", isIdle ? BRUSH_IDLE_FILL : BRUSH_ACTIVE_FILL)
-            .attr("opacity", isIdle ? "0.5" : "0.7");
-    });
-}
-function setInvertIconToDownload(featureAxis) {
-    featureAxis
-        .append("svg")
-        .attr("y", 24)
-        .attr("x", DOWNLOAD_INVERT_ARROW_X)
-        .append("use")
-        .attr("width", DOWNLOAD_INVERT_ARROW_WIDTH)
-        .attr("height", DOWNLOAD_INVERT_ARROW_HEIGHT)
-        .attr("y", 0)
-        .attr("x", 0)
-        .each(function (d) {
-        const processedDimensionName = cleanString(d.name);
-        if (getInversionStatus(processedDimensionName) == "descending") {
-            select(this).attr("href", "#arrow_image_down");
-        }
-        else {
-            select(this).attr("href", "#arrow_image_up");
-        }
-    });
-}
-
-const SVG_DOWNLOAD_SETTINGS_KEY = "spcd3:svg-download-settings";
-const EXAMPLE_UI_SETTINGS_KEY = "spcd3:example-ui-settings";
-const TAURI_SVG_SAVE_DIRECTORY_KEY = "spcd3:tauri-svg-save-directory";
-const DEFAULT_SVG_DOWNLOAD_SETTINGS = {
-    decimals: 2,
-    keepClasses: true,
-    includeUiControls: true,
-    includeDataValues: true,
-    convertSymbolsToPaths: false,
-};
-const DEFAULT_EXAMPLE_UI_SETTINGS = {
-    selectionSensitivityRem: 0.4,
-    dimensionSpacingRem: 6,
-    zoomFactor: 1,
-};
-function canUseLocalStorage() {
-    return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
-}
-function readJson(key, fallback) {
-    if (!canUseLocalStorage())
-        return fallback;
-    try {
-        const rawValue = window.localStorage.getItem(key);
-        if (!rawValue)
-            return fallback;
-        return { ...fallback, ...JSON.parse(rawValue) };
-    }
-    catch {
-        return fallback;
-    }
-}
-function writeJson(key, value) {
-    if (!canUseLocalStorage())
-        return;
-    try {
-        window.localStorage.setItem(key, JSON.stringify(value));
-    }
-    catch { }
-}
-function getSvgDownloadSettings() {
-    return readJson(SVG_DOWNLOAD_SETTINGS_KEY, DEFAULT_SVG_DOWNLOAD_SETTINGS);
-}
-function setSvgDownloadSettings(settings) {
-    writeJson(SVG_DOWNLOAD_SETTINGS_KEY, settings);
-}
-function getExampleUiSettings() {
-    return readJson(EXAMPLE_UI_SETTINGS_KEY, DEFAULT_EXAMPLE_UI_SETTINGS);
-}
-function setExampleUiSettings(settings) {
-    writeJson(EXAMPLE_UI_SETTINGS_KEY, settings);
-}
-function getTauriSvgSaveDirectory() {
-    if (!canUseLocalStorage())
-        return null;
-    try {
-        return window.localStorage.getItem(TAURI_SVG_SAVE_DIRECTORY_KEY);
-    }
-    catch {
-        return null;
-    }
-}
-function setTauriSvgSaveDirectory(directory) {
-    if (!canUseLocalStorage())
-        return;
-    try {
-        window.localStorage.setItem(TAURI_SVG_SAVE_DIRECTORY_KEY, directory);
-    }
-    catch { }
-}
-
-const DOWNLOAD_TOP_BALANCE_PADDING = 32;
-const DEFAULT_SVG_FILENAME = "parcoords.svg";
-function createSvgString(includeDataValues = false) {
-    const orderedFeatures = parcoords.newFeatures.map((name) => ({
-        name,
-    }));
-    const layout = calculateChartLayout(orderedFeatures, parcoords.newDataset);
-    const leftBalancePadding = Math.max(0, layout.rightPadding - layout.leftPadding);
-    const rightBalancePadding = Math.max(0, layout.leftPadding - layout.rightPadding);
-    const hiddenDims = getAllHiddenDimensionNames();
-    let yScalesForDownload = setupYScales(parcoords.features, parcoords.newDataset);
-    let yAxisForDownload = setupYAxis(yScalesForDownload, parcoords.newDataset, hiddenDims);
-    let xScalesForDownload = setupXScales(orderedFeatures, parcoords.newDataset);
-    let svg = create$1("svg")
-        .attr("xmlns", "http://www.w3.org/2000/svg")
-        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
-        .attr("viewBox", [
-        -leftBalancePadding,
-        -DOWNLOAD_TOP_BALANCE_PADDING,
-        width + leftBalancePadding + rightBalancePadding,
-        height + DOWNLOAD_TOP_BALANCE_PADDING,
-    ])
-        .attr("font-family", "Verdana, sans-serif");
-    const contentRoot = svg.append("g");
-    let defs = svg.append("defs");
-    appendSymbol(defs, "arrow_image_up", "0 0 6 10", [
-        {
-            fill: "black",
-            d: "M 0 4 L 3 0 L 6 4 L 4 4 L 4 10 L 2 10 L 2 4 Z",
-        },
-    ]);
-    appendSymbol(defs, "arrow_image_down", "0 0 6 10", [
-        {
-            fill: "black",
-            d: "M 0 6 L 2 6 L 2 0 L 4 0 L 4 6 L 6 6 L 3 10 Z",
-        },
-    ]);
-    appendSymbol(defs, "brush_image_top", "0 0 100 86", [
-        {
-            fill: "rgb(242, 242, 76)",
-            stroke: "black",
-            strokeWidth: "7",
-            d: "M 7 79 L 50 7 L 93 79 Z",
-        },
-    ]);
-    appendSymbol(defs, "brush_image_bottom", "0 0 100 86", [
-        {
-            fill: "rgb(242, 242, 76)",
-            stroke: "black",
-            strokeWidth: "7",
-            d: "M 7 7 L 93 7 L 50 79 Z",
-        },
-    ]);
-    setFeatureAxisToDownload(contentRoot, yAxisForDownload, yScalesForDownload, xScalesForDownload);
-    setActivePathLinesToDownload(contentRoot);
-    if (includeDataValues) {
-        setSelectedRecordValuesToDownload(contentRoot, xScalesForDownload, yScalesForDownload);
-    }
-    return svg.node().outerHTML;
-}
-function saveAsSvg() {
-    setOptionsAndDownload();
-}
-function setOptionsAndDownload() {
-    const persistedSettings = getSvgDownloadSettings();
-    const modalOverlay = document.createElement("div");
-    modalOverlay.className = "spcd3-modal-overlay";
-    modalOverlay.style.display = "block";
-    const modal = document.createElement("div");
-    modal.className = "spcd3-modal";
-    modal.style.display = "block";
-    modal.style.width = "30vw";
-    const header = document.createElement("div");
-    header.className = "spcd3-modal-header";
-    header.style.paddingLeft = "0";
-    const title = document.createElement("div");
-    title.textContent = "Download Chart (SVG)";
-    title.className = "spcd3-modal-title";
-    title.style.paddingLeft = "0";
-    const closeButton = document.createElement("span");
-    closeButton.innerHTML = "&times;";
-    closeButton.className = "spcd3-close-button";
-    modal.appendChild(title);
-    modal.appendChild(closeButton);
-    modal.appendChild(header);
-    const form = document.createElement("div");
-    form.className = "spcd3-form";
-    const rowDecimals = document.createElement("div");
-    rowDecimals.className = "spcd3-options-div";
-    const label = document.createElement("label");
-    label.className = "spcd3-label";
-    label.textContent = "Decimals places (0-10): ";
-    label.htmlFor = "decimalsInput";
-    const input = document.createElement("input");
-    input.className = "spcd3-input";
-    input.type = "number";
-    input.min = "0";
-    input.max = "10";
-    input.value = persistedSettings.decimals.toString();
-    input.id = "decimalsInput";
-    rowDecimals.appendChild(label);
-    rowDecimals.appendChild(input);
-    const rowKeepClasses = document.createElement("div");
-    rowKeepClasses.className = "spcd3-options-div";
-    const labelKeepClasses = document.createElement("label");
-    labelKeepClasses.className = "spcd3-label";
-    labelKeepClasses.textContent = "Keep classes: ";
-    const inputKeepClasses = document.createElement("input");
-    inputKeepClasses.className = "spcd3-input";
-    inputKeepClasses.type = "checkbox";
-    inputKeepClasses.id = "keepClassesInput";
-    inputKeepClasses.checked = persistedSettings.keepClasses;
-    rowKeepClasses.appendChild(labelKeepClasses);
-    rowKeepClasses.appendChild(inputKeepClasses);
-    const rowIncludeUiControls = document.createElement("div");
-    rowIncludeUiControls.className = "spcd3-options-div";
-    const labelIncludeUiControls = document.createElement("label");
-    labelIncludeUiControls.className = "spcd3-label";
-    labelIncludeUiControls.textContent = "Include UI controls: ";
-    const inputIncludeUiControls = document.createElement("input");
-    inputIncludeUiControls.className = "spcd3-input";
-    inputIncludeUiControls.type = "checkbox";
-    inputIncludeUiControls.id = "includeUiControlsInput";
-    inputIncludeUiControls.checked = persistedSettings.includeUiControls;
-    rowIncludeUiControls.appendChild(labelIncludeUiControls);
-    rowIncludeUiControls.appendChild(inputIncludeUiControls);
-    const rowIncludeDataValues = document.createElement("div");
-    rowIncludeDataValues.className = "spcd3-options-div";
-    const labelIncludeDataValues = document.createElement("label");
-    labelIncludeDataValues.className = "spcd3-label";
-    labelIncludeDataValues.textContent =
-        "Include data values of selected records: ";
-    const inputIncludeDataValues = document.createElement("input");
-    inputIncludeDataValues.className = "spcd3-input";
-    inputIncludeDataValues.type = "checkbox";
-    inputIncludeDataValues.id = "includeDataValuesInput";
-    inputIncludeDataValues.checked = persistedSettings.includeDataValues;
-    rowIncludeDataValues.appendChild(labelIncludeDataValues);
-    rowIncludeDataValues.appendChild(inputIncludeDataValues);
-    const rowConvertSymbols = document.createElement("div");
-    rowConvertSymbols.className = "spcd3-options-div";
-    const labelConvertSymbols = document.createElement("label");
-    labelConvertSymbols.className = "spcd3-label";
-    labelConvertSymbols.textContent = "Convert symbols to paths: ";
-    const inputConvertSymbols = document.createElement("input");
-    inputConvertSymbols.className = "spcd3-input";
-    inputConvertSymbols.type = "checkbox";
-    inputConvertSymbols.id = "convertSymbolsInput";
-    inputConvertSymbols.checked = persistedSettings.convertSymbolsToPaths;
-    rowConvertSymbols.appendChild(labelConvertSymbols);
-    rowConvertSymbols.appendChild(inputConvertSymbols);
-    const button = document.createElement("button");
-    button.textContent = "Download";
-    button.className = "spcd3-button spcd3-generic-button";
-    form.appendChild(rowDecimals);
-    form.appendChild(rowKeepClasses);
-    form.appendChild(rowIncludeUiControls);
-    form.appendChild(rowIncludeDataValues);
-    form.appendChild(rowConvertSymbols);
-    form.appendChild(button);
-    modal.appendChild(form);
-    modalOverlay.appendChild(modal);
-    document.body.appendChild(modalOverlay);
-    input.focus();
-    button.addEventListener("click", async () => {
-        const name = DEFAULT_SVG_FILENAME;
-        const decimals = parseInt(input.value);
-        if (isNaN(decimals) || decimals < 0 || decimals > 10) {
-            alert("Please enter a number between 2 and 10.");
-            input.focus();
-            return;
-        }
-        setSvgDownloadSettings({
-            decimals,
-            keepClasses: inputKeepClasses.checked,
-            includeUiControls: inputIncludeUiControls.checked,
-            includeDataValues: inputIncludeDataValues.checked,
-            convertSymbolsToPaths: inputConvertSymbols.checked,
-        });
-        let svgString = createSvgString(inputIncludeDataValues.checked);
-        svgString = svgString.replaceAll("currentColor", "black");
-        svgString = svgString.replaceAll('stroke="black"', "");
-        svgString = svgString.replaceAll('fill="black"', "");
-        svgString = svgString.replaceAll('dy="0"', "");
-        svgString = svgString.replaceAll('fill="none" font-size="10" font-family="sans-serif" text-anchor="end"', 'fill="none" font-size="8" text-anchor="end" stroke="black"');
-        svgString = svgString.replaceAll("domain", "dimension");
-        svgString = svgString.replaceAll("12px", "12");
-        svgString = svgString.replaceAll('class="tick" opacity="1"', 'class="tick" fill="black" stroke="none"');
-        let updatedSVG = roundDecimals(svgString, decimals);
-        updatedSVG = updatedSVG.replaceAll('class="records" style="opacity: 1; stroke: rgba(0, 129, 175, 1); stroke-width: 2; fill: none;"', 'class="records" style="opacity: 0.5; stroke: rgba(0, 129, 175, 0.8); stroke-width: 2; fill: none;"');
-        if (!inputKeepClasses.checked) {
-            updatedSVG = removeClasses(updatedSVG);
-        }
-        if (!inputIncludeUiControls.checked) {
-            updatedSVG = removeUiControls(updatedSVG);
-            updatedSVG = updatedSVG.replaceAll('<svg y="25" x="-6"><use width="12" height="12" y="0" x="0" href="#arrow_image_up"></use></svg>', "");
-        }
-        if (inputConvertSymbols.checked) {
-            updatedSVG = convertSymbolsToPaths(updatedSVG);
-        }
-        let processedData = xmlFormat(updatedSVG, {
-            indentation: "  ",
-            collapseContent: true,
-        });
-        let preface = '<?xml version="1.0" standalone="no"?>\r\n';
-        const svgContent = `${preface}${processedData}`;
-        button.disabled = true;
-        try {
-            const savedInTauri = await saveSvgWithTauri(svgContent, name);
-            if (savedInTauri) {
-                document.body.removeChild(modalOverlay);
-                return;
-            }
-            const savedInBrowserPicker = await saveSvgWithBrowserFilePicker(svgContent, name);
-            if (!savedInBrowserPicker) {
-                downloadSvgInBrowser(svgContent, name);
-            }
-            document.body.removeChild(modalOverlay);
-        }
-        catch (error) {
-            console.error("Failed to save SVG", error);
-            alert("The SVG file could not be saved.");
-        }
-        finally {
-            button.disabled = false;
-        }
-    });
-    modalOverlay.addEventListener("click", (e) => {
-        if (e.target === modalOverlay) {
-            document.body.removeChild(modalOverlay);
-        }
-    });
-    closeButton.addEventListener("click", () => {
-        document.body.removeChild(modalOverlay);
-    });
-}
-async function saveSvgWithBrowserFilePicker(svgContent, suggestedFileName) {
-    if (typeof window === "undefined")
-        return false;
-    const browserWindow = window;
-    const showSaveFilePicker = browserWindow.showSaveFilePicker;
-    if (!showSaveFilePicker) {
-        return false;
-    }
-    try {
-        const fileHandle = await showSaveFilePicker({
-            id: "spcd3-svg-download",
-            suggestedName: suggestedFileName,
-            types: [
-                {
-                    description: "SVG files",
-                    accept: { "image/svg+xml": [".svg"] },
-                },
-            ],
-        });
-        const writable = await fileHandle.createWritable();
-        await writable.write(svgContent);
-        await writable.close();
-        return true;
-    }
-    catch (error) {
-        if (error instanceof DOMException && error.name === "AbortError") {
-            return true;
-        }
-        console.warn("Browser file picker save failed, falling back to download", error);
-        return false;
-    }
-}
-async function saveSvgWithTauri(svgContent, suggestedFileName) {
-    if (!isTauri()) {
-        return false;
-    }
-    const defaultPath = await getTauriSvgDefaultPath(suggestedFileName, join);
-    const selectedPath = await saveWithNativeDialog({
-        title: "Download Chart (SVG)",
-        defaultPath,
-        filters: [{ name: "SVG", extensions: ["svg"] }],
-    });
-    if (!selectedPath) {
-        return true;
-    }
-    await writeTextFile(selectedPath, svgContent);
-    await rememberTauriSvgSaveDirectory(selectedPath, dirname);
     return true;
-}
-async function getTauriSvgDefaultPath(suggestedFileName, join) {
-    const storedDirectory = getTauriSvgSaveDirectory();
-    if (storedDirectory) {   
-    return await Promise.resolve(join(storedDirectory, suggestedFileName));
-    }
-    return suggestedFileName;
-}
-async function rememberTauriSvgSaveDirectory(selectedPath, dirname) {
-    const directory = await Promise.resolve(dirname(selectedPath));
-    if (directory) {
-        setTauriSvgSaveDirectory(directory);
-    }
-}
-function downloadSvgInBrowser(svgContent, filename) {
-    const svgBlob = new Blob([svgContent], {
-        type: "image/svg+xml;charset=utf-8",
-    });
-    const svgUrl = URL.createObjectURL(svgBlob);
-    const downloadLink = document.createElement("a");
-    downloadLink.href = svgUrl;
-    downloadLink.download = filename;
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
-    URL.revokeObjectURL(svgUrl);
-}
-function appendSymbol(defs, id, viewBox, paths) {
-    const symbol = defs.append("symbol").attr("id", id).attr("viewBox", viewBox);
-    paths.forEach((pathDefinition) => {
-        const path = symbol.append("path").attr("d", pathDefinition.d);
-        if (pathDefinition.fill) {
-            path.attr("fill", pathDefinition.fill);
-        }
-        if (pathDefinition.stroke) {
-            path.attr("stroke", pathDefinition.stroke);
-        }
-        if (pathDefinition.strokeWidth) {
-            path.attr("stroke-width", pathDefinition.strokeWidth);
-        }
-    });
-}
-function roundDecimals(svgString, decimals) {
-    return svgString.replace(/(\d*\.\d+)/g, (match) => {
-        return parseFloat(match).toFixed(decimals);
-    });
-}
-function removeClasses(svgString) {
-    return svgString.replace(/\sclass="[^"]*"/g, "");
-}
-function removeUiControls(svgString) {
-    svgString = svgString.replace(/<defs[\s\S]*?<\/defs>/g, "");
-    svgString = svgString.replace(/<g><use[\s\S]*?<\/use><\/g>/g, "");
-    svgString = svgString.replace(/<g><rect[\s\S]*?<\/rect><\/g>/g, "");
-    svgString = svgString.replace(/y\s*=\s*["']?18["']?/g, 'y="29"');
-    return svgString;
-}
-function convertSymbolsToPaths(svgString) {
-    const parser = new DOMParser();
-    const documentSvg = parser.parseFromString(svgString, "image/svg+xml");
-    const svgRoot = documentSvg.documentElement;
-    const defs = svgRoot.querySelector("defs");
-    if (!defs)
-        return svgString;
-    const symbols = new Map();
-    defs.querySelectorAll("symbol").forEach((symbol) => {
-        const id = symbol.getAttribute("id");
-        if (id) {
-            symbols.set(id, symbol);
-        }
-    });
-    svgRoot.querySelectorAll("use").forEach((useNode) => {
-        const href = useNode.getAttribute("href") || useNode.getAttribute("xlink:href");
-        if (!href || !href.startsWith("#"))
-            return;
-        const symbol = symbols.get(href.slice(1));
-        if (!symbol)
-            return;
-        const replacement = createPathsFromSymbol(documentSvg, symbol, useNode);
-        const parent = useNode.parentElement;
-        if (!parent)
-            return;
-        if (parent.tagName.toLowerCase() === "svg" &&
-            parent.childElementCount === 1 &&
-            parent.parentElement) {
-            parent.parentElement.replaceChild(replacement, parent);
-        }
-        else {
-            parent.replaceChild(replacement, useNode);
-        }
-    });
-    defs.remove();
-    return new XMLSerializer().serializeToString(svgRoot);
-}
-function createPathsFromSymbol(documentSvg, symbol, useNode) {
-    const group = documentSvg.createElementNS("http://www.w3.org/2000/svg", "g");
-    const symbolSvgParent = useNode.parentElement?.tagName.toLowerCase() === "svg"
-        ? useNode.parentElement
-        : null;
-    const symbolX = parseSvgNumber(symbolSvgParent?.getAttribute("x"));
-    const symbolY = parseSvgNumber(symbolSvgParent?.getAttribute("y"));
-    const useX = parseSvgNumber(useNode.getAttribute("x"));
-    const useY = parseSvgNumber(useNode.getAttribute("y"));
-    const width = parseSvgNumber(useNode.getAttribute("width"), 0);
-    const height = parseSvgNumber(useNode.getAttribute("height"), 0);
-    const [minX, minY, viewBoxWidth, viewBoxHeight] = parseViewBox(symbol.getAttribute("viewBox"));
-    const scaleX = viewBoxWidth === 0 ? 1 : width / viewBoxWidth;
-    const scaleY = viewBoxHeight === 0 ? 1 : height / viewBoxHeight;
-    const transforms = [
-        `translate(${symbolX + useX} ${symbolY + useY})`,
-        `scale(${scaleX} ${scaleY})`,
-    ];
-    if (minX !== 0 || minY !== 0) {
-        transforms.push(`translate(${-minX} ${-minY})`);
-    }
-    group.setAttribute("transform", transforms.join(" "));
-    symbol.querySelectorAll("path").forEach((pathNode) => {
-        const path = documentSvg.createElementNS("http://www.w3.org/2000/svg", "path");
-        Array.from(pathNode.attributes).forEach((attribute) => {
-            path.setAttribute(attribute.name, attribute.value);
-        });
-        group.appendChild(path);
-    });
-    return group;
-}
-function parseViewBox(viewBox) {
-    if (!viewBox)
-        return [0, 0, 0, 0];
-    const values = viewBox
-        .trim()
-        .split(/[\s,]+/)
-        .map((value) => Number.parseFloat(value));
-    if (values.length !== 4 || values.some((value) => Number.isNaN(value))) {
-        return [0, 0, 0, 0];
-    }
-    return [values[0], values[1], values[2], values[3]];
-}
-function parseSvgNumber(value, fallback = 0) {
-    if (value == null || value === "")
-        return fallback;
-    const parsed = Number.parseFloat(value);
-    return Number.isNaN(parsed) ? fallback : parsed;
-}
-
-let chartModalState = null;
-const MIN_MODAL_SCALE = 0.5;
-const MAX_MODAL_SCALE = 3;
-const MODAL_SCALE_STEP = 0.25;
-function createToolbar(dataset) {
-    const toolbarRow = select("#spcd3-toolbarRow");
-    const { btn: toggleButton, tip: toggleTip } = makeIconButton(toolbarRow, {
-        id: "toggleButton",
-        iconHtml: getExpandToolbarIcon(),
-        tipText: "Expand Toolbar",
-    });
-    const toolbar = toolbarRow
-        .append("div")
-        .attr("id", "spcd3-toolbar")
-        .attr("class", "spcd3-toolbar");
-    makeIconButton(toolbar, {
-        iconHtml: getTableIcon(),
-        tipText: "Show Table",
-        onClick: () => showModalWithData(dataset),
-    });
-    makeIconButton(toolbar, {
-        id: "zoomModeButton",
-        iconHtml: getZoomButton(),
-        tipText: "Zoom Mode",
-        onClick: () => openZoomMode(dataset),
-    });
-    makeIconButton(toolbar, {
-        id: "downloadButton",
-        iconHtml: getDownloadButton(),
-        tipText: "Download Chart (SVG)",
-        onClick: saveAsSvg,
-    });
-    makeIconButton(toolbar, {
-        id: "refreshButton",
-        iconHtml: getRefreshIcon(),
-        tipText: "Refresh",
-        onClick: refresh,
-    });
-    makeIconButton(toolbar, {
-        id: "resetButton",
-        iconHtml: getResetIcon(),
-        tipText: "Reset",
-        onClick: reset,
-    });
-    let isExpanded = false;
-    toggleButton.on("click", () => {
-        isExpanded = !isExpanded;
-        toolbar
-            .style("max-width", isExpanded ? "12.5rem" : "0")
-            .style("opacity", isExpanded ? "1" : "0")
-            .style("pointer-events", isExpanded ? "auto" : "none")
-            .style("overflow", isExpanded ? "visible" : "hidden");
-        toggleTip.text(isExpanded ? "Collapse Toolbar" : "Expand Toolbar");
-        const currentIcon = isExpanded
-            ? getCollapseToolbarIcon()
-            : getExpandToolbarIcon();
-        toggleButton.select("#toggleButtonicon").html(currentIcon);
-    });
-}
-function closeChartModal() {
-    if (!chartModalState)
-        return;
-    const state = chartModalState;
-    window.removeEventListener("pointermove", state.onPointerMove);
-    window.removeEventListener("pointerup", state.onPointerUp);
-    window.removeEventListener("pointercancel", state.onPointerUp);
-    setPanMode(false);
-    state.chartWrapper.classList.remove("spcd3-chartWrapper--modal");
-    state.chartWrapper.inert = state.previousChartWrapperInert;
-    state.svg.style.inlineSize = state.previousSvgInlineSize;
-    state.svg.style.blockSize = state.previousSvgBlockSize;
-    state.svg.style.pointerEvents = state.previousSvgPointerEvents;
-    state.tooltipElements.forEach((element) => element.remove());
-    state.originalParent.insertBefore(state.chartWrapper, state.placeholder);
-    state.placeholder.remove();
-    state.overlay.remove();
-    chartModalState = null;
-}
-function makeIconButton(parent, opts) {
-    const { id, iconHtml, tipText, onClick } = opts;
-    const btn = parent
-        .append("button")
-        .attr("class", "spcd3-toolbar-button")
-        .attr("type", "button")
-        .attr("id", id ?? null);
-    if (onClick)
-        btn.on("click", onClick);
-    btn
-        .append("span")
-        .attr("class", "spcd3-toolbar-buttonicon")
-        .attr("id", `${id}icon`)
-        .html(iconHtml);
-    btn
-        .select(".spcd3-toolbar-buttonicon")
-        .selectAll("svg")
-        .attr("class", "spcd3-toolbar-svg");
-    const tip = parent
-        .append("span")
-        .attr("class", "spcd3-toolbar-buttontip")
-        .attr("id", `${id}tip`)
-        .attr("popover", "manual")
-        .text(tipText ?? "");
-    const btnNode = btn.node();
-    const tipNode = tip.node();
-    function show() {
-        if (!tipNode)
-            return;
-        if (!tipNode.matches(":popover-open")) {
-            tipNode.showPopover();
-        }
-        positionTip(btnNode, tipNode);
-    }
-    function hide() {
-        if (!tipNode)
-            return;
-        if (tipNode.matches(":popover-open")) {
-            tipNode.hidePopover();
-        }
-    }
-    btn
-        .on("mouseenter", show)
-        .on("mouseleave", hide)
-        .on("focus", show)
-        .on("blur", hide);
-    select(window).on(`resize.${id}`, () => {
-        if (tipNode?.matches(":popover-open")) {
-            positionTip(btnNode, tipNode);
-        }
-    });
-    select(window).on(`scroll.${id}`, () => {
-        if (tipNode?.matches(":popover-open")) {
-            positionTip(btnNode, tipNode);
-        }
-    });
-    return { btn, tip };
-}
-function positionTip(btnNode, tipNode) {
-    if (!btnNode || !tipNode)
-        return;
-    const rect = btnNode.getBoundingClientRect();
-    const gap = 8;
-    tipNode.style.left = "0";
-    tipNode.style.top = "0";
-    const tipRect = tipNode.getBoundingClientRect();
-    let left = rect.left + rect.width / 2 - tipRect.width / 2;
-    let top = rect.bottom + gap;
-    const padding = 0.5;
-    if (left < padding)
-        left = padding;
-    if (left + tipRect.width > window.innerWidth - padding) {
-        left = window.innerWidth - tipRect.width - padding;
-    }
-    if (top + tipRect.height > window.innerHeight - padding) {
-        top = rect.top - tipRect.height - gap;
-    }
-    if (top < padding)
-        top = padding;
-    tipNode.style.left = `${left / 16}rem`;
-    tipNode.style.top = `${top / 16}rem`;
-}
-function showModalWithData(dataset) {
-    const overlay = select("body")
-        .append("div")
-        .attr("class", "spcd3-modal-tableoverlay")
-        .attr("id", "modalTableOverlay");
-    overlay.on("click", () => {
-        overlay.style("display", "none");
-        modal.style("display", "none");
-    });
-    const modal = select("body")
-        .append("div")
-        .attr("class", "spcd3-modal-tabledata")
-        .attr("id", "dataModal");
-    const saveAsCSV = document.createElement("button");
-    saveAsCSV.className = "spcd3-button spcd3-save-csv-button";
-    saveAsCSV.id = "saveAsCsv";
-    saveAsCSV.textContent = "Download as CSV";
-    modal.append(() => saveAsCSV);
-    saveAsCSV.addEventListener("click", () => {
-        const reservedArray = dataset.map((entry) => {
-            const entries = Object.entries(entry).reverse();
-            return Object.fromEntries(entries);
-        });
-        downloadCSV(reservedArray);
-    });
-    const closeButton = document.createElement("span");
-    closeButton.className = "spcd3-close-button";
-    closeButton.innerHTML = "&times;";
-    closeButton.style.marginBottom = "1rem";
-    modal.append(() => closeButton);
-    const dimensionsElement = document.createElement("div");
-    dimensionsElement.textContent = `Dataset has ${numberOfDimensions} dimensions and ${numberOfRecords} records.`;
-    dimensionsElement.style.marginBottom = "1rem";
-    modal.append(() => dimensionsElement);
-    const scrollWrapper = document.createElement("div");
-    scrollWrapper.className = "spcd3-scroll-wrapper";
-    const tableContainer = document.createElement("table");
-    tableContainer.className = "spcd3-tablecontainer";
-    scrollWrapper.appendChild(tableContainer);
-    modal.append(() => scrollWrapper);
-    generateTable(dataset, tableContainer);
-    closeButton.addEventListener("click", () => {
-        modal.style("display", "none");
-        overlay.style("display", "none");
-    });
-}
-function generateTable(dataset, table) {
-    const reservedArray = dataset.map((entry) => {
-        const entries = Object.entries(entry).reverse();
-        return Object.fromEntries(entries);
-    });
-    const headers = Object.keys(reservedArray[0]);
-    const thead = document.createElement("thead");
-    const headRow = document.createElement("tr");
-    headers.forEach((header) => {
-        const th = document.createElement("th");
-        th.innerText = header.charAt(0).toUpperCase() + header.slice(1);
-        th.className = "spcd3-th";
-        const isNumericCol = reservedArray.every((row) => {
-            const val = row[header];
-            return !isNaN(parseFloat(val)) && isFinite(val);
-        });
-        th.style.textAlign = isNumericCol ? "right" : "left";
-        headRow.appendChild(th);
-    });
-    thead.appendChild(headRow);
-    table.appendChild(thead);
-    const tbody = document.createElement("tbody");
-    reservedArray.forEach((obj) => {
-        const row = document.createElement("tr");
-        headers.forEach((key) => {
-            const td = document.createElement("td");
-            const value = obj[key];
-            td.innerText = value;
-            td.className = "spcd3-td";
-            if (!isNaN(parseFloat(value)) && isFinite(value)) {
-                td.style.textAlign = "right";
-            }
-            else {
-                td.style.textAlign = "left";
-            }
-            row.appendChild(td);
-        });
-        tbody.appendChild(row);
-    });
-    table.appendChild(tbody);
-}
-function downloadCSV(dataset, filename = "data.csv") {
-    if (!dataset || !dataset.length)
-        return;
-    const keys = Object.keys(dataset[0]);
-    const csvRows = [];
-    csvRows.push(keys.join(","));
-    dataset.forEach((row) => {
-        const values = keys.map((k) => {
-            const value = row[k];
-            return typeof value === "string" && value.includes(",")
-                ? `"${value}"`
-                : value;
-        });
-        csvRows.push(values.join(","));
-    });
-    const csvContent = csvRows.join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.setAttribute("download", filename);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-}
-function openZoomMode(dataset) {
-    if (chartModalState)
-        return;
-    const chartRoot = document.querySelector("#spcd3-parallelcoords");
-    const chartWrapper = chartRoot?.querySelector(".spcd3-chartWrapper");
-    if (!chartRoot || !chartWrapper || !chartWrapper.parentElement)
-        return;
-    const svg = chartWrapper.querySelector("#spcd3-pc_svg");
-    if (!svg)
-        return;
-    const baseSvgWidth = Number(svg.getAttribute("width")) ||
-        svg.viewBox.baseVal.width ||
-        svg.getBoundingClientRect().width;
-    const baseSvgHeight = Number(svg.getAttribute("height")) ||
-        svg.viewBox.baseVal.height ||
-        svg.getBoundingClientRect().height;
-    const originalParent = chartWrapper.parentElement;
-    const placeholder = document.createComment("spcd3-chart-modal-anchor");
-    originalParent.insertBefore(placeholder, chartWrapper);
-    const overlay = document.createElement("div");
-    overlay.className = "spcd3-chart-modal-overlay";
-    const panel = document.createElement("div");
-    panel.className = "spcd3-chart-modal";
-    overlay.appendChild(panel);
-    const header = document.createElement("div");
-    header.className = "spcd3-chart-modal-header";
-    panel.appendChild(header);
-    const controls = document.createElement("div");
-    controls.className = "spcd3-chart-modal-controls";
-    header.appendChild(controls);
-    const showTableButton = createModalIconControlButton(getTableIcon(), "Show Table");
-    const downloadButton = createModalIconControlButton(getDownloadButton(), "Download Chart (SVG)");
-    const resetButton = createModalIconControlButton(getResetIcon(), "Reset chart");
-    const zoomOutButton = createModalControlButton("−", "Zoom Out");
-    const zoomInButton = createModalControlButton("+", "Zoom In");
-    const panButton = createModalIconControlButton(getPanButton(), "Toggle Pan Mode");
-    panButton.setAttribute("aria-pressed", "false");
-    const zoomLabel = document.createElement("span");
-    zoomLabel.className = "spcd3-chart-modal-zoom-label";
-    const closeButton = document.createElement("span");
-    closeButton.className = "spcd3-close-button";
-    closeButton.innerHTML = "&times;";
-    controls.appendChild(zoomOutButton);
-    controls.appendChild(zoomInButton);
-    controls.appendChild(zoomLabel);
-    controls.appendChild(panButton);
-    controls.appendChild(showTableButton);
-    controls.appendChild(downloadButton);
-    controls.appendChild(resetButton);
-    panel.appendChild(closeButton);
-    const viewport = document.createElement("div");
-    viewport.className = "spcd3-chart-modal-viewport";
-    panel.appendChild(viewport);
-    const panInteractionBlocker = document.createElement("div");
-    panInteractionBlocker.className = "spcd3-chart-modal-pan-interaction-blocker";
-    viewport.appendChild(panInteractionBlocker);
-    chartWrapper.classList.add("spcd3-chartWrapper--modal");
-    viewport.appendChild(chartWrapper);
-    const onPointerMove = (event) => {
-        if (!chartModalState || !chartModalState.isDraggingPan)
-            return;
-        const deltaX = event.clientX - chartModalState.panStartX;
-        const deltaY = event.clientY - chartModalState.panStartY;
-        chartModalState.viewport.scrollLeft = chartModalState.panScrollLeft - deltaX;
-        chartModalState.viewport.scrollTop = chartModalState.panScrollTop - deltaY;
-    };
-    const onPointerUp = () => {
-        if (!chartModalState)
-            return;
-        chartModalState.isDraggingPan = false;
-        if (chartModalState.panMode) {
-            chartModalState.viewport.classList.remove("spcd3-chart-modal-viewport--dragging");
-        }
-    };
-    chartModalState = {
-        overlay,
-        panel,
-        viewport,
-        chartWrapper,
-        placeholder,
-        originalParent,
-        closeButton,
-        zoomInButton,
-        zoomOutButton,
-        resetButton,
-        panButton,
-        zoomLabel,
-        panInteractionBlocker,
-        svg,
-        baseSvgWidth,
-        baseSvgHeight,
-        previousSvgInlineSize: svg.style.inlineSize,
-        previousSvgBlockSize: svg.style.blockSize,
-        previousSvgPointerEvents: svg.style.pointerEvents,
-        previousChartWrapperInert: chartWrapper.inert,
-        scale: 1,
-        panMode: false,
-        isDraggingPan: false,
-        panStartX: 0,
-        panStartY: 0,
-        panScrollLeft: 0,
-        panScrollTop: 0,
-        tooltipElements: [
-            attachTooltip(showTableButton, "Show Table"),
-            attachTooltip(downloadButton, "Download Chart (SVG)"),
-            attachTooltip(resetButton, "Reset"),
-            attachTooltip(zoomOutButton, "Zoom Out"),
-            attachTooltip(zoomInButton, "Zoom In"),
-            attachTooltip(panButton, "Toggle Pan Mode"),
-        ],
-        onPointerMove,
-        onPointerUp,
-    };
-    closeButton.addEventListener("click", closeChartModal);
-    closeButton.addEventListener("keydown", (event) => {
-        if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            closeChartModal();
-        }
-    });
-    overlay.addEventListener("click", (event) => {
-        if (event.target === overlay) {
-            closeChartModal();
-        }
-    });
-    showTableButton.addEventListener("click", () => {
-        showModalWithData(dataset);
-    });
-    downloadButton.addEventListener("click", () => {
-        saveAsSvg();
-    });
-    resetButton.addEventListener("click", () => {
-        const modalDataset = resetContentData ?? dataset;
-        reset();
-        requestAnimationFrame(() => {
-            openZoomMode(modalDataset);
-        });
-    });
-    zoomOutButton.addEventListener("click", () => {
-        setChartModalScale((chartModalState?.scale ?? 1) - MODAL_SCALE_STEP);
-    });
-    zoomInButton.addEventListener("click", () => {
-        setChartModalScale((chartModalState?.scale ?? 1) + MODAL_SCALE_STEP);
-    });
-    panButton.addEventListener("click", () => {
-        setPanMode(!(chartModalState?.panMode ?? false));
-    });
-    viewport.addEventListener("pointerdown", (event) => {
-        if (!chartModalState?.panMode)
-            return;
-        if (event.button !== 0)
-            return;
-        event.preventDefault();
-        chartModalState.isDraggingPan = true;
-        chartModalState.panStartX = event.clientX;
-        chartModalState.panStartY = event.clientY;
-        chartModalState.panScrollLeft = chartModalState.viewport.scrollLeft;
-        chartModalState.panScrollTop = chartModalState.viewport.scrollTop;
-        chartModalState.viewport.classList.add("spcd3-chart-modal-viewport--dragging");
-    });
-    document.body.appendChild(overlay);
-    window.addEventListener("pointermove", onPointerMove);
-    window.addEventListener("pointerup", onPointerUp);
-    window.addEventListener("pointercancel", onPointerUp);
-    setChartModalScale(1);
-}
-function createModalControlButton(text, ariaLabel) {
-    const button = document.createElement("button");
-    button.className = "spcd3-button spcd3-chart-modal-control";
-    button.type = "button";
-    button.setAttribute("aria-label", ariaLabel);
-    button.textContent = text;
-    return button;
-}
-function createModalIconControlButton(iconHtml, ariaLabel) {
-    const button = document.createElement("button");
-    button.className = "spcd3-button spcd3-chart-modal-control spcd3-chart-modal-control--icon";
-    button.type = "button";
-    button.setAttribute("aria-label", ariaLabel);
-    const iconElement = document.createElement("span");
-    iconElement.className = "spcd3-toolbar-buttonicon";
-    iconElement.innerHTML = iconHtml;
-    iconElement
-        .querySelectorAll("svg")
-        .forEach((svgElement) => svgElement.classList.add("spcd3-toolbar-svg"));
-    button.appendChild(iconElement);
-    return button;
-}
-function attachTooltip(button, text) {
-    const tip = document.createElement("span");
-    tip.className = "spcd3-toolbar-buttontip";
-    tip.setAttribute("popover", "manual");
-    tip.textContent = text;
-    document.body.appendChild(tip);
-    function show() {
-        if (!tip.matches(":popover-open")) {
-            tip.showPopover();
-        }
-        positionTip(button, tip);
-    }
-    function hide() {
-        if (tip.matches(":popover-open")) {
-            tip.hidePopover();
-        }
-    }
-    button.addEventListener("mouseenter", show);
-    button.addEventListener("mouseleave", hide);
-    button.addEventListener("focus", show);
-    button.addEventListener("blur", hide);
-    return tip;
-}
-function setChartModalScale(nextScale) {
-    if (!chartModalState)
-        return;
-    const scale = Math.min(MAX_MODAL_SCALE, Math.max(MIN_MODAL_SCALE, nextScale));
-    chartModalState.scale = scale;
-    chartModalState.svg.style.inlineSize = `${pxToRem(chartModalState.baseSvgWidth * scale)}rem`;
-    chartModalState.svg.style.blockSize = `${pxToRem(chartModalState.baseSvgHeight * scale)}rem`;
-    chartModalState.zoomLabel.textContent = `${Math.round(scale * 100)}%`;
-}
-function setPanMode(isActive) {
-    if (!chartModalState)
-        return;
-    chartModalState.panMode = isActive;
-    chartModalState.isDraggingPan = false;
-    chartModalState.panButton.setAttribute("aria-pressed", String(isActive));
-    chartModalState.panButton.classList.toggle("is-active", isActive);
-    chartModalState.viewport.classList.toggle("spcd3-chart-modal-viewport--pannable", isActive);
-    chartModalState.viewport.classList.remove("spcd3-chart-modal-viewport--dragging");
-    chartModalState.panInteractionBlocker.classList.toggle("is-active", isActive);
-    chartModalState.chartWrapper.inert = isActive;
-    chartModalState.svg.style.pointerEvents = isActive
-        ? "none"
-        : chartModalState.previousSvgPointerEvents;
-    chartModalState.zoomLabel.textContent = `${Math.round(chartModalState.scale * 100)}%`;
-    select("#contextmenu").style("display", "none");
-    select("#contextmenuRecords").style("display", "none");
-}
-function pxToRem(value) {
-    const rootFontSize = Number(getComputedStyle(document.documentElement).fontSize.replace("px", ""));
-    if (!Number.isFinite(rootFontSize) || rootFontSize <= 0) {
-        return value / 16;
-    }
-    return value / rootFontSize;
 }
 
 //---------- IO Functions ----------
@@ -9283,14 +9602,14 @@ function drawChart(content) {
     }
     const chartWrapper = chart.append("div").attr("class", "spcd3-chartWrapper");
     chartWrapper.append("div").attr("id", "spcd3-toolbarRow");
-    createToolbar(parcoords.newDataset);
     setSvg(chartWrapper
         .append("svg")
         .attr("id", "spcd3-pc_svg")
         .attr("width", width)
         .attr("height", height)
         .attr("viewBox", [0, 0, width, height])
-        .attr("preserveAspectRatio", "none"));
+        .attr("preserveAspectRatio", "xMinYMin meet"));
+    createToolbar(parcoords.newDataset);
     const plot = svg.append("g").attr("class", "plot");
     setDefsForIcons();
     setActive(setActivePathLines(plot, content, parcoords));
@@ -9326,9 +9645,11 @@ function drawChart(content) {
     window.onclick = () => {
         select("#contextmenu").style("display", "none");
         select("#contextmenuRecords").style("display", "none");
+        releaseRecordHover();
     };
 }
 function reset() {
+    setChartZoomScale(1);
     drawChart(resetContentData);
 }
 function refresh() {
@@ -9504,6 +9825,8 @@ function alignToolbarWithLeftmostAxisLabels() {
     toolbarRow.style.visibility = "visible";
 }
 function handlePointerEnter(event, d) {
+    if (isRecordHoverLocked)
+        return;
     doNotHighlight();
     const data = getAllPointerEventsData(event);
     setHoveredRecords(data);
@@ -9522,6 +9845,8 @@ function handlePointerEnter(event, d) {
     });
 }
 function handlePointerLeaveOrOut() {
+    if (isRecordHoverLocked)
+        return;
     doNotHighlight();
     setHoveredRecords([]);
     selectAll(".spcd3-tooltip-label").style("visibility", "hidden");
@@ -9616,7 +9941,8 @@ function setActivePathLines(svg, content, parcoords) {
         .on("pointerout", handlePointerLeaveOrOut)
         .on("click", handleClick)
         .on("contextmenu", function (event, d) {
-        handleRecordContextMenu(contextMenuRecords, event, d);
+        const isMenuOpen = handleRecordContextMenu(contextMenuRecords, event, d, releaseRecordHover);
+        isRecordHoverLocked = isMenuOpen;
         select("#contextmenu").style("display", "none");
     });
     return g
@@ -9760,6 +10086,14 @@ function setInvertIcon(featureAxis) {
 // Hovering
 let currentlyHighlightedItems = [];
 let hoverSnapshot = null;
+let isRecordHoverLocked = false;
+function releaseRecordHover() {
+    if (!isRecordHoverLocked)
+        return;
+    isRecordHoverLocked = false;
+    handlePointerLeaveOrOut();
+    hoverSnapshot = null;
+}
 function highlight(data) {
     hoverSnapshot = data;
     const cleanedItems = data.map((item) => cleanString(item).replace(/[.,]/g, ""));
@@ -10238,5 +10572,5 @@ function escapeCsvCell(value) {
     return value;
 }
 
-export { clearSelection, colorRecord, createSvgString, deleteChart, disableInteractivity, drawChart, enableInteractivity, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getExampleUiSettings, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelectableWith, getSelected, getSvgDownloadSettings, getTauriSvgSaveDirectory, hide, hideMarker, invert, invertWithoutTransition, isDimensionCategorical, isRecordColored, isRecordInactive, isSelected, isSelectedWithId, loadCSV, move, moveByOne, realignToolbar, refresh, reset, saveAsSvg, setClassColoredFalse, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setDimensionSpacing, setExampleUiSettings, setFilter, setInversionStatus, setSelectableWidth, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setSvgDownloadSettings, setTauriSvgSaveDirectory, setUnselected, setUnselectedWithId, show, showMarker, swap, syncDimensionOrderWithVisible, throttleShowValues, toggleSelection, toggleSelectionWithId, uncolorRecord };
+export { clearSelection, colorRecord, createSvgString, deleteChart, disableInteractivity, drawChart, enableInteractivity, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getChartZoomScale, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getExampleUiSettings, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelectableWith, getSelected, getSvgDownloadSettings, getTauriSvgSaveDirectory, hide, hideMarker, invert, invertWithoutTransition, isDimensionCategorical, isRecordColored, isRecordInactive, isSelected, isSelectedWithId, loadCSV, move, moveByOne, realignToolbar, refresh, reset, saveAsSvg, setChartZoomScale, setClassColoredFalse, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setDimensionSpacing, setExampleUiSettings, setFilter, setInversionStatus, setSelectableWidth, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setSvgDownloadSettings, setTauriSvgSaveDirectory, setUnselected, setUnselectedWithId, show, showMarker, swap, syncDimensionOrderWithVisible, throttleShowValues, toggleSelection, toggleSelectionWithId, uncolorRecord };
 //# sourceMappingURL=spcd3.js.map

@@ -42,7 +42,7 @@ const properties = withDefaults(defineProps<Properties>(), {
 
 const defaults: Record<ModeKey, ModeConfig> = {
   portrait: {
-    query: '(max-width: 60em), (orientation: portrait) and (max-width: 75em)',
+    query: '(max-width: 60em) and (orientation: portrait)',
     containerSelector: '',
     rootSelector: '.text-container',
     offsetElementSelector: '#chart-container',

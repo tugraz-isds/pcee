@@ -60,7 +60,7 @@
           PCEE version: {{ appVersion }}&nbsp;&nbsp;{{ releaseDate }}
         </p>
         <p class="about-copy">
-          SPCD3 version: 1.0.0&nbsp;&nbsp;13 Sept 2026
+          SPCD3 version: 1.0.0&nbsp;&nbsp;01 Oct 2026
         </p>
       </div>
     </div>
@@ -202,7 +202,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, onBeforeUnmount, provide } from 'vue';
+import { computed, ref, onMounted, onBeforeUnmount, provide, nextTick } from 'vue';
 import packageInfo from '../../package.json';
 import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
@@ -260,6 +260,7 @@ const releaseDate = new Date(packageInfo.releaseDate).toLocaleDateString('en-GB'
 const repoUrl = packageInfo.repository.url;
 const DARK_MODE_MEDIA_QUERY = '(prefers-color-scheme: dark)';
 const PORTRAIT_RESIZE_QUERY = '(max-width: 60em) and (orientation: portrait)';
+const SCROLL_POSITION_KEY = 'pcee:scroll-position';
 const darkModeMediaQuery =
   typeof window !== 'undefined' ? window.matchMedia(DARK_MODE_MEDIA_QUERY) : null;
 const portraitResizeMediaQuery =
@@ -269,6 +270,40 @@ const portraitReadingModeManuallyToggled = ref(false);
 const portraitChartRestoring = ref(false);
 let portraitChartFitTimer: number | null = null;
 let portraitChartObserver: MutationObserver | null = null;
+let headerAnimationContext: ReturnType<typeof gsap.context> | null = null;
+let scrollPositionSaveFrame: number | null = null;
+
+const persistScrollPosition = (): void => {
+  try {
+    window.localStorage.setItem(SCROLL_POSITION_KEY, String(Math.round(window.scrollY)));
+  } catch {
+  }
+};
+
+const scheduleScrollPositionSave = (): void => {
+  if (scrollPositionSaveFrame !== null) return;
+
+  scrollPositionSaveFrame = requestAnimationFrame(() => {
+    scrollPositionSaveFrame = null;
+    persistScrollPosition();
+  });
+};
+
+const restoreScrollPosition = (): void => {
+  try {
+    const savedPosition = Number(window.localStorage.getItem(SCROLL_POSITION_KEY));
+    if (!Number.isFinite(savedPosition) || savedPosition < 0) return;
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const maxScrollY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+        window.scrollTo({ top: Math.min(savedPosition, maxScrollY), behavior: 'auto' });
+        ScrollTrigger.refresh();
+      });
+    });
+  } catch {
+  }
+};
 
 const isPortraitResizeMode = (): boolean => {
   return portraitResizeMediaQuery?.matches ?? false;
@@ -675,6 +710,14 @@ window.addEventListener('scroll', () => {
 });
 
 onBeforeUnmount(() => {
+  headerAnimationContext?.revert();
+  headerAnimationContext = null;
+  if (scrollPositionSaveFrame !== null) {
+    cancelAnimationFrame(scrollPositionSaveFrame);
+  }
+  persistScrollPosition();
+  window.removeEventListener('scroll', scheduleScrollPositionSave);
+  window.removeEventListener('pagehide', persistScrollPosition);
   if (portraitChartFitTimer !== null) {
     window.clearTimeout(portraitChartFitTimer);
   }
@@ -694,21 +737,30 @@ onBeforeUnmount(() => {
 })
 
 onMounted(async (): Promise<void> => {
+  if ('scrollRestoration' in window.history) {
+    window.history.scrollRestoration = 'manual';
+  }
+  window.addEventListener('scroll', scheduleScrollPositionSave, { passive: true });
+  window.addEventListener('pagehide', persistScrollPosition);
   syncThemeWithSystemPreference();
   darkModeMediaQuery?.addEventListener('change', syncThemeWithSystemPreference);
   window.addEventListener('resize', resizeImageViewer);
   window.addEventListener('keydown', handleImageViewerKeydown);
   initalLoadOfDataset();
-  loadContent(introText, 'content/introduction.html');
-  loadContent(financeDatasetText, 'content/data-finance.html');
-  loadContent(recordOperationsText, 'content/operations-records.html');
-  loadContent(dimensionOperationsText, 'content/operations-dimensions.html');
-  loadContent(otherFunctionalityText, 'content/other-functionality.html');
-  loadContent(healthDatasetText, 'content/data-health.html');
-  loadContent(usageText, 'content/usage.html');
-  loadContent(multipleViewsText, 'content/multipleviews.html');
-  loadContent(referencesDatasetText, 'content/resources.html');
-  loadContent(aboutText, 'content/about.html');
+  await Promise.all([
+    loadContent(introText, 'content/introduction.html'),
+    loadContent(financeDatasetText, 'content/data-finance.html'),
+    loadContent(recordOperationsText, 'content/operations-records.html'),
+    loadContent(dimensionOperationsText, 'content/operations-dimensions.html'),
+    loadContent(otherFunctionalityText, 'content/other-functionality.html'),
+    loadContent(healthDatasetText, 'content/data-health.html'),
+    loadContent(usageText, 'content/usage.html'),
+    loadContent(multipleViewsText, 'content/multipleviews.html'),
+    loadContent(referencesDatasetText, 'content/resources.html'),
+    loadContent(aboutText, 'content/about.html'),
+  ]);
+  await nextTick();
+  restoreScrollPosition();
 
   const container = usageContainer.value;
   if(container) {
@@ -721,80 +773,66 @@ onMounted(async (): Promise<void> => {
   }
 
   if (!supportsScrollDrivenAnimations) {
+    headerAnimationContext = gsap.context(() => {
+      gsap.set(multiLine.value, {
+        opacity: 1,
+        visibility: 'visible',
+      });
 
-  gsap.set(multiLine.value, {
-    fontSize: '3rem'
-  })
+      gsap.set(singleLine.value, {
+        opacity: 0,
+        visibility: 'hidden',
+      });
 
-  gsap.set(singleLine.value, {
-    fontSize: '1.2rem',
-    opacity: 0,
-    visibility: 'hidden'
-  })
+      gsap.to(header.value, {
+        height: '8vh',
+        backgroundPosition: '50% 100%',
+        ease: 'none',
+        scrollTrigger: {
+          trigger: document.body,
+          start: 'top top',
+          end: '+=80vh',
+          scrub: 1,
+          invalidateOnRefresh: true,
+        },
+      });
 
-  gsap.set(multiLine.value, {
-    opacity: 1,
-    visibility: 'visible',
-    fontSize: '1rem',
-  });
+      gsap.to(multiLine.value, {
+        opacity: 0,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: document.body,
+          start: 'top top',
+          end: '+=80vh',
+          scrub: 1,
+          invalidateOnRefresh: true,
+          onUpdate: (self) => {
+            if (multiLine.value) {
+              multiLine.value.style.visibility =
+                self.progress < 0.99 ? 'visible' : 'hidden';
+            }
+          },
+        },
+      });
 
-  gsap.set(singleLine.value, {
-    opacity: 0,
-    visibility: 'hidden',
-    fontSize: '0.875rem',
-  });
-
-  gsap.to(header.value, {
-    height: '6.8vh',
-    backgroundPosition: '50% 100%',
-    paddingLeft: '1rem',
-    ease: 'none',
-    scrollTrigger: {
-      trigger: document.body,
-      start: 'top top',
-      end: '+=90vh',
-      scrub: 1,
-      invalidateOnRefresh: true,
-    },
-  });
-
-  gsap.to(multiLine.value, {
-    opacity: 0,
-    fontSize: '0.875rem',
-    ease: 'none',
-    scrollTrigger: {
-      trigger: document.body,
-      start: 'top top',
-      end: '+=80vh',
-      scrub: 1,
-      invalidateOnRefresh: true,
-      onUpdate: (self) => {
-        if (multiLine.value) {
-          multiLine.value.style.visibility =
-            self.progress < 0.99 ? 'visible' : 'hidden';
-        }
-      },
-    },
-  });
-
-  gsap.to(singleLine.value, {
-    opacity: 1,
-    fontSize: '1rem',
-    ease: 'none',
-    scrollTrigger: {
-      trigger: document.body,
-      start: 'top+=80vh top',
-      end: 'top+=90vh top',
-      scrub: 1,
-      invalidateOnRefresh: true,
-      onUpdate: (self) => {
-        if (singleLine.value) {
-          singleLine.value.style.visibility =
-            self.progress > 0.01 ? 'visible' : 'hidden';
-        }
-      },
-    },
-  });
+      gsap.to(singleLine.value, {
+        opacity: 1,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: document.body,
+          start: 'top+=80vh top',
+          end: 'top+=90vh top',
+          scrub: 1,
+          invalidateOnRefresh: true,
+          onUpdate: (self) => {
+            if (singleLine.value) {
+              singleLine.value.style.visibility =
+                self.progress > 0.01 ? 'visible' : 'hidden';
+            }
+          },
+        },
+      });
+    }, header.value ?? undefined);
   }
 
   ensurePortraitChartHeight();
@@ -952,6 +990,12 @@ onMounted(async (): Promise<void> => {
   background: var(--image-zoom-svg-background);
   border: 0.0625rem solid var(--ui-border-color);
   border-radius: 0.5rem;
+}
+
+:root[data-theme='dark'] .image-viewer-image-svg {
+  background: transparent;
+  border-color: transparent;
+  filter: invert(1) hue-rotate(180deg);
 }
 
 .image-viewer-button {
@@ -1242,16 +1286,14 @@ onMounted(async (): Promise<void> => {
   }
 }
 
-.header-spacer-native {
+.header-spacer-native,
+.header-spacer-polyfill {
   height: 100vh;
 }
 
-.header-spacer-polyfill {
-  height: 40vh;
-}
-
 @media (max-width: 60em) and (orientation: portrait) {
-  .header-spacer-native {
+  .header-spacer-native,
+  .header-spacer-polyfill {
     height: 98svh;
   }
 }
@@ -1273,11 +1315,16 @@ onMounted(async (): Promise<void> => {
 .main-chart {
   position: sticky;
   top: var(--header-content-offset);
+  inline-size: 100%;
+  min-inline-size: 0;
+  max-inline-size: 100%;
   margin-left: 1rem;
   align-self: flex-start;
 }
 
 .chart-wrapper {
+  min-inline-size: 0;
+  max-inline-size: 100%;
   border: 0.01rem solid var(--panel-border-color);
   border-radius: 0.3rem;
   background: var(--spcd3-bg);
@@ -1293,7 +1340,9 @@ onMounted(async (): Promise<void> => {
 
 #spcd3-parallelcoords {
   display: block;
-  width: 100%;
+  inline-size: 100%;
+  min-inline-size: 0;
+  max-inline-size: 100%;
   height: 100%;
   min-height: 0;
   flex: 1 1 auto;
@@ -1301,16 +1350,17 @@ onMounted(async (): Promise<void> => {
 }
 
 #spcd3-parallelcoords .spcd3-chartWrapper {
-  width: 100%;
+  inline-size: 100% !important;
+  min-inline-size: 0;
+  max-inline-size: 100%;
   margin-inline: auto;
-  margin-left: 0;
-  overflow: hidden;
+  overflow: auto;
+  overscroll-behavior: contain;
 }
 
 #spcd3-parallelcoords #spcd3-pc_svg {
-  width: 100%;
-  max-width: 100%;
-  height: auto;
+  margin-inline: auto;
+  max-width: none;
 }
 
 .portrait-sheet-controls {
@@ -1417,6 +1467,7 @@ section {
     top: var(--header-content-offset);
     left: 0.5rem;
     right: 0.5rem;
+    inline-size: auto;
     display: flex;
     flex-direction: column;
     gap: 0.35rem;
@@ -1526,20 +1577,18 @@ section {
 
   #spcd3-parallelcoords .spcd3-chartWrapper {
     flex: 0 0 auto;
-    inline-size: min(100%, var(--portrait-chart-width, 100%));
+    inline-size: var(--portrait-chart-width, 100%);
     block-size: auto;
-    max-inline-size: 100%;
+    max-inline-size: none;
     margin-inline: auto;
     margin-left: auto;
     margin-right: auto;
-    overflow: visible;
+    overflow: auto;
   }
 
   #spcd3-parallelcoords #spcd3-pc_svg {
     display: block;
-    inline-size: 100%;
-    block-size: auto;
-    max-inline-size: 100%;
+    max-inline-size: none;
     margin-inline: auto;
   }
 }

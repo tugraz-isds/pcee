@@ -185,7 +185,7 @@ jobs:
         run: |
           VERSION=$(node -p "require('./package.json').version")
           TAG="v$VERSION"
-          TITLE="App v$VERSION"
+          TITLE="PCEE v$VERSION"
 
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release edit "$TAG" \
