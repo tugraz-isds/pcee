@@ -1,19 +1,26 @@
+
 # Parallel Coordinates Explorable Explainer (PCEE)
 
-An explorable explainer which guides a reader through an interactive tutorial about parallel coordinates.
-This is a single page web application (SPA) built using [Vue3](https://vuejs.org/).
+An explorable explainer which guides a reader through an interactive
+tutorial about parallel coordinates.  This is a single page web
+application (SPA) built using [Vue3](https://vuejs.org/).
 
 A live version of the latest deployment can be found at
 [https://tugraz-isds.github.io/pcee](https://tugraz-isds.github.io/pcee).
 
+
 ## Dependencies
 
-The explorable explainer uses [SPCD3](https://github.com/tugraz-isds/spcd3) to generate and
+The explorable explainer uses
+[SPCD3](https://github.com/tugraz-isds/spcd3) to generate and
 visualise parallel coordinates.
 
-Scroll-driven animations are implemented using native CSS.
-For browsers and platforms that don't yet support it, a fallback is provided
-using [GSAP](https://github.com/greensock/GSAP) as a polyfill.
+Scroll-driven animations are implemented using native CSS.  For
+browsers and platforms that don't yet support it, a fallback is
+provided using [GSAP](https://github.com/greensock/GSAP) as a
+polyfill.
+
+
 
 ## Getting Started
 
@@ -26,6 +33,7 @@ corepack enable
 yarn install
 ```
 
+
 ### Compile and Hot-Reload for Development
 
 ```
@@ -34,14 +42,31 @@ or
 yarn exec vite
 ```
 
-### Build And Development
+
+### Building the Web App
 
 Gulp is used to automate repeatable tasks. The file [gulpfile.js](gulpfile.js)
-defines five public tasks:
+defines three public tasks to build the web app:
 
 <br/>
 
-`clean` removes the existing `dist/` and `package/` directory in order to enable a clean rebuild of the project:
+`build` creates a new build of PCEE
+and stores the generated files into the `dist/` folder:
+
+```
+yarn build
+or
+yarn exec gulp build
+```
+
+To run the example, a live web server must be started in the
+folder `dist/`.
+
+<br/>
+
+
+`clean` removes the existing `dist/` and `package/` directory in order
+to enable a clean rebuild of the project:
 
 ```
 yarn clean
@@ -63,28 +88,18 @@ yarn exec gulp cleanAll
 
 <br/>
 
-`build` creates a new build of pcee
-and stores the generated files into the `dist/` folder:
-
-```
-yarn build
-or
-yarn exec gulp build
-```
-
-To run the example, a live web server must be started in the
-folder `dist/`.
-
-<br/>
-
 Each of the public Gulp tasks can also be invoked by running the
 equivalent yarn script defined in `package.json`.
 
-### Build a native desktop app
 
-Prerequisites: To build a native desktop app, Rust, Cargo and Tauri 2.0 needs to be installed.
 
-`tauri` builds a native desktop app with Tauri 2.0 and copies the generated artifacts to `package/`.
+### Building a Native Desktop App
+
+Prerequisites: To build a native desktop app, Rust, Cargo and Tauri
+2.0 needs to be installed.
+
+`tauri` builds a native desktop app with Tauri 2.0 and copies the
+generated artifacts to `package/`.
 
 ```
 yarn tauri
@@ -92,13 +107,16 @@ or
 yarn exec gulp tauri
 ```
 
-`cleanTauri` removes the `src-tauri/target/` directory to enable a clean build of the native desktop app:
+`cleanTauri` removes the `src-tauri/target/` directory to enable a
+clean build of the native desktop app:
 
 ```
 yarn cleanTauri
 # or
 yarn exec gulp cleanTauri
 ```
+
+
 
 ## Licence
 
