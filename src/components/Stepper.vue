@@ -13,9 +13,9 @@
             >
             <div
             class="li-header"
-            :style="{ cursor: status ? 'default' : 'pointer' }"
+            :style="{ cursor: 'pointer' }"
             :aria-expanded="index === currentStep ? 'true' : 'false'"
-            @click="status === false && goToStep(index)"
+            @click="goToStep(index)"
             >
             <span class="triangle-bullet"></span>
             {{ step.title }}
@@ -32,6 +32,7 @@
                   <button
                     class="action-buttons"
                     :id="`activate-button-${index}`"
+                    :disabled="isUpdatingChart"
                     @click="handleStepAction(index)"
                   >
                     {{ getButtonLabel(index) }}
@@ -44,7 +45,7 @@
             <button
               id="reset-button"
               class="stepper-button"
-              :disabled="currentStep === 0"
+              :disabled="currentStep === 0 || isUpdatingChart"
               @click="reset"
             >
               <img class="icon"
@@ -54,7 +55,7 @@
             <button
               id="back-button"
               class="stepper-button"
-              :disabled="currentStep === 0"
+              :disabled="currentStep === 0 || isUpdatingChart"
               @click="back"
             >
               <img class="icon"
@@ -64,7 +65,7 @@
             <button
               id="next-button"
               class="stepper-button"
-              :disabled="currentStep === steps.length - 1"
+              :disabled="currentStep === steps.length - 1 || isUpdatingChart"
               @click="next"
             >
               <img class="icon"
@@ -74,7 +75,7 @@
             <button
               id="skip-button"
               class="stepper-button"
-              :disabled="currentStep === steps.length - 1"
+              :disabled="currentStep === steps.length - 1 || isUpdatingChart"
               @click="skip"
             >
               <img class="icon"
@@ -87,9 +88,9 @@
             <span
               v-for="(step, index) in steps"
               :key="index"
-              :style="{ cursor: status ? 'default' : 'pointer' }"
+              :style="{ cursor: 'pointer' }"
               :class="{ active: index === currentStep }"
-              @click="status === false && goToStep(index)"
+              @click="goToStep(index)"
             >
               {{ index + 1 }}
             </span>
@@ -104,7 +105,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted } from 'vue';
 import * as spcd3 from '../spcd3.js';
 import { loadContent, loadDataset, getSharedVariable, drawChart } from '@/helper.js';
 
@@ -119,7 +120,6 @@ const healthDataset = ref('');
 const studentDataset = ref('');
 const financeDataset = ref('');
 const { currentStep } = getSharedVariable();
-let status = false;
 
 const steps = [
   { title: '1. Adjusting Dimension Ranges', content: rangeText },
@@ -131,6 +131,7 @@ const steps = [
 ];
 
 const stepRan = ref(steps.map(() => false));
+const isUpdatingChart = ref(false);
 
 function isLastStep(index: number) {
   return index === steps.length - 1;
@@ -143,79 +144,106 @@ function getButtonLabel(index: number) {
   return stepRan.value[index] ? 'Reset' : 'Run';
 }
 
-function handleStepAction(index: number) {
+async function handleStepAction(index: number): Promise<void> {
+  if (isUpdatingChart.value) return;
+
+  if (index === 1 && spcd3.isRecordInactive('Sylvia')) return;
+
   if (isLastStep(index)) {
     if (stepRan.value[index]) {
       deactivateChart(index);
-      stepRan.value[index] = false;
     } else {
-      activateChart(index);
-      stepRan.value[index] = true;
+      await activateChart(index);
+    }
+  } else if (stepRan.value[index]) {
+    stepRan.value[index] = false;
+    if (index === 4) {
+      await resetFilterStep();
+    } else {
+      resetAction(index);
     }
   } else {
-    if (stepRan.value[index]) {
-      resetAction(index);
-      stepRan.value[index] = false;
-    } else {
-      runAction(index);
-      stepRan.value[index] = true;
-    }
+    runAction(index);
+    stepRan.value[index] = true;
   }
 }
 
-watch(
-  () => steps,
-  (newSteps) => {
-    stepRan.value = newSteps.map((_, i) => stepRan.value[i] ?? false)
-  },
-  { immediate: true }
-)
+const runAction = (currentStep: number): void => {
+  triggerNext(currentStep + 1);
+};
+
+const resetAction = (currentStep: number): void => {
+  triggerBack(currentStep);
+};
+
+const resetFilterStep = async (): Promise<void> => {
+  if (!studentDataset.value) return;
+
+  isUpdatingChart.value = true;
+  try {
+    await drawChart(studentDataset.value);
+    spcd3.disableInteractivity();
+
+    if (stepRan.value[0]) setRangeNext();
+    if (stepRan.value[1]) selectRecordNext();
+    if (stepRan.value[2]) moveDimensionNext();
+    if (stepRan.value[3]) spcd3.invertWithoutTransition('English');
+  } finally {
+    isUpdatingChart.value = false;
+  }
+};
+
+const disableStepInteractivity = (): void => {
+  spcd3.disableInteractivity();
+  stepRan.value[steps.length - 1] = false;
+};
 
 const goToStep = (index: number): void => {
-  spcd3.disableInteractivity();
+  disableStepInteractivity();
   currentStep.value = index;
 }
 
 const next = (event: MouseEvent): void => {
   (event.currentTarget as HTMLButtonElement).blur();
-  spcd3.disableInteractivity();
+  disableStepInteractivity();
   currentStep.value++;
 }
 
 const back = (): void => {
-  spcd3.disableInteractivity();
+  disableStepInteractivity();
   currentStep.value--;
 }
 
-const reset = (): void => {
-  spcd3.disableInteractivity();
-  currentStep.value = 0;
+const reset = async (): Promise<void> => {
+  isUpdatingChart.value = true;
+  try {
+    if (studentDataset.value) await drawChart(studentDataset.value);
+    spcd3.disableInteractivity();
+    stepRan.value = steps.map(() => false);
+    currentStep.value = 0;
+  } finally {
+    isUpdatingChart.value = false;
+  }
 }
 
 const skip = (): void => {
-  spcd3.disableInteractivity();
+  disableStepInteractivity();
   currentStep.value = 5;
 }
 
-const runAction = (currentStep: number): void => {
-  triggerNext(currentStep + 1);
-  stepRan.value[currentStep] = true;
-}
-
-const resetAction = (currentStep: number): void => {
-  triggerBack(currentStep);
-  stepRan.value[currentStep] = false;
-}
-
-const activateChart = (currentStep:number): void => {
-  if (currentStep === 5) drawChart(studentDataset.value);
-  spcd3.enableInteractivity();
-  drawChart(studentDataset.value);
-  stepRan.value[currentStep] = true;
+const activateChart = async (currentStep: number): Promise<void> => {
+  isUpdatingChart.value = true;
+  try {
+    if (studentDataset.value) await drawChart(studentDataset.value);
+    stepRan.value = steps.map(() => false);
+    spcd3.enableInteractivity();
+    stepRan.value[currentStep] = true;
+  } finally {
+    isUpdatingChart.value = false;
+  }
 }
 
 const deactivateChart = (currentStep: number): void => {
-  if (currentStep === 5) drawChart(studentDataset.value);
   spcd3.disableInteractivity();
   stepRan.value[currentStep] = false;
 }
@@ -228,7 +256,7 @@ const triggerNext = (currentStep: number): void => {
       setRangeNext();
       break;
     case 2:
-      selectRecordNext(currentStep);
+      selectRecordNext();
       break;
     case 3:
       moveDimensionNext();
@@ -250,20 +278,13 @@ const triggerBack = (currentStep: number): void => {
       setRangeBack();
       break;
     case 1:
-      selectRecordBack(currentStep);
+      selectRecordBack();
       break;
     case 2:
       moveDimensionBack();
       break;
     case 3:
       invertDimensionBack();
-      break;
-    case 4:
-      filterRecordsBack();
-      break;
-    case 5:
-      break;
-    default:
       break;
   }
 }
@@ -281,33 +302,35 @@ const setRangeNext = (): void => {
 
 const setRangeBack = (): void => {
   const dimensions = spcd3.getAllDimensionNames();
+  const filterIsActive = stepRan.value[4];
+
   dimensions.forEach(function (dimension: string) {
     if (!isNaN(spcd3.getMinValue(dimension))) {
       const min = spcd3.getMinValue(dimension);
       const max = spcd3.getMaxValue(dimension);
+      const [filterMin, filterMax] = spcd3.getFilter(dimension);
       spcd3.setDimensionRange(dimension, min, max);
-      const range = spcd3.getDimensionRange(dimension);
-      spcd3.setFilter(dimension, Number(range[1]), Number(range[0]));
+
+      if (filterIsActive && dimension === 'IT') {
+        spcd3.setFilter(
+          dimension,
+          Math.max(min, filterMin),
+          Math.min(max, filterMax),
+        );
+      } else {
+        const range = spcd3.getDimensionRange(dimension);
+        spcd3.setFilter(dimension, Number(range[1]), Number(range[0]));
+      }
     }
   });
 }
 
-const selectRecordNext = (stepIndex: number): void => {
-  if (!spcd3.isRecordInactive('Sylvia')) {
-    spcd3.setSelected('Sylvia');
-  }
-  else {
-    runAction(stepIndex-1);
-  }
+const selectRecordNext = (): void => {
+  spcd3.setSelected('Sylvia');
 }
 
-const selectRecordBack = (stepIndex: number): void => {
-  if (!spcd3.isRecordInactive('Sylvia')) {
-    spcd3.setUnselected('Sylvia');
-  }
-  else {
-    resetAction(stepIndex);
-  }
+const selectRecordBack = (): void => {
+  spcd3.setUnselected('Sylvia');
 }
 
 const filterRecordsNext = (): void => {
@@ -318,19 +341,6 @@ const filterRecordsNext = (): void => {
   else {
      spcd3.setFilter('IT', values[0], 35);
   }
-}
-
-const filterRecordsBack = (): void => {
-  const values = spcd3.getDimensionRange('IT');
-  if(spcd3.getInversionStatus('IT') === 'ascending') {
-    spcd3.setFilter('IT', values[1], values[0]);
-  }
-  else {
-    spcd3.setFilter('IT', values[0], values[1]);
-  }
-  document.querySelectorAll<SVGPathElement>("path").forEach(p => {
-    p.style.pointerEvents = "none";
-  });
 }
 
 const moveDimensionNext = (): void => {
@@ -352,6 +362,7 @@ const invertDimensionBack = (): void => {
     spcd3.setInversionStatus('English', 'ascending');
   }
 }
+
 
 onMounted(async (): Promise<void> => {
   healthDataset.value = await loadDataset('data/health-data.csv');

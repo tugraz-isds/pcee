@@ -17,6 +17,8 @@ export const studentDataset = ref("");
 export const financeDataset = ref("");
 const currentStep = ref(0);
 let isColored = false;
+let isOutlierShown = false;
+const usageButtonsWithListener = new WeakSet<HTMLElement>();
 
 export const getSharedVariable = () => {
   const resetCurrentStep = () => {
@@ -29,6 +31,28 @@ export const getSharedVariable = () => {
 export const resetTable = (): void => {
   columns.value = structuredClone(columnsFinance);
   rows.value = structuredClone(rowsFinance);
+};
+
+export const resetUsageState = (): void => {
+  isColored = false;
+  isOutlierShown = false;
+
+  const labels: Record<string, string> = {
+    "outlier-button": "Show Outlier",
+    "cluster-button": "Show Clusters",
+    "correlation-button": "Invert Blood Pressure Dimension",
+    "correlation-neg-button": "Move Fitness Score Dimension",
+  };
+
+  Object.entries(labels).forEach(([id, label]) => {
+    const button = document.getElementById(id) as HTMLButtonElement | null;
+    if (button) button.textContent = label;
+  });
+
+  ["move-error", "invert-error", "show-error"].forEach((id) => {
+    const error = document.getElementById(id);
+    if (error) error.textContent = "";
+  });
 };
 
 // Load files from public/content/
@@ -133,22 +157,26 @@ const getOrientation = (): number => {
 
 const addClickEvent = (): void => {
   const outlierButton = document.getElementById("outlier-button");
-  if (outlierButton) {
+  if (outlierButton && !usageButtonsWithListener.has(outlierButton)) {
     outlierButton.addEventListener("click", selectOutlier);
+    usageButtonsWithListener.add(outlierButton);
   }
   const clusterButton = document.getElementById("cluster-button");
-  if (clusterButton) {
+  if (clusterButton && !usageButtonsWithListener.has(clusterButton)) {
     clusterButton.addEventListener("click", showClusters);
+    usageButtonsWithListener.add(clusterButton);
   }
   const correlationButton = document.getElementById("correlation-button");
-  if (correlationButton) {
+  if (correlationButton && !usageButtonsWithListener.has(correlationButton)) {
     correlationButton.addEventListener("click", showPositiveCorrelation);
+    usageButtonsWithListener.add(correlationButton);
   }
   const negCorrelationButton = document.getElementById(
     "correlation-neg-button",
   );
-  if (negCorrelationButton) {
+  if (negCorrelationButton && !usageButtonsWithListener.has(negCorrelationButton)) {
     negCorrelationButton.addEventListener("click", showNegativeCorrelation);
+    usageButtonsWithListener.add(negCorrelationButton);
   }
 };
 
@@ -158,76 +186,32 @@ const selectOutlier = (): void => {
   ) as HTMLParagraphElement | null;
 
   const isOutlierInactive = spcd3.isRecordInactive("William");
+  const button = document.getElementById("outlier-button") as HTMLButtonElement | null;
+  if (!button) return;
 
-  if (isOutlierInactive) {
+  if (isOutlierInactive && !isOutlierShown) {
     if (showError) {
       showError.textContent = "Outlier (William) is filtered out!";
-      return;
     }
+    return;
   } else {
     if (showError) {
       showError.textContent = "";
     }
   }
 
-  const isAlreadySelected = spcd3.isSelected("William");
-
-  if (
-    isAlreadySelected &&
-    (document.getElementById("outlier-button") as HTMLButtonElement)
-      .textContent === "Show Outlier"
-  ) {
-    if (showError) {
-      showError.textContent = "Outlier (William) is already selected!";
-      (
-        document.getElementById("outlier-button") as HTMLButtonElement
-      ).textContent = "Hide Outlier";
-      return;
+  if (isOutlierShown) {
+    isOutlierShown = false;
+    if (!isColored) {
+      spcd3.setUnselected("William");
     }
+    button.textContent = "Show Outlier";
   } else {
-    if (showError) {
-      showError.textContent = "";
+    isOutlierShown = true;
+    if (!isColored) {
+      spcd3.setSelected("William");
     }
-  }
-
-  const path = document.getElementById("William") as SVGPathElement | null;
-  if (path) {
-    const stroke = getComputedStyle(path).getPropertyValue("stroke");
-    if (stroke === "rgb(211, 211, 211)") {
-      return;
-    }
-  }
-
-  if (
-    spcd3.isSelected("William") &&
-    (document.getElementById("outlier-button") as HTMLButtonElement)
-      .textContent === "Show Outlier"
-  ) {
-    (
-      document.getElementById("outlier-button") as HTMLButtonElement
-    ).textContent = "Hide Outlier";
-  } else if (
-    !spcd3.isSelected("William") &&
-    (document.getElementById("outlier-button") as HTMLButtonElement)
-      .textContent !== "Show Outlier"
-  ) {
-    (
-      document.getElementById("outlier-button") as HTMLButtonElement
-    ).textContent = "Show Outlier";
-  } else if (
-    spcd3.isSelected("William") &&
-    (document.getElementById("outlier-button") as HTMLButtonElement)
-      .textContent !== "Show Outlier"
-  ) {
-    spcd3.setUnselected("William");
-    (
-      document.getElementById("outlier-button") as HTMLButtonElement
-    ).textContent = "Show Outlier";
-  } else {
-    spcd3.setSelected("William");
-    (
-      document.getElementById("outlier-button") as HTMLButtonElement
-    ).textContent = "Hide Outlier";
+    button.textContent = "Hide Outlier";
   }
 };
 
@@ -244,7 +228,15 @@ const showClusters = (): void => {
       document.getElementById("cluster-button") as HTMLButtonElement
     ).textContent = "Show Clusters";
     isColored = false;
+
+    if (isOutlierShown && !spcd3.isRecordInactive("William")) {
+      spcd3.setSelected("William");
+    }
   } else {
+    if (isOutlierShown) {
+      spcd3.setUnselected("William");
+    }
+
     colorRecord("Adam", "magenta");
     colorRecord("David", "magenta");
     colorRecord("Elaine", "magenta");
@@ -293,12 +285,16 @@ const showPositiveCorrelation = (): void => {
 
   if (spcd3.getInversionStatus("Blood Pressure (mmHg)") == "descending") {
     spcd3.setInversionStatus("Blood Pressure (mmHg)", "ascending");
+    const button = document.getElementById("correlation-button") as HTMLButtonElement | null;
+    if (button) button.textContent = "Invert Blood Pressure Dimension";
   } else {
     spcd3.showMarker("Blood Pressure (mmHg)");
     spcd3.setInversionStatus("Blood Pressure (mmHg)", "descending");
     setTimeout(() => {
       spcd3.hideMarker("Blood Pressure (mmHg)");
     }, 1000);
+    const button = document.getElementById("correlation-button") as HTMLButtonElement | null;
+    if (button) button.textContent = "Reset Blood Pressure Dimension";
   }
 };
 
@@ -322,16 +318,16 @@ const showNegativeCorrelation = (): void => {
 
   const posFitness = spcd3.getDimensionPosition("Fitness Score (0-100)");
   const posAge = spcd3.getDimensionPosition("Age");
+  const button = document.getElementById(
+    "correlation-neg-button",
+  ) as HTMLButtonElement | null;
+  if (!button) return;
   const diff = posAge - posFitness;
   if (diff === 1) {
-    (
-      document.getElementById("correlation-neg-button") as HTMLButtonElement
-    ).textContent = "Move Fitness Score Dimension";
+    button.textContent = "Move Fitness Score Dimension";
     spcd3.move("Fitness Score (0-100)", true, "Cholesterol (mg/dl)");
   } else {
-    (
-      document.getElementById("correlation-neg-button") as HTMLButtonElement
-    ).textContent = "Move Fitness Score Dimension";
+    button.textContent = "Reset Fitness Score Dimension";
     spcd3.move("Fitness Score (0-100)", true, "Age");
   }
 };

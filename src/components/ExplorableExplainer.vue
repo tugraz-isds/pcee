@@ -60,7 +60,7 @@
           PCEE version: {{ appVersion }}&nbsp;&nbsp;{{ releaseDate }}
         </p>
         <p class="about-copy">
-          SPCD3 version: 1.0.0&nbsp;&nbsp;01 Oct 2026
+          SPCD3 version: 1.0.0&nbsp;&nbsp;05 Oct 2026
         </p>
       </div>
     </div>
@@ -212,7 +212,7 @@ import NavigationDropdown from './NavigationDropdown.vue';
 import Table from './Table.vue';
 import Stepper from './Stepper.vue';
 import { resetTable, loadContent, getCurrentStepIndex, initalLoadOfDataset, getDatasetForStep, drawChart, 
-  writeTitleToDataset, getSharedVariable } from '../helper.js';
+  writeTitleToDataset, getSharedVariable, resetUsageState } from '../helper.js';
 const { resetCurrentStep } = getSharedVariable();
 
 gsap.registerPlugin(ScrollTrigger);
@@ -607,21 +607,8 @@ const handleMisc = (chart: HTMLDivElement, dataset: string | undefined) : void =
   chart.style.maxHeight = 'auto';
   drawChart(dataset);
   resetTable();
+  resetUsageState();
   spcd3.enableInteractivity();
-
-  const outlierBtn = document.getElementById('outlier-button') as HTMLButtonElement | null;
-  if (outlierBtn) outlierBtn.textContent = 'Show Outlier';
-
-  const clusterBtn = document.getElementById('cluster-button') as HTMLButtonElement | null;
-  if (clusterBtn) clusterBtn.textContent = 'Show Clusters';
-
-  const negBtn = document.getElementById('correlation-neg-button') as HTMLButtonElement | null;
-  if (negBtn) negBtn.textContent = 'Move Fitness Score Dimension';
-
-  ['move-error', 'invert-error', 'show-error'].forEach(id => {
-    const el = document.getElementById(id) as HTMLParagraphElement | null;
-    if (el) el.textContent = '';
-  });
 
   (document.getElementById('outlier-button') as HTMLButtonElement | null)?.removeAttribute('disabled');
   (document.getElementById('cluster-button') as HTMLButtonElement | null)?.removeAttribute('disabled');

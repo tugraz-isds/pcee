@@ -340,7 +340,7 @@ table.spcd3-tablecontainer td {
   user-select: none;
 }
 
-.spcd3-chartWrapper--pannable #spcd3-pc_svg {
+.spcd3-chartWrapper--can-pan #spcd3-pc_svg {
   cursor: grab;
 }
 
@@ -348,7 +348,7 @@ table.spcd3-tablecontainer td {
   cursor: auto;
 }
 
-.spcd3-chartWrapper--dragging #spcd3-pc_svg {
+.spcd3-chartWrapper--can-pan.spcd3-chartWrapper--dragging #spcd3-pc_svg {
   cursor: grabbing;
 }
 
@@ -497,7 +497,7 @@ table.spcd3-tablecontainer td {
   inline-size: max-content;
   overflow: visible;
   padding-left: 1rem;
-  background: var(--spcd3-page-bg);
+  background: transparent;
   visibility: hidden;
 }
 
@@ -551,7 +551,7 @@ table.spcd3-tablecontainer td {
   box-sizing: border-box;
   display: inline-flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: center;
   inline-size: 1.75rem;
   block-size: 1.4rem;
   margin: 0;
@@ -562,7 +562,7 @@ table.spcd3-tablecontainer td {
   font: inherit;
   font-size: inherit;
   line-height: 1;
-  text-align: right;
+  text-align: center;
   user-select: text;
 }
 

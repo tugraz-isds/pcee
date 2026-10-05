@@ -5808,11 +5808,6 @@ const DOWNLOAD_BRUSH_ARROW_X = -4.5;
 const DOWNLOAD_INVERT_ARROW_WIDTH = 6.8;
 const DOWNLOAD_INVERT_ARROW_HEIGHT = 11;
 const DOWNLOAD_INVERT_ARROW_X = -3.4;
-function getRenderedDimensionLabelFontSize(dimensionName) {
-    const axis = document.getElementById("dimension_axis_" + cleanString(dimensionName));
-    const label = axis?.parentElement?.querySelector(":scope > text.dimension");
-    return label ? getComputedStyle(label).fontSize : null;
-}
 function setActivePathLinesToDownload(svg) {
     svg
         .append("g")
@@ -5904,7 +5899,7 @@ function setFeatureAxisToDownload(svg, yAxis, yScales, xScales) {
         .attr("text-anchor", "middle")
         .attr("y", 18)
         .text((d) => d.name.length > 10 ? d.name.substr(0, 10) + "..." : d.name)
-        .attr("font-size", (d) => getRenderedDimensionLabelFontSize(d.name));
+        .attr("font-size", 11);
     featureAxis
         .selectAll(".tick text")
         .attr("dy", 0)
@@ -6516,9 +6511,17 @@ function parseSvgNumber(value, fallback = 0) {
 }
 
 let chartZoomState = null;
-const MIN_CHART_SCALE = 0.1;
+let isWheelZoomEnabled = false;
+const MIN_CHART_SCALE = 0.2;
 const MAX_CHART_SCALE = 3;
-const CHART_SCALE_STEP = 0.25;
+const WHEEL_CHART_SCALE_STEP = 0.25;
+const TOOLBAR_ZOOM_SCALES = [
+    0.2, 0.4, 0.6, 0.8, 1, 1.2, 1.4, 1.6,
+    1.8, 2, 2.2, 2.4, 2.6, 2.8, 3,
+];
+function setWheelZoomEnabled(enabled) {
+    isWheelZoomEnabled = enabled;
+}
 function createToolbar(dataset) {
     const toolbarRow = select("#spcd3-toolbarRow");
     const { btn: toggleButton, tip: toggleTip } = makeIconButton(toolbarRow, {
@@ -6606,6 +6609,7 @@ function closeChartModal() {
     state.svg.style.blockSize = state.previousSvgBlockSize;
     state.chartWrapper.style.blockSize = state.previousChartWrapperBlockSize;
     state.chartWrapper.classList.remove("spcd3-chartWrapper--pannable");
+    state.chartWrapper.classList.remove("spcd3-chartWrapper--can-pan");
     chartZoomState = null;
 }
 function makeIconButton(parent, opts) {
@@ -6864,7 +6868,7 @@ function enableChartZoom(zoomInButton, zoomOutButton, zoomInput) {
         if (event.target !== svg)
             return;
         const state = chartZoomState;
-        if (!state)
+        if (!state || !state.chartWrapper.classList.contains("spcd3-chartWrapper--can-pan"))
             return;
         event.preventDefault();
         state.isDraggingPan = true;
@@ -6883,20 +6887,28 @@ function enableChartZoom(zoomInButton, zoomOutButton, zoomInput) {
         }
     };
     const onWheel = (event) => {
+        if (!isWheelZoomEnabled)
+            return;
         event.preventDefault();
         const direction = event.deltaY < 0 ? 1 : -1;
-        setChartScale((chartZoomState?.scale ?? 1) + direction * CHART_SCALE_STEP);
+        const state = chartZoomState;
+        if (!state)
+            return;
+        setChartScale(state.scale + direction * state.referenceScale * WHEEL_CHART_SCALE_STEP);
     };
     const onResize = () => {
         if (shouldFitChartToViewport(chartWrapper)) {
             requestAnimationFrame(fitChartToViewport);
+        }
+        else {
+            updatePanAvailability();
         }
     };
     chartZoomState = {
         chartWrapper, zoomInButton, zoomOutButton, zoomInput, svg, baseSvgWidth, baseSvgHeight, toolbarHeight,
         previousSvgInlineSize: svg.style.inlineSize, previousSvgBlockSize: svg.style.blockSize,
         previousChartWrapperBlockSize: chartWrapper.style.blockSize,
-        scale: 1, isDraggingPan: false, didPan: false, panStartX: 0, panStartY: 0,
+        scale: 1, referenceScale: 1, isDraggingPan: false, didPan: false, panStartX: 0, panStartY: 0,
         panScrollLeft: 0, panScrollTop: 0, onPointerMove, onPointerUp, onPointerDown, onClickCapture, onWheel, onResize,
     };
     chartWrapper.classList.add("spcd3-chartWrapper--pannable");
@@ -6907,8 +6919,8 @@ function enableChartZoom(zoomInButton, zoomOutButton, zoomInput) {
     window.addEventListener("pointerup", onPointerUp);
     window.addEventListener("pointercancel", onPointerUp);
     window.addEventListener("resize", onResize);
-    zoomOutButton.addEventListener("click", () => setChartScale((chartZoomState?.scale ?? 1) - CHART_SCALE_STEP));
-    zoomInButton.addEventListener("click", () => setChartScale((chartZoomState?.scale ?? 1) + CHART_SCALE_STEP));
+    zoomOutButton.addEventListener("click", () => adjustChartScaleFromToolbar(-1));
+    zoomInButton.addEventListener("click", () => adjustChartScaleFromToolbar(1));
     zoomInput.addEventListener("blur", () => setChartScaleFromInput());
     zoomInput.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
@@ -6943,6 +6955,8 @@ function fitChartToViewport() {
     state.chartWrapper.style.blockSize = `${pxToRem$1(toolbarHeight + state.baseSvgHeight * scale)}rem`;
     state.chartWrapper.scrollLeft = 0;
     state.chartWrapper.scrollTop = 0;
+    // Each responsive fit is the chart's own 100% baseline.
+    state.referenceScale = scale;
     setChartScale(scale);
     realignToolbar();
 }
@@ -6963,11 +6977,24 @@ function setChartScaleFromInput() {
         return;
     const percentage = Number(state.zoomInput.textContent?.trim().replace(/%$/, ""));
     if (Number.isFinite(percentage)) {
-        setChartScale(percentage / 100);
+        setChartScale(state.referenceScale * percentage / 100);
     }
     else {
-        state.zoomInput.textContent = String(Math.round(state.scale * 100));
+        state.zoomInput.textContent = String(Math.round(state.scale / state.referenceScale * 100));
     }
+}
+function adjustChartScaleFromToolbar(direction) {
+    const state = chartZoomState;
+    if (!state)
+        return;
+    const currentScale = state.scale / state.referenceScale;
+    const epsilon = 0.0001;
+    const nextScale = direction === 1
+        ? TOOLBAR_ZOOM_SCALES.find((scale) => scale > currentScale + epsilon)
+        : [...TOOLBAR_ZOOM_SCALES]
+            .reverse()
+            .find((scale) => scale < currentScale - epsilon);
+    setChartScale(state.referenceScale * (nextScale ?? (direction === 1 ? MAX_CHART_SCALE : MIN_CHART_SCALE)));
 }
 function setChartScale(nextScale) {
     const state = chartZoomState;
@@ -6983,10 +7010,23 @@ function setChartScale(nextScale) {
             ?.getBoundingClientRect().height ?? 0;
         state.chartWrapper.style.blockSize = `${pxToRem$1(toolbarHeight + state.baseSvgHeight * scale)}rem`;
     }
-    state.zoomInput.textContent = String(Math.round(scale * 100));
+    state.zoomInput.textContent = String(Math.round(scale / state.referenceScale * 100));
     state.zoomInButton.disabled = scale >= MAX_CHART_SCALE;
     state.zoomOutButton.disabled = scale <= MIN_CHART_SCALE;
     setChartZoomScale(scale);
+    updatePanAvailability();
+}
+function updatePanAvailability() {
+    const state = chartZoomState;
+    if (!state)
+        return;
+    const canPan = state.chartWrapper.scrollWidth > state.chartWrapper.clientWidth ||
+        state.chartWrapper.scrollHeight > state.chartWrapper.clientHeight;
+    state.chartWrapper.classList.toggle("spcd3-chartWrapper--can-pan", canPan);
+    if (!canPan && state.isDraggingPan) {
+        state.isDraggingPan = false;
+        state.chartWrapper.classList.remove("spcd3-chartWrapper--dragging");
+    }
 }
 function pxToRem$1(value) {
     const rootFontSize = Number(getComputedStyle(document.documentElement).fontSize.replace("px", ""));
@@ -7837,6 +7877,9 @@ function enableInteractivity() {
     selectAll(".hitarea").style("pointer-events", "stroke");
     selectAll(".spcd3-handle-hitbox").style("pointer-events", "auto");
     selectAll(".hitbox").style("pointer-events", "auto");
+}
+function setWheelZoom(enabled) {
+    setWheelZoomEnabled(enabled);
 }
 function setSelectableWidth(width) {
     setLineThickness(width);
@@ -10572,5 +10615,5 @@ function escapeCsvCell(value) {
     return value;
 }
 
-export { clearSelection, colorRecord, createSvgString, deleteChart, disableInteractivity, drawChart, enableInteractivity, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getChartZoomScale, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getExampleUiSettings, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelectableWith, getSelected, getSvgDownloadSettings, getTauriSvgSaveDirectory, hide, hideMarker, invert, invertWithoutTransition, isDimensionCategorical, isRecordColored, isRecordInactive, isSelected, isSelectedWithId, loadCSV, move, moveByOne, realignToolbar, refresh, reset, saveAsSvg, setChartZoomScale, setClassColoredFalse, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setDimensionSpacing, setExampleUiSettings, setFilter, setInversionStatus, setSelectableWidth, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setSvgDownloadSettings, setTauriSvgSaveDirectory, setUnselected, setUnselectedWithId, show, showMarker, swap, syncDimensionOrderWithVisible, throttleShowValues, toggleSelection, toggleSelectionWithId, uncolorRecord };
+export { clearSelection, colorRecord, createSvgString, deleteChart, disableInteractivity, drawChart, enableInteractivity, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getChartZoomScale, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getExampleUiSettings, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelectableWith, getSelected, getSvgDownloadSettings, getTauriSvgSaveDirectory, hide, hideMarker, invert, invertWithoutTransition, isDimensionCategorical, isRecordColored, isRecordInactive, isSelected, isSelectedWithId, loadCSV, move, moveByOne, realignToolbar, refresh, reset, saveAsSvg, setChartZoomScale, setClassColoredFalse, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setDimensionSpacing, setExampleUiSettings, setFilter, setInversionStatus, setSelectableWidth, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setSvgDownloadSettings, setTauriSvgSaveDirectory, setUnselected, setUnselectedWithId, setWheelZoom, show, showMarker, swap, syncDimensionOrderWithVisible, throttleShowValues, toggleSelection, toggleSelectionWithId, uncolorRecord };
 //# sourceMappingURL=spcd3.js.map
