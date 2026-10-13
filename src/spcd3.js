@@ -3080,6 +3080,15 @@ function getResetIcon() {
 function getDownloadButton() {
     return "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 10 10\">\n  <path fill=\"currentColor\" d=\"M 4.65 7 L 4.65 1.4 L 5.25 1.4 L 5.25 7 z\"/>\n  <polyline points=\"2.07 5.00 4.93 7.14 7.79 5.00\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"0.5\"/>\n  <path fill=\"currentColor\" d=\"M 2 8.5 L 8 8.5 L 8 9 L 2 9 z\"/>\n</svg>";
 }
+function getZoomInButton() {
+    return "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\">\n  <circle cx=\"10.5\" cy=\"10.5\" r=\"7.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>\n  <path d=\"M16 16L22 22\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>\n  <path d=\"M7.5 10.5h6\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>\n  <path d=\"M10.5 7.5v6\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>\n</svg>";
+}
+function getZoomOutButton() {
+    return "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\">\n  <circle cx=\"10.5\" cy=\"10.5\" r=\"7.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>\n  <path d=\"M16 16L22 22\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>\n  <path d=\"M7.5 10.5h6\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>\n</svg>";
+}
+function getZoomResetButton() {
+    return "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\">\n  <circle cx=\"10.5\" cy=\"10.5\" r=\"7.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>\n  <path d=\"M16 16L22 22\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>\n  <path d=\"M13.5 8a3.5 3.5 0 1 0 .5 4\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>\n  <path d=\"M13.5 5.5V8H11\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>\n</svg>";
+}
 
 function cleanString(stringValue) {
     let value = stringValue
@@ -6538,9 +6547,20 @@ function createToolbar(dataset) {
         tipText: "Show Table",
         onClick: () => showModalWithData(dataset),
     });
-    const { btn: zoomOutButton } = makeTextButton(toolbar, {
+    makeIconButton(toolbar, {
+        id: "downloadButton",
+        iconHtml: getDownloadButton(),
+        tipText: "Download Chart (SVG)",
+        onClick: saveAsSvg,
+    });
+    toolbar
+        .append("span")
+        .attr("class", "spcd3-toolbar-separator")
+        .attr("role", "separator")
+        .attr("aria-orientation", "vertical");
+    const { btn: zoomOutButton } = makeIconButton(toolbar, {
         id: "zoomOutButton",
-        text: "−",
+        iconHtml: getZoomOutButton(),
         tipText: "Zoom Out",
     });
     const zoomControl = toolbar
@@ -6555,17 +6575,22 @@ function createToolbar(dataset) {
         .attr("aria-label", "Zoom percentage")
         .text("100");
     zoomControl.append("span").attr("aria-hidden", "true").text("%");
-    const { btn: zoomInButton } = makeTextButton(toolbar, {
+    const { btn: zoomInButton } = makeIconButton(toolbar, {
         id: "zoomInButton",
-        text: "+",
+        iconHtml: getZoomInButton(),
         tipText: "Zoom In",
     });
     makeIconButton(toolbar, {
-        id: "downloadButton",
-        iconHtml: getDownloadButton(),
-        tipText: "Download Chart (SVG)",
-        onClick: saveAsSvg,
+        id: "resetZoomButton",
+        iconHtml: getZoomResetButton(),
+        tipText: "Reset Zoom",
+        onClick: () => setChartScale(chartZoomState?.referenceScale ?? 1),
     });
+    toolbar
+        .append("span")
+        .attr("class", "spcd3-toolbar-separator")
+        .attr("role", "separator")
+        .attr("aria-orientation", "vertical");
     enableChartZoom(zoomInButton.node(), zoomOutButton.node(), zoomInput.node());
     makeIconButton(toolbar, {
         id: "refreshButton",
@@ -6583,7 +6608,7 @@ function createToolbar(dataset) {
     toggleButton.on("click", () => {
         isExpanded = !isExpanded;
         toolbar
-            .style("max-width", isExpanded ? "12.5rem" : "0")
+            .style("max-width", isExpanded ? "14rem" : "0")
             .style("opacity", isExpanded ? "1" : "0")
             .style("pointer-events", isExpanded ? "auto" : "none")
             .style("overflow", isExpanded ? "visible" : "hidden");
@@ -6668,37 +6693,6 @@ function makeIconButton(parent, opts) {
             positionTip(btnNode, tipNode);
         }
     });
-    return { btn, tip };
-}
-function makeTextButton(parent, opts) {
-    const { id, text, tipText } = opts;
-    const btn = parent
-        .append("button")
-        .attr("class", "spcd3-toolbar-button spcd3-toolbar-textbutton")
-        .attr("type", "button")
-        .attr("id", id)
-        .attr("aria-label", tipText)
-        .text(text);
-    const tip = parent
-        .append("span")
-        .attr("class", "spcd3-toolbar-buttontip")
-        .attr("id", `${id}tip`)
-        .attr("popover", "manual")
-        .text(tipText);
-    const btnNode = btn.node();
-    const tipNode = tip.node();
-    const show = () => {
-        if (!tipNode)
-            return;
-        if (!tipNode.matches(":popover-open"))
-            tipNode.showPopover();
-        positionTip(btnNode, tipNode);
-    };
-    const hide = () => {
-        if (tipNode?.matches(":popover-open"))
-            tipNode.hidePopover();
-    };
-    btn.on("mouseenter", show).on("mouseleave", hide).on("focus", show).on("blur", hide);
     return { btn, tip };
 }
 function positionTip(btnNode, tipNode) {
@@ -6931,6 +6925,7 @@ function enableChartZoom(zoomInButton, zoomOutButton, zoomInput) {
     });
     if (shouldFitChartToViewport(chartWrapper)) {
         fitChartToViewport();
+        requestAnimationFrame(fitChartToViewport);
     }
     else {
         setChartScale(1);
@@ -6948,14 +6943,15 @@ function fitChartToViewport() {
     const chartViewport = state.chartWrapper.parentElement;
     const viewportStyle = chartViewport ? getComputedStyle(chartViewport) : null;
     const hasConstrainedHeight = viewportStyle && ["auto", "scroll", "hidden", "clip"].includes(viewportStyle.overflowY);
+    const fitGutter = 4;
     const availableViewportHeight = hasConstrainedHeight && chartViewport && chartViewport.clientHeight > toolbarHeight
-        ? chartViewport.clientHeight - toolbarHeight
+        ? chartViewport.clientHeight - toolbarHeight - fitGutter
         : Infinity;
-    const scale = Math.max(MIN_CHART_SCALE, Math.min(MAX_CHART_SCALE, state.chartWrapper.clientWidth / state.baseSvgWidth, availableViewportHeight / state.baseSvgHeight));
-    state.chartWrapper.style.blockSize = `${pxToRem$1(toolbarHeight + state.baseSvgHeight * scale)}rem`;
+    const availableViewportWidth = Math.max(0, state.chartWrapper.clientWidth - fitGutter);
+    const scale = Math.max(MIN_CHART_SCALE, Math.min(MAX_CHART_SCALE, availableViewportWidth / state.baseSvgWidth, availableViewportHeight / state.baseSvgHeight));
+    state.chartWrapper.style.blockSize = `${pxToRem$1(Math.ceil(toolbarHeight + state.baseSvgHeight * scale))}rem`;
     state.chartWrapper.scrollLeft = 0;
     state.chartWrapper.scrollTop = 0;
-    // Each responsive fit is the chart's own 100% baseline.
     state.referenceScale = scale;
     setChartScale(scale);
     realignToolbar();
@@ -7011,6 +7007,18 @@ function setChartScale(nextScale) {
         state.chartWrapper.style.blockSize = `${pxToRem$1(toolbarHeight + state.baseSvgHeight * scale)}rem`;
     }
     state.zoomInput.textContent = String(Math.round(scale / state.referenceScale * 100));
+    state.zoomInButton.disabled = scale >= MAX_CHART_SCALE;
+    state.zoomOutButton.disabled = scale <= MIN_CHART_SCALE;
+    setChartZoomScale(scale);
+    updatePanAvailability();
+}
+function syncChartZoomState(scale, referenceScale) {
+    const state = chartZoomState;
+    if (!state || !Number.isFinite(scale) || !Number.isFinite(referenceScale) || referenceScale <= 0)
+        return;
+    state.scale = scale;
+    state.referenceScale = referenceScale;
+    state.zoomInput.textContent = String(Math.round(scale / referenceScale * 100));
     state.zoomInButton.disabled = scale >= MAX_CHART_SCALE;
     state.zoomOutButton.disabled = scale <= MIN_CHART_SCALE;
     setChartZoomScale(scale);
@@ -10615,5 +10623,5 @@ function escapeCsvCell(value) {
     return value;
 }
 
-export { clearSelection, colorRecord, createSvgString, deleteChart, disableInteractivity, drawChart, enableInteractivity, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getChartZoomScale, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getExampleUiSettings, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelectableWith, getSelected, getSvgDownloadSettings, getTauriSvgSaveDirectory, hide, hideMarker, invert, invertWithoutTransition, isDimensionCategorical, isRecordColored, isRecordInactive, isSelected, isSelectedWithId, loadCSV, move, moveByOne, realignToolbar, refresh, reset, saveAsSvg, setChartZoomScale, setClassColoredFalse, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setDimensionSpacing, setExampleUiSettings, setFilter, setInversionStatus, setSelectableWidth, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setSvgDownloadSettings, setTauriSvgSaveDirectory, setUnselected, setUnselectedWithId, setWheelZoom, show, showMarker, swap, syncDimensionOrderWithVisible, throttleShowValues, toggleSelection, toggleSelectionWithId, uncolorRecord };
+export { clearSelection, colorRecord, createSvgString, deleteChart, disableInteractivity, drawChart, enableInteractivity, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getChartZoomScale, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getExampleUiSettings, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelectableWith, getSelected, getSvgDownloadSettings, getTauriSvgSaveDirectory, hide, hideMarker, invert, invertWithoutTransition, isDimensionCategorical, isRecordColored, isRecordInactive, isSelected, isSelectedWithId, loadCSV, move, moveByOne, realignToolbar, refresh, reset, saveAsSvg, setChartZoomScale, setClassColoredFalse, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setDimensionSpacing, setExampleUiSettings, setFilter, setInversionStatus, setSelectableWidth, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setSvgDownloadSettings, setTauriSvgSaveDirectory, setUnselected, setUnselectedWithId, setWheelZoom, show, showMarker, swap, syncChartZoomState, syncDimensionOrderWithVisible, throttleShowValues, toggleSelection, toggleSelectionWithId, uncolorRecord };
 //# sourceMappingURL=spcd3.js.map

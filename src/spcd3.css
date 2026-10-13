@@ -497,7 +497,7 @@ table.spcd3-tablecontainer td {
   inline-size: max-content;
   overflow: visible;
   padding-left: 1rem;
-  background: transparent;
+  background: var(--spcd3-page-bg);
   visibility: hidden;
 }
 
@@ -533,6 +533,13 @@ table.spcd3-tablecontainer td {
   font-weight: 400;
 }
 
+.spcd3-toolbar-separator {
+  inline-size: 0.0625rem;
+  block-size: 1.4rem;
+  transform: translateY(0.22rem);
+  background: var(--spcd3-text-disabled);
+}
+
 .spcd3-toolbar-zoom-label {
   align-self: center;
   display: inline-flex;
@@ -560,7 +567,7 @@ table.spcd3-tablecontainer td {
   color: inherit;
   background: transparent;
   font: inherit;
-  font-size: inherit;
+  font-size: 0.75rem;
   line-height: 1;
   text-align: center;
   user-select: text;
