@@ -392,10 +392,10 @@ const resizePortraitChart = (event: PointerEvent): void => {
   if (event.pointerId !== activePortraitDividerPointerId || !explainerRoot.value) return;
 
   const chartTop = mainChart.value?.getBoundingClientRect().top ?? event.clientY;
-  const initialHeight = (window.visualViewport?.height ?? window.innerHeight) * 0.45;
-  const minHeight = Math.max(150, initialHeight * 0.5);
   const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
-  const maxHeight = Math.max(minHeight, Math.min(initialHeight * 2, viewportHeight - chartTop - 96));
+  const availableHeight = viewportHeight - chartTop - viewportHeight * 0.12;
+  const minHeight = Math.min(viewportHeight * 0.3, availableHeight);
+  const maxHeight = Math.max(minHeight, Math.min(viewportHeight * 0.65, availableHeight));
   const height = Math.max(minHeight, Math.min(maxHeight, event.clientY - chartTop));
   explainerRoot.value.style.setProperty('--portrait-chart-user-height', `${Math.round(height)}px`);
   requestAnimationFrame(updatePortraitChartFit);
