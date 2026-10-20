@@ -497,7 +497,7 @@ table.spcd3-tablecontainer td {
   inline-size: max-content;
   overflow: visible;
   padding-left: 1rem;
-  background: var(--spcd3-page-bg);
+  background: transparent;
   visibility: hidden;
 }
 
