@@ -3217,11 +3217,11 @@ function getMouseCoords(event, targetContainer = document.body) {
     }
 }
 
-let paddingXaxis;
-let width;
-let height;
-let yAxis;
-let parcoords = {
+let xAxisPadding;
+let chartWidth;
+let chartHeight;
+let yAxes;
+let parallelCoordinates = {
     xScales: {},
     yScales: {},
     dragging: {},
@@ -3232,86 +3232,96 @@ let parcoords = {
     newDataset: null,
     data: null,
 };
-let active;
-let key;
-let svg;
-let hoverlabel;
-let columns;
-let initDimension;
-let thickness;
-let numberOfRecords;
-let numberOfDimensions;
-let resetContentData;
-let dimensionSpacingVar = null;
-let hoveredRecords = [];
-function setContent(contentdata) {
-    resetContentData = contentdata;
+let activePaths;
+let recordKey;
+let chartSvg;
+let hoverLabel;
+let chartColumns;
+let initialDimensions;
+let selectableStrokeWidth;
+let recordCount;
+let dimensionCount;
+let chartContent;
+let dimensionSpacing = null;
+let hoveredRecordIds = [];
+let chartFrameBorder = null;
+let isWheelZoomEnabled = false;
+let isInteractivityEnabled = true;
+const getSelectableStrokeWidth = () => selectableStrokeWidth;
+function setChartContent(contentdata) {
+    chartContent = contentdata;
 }
-function setHoveredRecords(records) {
-    hoveredRecords = records;
+function setHoveredRecordIds(records) {
+    hoveredRecordIds = records;
 }
 function setHoverLabel(label) {
-    hoverlabel = label;
+    hoverLabel = label;
 }
-function setYaxis(axis) {
-    yAxis = axis;
+function setYAxes(axis) {
+    yAxes = axis;
 }
-function setColumns(cols) {
-    columns = cols;
+function setChartColumns(cols) {
+    chartColumns = cols;
 }
-function setSvg(svgData) {
-    svg = svgData;
+function setChartSvg(svgData) {
+    chartSvg = svgData;
 }
-function setWidth(value) {
-    width = value;
+function setChartWidth(value) {
+    chartWidth = value;
 }
-function setHeight(value) {
-    height = value;
+function setChartHeight(value) {
+    chartHeight = value;
 }
-function setPaddingXaxis(value) {
-    paddingXaxis = value;
+function setXAxisPadding(value) {
+    xAxisPadding = value;
 }
-function setInitDimension(dimensions) {
-    initDimension = Array.isArray(dimensions) ? [...dimensions] : dimensions;
+function setInitialDimensions(dimensions) {
+    initialDimensions = Array.isArray(dimensions) ? [...dimensions] : dimensions;
 }
-function setActive(paths) {
-    active = paths;
+function setActivePaths(paths) {
+    activePaths = paths;
 }
 function setXScales(value) {
-    parcoords.xScales = value;
+    parallelCoordinates.xScales = value;
 }
 function setYScales(value) {
-    parcoords.yScales = value;
+    parallelCoordinates.yScales = value;
 }
 function setNewFeatures(value) {
-    parcoords.newFeatures = value;
+    parallelCoordinates.newFeatures = value;
 }
 function setFeatures(value) {
-    parcoords.features = value;
+    parallelCoordinates.features = value;
 }
 function setNewDataset(value) {
-    parcoords.newDataset = value;
+    parallelCoordinates.newDataset = value;
 }
 function setData(value) {
-    parcoords.data = value;
+    parallelCoordinates.data = value;
 }
-function setKey(value) {
-    key = value;
+function setRecordKey(value) {
+    recordKey = value;
 }
-function setLineThickness(value) {
-    thickness = value;
+function setSelectableStrokeWidth(value) {
+    selectableStrokeWidth = value;
 }
-function getLineThickness() {
-    return thickness;
+function setRecordCount(value) {
+    recordCount = value;
 }
-function setNumberOfRecords(value) {
-    numberOfRecords = value;
+function setDimensionCount(value) {
+    dimensionCount = value;
 }
-function setNumberOfDimensions(value) {
-    numberOfDimensions = value;
+function setDimensionSpacing$1(value) {
+    dimensionSpacing = value;
 }
-function setDimensionSpacingVar(value) {
-    dimensionSpacingVar = value;
+function setChartFrameBorder(value) {
+    chartFrameBorder = value;
+}
+function setWheelZoomEnabled$1(value) {
+    isWheelZoomEnabled = value;
+}
+function setInteractivityEnabled(value) {
+    isInteractivityEnabled = value;
 }
 
 function ascending(a, b) {
@@ -4657,7 +4667,7 @@ function setupYScales(header, dataset) {
             });
             yScales[x.name] = point()
                 .domain(labels)
-                .range([PADDING, height - PADDING]);
+                .range([PADDING, chartHeight - PADDING]);
         }
         else {
             const max = Math.max(...dataset.map((o) => o[x.name]));
@@ -4666,12 +4676,12 @@ function setupYScales(header, dataset) {
                 const epsilon = min === 0 ? 1 : Math.abs(min) * 0.01;
                 yScales[x.name] = linear()
                     .domain([min - epsilon, max + epsilon])
-                    .range([height - PADDING, PADDING]);
+                    .range([chartHeight - PADDING, PADDING]);
             }
             else {
                 yScales[x.name] = linear()
                     .domain([min, max])
-                    .range([height - PADDING, PADDING]);
+                    .range([chartHeight - PADDING, PADDING]);
             }
         }
     });
@@ -4717,7 +4727,7 @@ function calculateChartLayout(header, dataset) {
     const longestTickLabel = getLongestVisibleTickLabel(dataset, header);
     const dimensionLabelWidth = getTextWidthSVG(longestDimensionLabel, "0.7rem Verdana");
     const tickLabelWidth = getTextWidthSVG(longestTickLabel, "0.75rem Verdana");
-    const axisGap = dimensionSpacingVar ?? Math.max(96, Math.ceil(dimensionLabelWidth + 56));
+    const axisGap = dimensionSpacing ?? Math.max(96, Math.ceil(dimensionLabelWidth + 56));
     const requiredLeftPadding = Math.max(72, Math.ceil(tickLabelWidth + 44));
     const requiredRightPadding = Math.max(48, Math.ceil(dimensionLabelWidth / 2 + 36));
     const leftPadding = requiredLeftPadding;
@@ -4729,7 +4739,7 @@ function setupXScales(header, dataset) {
     const { leftPadding, rightPadding } = calculateChartLayout(header, dataset);
     return point()
         .domain(header.map((x) => x.name))
-        .range([width - rightPadding, leftPadding])
+        .range([chartWidth - rightPadding, leftPadding])
         .padding(0)
         .align(0.5);
 }
@@ -4788,11 +4798,11 @@ function linePath(d, newFeatures) {
         if (valueEntry) {
             const name = newFeature;
             const value = String(valueEntry[1]);
-            const x = parcoords.dragging[name] !== undefined
-                ? parcoords.dragging[name]
-                : parcoords.xScales(name);
+            const x = parallelCoordinates.dragging[name] !== undefined
+                ? parallelCoordinates.dragging[name]
+                : parallelCoordinates.xScales(name);
             const cleanedValue = value.length > 10 ? value.substr(0, 10) + "..." : value;
-            const y = parcoords.yScales[name](cleanedValue);
+            const y = parallelCoordinates.yScales[name](cleanedValue);
             points.push([x, y]);
         }
     });
@@ -4805,7 +4815,7 @@ function isInverted(dimension) {
     return arrowStatus == "down" ? true : false;
 }
 function getAllVisibleDimensionNames$1() {
-    let listOfDimensions = parcoords.newFeatures.slice();
+    let listOfDimensions = parallelCoordinates.newFeatures.slice();
     return listOfDimensions.reverse();
 }
 const TOOLTIP_LABEL_HEIGHT = 16;
@@ -4816,12 +4826,12 @@ const TOOLTIP_LEADER_PADDING = 4;
 function recordIdOf(rec) {
     return rec.id ?? rec._id ?? rec.key;
 }
-function createToolTipForValues(records, isSelect, svgSelection = select("#spcd3-pc_svg"), xScales = parcoords.xScales, yScales = parcoords.yScales) {
+function createToolTipForValues(records, isSelect, svgSelection = select("#spcd3-pc_svg"), xScales = parallelCoordinates.xScales, yScales = parallelCoordinates.yScales) {
     const dimensions = getAllVisibleDimensionNames$1();
     const svgNode = svgSelection?.node?.();
     if (!svgNode)
         return;
-    const recordId = cleanString(String(records[hoverlabel] ?? recordIdOf(records) ?? ""));
+    const recordId = cleanString(String(records[hoverLabel] ?? recordIdOf(records) ?? ""));
     if (!recordId)
         return;
     const tooltipType = isSelect ? "selected" : "hover";
@@ -4953,7 +4963,7 @@ function relayoutValueTooltips(svgSelection) {
         dimensionLabels.forEach((item) => {
             const preferredTop = item.anchorY - TOOLTIP_LABEL_HEIGHT / 2;
             const minTop = TOOLTIP_LEADER_PADDING;
-            const maxTop = height - TOOLTIP_LABEL_HEIGHT - TOOLTIP_LEADER_PADDING;
+            const maxTop = chartHeight - TOOLTIP_LABEL_HEIGHT - TOOLTIP_LEADER_PADDING;
             const top = Math.max(minTop, Math.min(maxTop, Math.max(preferredTop, currentBottom + TOOLTIP_LABEL_GAP)));
             currentBottom = top + TOOLTIP_LABEL_HEIGHT;
             const line = select(item.node).select("line");
@@ -4983,9 +4993,9 @@ function getAllPointerEventsData(event) {
     for (let i = 0; i < object[0].length; i++) {
         const items = object.map((item) => item[i]);
         const itemsdata = items[0].__data__;
-        if (!itemsdata || !itemsdata[hoverlabel])
+        if (!itemsdata || !itemsdata[hoverLabel])
             continue;
-        const text = itemsdata[hoverlabel];
+        const text = itemsdata[hoverLabel];
         data.push(text);
     }
     return data;
@@ -5827,14 +5837,14 @@ function setActivePathLinesToDownload(svg) {
         .style("stroke-width", "2")
         .style("fill", "none")
         .selectAll("path")
-        .data(parcoords.data)
+        .data(parallelCoordinates.data)
         .enter()
         .append("path")
         .attr("id", (d) => {
-        return cleanString(d[key]);
+        return cleanString(d[recordKey]);
     })
         .each(function (d) {
-        select(this).attr("d", linePath(d, parcoords.newFeatures));
+        select(this).attr("d", linePath(d, parallelCoordinates.newFeatures));
     });
     const records = getAllRecords();
     records.forEach((element) => {
@@ -5856,7 +5866,7 @@ function setActivePathLinesToDownload(svg) {
     });
 }
 function setFeatureAxisToDownload(svg, yAxis, yScales, xScales) {
-    const orderedFeatures = parcoords.newFeatures.map((name) => ({
+    const orderedFeatures = parallelCoordinates.newFeatures.map((name) => ({
         name,
     }));
     const hiddenDims = getAllHiddenDimensionNames();
@@ -5874,14 +5884,14 @@ function setFeatureAxisToDownload(svg, yAxis, yScales, xScales) {
         if (!isDimensionCategorical(d.name)) {
             if (inversionStatus === "ascending") {
                 yScales[d.name].domain([min, max]);
-                yAxis = setupYAxis(yScales, parcoords.newDataset, hiddenDims);
+                yAxis = setupYAxis(yScales, parallelCoordinates.newDataset, hiddenDims);
                 select(this)
                     .attr("id", "dimension_axis_" + processedDimensionName)
                     .call(yAxis[d.name].scale(yScales[d.name].domain(yScales[d.name].domain())));
             }
             else {
                 yScales[d.name].domain([min, max]);
-                yAxis = setupYAxis(yScales, parcoords.newDataset, hiddenDims);
+                yAxis = setupYAxis(yScales, parallelCoordinates.newDataset, hiddenDims);
                 select(this)
                     .attr("id", "dimension_axis_" + processedDimensionName)
                     .call(yAxis[d.name].scale(yScales[d.name].domain(yScales[d.name].domain().reverse())));
@@ -5922,8 +5932,8 @@ function setSelectedRecordValuesToDownload(svg, xScales, yScales) {
     const selectedRecords = getSelected();
     if (selectedRecords.length === 0)
         return;
-    const selectedDataset = parcoords.newDataset.filter((record) => selectedRecords.includes(record[hoverlabel]) &&
-        !isRecordColored(record[hoverlabel]));
+    const selectedDataset = parallelCoordinates.newDataset.filter((record) => selectedRecords.includes(record[hoverLabel]) &&
+        !isRecordColored(record[hoverLabel]));
     if (selectedDataset.length === 0)
         return;
     selectedDataset.forEach((record) => {
@@ -5933,7 +5943,7 @@ function setSelectedRecordValuesToDownload(svg, xScales, yScales) {
 function setBrushDownToDownload(featureAxis) {
     featureAxis.each(function (d) {
         const processedDimensionName = cleanString(d.name);
-        const item = parcoords.currentPosOfDims.find((object) => object.key == d.name);
+        const item = parallelCoordinates.currentPosOfDims.find((object) => object.key == d.name);
         select(this)
             .append("g")
             .append("use")
@@ -5948,7 +5958,7 @@ function setBrushDownToDownload(featureAxis) {
 function setBrushUpToDownload(featureAxis) {
     featureAxis.each(function (d) {
         const processedDimensionName = cleanString(d.name);
-        const item = parcoords.currentPosOfDims.find((object) => object.key == d.name);
+        const item = parallelCoordinates.currentPosOfDims.find((object) => object.key == d.name);
         select(this)
             .append("g")
             .append("use")
@@ -5963,7 +5973,7 @@ function setBrushUpToDownload(featureAxis) {
 function setRectToDragToDownload(featureAxis) {
     featureAxis.each(function (d) {
         const processedDimensionName = cleanString(d.name);
-        const item = parcoords.currentPosOfDims.find((object) => object.key == d.name);
+        const item = parallelCoordinates.currentPosOfDims.find((object) => object.key == d.name);
         let height = item.bottom - item.top;
         const isIdle = item.top == 50 && item.bottom == 350;
         select(this)
@@ -6095,24 +6105,24 @@ function setTauriSvgSaveDirectory(directory) {
 const DOWNLOAD_TOP_BALANCE_PADDING = 32;
 const DEFAULT_SVG_FILENAME = "parcoords.svg";
 function createSvgString(includeDataValues = false) {
-    const orderedFeatures = parcoords.newFeatures.map((name) => ({
+    const orderedFeatures = parallelCoordinates.newFeatures.map((name) => ({
         name,
     }));
-    const layout = calculateChartLayout(orderedFeatures, parcoords.newDataset);
+    const layout = calculateChartLayout(orderedFeatures, parallelCoordinates.newDataset);
     const leftBalancePadding = Math.max(0, layout.rightPadding - layout.leftPadding);
     const rightBalancePadding = Math.max(0, layout.leftPadding - layout.rightPadding);
     const hiddenDims = getAllHiddenDimensionNames();
-    let yScalesForDownload = setupYScales(parcoords.features, parcoords.newDataset);
-    let yAxisForDownload = setupYAxis(yScalesForDownload, parcoords.newDataset, hiddenDims);
-    let xScalesForDownload = setupXScales(orderedFeatures, parcoords.newDataset);
+    let yScalesForDownload = setupYScales(parallelCoordinates.features, parallelCoordinates.newDataset);
+    let yAxisForDownload = setupYAxis(yScalesForDownload, parallelCoordinates.newDataset, hiddenDims);
+    let xScalesForDownload = setupXScales(orderedFeatures, parallelCoordinates.newDataset);
     let svg = create$1("svg")
         .attr("xmlns", "http://www.w3.org/2000/svg")
         .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
         .attr("viewBox", [
         -leftBalancePadding,
         -DOWNLOAD_TOP_BALANCE_PADDING,
-        width + leftBalancePadding + rightBalancePadding,
-        height + DOWNLOAD_TOP_BALANCE_PADDING,
+        chartWidth + leftBalancePadding + rightBalancePadding,
+        chartHeight + DOWNLOAD_TOP_BALANCE_PADDING,
     ])
         .attr("font-family", "Verdana, sans-serif");
     const contentRoot = svg.append("g");
@@ -6520,16 +6530,16 @@ function parseSvgNumber(value, fallback = 0) {
 }
 
 let chartZoomState = null;
-let isWheelZoomEnabled = false;
 const MIN_CHART_SCALE = 0.2;
 const MAX_CHART_SCALE = 3;
 const WHEEL_CHART_SCALE_STEP = 0.25;
+const TOUCHPAD_ZOOM_DELTA_THRESHOLD = 100;
 const TOOLBAR_ZOOM_SCALES = [
     0.2, 0.4, 0.6, 0.8, 1, 1.2, 1.4, 1.6,
     1.8, 2, 2.2, 2.4, 2.6, 2.8, 3,
 ];
 function setWheelZoomEnabled(enabled) {
-    isWheelZoomEnabled = enabled;
+    setWheelZoomEnabled$1(enabled);
 }
 function createToolbar(dataset) {
     const toolbarRow = select("#spcd3-toolbarRow");
@@ -6584,7 +6594,7 @@ function createToolbar(dataset) {
         id: "resetZoomButton",
         iconHtml: getZoomResetButton(),
         tipText: "Reset Zoom",
-        onClick: () => setChartScale(chartZoomState?.referenceScale ?? 1),
+        onClick: () => setChartScale(1),
     });
     toolbar
         .append("span")
@@ -6750,7 +6760,7 @@ function showModalWithData(dataset) {
     closeButton.style.marginBottom = "1rem";
     modal.append(() => closeButton);
     const dimensionsElement = document.createElement("div");
-    dimensionsElement.textContent = `Dataset has ${numberOfDimensions} dimensions and ${numberOfRecords} records.`;
+    dimensionsElement.textContent = `Dataset has ${dimensionCount} dimensions and ${recordCount} records.`;
     dimensionsElement.style.marginBottom = "1rem";
     modal.append(() => dimensionsElement);
     const scrollWrapper = document.createElement("div");
@@ -6884,11 +6894,23 @@ function enableChartZoom(zoomInButton, zoomOutButton, zoomInput) {
         if (!isWheelZoomEnabled)
             return;
         event.preventDefault();
-        const direction = event.deltaY < 0 ? 1 : -1;
         const state = chartZoomState;
         if (!state)
             return;
-        setChartScale(state.scale + direction * state.referenceScale * WHEEL_CHART_SCALE_STEP);
+        let direction;
+        if (event.deltaMode === WheelEvent.DOM_DELTA_PIXEL) {
+            state.wheelDeltaAccumulator += event.deltaY;
+            if (Math.abs(state.wheelDeltaAccumulator) < TOUCHPAD_ZOOM_DELTA_THRESHOLD) {
+                return;
+            }
+            direction = state.wheelDeltaAccumulator < 0 ? 1 : -1;
+            state.wheelDeltaAccumulator -=
+                direction * -TOUCHPAD_ZOOM_DELTA_THRESHOLD;
+        }
+        else {
+            direction = event.deltaY < 0 ? 1 : -1;
+        }
+        zoomChartAtCursor(state.scale + direction * WHEEL_CHART_SCALE_STEP, event);
     };
     const onResize = () => {
         if (shouldFitChartToViewport(chartWrapper)) {
@@ -6902,8 +6924,9 @@ function enableChartZoom(zoomInButton, zoomOutButton, zoomInput) {
         chartWrapper, zoomInButton, zoomOutButton, zoomInput, svg, baseSvgWidth, baseSvgHeight, toolbarHeight,
         previousSvgInlineSize: svg.style.inlineSize, previousSvgBlockSize: svg.style.blockSize,
         previousChartWrapperBlockSize: chartWrapper.style.blockSize,
-        scale: 1, referenceScale: 1, isDraggingPan: false, didPan: false, panStartX: 0, panStartY: 0,
-        panScrollLeft: 0, panScrollTop: 0, onPointerMove, onPointerUp, onPointerDown, onClickCapture, onWheel, onResize,
+        scale: 1, isDraggingPan: false, didPan: false, panStartX: 0, panStartY: 0,
+        panScrollLeft: 0, panScrollTop: 0, wheelDeltaAccumulator: 0,
+        onPointerMove, onPointerUp, onPointerDown, onClickCapture, onWheel, onResize,
     };
     chartWrapper.classList.add("spcd3-chartWrapper--pannable");
     chartWrapper.addEventListener("pointerdown", onPointerDown);
@@ -6925,7 +6948,6 @@ function enableChartZoom(zoomInButton, zoomOutButton, zoomInput) {
     });
     if (shouldFitChartToViewport(chartWrapper)) {
         fitChartToViewport();
-        requestAnimationFrame(fitChartToViewport);
     }
     else {
         setChartScale(1);
@@ -6943,16 +6965,13 @@ function fitChartToViewport() {
     const chartViewport = state.chartWrapper.parentElement;
     const viewportStyle = chartViewport ? getComputedStyle(chartViewport) : null;
     const hasConstrainedHeight = viewportStyle && ["auto", "scroll", "hidden", "clip"].includes(viewportStyle.overflowY);
-    const fitGutter = 4;
     const availableViewportHeight = hasConstrainedHeight && chartViewport && chartViewport.clientHeight > toolbarHeight
-        ? chartViewport.clientHeight - toolbarHeight - fitGutter
+        ? chartViewport.clientHeight - toolbarHeight
         : Infinity;
-    const availableViewportWidth = Math.max(0, state.chartWrapper.clientWidth - fitGutter);
-    const scale = Math.max(MIN_CHART_SCALE, Math.min(MAX_CHART_SCALE, availableViewportWidth / state.baseSvgWidth, availableViewportHeight / state.baseSvgHeight));
-    state.chartWrapper.style.blockSize = `${pxToRem$1(Math.ceil(toolbarHeight + state.baseSvgHeight * scale))}rem`;
+    const scale = Math.max(MIN_CHART_SCALE, Math.min(MAX_CHART_SCALE, state.chartWrapper.clientWidth / state.baseSvgWidth, availableViewportHeight / state.baseSvgHeight));
+    state.chartWrapper.style.blockSize = `${pxToRem$1(toolbarHeight + state.baseSvgHeight * scale)}rem`;
     state.chartWrapper.scrollLeft = 0;
     state.chartWrapper.scrollTop = 0;
-    state.referenceScale = scale;
     setChartScale(scale);
     realignToolbar();
 }
@@ -6973,24 +6992,37 @@ function setChartScaleFromInput() {
         return;
     const percentage = Number(state.zoomInput.textContent?.trim().replace(/%$/, ""));
     if (Number.isFinite(percentage)) {
-        setChartScale(state.referenceScale * percentage / 100);
+        setChartScale(percentage / 100);
     }
     else {
-        state.zoomInput.textContent = String(Math.round(state.scale / state.referenceScale * 100));
+        state.zoomInput.textContent = String(Math.round(state.scale * 100));
     }
 }
 function adjustChartScaleFromToolbar(direction) {
-    const state = chartZoomState;
-    if (!state)
-        return;
-    const currentScale = state.scale / state.referenceScale;
+    const currentScale = chartZoomState?.scale ?? 1;
     const epsilon = 0.0001;
     const nextScale = direction === 1
         ? TOOLBAR_ZOOM_SCALES.find((scale) => scale > currentScale + epsilon)
         : [...TOOLBAR_ZOOM_SCALES]
             .reverse()
             .find((scale) => scale < currentScale - epsilon);
-    setChartScale(state.referenceScale * (nextScale ?? (direction === 1 ? MAX_CHART_SCALE : MIN_CHART_SCALE)));
+    setChartScale(nextScale ?? (direction === 1 ? MAX_CHART_SCALE : MIN_CHART_SCALE));
+}
+function zoomChartAtCursor(nextScale, event) {
+    const state = chartZoomState;
+    if (!state)
+        return;
+    const previousScale = state.scale;
+    const scale = Math.min(MAX_CHART_SCALE, Math.max(MIN_CHART_SCALE, nextScale));
+    if (scale === previousScale)
+        return;
+    const svgBounds = state.svg.getBoundingClientRect();
+    const focalX = Math.min(svgBounds.width, Math.max(0, event.clientX - svgBounds.left));
+    const focalY = Math.min(svgBounds.height, Math.max(0, event.clientY - svgBounds.top));
+    const scaleRatio = scale / previousScale;
+    setChartScale(scale);
+    state.chartWrapper.scrollLeft += focalX * (scaleRatio - 1);
+    state.chartWrapper.scrollTop += focalY * (scaleRatio - 1);
 }
 function setChartScale(nextScale) {
     const state = chartZoomState;
@@ -7006,22 +7038,22 @@ function setChartScale(nextScale) {
             ?.getBoundingClientRect().height ?? 0;
         state.chartWrapper.style.blockSize = `${pxToRem$1(toolbarHeight + state.baseSvgHeight * scale)}rem`;
     }
-    state.zoomInput.textContent = String(Math.round(scale / state.referenceScale * 100));
+    state.zoomInput.textContent = String(Math.round(scale * 100));
     state.zoomInButton.disabled = scale >= MAX_CHART_SCALE;
     state.zoomOutButton.disabled = scale <= MIN_CHART_SCALE;
     setChartZoomScale(scale);
     updatePanAvailability();
 }
-function syncChartZoomState(scale, referenceScale) {
+function syncChartZoomState(scale, baseScale = 1) {
     const state = chartZoomState;
-    if (!state || !Number.isFinite(scale) || !Number.isFinite(referenceScale) || referenceScale <= 0)
+    if (!state || !Number.isFinite(scale) || !Number.isFinite(baseScale) || baseScale <= 0)
         return;
-    state.scale = scale;
-    state.referenceScale = referenceScale;
-    state.zoomInput.textContent = String(Math.round(scale / referenceScale * 100));
-    state.zoomInButton.disabled = scale >= MAX_CHART_SCALE;
-    state.zoomOutButton.disabled = scale <= MIN_CHART_SCALE;
-    setChartZoomScale(scale);
+    const toolbarScale = Math.min(MAX_CHART_SCALE, Math.max(MIN_CHART_SCALE, scale / baseScale));
+    state.scale = toolbarScale;
+    state.zoomInput.textContent = String(Math.round(toolbarScale * 100));
+    state.zoomInButton.disabled = toolbarScale >= MAX_CHART_SCALE;
+    state.zoomOutButton.disabled = toolbarScale <= MIN_CHART_SCALE;
+    setChartZoomScale(toolbarScale);
     updatePanAvailability();
 }
 function updatePanAvailability() {
@@ -7044,20 +7076,20 @@ function pxToRem$1(value) {
     return value / rootFontSize;
 }
 
-const BRUSH_STATE_EPSILON$1 = 0.75;
-const FILTER_STATE_EPSILON$1 = 0.75;
-const AXIS_VISIBILITY_DURATION = 1500;
+const brushStateEpsilon = 0.75;
+const filterStateEpsilon = 0.75;
+const axisVisibilityDuration = 1500;
 function isNear(value, target) {
-    return Math.abs(value - target) < BRUSH_STATE_EPSILON$1;
+    return Math.abs(value - target) < brushStateEpsilon;
 }
 function hasActiveBrushFilterState(dimension) {
-    const settings = parcoords.currentPosOfDims.find((d) => d.key === dimension);
+    const settings = parallelCoordinates.currentPosOfDims.find((d) => d.key === dimension);
     if (!settings)
         return false;
     return (Math.abs(settings.currentFilterTop - settings.currentRangeTop) >
-        FILTER_STATE_EPSILON$1 ||
+        filterStateEpsilon ||
         Math.abs(settings.currentFilterBottom - settings.currentRangeBottom) >
-            FILTER_STATE_EPSILON$1);
+            filterStateEpsilon);
 }
 function remToPixels(value) {
     const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
@@ -7088,40 +7120,40 @@ function realignToolbarAfterSpacingChange() {
     });
 }
 function getDimensionOrderIndex(dimension) {
-    const index = initDimension.indexOf(dimension);
+    const index = initialDimensions.indexOf(dimension);
     return index === -1 ? Number.MAX_SAFE_INTEGER : index;
 }
 function restoreVisibleDimensionOrder() {
-    parcoords.newFeatures = [...parcoords.newFeatures].sort((a, b) => getDimensionOrderIndex(a) - getDimensionOrderIndex(b));
-    parcoords.features = [...parcoords.features].sort((a, b) => getDimensionOrderIndex(a.name) - getDimensionOrderIndex(b.name));
+    parallelCoordinates.newFeatures = [...parallelCoordinates.newFeatures].sort((a, b) => getDimensionOrderIndex(a) - getDimensionOrderIndex(b));
+    parallelCoordinates.features = [...parallelCoordinates.features].sort((a, b) => getDimensionOrderIndex(a.name) - getDimensionOrderIndex(b.name));
 }
 function syncFeatureObjectsToVisibleOrder() {
-    parcoords.features = parcoords.newFeatures.map((dimension) => {
-        const existingFeature = parcoords.features.find((feature) => feature.name === dimension);
+    parallelCoordinates.features = parallelCoordinates.newFeatures.map((dimension) => {
+        const existingFeature = parallelCoordinates.features.find((feature) => feature.name === dimension);
         return existingFeature ?? { name: dimension };
     });
 }
 function syncDimensionOrderWithVisible() {
-    if (!Array.isArray(initDimension) || !Array.isArray(parcoords.newFeatures)) {
+    if (!Array.isArray(initialDimensions) || !Array.isArray(parallelCoordinates.newFeatures)) {
         return;
     }
-    const visibleDimensions = [...parcoords.newFeatures];
+    const visibleDimensions = [...parallelCoordinates.newFeatures];
     let visibleIndex = 0;
-    setInitDimension(initDimension.map((dimension) => visibleDimensions.includes(dimension)
+    setInitialDimensions(initialDimensions.map((dimension) => visibleDimensions.includes(dimension)
         ? visibleDimensions[visibleIndex++]
         : dimension));
     syncFeatureObjectsToVisibleOrder();
 }
 function refreshChartLayoutForVisibleDimensions() {
-    if (!parcoords.features.length || !parcoords.newDataset) {
+    if (!parallelCoordinates.features.length || !parallelCoordinates.newDataset) {
         return;
     }
-    const layout = calculateChartLayout(parcoords.features, parcoords.newDataset);
-    setWidth(layout.chartWidth);
-    parcoords.xScales = setupXScales(parcoords.features, parcoords.newDataset);
+    const layout = calculateChartLayout(parallelCoordinates.features, parallelCoordinates.newDataset);
+    setChartWidth(layout.chartWidth);
+    parallelCoordinates.xScales = setupXScales(parallelCoordinates.features, parallelCoordinates.newDataset);
     select("#spcd3-pc_svg")
         .attr("width", layout.chartWidth)
-        .attr("viewBox", [0, 0, layout.chartWidth, height])
+        .attr("viewBox", [0, 0, layout.chartWidth, chartHeight])
         .style("inline-size", pixelsToRem(layout.chartWidth));
     select(".spcd3-chartWrapper").style("inline-size", null);
     updateChartZoomBaseWidth(layout.chartWidth);
@@ -7131,7 +7163,7 @@ function refreshRecordPathsForVisibleDimensions() {
     select("g.active")
         .selectAll("path")
         .interrupt()
-        .attr("d", (d) => linePath(d, parcoords.newFeatures))
+        .attr("d", (d) => linePath(d, parallelCoordinates.newFeatures))
         .style("opacity", 1);
 }
 function isColoredRecord(record) {
@@ -7142,21 +7174,21 @@ function shouldShowSelectedValues(record) {
 }
 //---------- Show and Hide Functions ----------
 function hide(dimension) {
-    parcoords.newFeatures = parcoords.newFeatures.filter((d) => d !== dimension);
-    parcoords.features = parcoords.features.filter((d) => d.name !== dimension);
+    parallelCoordinates.newFeatures = parallelCoordinates.newFeatures.filter((d) => d !== dimension);
+    parallelCoordinates.features = parallelCoordinates.features.filter((d) => d.name !== dimension);
     restoreVisibleDimensionOrder();
     refreshChartLayoutForVisibleDimensions();
     selectAll(".dimensions")
-        .filter((d) => parcoords.newFeatures.includes(d.name || d))
+        .filter((d) => parallelCoordinates.newFeatures.includes(d.name || d))
         .transition()
-        .duration(AXIS_VISIBILITY_DURATION)
+        .duration(axisVisibilityDuration)
         .attr("transform", (d) => "translate(" +
-        position(d.name || d, parcoords.dragging, parcoords.xScales) +
+        position(d.name || d, parallelCoordinates.dragging, parallelCoordinates.xScales) +
         ")");
     selectAll(".dimensions")
         .filter((d) => d.name === dimension)
         .transition()
-        .duration(AXIS_VISIBILITY_DURATION)
+        .duration(axisVisibilityDuration)
         .style("opacity", 0)
         .on("end", function () {
         select(this).attr("visibility", "hidden");
@@ -7165,7 +7197,7 @@ function hide(dimension) {
     cleanTooltipSelect();
     var selectedRecords = getSelected();
     selectedRecords.forEach((record) => {
-        const path = parcoords.newDataset.find((d) => d[hoverlabel] === record);
+        const path = parallelCoordinates.newDataset.find((d) => d[hoverLabel] === record);
         if (shouldShowSelectedValues(record)) {
             createToolTipForValues(path, true);
         }
@@ -7173,11 +7205,11 @@ function hide(dimension) {
     realignToolbarAfterSpacingChange();
 }
 function show(dimension) {
-    if (parcoords.newFeatures.includes(dimension))
+    if (parallelCoordinates.newFeatures.includes(dimension))
         return;
-    if (initDimension.includes(dimension)) {
-        parcoords.newFeatures.push(dimension);
-        parcoords.features.push({ name: dimension });
+    if (initialDimensions.includes(dimension)) {
+        parallelCoordinates.newFeatures.push(dimension);
+        parallelCoordinates.features.push({ name: dimension });
         restoreVisibleDimensionOrder();
     }
     refreshChartLayoutForVisibleDimensions();
@@ -7186,21 +7218,21 @@ function show(dimension) {
         .style("opacity", 0)
         .transition()
         .attr("visibility", "visible")
-        .duration(AXIS_VISIBILITY_DURATION)
+        .duration(axisVisibilityDuration)
         .style("opacity", 1);
     selectAll(".dimensions")
-        .filter((d) => parcoords.newFeatures.includes(typeof d === "object" ? d.name : d))
+        .filter((d) => parallelCoordinates.newFeatures.includes(typeof d === "object" ? d.name : d))
         .transition()
-        .duration(AXIS_VISIBILITY_DURATION)
+        .duration(axisVisibilityDuration)
         .attr("transform", (d) => "translate(" +
-        position(d.name || d, parcoords.dragging, parcoords.xScales) +
+        position(d.name || d, parallelCoordinates.dragging, parallelCoordinates.xScales) +
         ")")
         .style("opacity", 1);
     refreshRecordPathsForVisibleDimensions();
     cleanTooltipSelect();
     var selectedRecords = getSelected();
     selectedRecords.forEach((record) => {
-        const path = parcoords.newDataset.find((d) => d[hoverlabel] === record);
+        const path = parallelCoordinates.newDataset.find((d) => d[hoverLabel] === record);
         if (shouldShowSelectedValues(record)) {
             createToolTipForValues(path, true);
         }
@@ -7208,7 +7240,7 @@ function show(dimension) {
     realignToolbarAfterSpacingChange();
 }
 function getHiddenStatus(dimension) {
-    const index = parcoords.newFeatures.indexOf(dimension);
+    const index = parallelCoordinates.newFeatures.indexOf(dimension);
     if (index != -1) {
         return "shown";
     }
@@ -7218,43 +7250,43 @@ function getHiddenStatus(dimension) {
 }
 //---------- Move Functions ----------
 function moveByOne(dimension, direction) {
-    const indexOfDimension = parcoords.newFeatures.indexOf(dimension);
+    const indexOfDimension = parallelCoordinates.newFeatures.indexOf(dimension);
     const indexOfNeighbor = direction == "right" ? indexOfDimension - 1 : indexOfDimension + 1;
-    const neighbour = parcoords.newFeatures[indexOfNeighbor];
-    const pos = parcoords.xScales(dimension);
-    const posNeighbour = parcoords.xScales(neighbour);
-    const distance = parcoords.xScales.step();
-    parcoords.dragging[dimension] =
+    const neighbour = parallelCoordinates.newFeatures[indexOfNeighbor];
+    const pos = parallelCoordinates.xScales(dimension);
+    const posNeighbour = parallelCoordinates.xScales(neighbour);
+    const distance = parallelCoordinates.xScales.step();
+    parallelCoordinates.dragging[dimension] =
         direction == "right" ? pos + distance : pos - distance;
-    parcoords.dragging[neighbour] =
+    parallelCoordinates.dragging[neighbour] =
         direction == "right" ? posNeighbour - distance : posNeighbour + distance;
     if (direction == "right") {
         [
-            parcoords.newFeatures[indexOfDimension],
-            parcoords.newFeatures[indexOfDimension - 1],
+            parallelCoordinates.newFeatures[indexOfDimension],
+            parallelCoordinates.newFeatures[indexOfDimension - 1],
         ] = [
-            parcoords.newFeatures[indexOfDimension - 1],
-            parcoords.newFeatures[indexOfDimension],
+            parallelCoordinates.newFeatures[indexOfDimension - 1],
+            parallelCoordinates.newFeatures[indexOfDimension],
         ];
     }
     else {
         [
-            parcoords.newFeatures[indexOfDimension + 1],
-            parcoords.newFeatures[indexOfDimension],
+            parallelCoordinates.newFeatures[indexOfDimension + 1],
+            parallelCoordinates.newFeatures[indexOfDimension],
         ] = [
-            parcoords.newFeatures[indexOfDimension],
-            parcoords.newFeatures[indexOfDimension + 1],
+            parallelCoordinates.newFeatures[indexOfDimension],
+            parallelCoordinates.newFeatures[indexOfDimension + 1],
         ];
     }
     syncDimensionOrderWithVisible();
-    parcoords.xScales.domain(parcoords.newFeatures);
+    parallelCoordinates.xScales.domain(parallelCoordinates.newFeatures);
     let active_all = select("g.active").selectAll("path");
     let featureAxis = selectAll(".dimensions");
     active_all
         .transition()
         .duration(1000)
         .attr("d", function (d) {
-        return linePath(d, parcoords.newFeatures);
+        return linePath(d, parallelCoordinates.newFeatures);
     })
         .ease(cubicInOut);
     featureAxis
@@ -7262,16 +7294,16 @@ function moveByOne(dimension, direction) {
         .duration(1000)
         .attr("transform", function (d) {
         return ("translate(" +
-            position(d.name, parcoords.dragging, parcoords.xScales) +
+            position(d.name, parallelCoordinates.dragging, parallelCoordinates.xScales) +
             ")");
     })
         .ease(cubicInOut);
-    delete parcoords.dragging[dimension];
-    delete parcoords.dragging[neighbour];
+    delete parallelCoordinates.dragging[dimension];
+    delete parallelCoordinates.dragging[neighbour];
     cleanTooltipSelect();
     var selectedRecords = getSelected();
     selectedRecords.forEach((record) => {
-        const path = parcoords.newDataset.find((d) => d[hoverlabel] === record);
+        const path = parallelCoordinates.newDataset.find((d) => d[hoverLabel] === record);
         if (shouldShowSelectedValues(record)) {
             createToolTipForValues(path, true);
         }
@@ -7284,14 +7316,14 @@ function move(dimensionA, toRightOf, dimensionB) {
         if (indexOfDimensionA > indexOfDimensionB) {
             for (let i = indexOfDimensionA; i > indexOfDimensionB; i--) {
                 if (i != indexOfDimensionB - 1) {
-                    swap(parcoords.newFeatures[i], parcoords.newFeatures[i - 1]);
+                    swap(parallelCoordinates.newFeatures[i], parallelCoordinates.newFeatures[i - 1]);
                 }
             }
         }
         else {
             for (let i = indexOfDimensionA; i < indexOfDimensionB; i++) {
                 if (i != indexOfDimensionB - 1) {
-                    swap(parcoords.newFeatures[i], parcoords.newFeatures[i + 1]);
+                    swap(parallelCoordinates.newFeatures[i], parallelCoordinates.newFeatures[i + 1]);
                 }
             }
         }
@@ -7300,56 +7332,56 @@ function move(dimensionA, toRightOf, dimensionB) {
         if (indexOfDimensionA > indexOfDimensionB) {
             for (let i = indexOfDimensionA; i > indexOfDimensionB; i--) {
                 if (i != indexOfDimensionB + 1) {
-                    swap(parcoords.newFeatures[i], parcoords.newFeatures[i - 1]);
+                    swap(parallelCoordinates.newFeatures[i], parallelCoordinates.newFeatures[i - 1]);
                 }
             }
         }
         else {
             for (let i = indexOfDimensionA; i < indexOfDimensionB; i++) {
-                swap(parcoords.newFeatures[i], parcoords.newFeatures[i + 1]);
+                swap(parallelCoordinates.newFeatures[i], parallelCoordinates.newFeatures[i + 1]);
             }
         }
     }
 }
 function swap(dimensionA, dimensionB) {
-    const positionA = parcoords.xScales(dimensionA);
-    const positionB = parcoords.xScales(dimensionB);
-    parcoords.dragging[dimensionA] = positionB;
-    parcoords.dragging[dimensionB] = positionA;
-    const indexOfDimensionA = parcoords.newFeatures.indexOf(dimensionA);
-    const indexOfDimensionB = parcoords.newFeatures.indexOf(dimensionB);
+    const positionA = parallelCoordinates.xScales(dimensionA);
+    const positionB = parallelCoordinates.xScales(dimensionB);
+    parallelCoordinates.dragging[dimensionA] = positionB;
+    parallelCoordinates.dragging[dimensionB] = positionA;
+    const indexOfDimensionA = parallelCoordinates.newFeatures.indexOf(dimensionA);
+    const indexOfDimensionB = parallelCoordinates.newFeatures.indexOf(dimensionB);
     [
-        parcoords.newFeatures[indexOfDimensionA],
-        parcoords.newFeatures[indexOfDimensionB],
+        parallelCoordinates.newFeatures[indexOfDimensionA],
+        parallelCoordinates.newFeatures[indexOfDimensionB],
     ] = [
-        parcoords.newFeatures[indexOfDimensionB],
-        parcoords.newFeatures[indexOfDimensionA],
+        parallelCoordinates.newFeatures[indexOfDimensionB],
+        parallelCoordinates.newFeatures[indexOfDimensionA],
     ];
     syncDimensionOrderWithVisible();
-    parcoords.xScales.domain(parcoords.newFeatures);
+    parallelCoordinates.xScales.domain(parallelCoordinates.newFeatures);
     let active_all = select("g.active").selectAll("path");
     let featureAxis = selectAll(".dimensions");
     active_all
         .transition()
         .duration(1000)
         .attr("d", (d) => {
-        return linePath(d, parcoords.newFeatures);
+        return linePath(d, parallelCoordinates.newFeatures);
     });
     featureAxis
         .transition()
         .duration(1000)
         .attr("transform", (d) => {
         return ("translate(" +
-            position(d.name, parcoords.dragging, parcoords.xScales) +
+            position(d.name, parallelCoordinates.dragging, parallelCoordinates.xScales) +
             ")");
     })
         .ease(cubicInOut);
-    delete parcoords.dragging[dimensionA];
-    delete parcoords.dragging[dimensionB];
+    delete parallelCoordinates.dragging[dimensionA];
+    delete parallelCoordinates.dragging[dimensionB];
     cleanTooltipSelect();
     var selectedRecords = getSelected();
     selectedRecords.forEach((record) => {
-        const path = parcoords.newDataset.find((d) => d[hoverlabel] === record);
+        const path = parallelCoordinates.newDataset.find((d) => d[hoverLabel] === record);
         if (shouldShowSelectedValues(record)) {
             createToolTipForValues(path, true);
         }
@@ -7357,8 +7389,8 @@ function swap(dimensionA, dimensionB) {
 }
 //---------- Filter Functions ----------
 function getFilter(dimension) {
-    const yScale = parcoords.yScales[dimension];
-    const dimensionSettings = parcoords.currentPosOfDims.find((d) => d.key === dimension);
+    const yScale = parallelCoordinates.yScales[dimension];
+    const dimensionSettings = parallelCoordinates.currentPosOfDims.find((d) => d.key === dimension);
     if (!dimensionSettings || !yScale || typeof yScale.invert !== "function")
         return [0, 0];
     const valueTop = Math.round(yScale.invert(dimensionSettings.top));
@@ -7370,29 +7402,29 @@ function getFilter(dimension) {
 function setFilter(dimension, min, max) {
     const filterTop = Math.max(min, max);
     const filterBottom = Math.min(min, max);
-    addRange$1(filterBottom, parcoords.currentPosOfDims, dimension, "currentFilterBottom");
-    addRange$1(filterTop, parcoords.currentPosOfDims, dimension, "currentFilterTop");
+    addRange$1(filterBottom, parallelCoordinates.currentPosOfDims, dimension, "currentFilterBottom");
+    addRange$1(filterTop, parallelCoordinates.currentPosOfDims, dimension, "currentFilterTop");
     filter(dimension, min, max);
 }
 //---------- Range Functions ----------
 function getDimensionRange(dimension) {
-    return parcoords.yScales[dimension].domain();
+    return parallelCoordinates.yScales[dimension].domain();
 }
 function setDimensionRange(dimension, min, max) {
     const inverted = isInverted(dimension);
     const hiddenDims = getAllHiddenDimensionNames();
     if (inverted) {
-        parcoords.yScales[dimension].domain([max, min]);
-        setYaxis(setupYAxis(parcoords.yScales, parcoords.newDataset, hiddenDims));
+        parallelCoordinates.yScales[dimension].domain([max, min]);
+        setYAxes(setupYAxis(parallelCoordinates.yScales, parallelCoordinates.newDataset, hiddenDims));
     }
     else {
-        parcoords.yScales[dimension].domain([min, max]);
-        setYaxis(setupYAxis(parcoords.yScales, parcoords.newDataset, hiddenDims));
+        parallelCoordinates.yScales[dimension].domain([min, max]);
+        setYAxes(setupYAxis(parallelCoordinates.yScales, parallelCoordinates.newDataset, hiddenDims));
     }
-    addRange$1(min, parcoords.currentPosOfDims, dimension, "currentRangeBottom");
-    addRange$1(max, parcoords.currentPosOfDims, dimension, "currentRangeTop");
+    addRange$1(min, parallelCoordinates.currentPosOfDims, dimension, "currentRangeBottom");
+    addRange$1(max, parallelCoordinates.currentPosOfDims, dimension, "currentRangeTop");
     select("#dimension_axis_" + cleanString(dimension))
-        .call(yAxis[dimension])
+        .call(yAxes[dimension])
         .transition()
         .duration(1000)
         .ease(cubicInOut);
@@ -7401,14 +7433,14 @@ function setDimensionRange(dimension, min, max) {
         .transition()
         .duration(1000)
         .attr("d", (d) => {
-        return linePath(d, parcoords.newFeatures);
+        return linePath(d, parallelCoordinates.newFeatures);
     })
         .ease(cubicInOut);
     active_all.each(function (d) {
         select(this)
             .transition()
             .duration(1000)
-            .attr("d", linePath(d, parcoords.newFeatures))
+            .attr("d", linePath(d, parallelCoordinates.newFeatures))
             .ease(cubicInOut);
     });
     setFilterAfterSettingRanges(dimension, inverted);
@@ -7420,8 +7452,8 @@ function setFilterAfterSettingRanges(dimension, inverted) {
     const triDownHit = select("#triangle_down_hit" + cleanDimensionName);
     const triUp = select("#triangle_up_" + cleanDimensionName);
     const triUpHit = select("#triangle_up_hit" + cleanDimensionName);
-    const dimensionSettings = parcoords.currentPosOfDims.find((d) => d.key === dimension);
-    const yScale = parcoords.yScales[dimension];
+    const dimensionSettings = parallelCoordinates.currentPosOfDims.find((d) => d.key === dimension);
+    const yScale = parallelCoordinates.yScales[dimension];
     const newMin = Math.max(dimensionSettings.currentRangeBottom, dimensionSettings.currentFilterBottom);
     const newMax = Math.min(dimensionSettings.currentRangeTop, dimensionSettings.currentFilterTop);
     let top = yScale(newMax);
@@ -7433,8 +7465,8 @@ function setFilterAfterSettingRanges(dimension, inverted) {
     const rectH = Math.abs(bottom - top);
     const storeBottom = Math.min(newMin, newMax);
     const storeTop = Math.max(newMin, newMax);
-    addRange$1(storeBottom, parcoords.currentPosOfDims, dimension, "currentFilterBottom");
-    addRange$1(storeTop, parcoords.currentPosOfDims, dimension, "currentFilterTop");
+    addRange$1(storeBottom, parallelCoordinates.currentPosOfDims, dimension, "currentFilterBottom");
+    addRange$1(storeTop, parallelCoordinates.currentPosOfDims, dimension, "currentFilterTop");
     rect.transition().duration(300).attr("y", rectY).attr("height", rectH);
     triDown
         .transition()
@@ -7473,24 +7505,24 @@ function setDimensionRangeRounded(dimension, min, max) {
     const inverted = isInverted(dimension);
     const hiddenDims = getAllHiddenDimensionNames();
     if (inverted) {
-        parcoords.yScales[dimension].domain([max, min]).nice();
-        setYaxis(setupYAxis(parcoords.yScales, parcoords.newDataset, hiddenDims));
+        parallelCoordinates.yScales[dimension].domain([max, min]).nice();
+        setYAxes(setupYAxis(parallelCoordinates.yScales, parallelCoordinates.newDataset, hiddenDims));
     }
     else {
-        parcoords.yScales[dimension].domain([min, max]).nice();
-        setYaxis(setupYAxis(parcoords.yScales, parcoords.newDataset, hiddenDims));
+        parallelCoordinates.yScales[dimension].domain([min, max]).nice();
+        setYAxes(setupYAxis(parallelCoordinates.yScales, parallelCoordinates.newDataset, hiddenDims));
     }
-    const roundedRanges = parcoords.yScales[dimension].domain();
+    const roundedRanges = parallelCoordinates.yScales[dimension].domain();
     if (inverted) {
-        addRange$1(roundedRanges[1], parcoords.currentPosOfDims, dimension, "currentRangeBottom");
-        addRange$1(roundedRanges[0], parcoords.currentPosOfDims, dimension, "currentRangeTop");
+        addRange$1(roundedRanges[1], parallelCoordinates.currentPosOfDims, dimension, "currentRangeBottom");
+        addRange$1(roundedRanges[0], parallelCoordinates.currentPosOfDims, dimension, "currentRangeTop");
     }
     else {
-        addRange$1(roundedRanges[0], parcoords.currentPosOfDims, dimension, "currentRangeBottom");
-        addRange$1(roundedRanges[1], parcoords.currentPosOfDims, dimension, "currentRangeTop");
+        addRange$1(roundedRanges[0], parallelCoordinates.currentPosOfDims, dimension, "currentRangeBottom");
+        addRange$1(roundedRanges[1], parallelCoordinates.currentPosOfDims, dimension, "currentRangeTop");
     }
     select("#dimension_axis_" + cleanString(dimension))
-        .call(yAxis[dimension])
+        .call(yAxes[dimension])
         .transition()
         .duration(1000)
         .ease(cubicInOut);
@@ -7499,14 +7531,14 @@ function setDimensionRangeRounded(dimension, min, max) {
         .transition()
         .duration(1000)
         .attr("d", (d) => {
-        return linePath(d, parcoords.newFeatures);
+        return linePath(d, parallelCoordinates.newFeatures);
     })
         .ease(cubicInOut);
     active.each(function (d) {
         select(this)
             .transition()
             .duration(1000)
-            .attr("d", linePath(d, parcoords.newFeatures))
+            .attr("d", linePath(d, parallelCoordinates.newFeatures))
             .ease(cubicInOut);
     });
     setFilterAfterSettingRanges(dimension, inverted);
@@ -7518,19 +7550,19 @@ function addRange$1(value, currentPosOfDims, dimension, key) {
     Object.assign(target, newObject);
 }
 function getMinValue(dimension) {
-    const item = parcoords.currentPosOfDims.find((object) => object.key == dimension);
+    const item = parallelCoordinates.currentPosOfDims.find((object) => object.key == dimension);
     return item.min;
 }
 function getMaxValue(dimension) {
-    const item = parcoords.currentPosOfDims.find((object) => object.key == dimension);
+    const item = parallelCoordinates.currentPosOfDims.find((object) => object.key == dimension);
     return item.max;
 }
 function getCurrentMinRange(dimension) {
-    const item = parcoords.currentPosOfDims.find((object) => object.key == dimension);
+    const item = parallelCoordinates.currentPosOfDims.find((object) => object.key == dimension);
     return item.currentRangeBottom;
 }
 function getCurrentMaxRange(dimension) {
-    const item = parcoords.currentPosOfDims.find((object) => object.key == dimension);
+    const item = parallelCoordinates.currentPosOfDims.find((object) => object.key == dimension);
     return item.currentRangeTop;
 }
 function isSelected(record) {
@@ -7557,15 +7589,15 @@ function invertWithoutTransition(dimension) {
     textElement.attr("d", arrow);
     textElement.style("cursor", `url('data:image/svg+xml,${encodeURIComponent(arrowSvg)}') ${hotspotX} ${hotspotY}, auto`);
     select("#invert_hitbox_" + cleanDimensionName).style("cursor", `url('data:image/svg+xml,${encodeURIComponent(arrowSvg)}') ${hotspotX} ${hotspotY}, auto`);
-    select(dimensionId).call(yAxis[dimension].scale(parcoords.yScales[dimension].domain(parcoords.yScales[dimension].domain().reverse())));
-    trans(active).each(function (d) {
+    select(dimensionId).call(yAxes[dimension].scale(parallelCoordinates.yScales[dimension].domain(parallelCoordinates.yScales[dimension].domain().reverse())));
+    trans(activePaths).each(function (d) {
         select(this).attr("d", (d) => {
-            return linePath(d, parcoords.newFeatures);
+            return linePath(d, parallelCoordinates.newFeatures);
         });
     });
     trans(selectAll("path.hitarea")).each(function (d) {
         select(this).attr("d", (d) => {
-            return linePath(d, parcoords.newFeatures);
+            return linePath(d, parallelCoordinates.newFeatures);
         });
     });
     addSettingsForBrushing(dimension, isInverted(dimension));
@@ -7578,7 +7610,7 @@ function invertWithoutTransition(dimension) {
     cleanTooltipSelect();
     var selectedRecords = getSelected();
     selectedRecords.forEach((record) => {
-        const path = parcoords.newDataset.find((d) => d[hoverlabel] === record);
+        const path = parallelCoordinates.newDataset.find((d) => d[hoverLabel] === record);
         if (shouldShowSelectedValues(record)) {
             createToolTipForValues(path, true);
         }
@@ -7603,20 +7635,20 @@ function setInversionStatus(dimension, status) {
     select(dimensionId)
         .transition()
         .duration(1000)
-        .call(yAxis[dimension].scale(parcoords.yScales[dimension].domain(parcoords.yScales[dimension].domain().reverse())))
+        .call(yAxes[dimension].scale(parallelCoordinates.yScales[dimension].domain(parallelCoordinates.yScales[dimension].domain().reverse())))
         .ease(cubicInOut);
-    trans(active).each(function (d) {
+    trans(activePaths).each(function (d) {
         select(this)
             .transition()
             .duration(1000)
             .attr("d", (d) => {
-            return linePath(d, parcoords.newFeatures);
+            return linePath(d, parallelCoordinates.newFeatures);
         })
             .ease(cubicInOut);
     });
     trans(selectAll("path.hitarea")).each(function (d) {
         select(this).attr("d", (d) => {
-            return linePath(d, parcoords.newFeatures);
+            return linePath(d, parallelCoordinates.newFeatures);
         });
     });
     getFilter(dimension);
@@ -7630,7 +7662,7 @@ function setInversionStatus(dimension, status) {
     cleanTooltipSelect();
     var selectedRecords = getSelected();
     selectedRecords.forEach((record) => {
-        const path = parcoords.newDataset.find((d) => d[hoverlabel] === record);
+        const path = parallelCoordinates.newDataset.find((d) => d[hoverLabel] === record);
         if (shouldShowSelectedValues(record)) {
             createToolTipForValues(path, true);
         }
@@ -7656,26 +7688,26 @@ function invert(dimension) {
     select(dimensionId)
         .transition()
         .duration(1000)
-        .call(yAxis[dimension].scale(parcoords.yScales[dimension].domain(parcoords.yScales[dimension].domain().reverse())))
+        .call(yAxes[dimension].scale(parallelCoordinates.yScales[dimension].domain(parallelCoordinates.yScales[dimension].domain().reverse())))
         .ease(cubicInOut);
-    trans(active).each(function (d) {
+    trans(activePaths).each(function (d) {
         select(this)
             .transition()
             .duration(1000)
             .attr("d", (d) => {
-            return linePath(d, parcoords.newFeatures);
+            return linePath(d, parallelCoordinates.newFeatures);
         })
             .ease(cubicInOut);
     });
     trans(selectAll("path.hitarea")).each(function (d) {
         select(this).attr("d", (d) => {
-            return linePath(d, parcoords.newFeatures);
+            return linePath(d, parallelCoordinates.newFeatures);
         });
     });
     cleanTooltipSelect();
     var selectedRecords = getSelected();
     selectedRecords.forEach((record) => {
-        const path = parcoords.newDataset.find((d) => cleanString(d[hoverlabel]) === record);
+        const path = parallelCoordinates.newDataset.find((d) => cleanString(d[hoverLabel]) === record);
         if (shouldShowSelectedValues(record)) {
             createToolTipForValues(path, true);
         }
@@ -7710,7 +7742,7 @@ function setSelection(records) {
                 .transition()
                 .style("stroke", "rgba(255, 165, 0, 1)");
             records.forEach((record) => {
-                const path = parcoords.newDataset.find((d) => cleanString(d[hoverlabel]) === record);
+                const path = parallelCoordinates.newDataset.find((d) => cleanString(d[hoverLabel]) === record);
                 if (shouldShowSelectedValues(record)) {
                     createToolTipForValues(path, true);
                 }
@@ -7771,7 +7803,7 @@ function isSelectedWithId(recordId) {
     return isSelected(record);
 }
 function getRecordWithId(recordId) {
-    const item = parcoords.currentPosOfDims.find((object) => object.recordId == recordId);
+    const item = parallelCoordinates.currentPosOfDims.find((object) => object.recordId == recordId);
     return item.key;
 }
 function toggleSelectionWithId(recordId) {
@@ -7804,20 +7836,20 @@ function uncolorRecord(record) {
 }
 //---------- Helper Functions ----------
 function getAllRecords() {
-    if (!active || typeof active.nodes !== "function") {
+    if (!activePaths || typeof activePaths.nodes !== "function") {
         return [];
     }
-    return active
+    return activePaths
         .nodes()
         .map((node) => node.id)
         .filter((id) => id.length > 0);
 }
 function getAllVisibleDimensionNames() {
-    let listOfDimensions = parcoords.newFeatures.slice();
+    let listOfDimensions = parallelCoordinates.newFeatures.slice();
     return listOfDimensions.reverse();
 }
 function getAllDimensionNames() {
-    return Array.isArray(initDimension) ? initDimension : columns;
+    return Array.isArray(initialDimensions) ? initialDimensions : chartColumns;
 }
 function getAllHiddenDimensionNames() {
     const dimensions = getAllDimensionNames();
@@ -7836,13 +7868,13 @@ function getInversionStatus(dimension) {
     return arrowStatus == "up" ? "ascending" : "descending";
 }
 function getNumberOfDimensions() {
-    return parcoords.newFeatures.length;
+    return parallelCoordinates.newFeatures.length;
 }
 function getDimensionPosition(dimension) {
-    return parcoords.newFeatures.indexOf(dimension);
+    return parallelCoordinates.newFeatures.indexOf(dimension);
 }
 function isDimensionCategorical(dimension) {
-    const values = parcoords.newDataset.map((o) => o[dimension]);
+    const values = parallelCoordinates.newDataset.map((o) => o[dimension]);
     const isAllNumeric = values.every((v) => !isNaN(Number(v)));
     return !isAllNumeric;
 }
@@ -7859,6 +7891,7 @@ function setClassColoredFalse(record) {
     path.classed("colored", false);
 }
 function disableInteractivity() {
+    setInteractivityEnabled(false);
     select("#spcd3-toolbarRow")
         .style("pointer-events", "none")
         .style("opacity", "0.45")
@@ -7874,6 +7907,7 @@ function disableInteractivity() {
     selectAll(".hitbox").style("pointer-events", "none");
 }
 function enableInteractivity() {
+    setInteractivityEnabled(true);
     select("#spcd3-toolbarRow")
         .style("pointer-events", "auto")
         .style("opacity", "1")
@@ -7889,8 +7923,14 @@ function enableInteractivity() {
 function setWheelZoom(enabled) {
     setWheelZoomEnabled(enabled);
 }
+function setChartBorder(border) {
+    setChartFrameBorder(border);
+    select(".spcd3-chartWrapper")
+        .style("border", border)
+        .classed("spcd3-chartWrapper--framed", border !== null);
+}
 function setSelectableWidth(width) {
-    setLineThickness(width);
+    setSelectableStrokeWidth(width);
     let hitarea_active = selectAll("path.hitarea");
     hitarea_active.each(function (d) {
         const value = width;
@@ -7898,19 +7938,19 @@ function setSelectableWidth(width) {
     });
 }
 function getSelectableWith() {
-    return getLineThickness();
+    return getSelectableStrokeWidth();
 }
 function setDimensionSpacing(spacingRem) {
-    setDimensionSpacingVar(remToPixels(spacingRem));
-    if (!parcoords.features.length || !parcoords.newDataset) {
+    setDimensionSpacing$1(remToPixels(spacingRem));
+    if (!parallelCoordinates.features.length || !parallelCoordinates.newDataset) {
         return;
     }
-    const layout = calculateChartLayout(parcoords.features, parcoords.newDataset);
-    setWidth(layout.chartWidth);
-    parcoords.xScales = setupXScales(parcoords.features, parcoords.newDataset);
+    const layout = calculateChartLayout(parallelCoordinates.features, parallelCoordinates.newDataset);
+    setChartWidth(layout.chartWidth);
+    parallelCoordinates.xScales = setupXScales(parallelCoordinates.features, parallelCoordinates.newDataset);
     select("#spcd3-pc_svg")
         .attr("width", layout.chartWidth)
-        .attr("viewBox", [0, 0, layout.chartWidth, height])
+        .attr("viewBox", [0, 0, layout.chartWidth, chartHeight])
         .style("inline-size", pixelsToRem(layout.chartWidth));
     select(".spcd3-chartWrapper").style("inline-size", null);
     updateChartZoomBaseWidth(layout.chartWidth);
@@ -7919,18 +7959,18 @@ function setDimensionSpacing(spacingRem) {
         .transition()
         .duration(300)
         .attr("transform", (d) => "translate(" +
-        position(d.name || d, parcoords.dragging, parcoords.xScales) +
+        position(d.name || d, parallelCoordinates.dragging, parallelCoordinates.xScales) +
         ")");
     select("g.active")
         .selectAll("path")
         .transition()
         .duration(300)
         .attr("d", function (d) {
-        return linePath(d, parcoords.newFeatures);
+        return linePath(d, parallelCoordinates.newFeatures);
     });
     cleanTooltipSelect();
     getSelected().forEach((record) => {
-        const path = parcoords.newDataset.find((d) => d[hoverlabel] === record);
+        const path = parallelCoordinates.newDataset.find((d) => d[hoverLabel] === record);
         if (path && shouldShowSelectedValues(record)) {
             createToolTipForValues(path, true);
         }
@@ -7961,11 +8001,11 @@ function isAtBottom(value) {
     return Math.abs(toNumber(value) - BOTTOM_AXIS_VALUE) < BRUSH_STATE_EPSILON;
 }
 function hasActiveBrushFilter(dimension) {
-    const settings = parcoords.currentPosOfDims.find((d) => d.key === dimension);
+    const settings = parallelCoordinates.currentPosOfDims.find((d) => d.key === dimension);
     if (!settings)
         return false;
     if (isDimensionCategorical(dimension)) {
-        const domain = parcoords.yScales[dimension].domain();
+        const domain = parallelCoordinates.yScales[dimension].domain();
         const filteredCategories = settings.currentFilterCategories;
         return (Array.isArray(filteredCategories) &&
             filteredCategories.length > 0 &&
@@ -7995,7 +8035,7 @@ function setRectToDrag(featureAxis, tooltipValuesDown, tooltipValuesTop) {
             .call(drag()
             .on("drag", (event, d) => {
             selectAll("path.hitarea").style("pointer-events", "none");
-            if (parcoords.newFeatures.length > 25) {
+            if (parallelCoordinates.newFeatures.length > 25) {
                 throttleDragAndBrush(processedDimensionName, d, event, delta, tooltipValuesTop, tooltipValuesDown, window);
             }
             else {
@@ -8015,7 +8055,7 @@ function setRectToDrag(featureAxis, tooltipValuesDown, tooltipValuesTop) {
                 const isActive = select(this).style("stroke");
                 if (isActive === "var(--spcd3-active-records)") {
                     hitarea
-                        .filter((d) => d[hoverlabel] === this.id)
+                        .filter((d) => d[hoverLabel] === this.id)
                         .style("pointer-events", "stroke");
                 }
             });
@@ -8057,7 +8097,7 @@ function setBrushUp(featureAxis, brushOverlay, tooltipValues) {
             g.selectAll(".spcd3-handle-hitbox").raise();
         })
             .on("drag", (event, dd) => {
-            if (parcoords.newFeatures.length > 25) {
+            if (parallelCoordinates.newFeatures.length > 25) {
                 throttleBrushUp(processedDimensionName, event, dd, tooltipValues, window);
             }
             else {
@@ -8118,7 +8158,7 @@ function setBrushDown(featureAxis, brushOverlay, tooltipValues) {
             g.selectAll(".spcd3-handle-hitbox").raise();
         })
             .on("drag", (event, dd) => {
-            if (parcoords.newFeatures.length > 25) {
+            if (parallelCoordinates.newFeatures.length > 25) {
                 throttleBrushDown(processedDimensionName, event, dd, tooltipValues, window);
             }
             else {
@@ -8222,7 +8262,7 @@ function brushDown(cleanDimensionName, event, d, tooltipValues, window) {
     select("#rect_" + cleanDimensionName)
         .attr("y", yPosRect)
         .attr("height", RECT_VALUE - heightTopRect - heightBottomRect);
-    if (!isNaN(parcoords.yScales[d.name].domain()[0])) {
+    if (!isNaN(parallelCoordinates.yScales[d.name].domain()[0])) {
         setToolTipBrush(tooltipValues, d, yPosTop + BRUSH_HANDLE_CENTER_OFFSET, true);
     }
     updateLines(d.name, cleanDimensionName);
@@ -8269,7 +8309,7 @@ function brushUp(cleanDimensionName, event, d, tooltipValues, window) {
     const heightTopRect = yPosTop - TOP_AXIS_LOW_VALUE;
     const heightBottomRect = BOTTOM_AXIS_VALUE - yPosBottom;
     select("#rect_" + cleanDimensionName).attr("height", RECT_VALUE - heightTopRect - heightBottomRect);
-    if (!isNaN(parcoords.yScales[d.name].domain()[0])) {
+    if (!isNaN(parallelCoordinates.yScales[d.name].domain()[0])) {
         setToolTipBrush(tooltipValues, d, yPosBottom + BRUSH_HANDLE_CENTER_OFFSET, false);
     }
     updateLines(d.name, cleanDimensionName);
@@ -8315,7 +8355,7 @@ function dragAndBrush(cleanDimensionName, d, event, delta, tooltipValuesTop, too
         select("#triangle_up_" + cleanDimensionName).attr("y", yPosRect + rectHeight);
         select("#triangle_up_hit" + cleanDimensionName).attr("y", yPosRect + rectHeight);
         select("#triangle_down_hit" + cleanDimensionName).attr("y", yPosTop);
-        if (!isNaN(parcoords.yScales[d.name].domain()[0])) {
+        if (!isNaN(parallelCoordinates.yScales[d.name].domain()[0])) {
             setToolTipDragAndBrush(tooltipValuesTop, tooltipValuesDown, d, true, yPosTop + BRUSH_HANDLE_CENTER_OFFSET, yPosRect + rectHeight + BRUSH_HANDLE_CENTER_OFFSET);
         }
         updateLines(d.name, cleanDimensionName);
@@ -8324,7 +8364,7 @@ function dragAndBrush(cleanDimensionName, d, event, delta, tooltipValuesTop, too
 function filter(dimensionName, min, max) {
     const cleanDimensionName = cleanString(dimensionName);
     const invertStatus = getInvertStatus(dimensionName);
-    const yScale = parcoords.yScales[dimensionName];
+    const yScale = parallelCoordinates.yScales[dimensionName];
     let topPosition = yScale(min);
     let bottomPosition = yScale(max);
     if (invertStatus) {
@@ -8379,11 +8419,11 @@ function filter(dimensionName, min, max) {
             const pos = yScale(cat);
             return pos >= rectTop && pos <= rectBottom;
         });
-        addRange(selectedCategories, parcoords.currentPosOfDims, dimensionName, "currentFilterCategories");
+        addRange(selectedCategories, parallelCoordinates.currentPosOfDims, dimensionName, "currentFilterCategories");
     }
     else {
-        addRange(yScale.invert(rectBottom), parcoords.currentPosOfDims, dimensionName, "currentFilterBottom");
-        addRange(yScale.invert(rectTop), parcoords.currentPosOfDims, dimensionName, "currentFilterTop");
+        addRange(yScale.invert(rectBottom), parallelCoordinates.currentPosOfDims, dimensionName, "currentFilterBottom");
+        addRange(yScale.invert(rectTop), parallelCoordinates.currentPosOfDims, dimensionName, "currentFilterTop");
     }
     active.each(function (d) {
         const value = yScale(d[dimensionName]);
@@ -8398,7 +8438,7 @@ function filter(dimensionName, min, max) {
         else if (dimNameToCheck === dimensionName &&
             dimNameToCheck !== emptyString) {
             let checkedLines = [];
-            parcoords.currentPosOfDims.forEach(function (item) {
+            parallelCoordinates.currentPosOfDims.forEach(function (item) {
                 if (item.top != yScale.range()[1] || item.bottom != yScale.range()[0]) {
                     checkAllPositionsTop(item, dimensionName, d, checkedLines, currentLine);
                     checkAllPositionsBottom(item, dimensionName, d, checkedLines, currentLine);
@@ -8418,11 +8458,11 @@ function getLineName(d) {
 function addPosition(yPosTop, dimension, key) {
     const newObject = {};
     newObject[key] = yPosTop;
-    const target = parcoords.currentPosOfDims.find((obj) => obj.key == dimension);
+    const target = parallelCoordinates.currentPosOfDims.find((obj) => obj.key == dimension);
     Object.assign(target, newObject);
 }
 function setToolTipBrush(tooltipValues, d, anchorY, direction) {
-    const range = parcoords.yScales[d.name].domain();
+    const range = parallelCoordinates.yScales[d.name].domain();
     const invertStatus = getInvertStatus(d.name);
     const maxValue = invertStatus == false ? range[1] : range[0];
     const minValue = invertStatus == false ? range[0] : range[1];
@@ -8467,11 +8507,11 @@ function setToolTipBrush(tooltipValues, d, anchorY, direction) {
     const digs = getSigDig(d.name);
     const valueText = String(Math.round(tooltipValue.toPrecision(digs).toLocaleString("en-GB") * 10) /
         10);
-    const anchorX = Number(parcoords.xScales(d.name));
+    const anchorX = Number(parallelCoordinates.xScales(d.name));
     setBrushTooltipPosition(tooltipValues, valueText, anchorX, anchorY);
 }
 function setToolTipDragAndBrush(tooltipValuesTop, tooltipValuesDown, d, direction, yPosTop, yPosBottom) {
-    const range = parcoords.yScales[d.name].domain();
+    const range = parallelCoordinates.yScales[d.name].domain();
     const invertStatus = getInvertStatus(d.name);
     const maxValue = invertStatus == false ? range[1] : range[0];
     const minValue = invertStatus == false ? range[0] : range[1];
@@ -8507,14 +8547,14 @@ function setToolTipDragAndBrush(tooltipValuesTop, tooltipValuesDown, d, directio
         tooltipValuesTop.style("visibility", "hidden");
     }
     else {
-        setBrushTooltipPosition(tooltipValuesTop, String(Math.round(tooltipValueTop)), Number(parcoords.xScales(d.name)), yPosTop);
+        setBrushTooltipPosition(tooltipValuesTop, String(Math.round(tooltipValueTop)), Number(parallelCoordinates.xScales(d.name)), yPosTop);
     }
     if ((!invertStatus && tooltipValueBottom == minValue) ||
         (invertStatus && tooltipValueBottom == maxValue)) {
         tooltipValuesDown.style("visibility", "hidden");
     }
     else {
-        setBrushTooltipPosition(tooltipValuesDown, String(Math.round(tooltipValueBottom)), Number(parcoords.xScales(d.name)), yPosBottom);
+        setBrushTooltipPosition(tooltipValuesDown, String(Math.round(tooltipValueBottom)), Number(parallelCoordinates.xScales(d.name)), yPosBottom);
     }
 }
 function updateLines(dimension, cleanDimensionName) {
@@ -8522,37 +8562,37 @@ function updateLines(dimension, cleanDimensionName) {
     const rangeBottom = Number(select("#triangle_up_" + cleanDimensionName).attr("y"));
     const invertStatus = getInvertStatus(dimension);
     const maxValue = invertStatus == false
-        ? parcoords.yScales[dimension].domain()[1]
-        : parcoords.yScales[dimension].domain()[0];
+        ? parallelCoordinates.yScales[dimension].domain()[1]
+        : parallelCoordinates.yScales[dimension].domain()[0];
     const minValue = invertStatus == false
-        ? parcoords.yScales[dimension].domain()[0]
-        : parcoords.yScales[dimension].domain()[1];
+        ? parallelCoordinates.yScales[dimension].domain()[0]
+        : parallelCoordinates.yScales[dimension].domain()[1];
     const range = maxValue - minValue;
     let currentFilters = getFilter(dimension);
     if (isDimensionCategorical(dimension)) {
-        const selectedCategories = parcoords.yScales[dimension]
+        const selectedCategories = parallelCoordinates.yScales[dimension]
             .domain()
             .filter((cat) => {
-            const pos = parcoords.yScales[dimension](cat);
+            const pos = parallelCoordinates.yScales[dimension](cat);
             return pos >= rangeTop && pos <= rangeBottom;
         });
-        addRange(selectedCategories, parcoords.currentPosOfDims, dimension, "currentFilterCategories");
+        addRange(selectedCategories, parallelCoordinates.currentPosOfDims, dimension, "currentFilterCategories");
     }
     else {
-        addRange(currentFilters[0], parcoords.currentPosOfDims, dimension, "currentFilterBottom");
-        addRange(currentFilters[1], parcoords.currentPosOfDims, dimension, "currentFilterTop");
+        addRange(currentFilters[0], parallelCoordinates.currentPosOfDims, dimension, "currentFilterBottom");
+        addRange(currentFilters[1], parallelCoordinates.currentPosOfDims, dimension, "currentFilterTop");
     }
     let active = select("g.active").selectAll("path");
     active.each(function (d) {
         let value;
         if (invertStatus) {
             value = isNaN(maxValue)
-                ? parcoords.yScales[dimension](d[dimension])
+                ? parallelCoordinates.yScales[dimension](d[dimension])
                 : (RECT_VALUE / range) * (d[dimension] - minValue) + TOP_AXIS_VALUE;
         }
         else {
             value = isNaN(maxValue)
-                ? parcoords.yScales[dimension](d[dimension])
+                ? parallelCoordinates.yScales[dimension](d[dimension])
                 : (RECT_VALUE / range) * (maxValue - d[dimension]) + TOP_AXIS_VALUE;
         }
         const currentLine = getLineName(d);
@@ -8579,7 +8619,7 @@ function updateLines(dimension, cleanDimensionName) {
         }
         else if (dimNameToCheck == dimension && dimNameToCheck != emptyString) {
             let checkedLines = [];
-            parcoords.currentPosOfDims.forEach(function (item) {
+            parallelCoordinates.currentPosOfDims.forEach(function (item) {
                 if (item.top != TOP_AXIS_VALUE || item.bottom != BOTTOM_AXIS_VALUE) {
                     checkAllPositionsTop(item, dimension, d, checkedLines, currentLine);
                     checkAllPositionsBottom(item, dimension, d, checkedLines, currentLine);
@@ -8596,7 +8636,7 @@ function addRange(value, dims, dimension, property) {
     const dimSettings = dims.find((d) => d.key === dimension);
     if (!dimSettings)
         return;
-    const yScale = parcoords.yScales[dimension];
+    const yScale = parallelCoordinates.yScales[dimension];
     const domain = yScale.domain();
     if (typeof domain[0] === "number") {
         dimSettings.type = "numeric";
@@ -8615,11 +8655,11 @@ function checkAllPositionsTop(positionItem, dimension, d, checkedLines, currentL
     if (positionItem.key != dimension && positionItem.top != TOP_AXIS_LOW_VALUE) {
         const invertStatus = getInvertStatus(positionItem.key);
         const maxValue = invertStatus == false
-            ? parcoords.yScales[positionItem.key].domain()[1]
-            : parcoords.yScales[positionItem.key].domain()[0];
+            ? parallelCoordinates.yScales[positionItem.key].domain()[1]
+            : parallelCoordinates.yScales[positionItem.key].domain()[0];
         const minValue = invertStatus == false
-            ? parcoords.yScales[positionItem.key].domain()[0]
-            : parcoords.yScales[positionItem.key].domain()[1];
+            ? parallelCoordinates.yScales[positionItem.key].domain()[0]
+            : parallelCoordinates.yScales[positionItem.key].domain()[1];
         const scale = maxValue - minValue;
         let value;
         if (!isNaN(maxValue)) {
@@ -8631,7 +8671,7 @@ function checkAllPositionsTop(positionItem, dimension, d, checkedLines, currentL
                         TOP_AXIS_VALUE;
         }
         else {
-            value = parcoords.yScales[positionItem.key](d[positionItem.key]);
+            value = parallelCoordinates.yScales[positionItem.key](d[positionItem.key]);
         }
         if (value < positionItem.top) {
             checkedLines.push(currentLine);
@@ -8644,11 +8684,11 @@ function checkAllPositionsBottom(positionItem, dimension, d, checkedLines, curre
         positionItem.bottom != BOTTOM_AXIS_VALUE) {
         const invertStatus = getInvertStatus(positionItem.key);
         const maxValue = invertStatus == false
-            ? parcoords.yScales[positionItem.key].domain()[1]
-            : parcoords.yScales[positionItem.key].domain()[0];
+            ? parallelCoordinates.yScales[positionItem.key].domain()[1]
+            : parallelCoordinates.yScales[positionItem.key].domain()[0];
         const minValue = invertStatus == false
-            ? parcoords.yScales[positionItem.key].domain()[0]
-            : parcoords.yScales[positionItem.key].domain()[1];
+            ? parallelCoordinates.yScales[positionItem.key].domain()[0]
+            : parallelCoordinates.yScales[positionItem.key].domain()[1];
         const scale = maxValue - minValue;
         let value;
         if (!isNaN(maxValue)) {
@@ -8660,7 +8700,7 @@ function checkAllPositionsBottom(positionItem, dimension, d, checkedLines, curre
                         TOP_AXIS_VALUE;
         }
         else {
-            value = parcoords.yScales[positionItem.key](d[positionItem.key]);
+            value = parallelCoordinates.yScales[positionItem.key](d[positionItem.key]);
         }
         if (value >= positionItem.bottom) {
             checkedLines.push(currentLine);
@@ -8678,7 +8718,7 @@ function makeActive(currentLineName, record, duration) {
         select("#area_" + currentLineName)
             .style("pointer-events", "stroke")
             .style("stroke", "transparent")
-            .style("stroke-width", getLineThickness() + "rem")
+            .style("stroke-width", getSelectableStrokeWidth())
             .text("");
         if (!select("." + currentLineName).classed("colored")) {
             createToolTipForValues(record, true);
@@ -8694,7 +8734,7 @@ function makeActive(currentLineName, record, duration) {
         select("#area_" + currentLineName)
             .style("pointer-events", "stroke")
             .style("stroke", "transparent")
-            .style("stroke-width", getLineThickness() + "rem")
+            .style("stroke-width", getSelectableStrokeWidth())
             .text("");
     }
     else {
@@ -8706,7 +8746,7 @@ function makeActive(currentLineName, record, duration) {
         select("#area_" + currentLineName)
             .style("pointer-events", "stroke")
             .style("stroke", "transparent")
-            .style("stroke-width", getLineThickness() + "rem")
+            .style("stroke-width", getSelectableStrokeWidth())
             .text("");
     }
 }
@@ -8725,15 +8765,15 @@ function makeInactive(currentLineName, dimension, duration) {
         .transition()
         .duration(duration)
         .style("stroke", "transparent")
-        .style("stroke-width", getLineThickness() + "rem")
+        .style("stroke-width", getSelectableStrokeWidth())
         .on("end", function () {
         select(this).style("pointer-events", "none");
     });
 }
 function addSettingsForBrushing(dimension, invertStatus) {
     const processedName = cleanString(dimension);
-    const yScale = parcoords.yScales[dimension];
-    const dimensionSettings = parcoords.currentPosOfDims.find((d) => d.key === dimension);
+    const yScale = parallelCoordinates.yScales[dimension];
+    const dimensionSettings = parallelCoordinates.currentPosOfDims.find((d) => d.key === dimension);
     let top, bottom;
     if (isDimensionCategorical(dimension)) {
         const domain = yScale.domain();
@@ -8808,17 +8848,17 @@ function addSettingsForBrushing(dimension, invertStatus) {
     }
 }
 function getInvertStatus(key) {
-    const item = parcoords.currentPosOfDims.find((object) => object.key == key);
+    const item = parallelCoordinates.currentPosOfDims.find((object) => object.key == key);
     return item.isInverted;
 }
 function getSigDig(key) {
-    const item = parcoords.currentPosOfDims.find((object) => object.key == key);
+    const item = parallelCoordinates.currentPosOfDims.find((object) => object.key == key);
     return item.sigDig;
 }
 function addInvertStatus(status, dimensionName, key) {
     const newObject = {};
     newObject[key] = status;
-    const target = parcoords.currentPosOfDims.find((obj) => obj.key == dimensionName);
+    const target = parallelCoordinates.currentPosOfDims.find((obj) => obj.key == dimensionName);
     Object.assign(target, newObject);
 }
 const delay = 50;
@@ -8829,16 +8869,16 @@ const throttleDragAndBrush = throttle(dragAndBrush, delay);
 let scrollXPos;
 let timer = null;
 function getDragBounds() {
-    const range = parcoords.xScales?.range?.();
+    const range = parallelCoordinates.xScales?.range?.();
     if (!Array.isArray(range) || range.length < 2) {
         return {
-            min: paddingXaxis,
-            max: width - paddingXaxis,
+            min: xAxisPadding,
+            max: chartWidth - xAxisPadding,
         };
     }
     const minRange = Math.min(...range);
     const maxRange = Math.max(...range);
-    const edgeSlack = Math.max(0, minRange - paddingXaxis);
+    const edgeSlack = Math.max(0, minRange - xAxisPadding);
     return {
         min: minRange - edgeSlack,
         max: maxRange + edgeSlack,
@@ -9245,7 +9285,7 @@ function setCursorForDimensions(d, featureAxis) {
             .style("cursor", `url('data:image/svg+xml,${encodeURIComponent(applyThemeToCursorSvg(setSize(getArrowRight(), 14)))}') ${hotspotX} ${hotspotY}, auto`);
     }
     else if (getDimensionPosition(d.name) ==
-        parcoords.newFeatures.length - 1) {
+        parallelCoordinates.newFeatures.length - 1) {
         const [hotspotX, hotspotY] = getCursorHotspot(getArrowLeftMeta(), 14);
         featureAxis
             .select(".dimension")
@@ -9261,9 +9301,9 @@ function setCursorForDimensions(d, featureAxis) {
 function onDragStartEventHandler() {
     {
         return function onDragStart(d) {
-            this.__origin__ = parcoords.xScales(d.subject.name);
-            parcoords.dragging[d.subject.name] = this.__origin__;
-            parcoords.dragPosStart[d.subject.name] = this.__origin__;
+            this.__origin__ = parallelCoordinates.xScales(d.subject.name);
+            parallelCoordinates.dragging[d.subject.name] = this.__origin__;
+            parallelCoordinates.dragPosStart[d.subject.name] = this.__origin__;
             const element = document.getElementById("spcd3-parallelcoords");
             if (!element)
                 return;
@@ -9282,22 +9322,22 @@ function onDragEventHandler(featureAxis) {
                 (scroll(d));
             });
             const { min, max } = getDragBounds();
-            parcoords.dragging[d.subject.name] = Math.min(max, Math.max(min, (this.__origin__ += d.x)));
-            active.each(function (d) {
-                select(this).attr("d", linePath(d, parcoords.newFeatures));
+            parallelCoordinates.dragging[d.subject.name] = Math.min(max, Math.max(min, (this.__origin__ += d.x)));
+            activePaths.each(function (d) {
+                select(this).attr("d", linePath(d, parallelCoordinates.newFeatures));
             });
             let hitarea_active = selectAll("path.hitarea");
             hitarea_active.each(function (d) {
-                select(this).attr("d", linePath(d, parcoords.newFeatures));
+                select(this).attr("d", linePath(d, parallelCoordinates.newFeatures));
             });
-            parcoords.newFeatures.sort((a, b) => {
-                return (position(b, parcoords.dragging, parcoords.xScales) -
-                    position(a, parcoords.dragging, parcoords.xScales));
+            parallelCoordinates.newFeatures.sort((a, b) => {
+                return (position(b, parallelCoordinates.dragging, parallelCoordinates.xScales) -
+                    position(a, parallelCoordinates.dragging, parallelCoordinates.xScales));
             });
-            parcoords.xScales.domain(parcoords.newFeatures);
+            parallelCoordinates.xScales.domain(parallelCoordinates.newFeatures);
             featureAxis.attr("transform", (d) => {
                 return ("translate(" +
-                    position(d.name, parcoords.dragging, parcoords.xScales) +
+                    position(d.name, parallelCoordinates.dragging, parallelCoordinates.xScales) +
                     ")");
             });
         };
@@ -9311,31 +9351,31 @@ function onDragEndEventHandler(featureAxis) {
                 timer = null;
             }
             const { min, max } = getDragBounds();
-            parcoords.dragging[d.subject.name] = Math.min(max, Math.max(min, this.__origin__));
-            parcoords.newFeatures.sort((a, b) => {
-                return (position(b, parcoords.dragging, parcoords.xScales) -
-                    position(a, parcoords.dragging, parcoords.xScales));
+            parallelCoordinates.dragging[d.subject.name] = Math.min(max, Math.max(min, this.__origin__));
+            parallelCoordinates.newFeatures.sort((a, b) => {
+                return (position(b, parallelCoordinates.dragging, parallelCoordinates.xScales) -
+                    position(a, parallelCoordinates.dragging, parallelCoordinates.xScales));
             });
             delete this.__origin__;
-            delete parcoords.dragging[d.subject.name];
-            delete parcoords.dragPosStart[d.subject.name];
+            delete parallelCoordinates.dragging[d.subject.name];
+            delete parallelCoordinates.dragPosStart[d.subject.name];
             syncDimensionOrderWithVisible();
-            parcoords.xScales.domain(parcoords.newFeatures);
+            parallelCoordinates.xScales.domain(parallelCoordinates.newFeatures);
             featureAxis.attr("transform", (d) => {
                 return ("translate(" +
-                    position(d.name, parcoords.dragging, parcoords.xScales) +
+                    position(d.name, parallelCoordinates.dragging, parallelCoordinates.xScales) +
                     ")");
             });
-            trans(active).each(function (d) {
-                select(this).attr("d", linePath(d, parcoords.newFeatures));
+            trans(activePaths).each(function (d) {
+                select(this).attr("d", linePath(d, parallelCoordinates.newFeatures));
             });
             trans(selectAll("path.hitarea")).each(function (d) {
-                select(this).attr("d", linePath(d, parcoords.newFeatures));
+                select(this).attr("d", linePath(d, parallelCoordinates.newFeatures));
             });
             cleanTooltipSelect();
             var selectedRecords = getSelected();
             selectedRecords.forEach((record) => {
-                const path = parcoords.newDataset.find((d) => d[hoverlabel] === record);
+                const path = parallelCoordinates.newDataset.find((d) => d[hoverLabel] === record);
                 if (!isRecordInactive(record) && !isRecordColored(record)) {
                     createToolTipForValues(path, true);
                 }
@@ -9347,10 +9387,10 @@ function scroll(d) {
     const element = document.getElementById("spcd3-parallelcoords");
     if (!element)
         return;
-    if (parcoords.dragPosStart[d.subject.name] < parcoords.dragging[d.subject.name]) {
+    if (parallelCoordinates.dragPosStart[d.subject.name] < parallelCoordinates.dragging[d.subject.name]) {
         element.scrollLeft += 5;
     }
-    else if (scrollXPos + 20 > parcoords.dragging[d.subject.name]) {
+    else if (scrollXPos + 20 > parallelCoordinates.dragging[d.subject.name]) {
         element.scrollLeft -= 5;
     }
 }
@@ -9550,12 +9590,12 @@ function handleRecordContextMenu(contextMenu, event, d, onClose) {
     if (!menuElement)
         return false;
     const rect = container.getBoundingClientRect();
-    const data = hoveredRecords.length > 0
-        ? hoveredRecords
+    const data = hoveredRecordIds.length > 0
+        ? hoveredRecordIds
         : getAllPointerEventsData(event);
     const cleanedItems = Array.from(new Set(data.map((item) => cleanString(item).replace(/[.,]/g, ""))));
-    const clickedRecord = d?.[hoverlabel]
-        ? cleanString(String(d[hoverlabel])).replace(/[.,]/g, "")
+    const clickedRecord = d?.[hoverLabel]
+        ? cleanString(String(d[hoverLabel])).replace(/[.,]/g, "")
         : null;
     const targetRecords = cleanedItems.length > 0
         ? cleanedItems
@@ -9634,15 +9674,15 @@ function handleRecordContextMenu(contextMenu, event, d, onClose) {
 
 //---------- IO Functions ----------
 function drawChart(content) {
-    setContent(content);
+    setChartContent(content);
     const chartContent = content;
     var columns = structuredClone(chartContent["columns"]).reverse();
-    setColumns(columns);
-    setNumberOfDimensions(columns.length);
-    setNumberOfRecords(content.length);
+    setChartColumns(columns);
+    setDimensionCount(columns.length);
+    setRecordCount(content.length);
     deleteChart();
-    if (thickness === undefined) {
-        setLineThickness("0.4rem");
+    if (selectableStrokeWidth === undefined) {
+        setSelectableStrokeWidth("0.4rem");
     }
     setUpParcoordData(content, columns);
     let chart = select("#spcd3-parallelcoords");
@@ -9651,24 +9691,28 @@ function drawChart(content) {
             .append("div")
             .attr("id", "spcd3-parallelcoords");
     }
-    const chartWrapper = chart.append("div").attr("class", "spcd3-chartWrapper");
+    const chartWrapper = chart
+        .append("div")
+        .attr("class", "spcd3-chartWrapper")
+        .style("border", chartFrameBorder)
+        .classed("spcd3-chartWrapper--framed", chartFrameBorder !== null);
     chartWrapper.append("div").attr("id", "spcd3-toolbarRow");
-    setSvg(chartWrapper
+    setChartSvg(chartWrapper
         .append("svg")
         .attr("id", "spcd3-pc_svg")
-        .attr("width", width)
-        .attr("height", height)
-        .attr("viewBox", [0, 0, width, height])
+        .attr("width", chartWidth)
+        .attr("height", chartHeight)
+        .attr("viewBox", [0, 0, chartWidth, chartHeight])
         .attr("preserveAspectRatio", "xMinYMin meet"));
-    createToolbar(parcoords.newDataset);
-    const plot = svg.append("g").attr("class", "plot");
+    createToolbar(parallelCoordinates.newDataset);
+    const plot = chartSvg.append("g").attr("class", "plot");
     setDefsForIcons();
-    setActive(setActivePathLines(plot, content, parcoords));
-    setFeatureAxis(plot, yAxis, parcoords, width);
+    setActivePaths(setActivePathLines(plot, content, parallelCoordinates));
+    setFeatureAxis(plot, yAxes, parallelCoordinates, chartWidth);
     ensureCursorThemeSync();
     refreshThemedCursors();
     realignToolbar();
-    svg
+    chartSvg
         .on("contextmenu", function (event) {
         event.stopPropagation();
         event.preventDefault();
@@ -9685,7 +9729,7 @@ function drawChart(content) {
         .on("mouseleave", function () {
     })
         .on("mousemove", function (event) {
-        const chartBounds = svg.node().getBoundingClientRect();
+        const chartBounds = chartSvg.node().getBoundingClientRect();
         if (event.clientX < chartBounds.left ||
             event.clientX > chartBounds.right ||
             event.clientY < chartBounds.top ||
@@ -9693,6 +9737,9 @@ function drawChart(content) {
             handlePointerLeaveOrOut();
         }
     });
+    if (!isInteractivityEnabled) {
+        disableInteractivity();
+    }
     window.onclick = () => {
         select("#contextmenu").style("display", "none");
         select("#contextmenuRecords").style("display", "none");
@@ -9701,7 +9748,7 @@ function drawChart(content) {
 }
 function reset() {
     setChartZoomScale(1);
-    drawChart(resetContentData);
+    drawChart(chartContent);
 }
 function refresh() {
     const dimensions = getAllVisibleDimensionNames();
@@ -9724,13 +9771,13 @@ function deleteChart() {
     selectAll(".spcd3-tooltip-values").remove();
     cleanTooltip();
     cleanTooltipSelect();
-    parcoords.currentPosOfDims.length = 0;
+    parallelCoordinates.currentPosOfDims.length = 0;
 }
 // ---------- Needed for Built-In Interactivity Functions ---------- //
 function setUpParcoordData(data, newFeatures) {
-    setPaddingXaxis(60);
-    setInitDimension(newFeatures);
-    setHeight(400);
+    setXAxisPadding(60);
+    setInitialDimensions(newFeatures);
+    setChartHeight(400);
     const label = newFeatures[newFeatures.length - 1];
     data.sort((a, b) => {
         const item1 = a[label];
@@ -9746,7 +9793,7 @@ function setUpParcoordData(data, newFeatures) {
         }
     });
     let dataset = prepareData(data, newFeatures);
-    setWidth(calculateChartLayout(dataset[0], dataset[1]).chartWidth);
+    setChartWidth(calculateChartLayout(dataset[0], dataset[1]).chartWidth);
     setFeatures(dataset[0]);
     setNewDataset(dataset[1]);
     setXScales(setupXScales(dataset[0], dataset[1]));
@@ -9756,19 +9803,19 @@ function setUpParcoordData(data, newFeatures) {
     for (let i = 0; i < newFeatures.length; i++) {
         let max;
         let min;
-        if (isNaN(Math.max(...parcoords.newDataset.map((o) => o[newFeatures[i]])))) {
+        if (isNaN(Math.max(...parallelCoordinates.newDataset.map((o) => o[newFeatures[i]])))) {
             const sorted = [
-                ...parcoords.newDataset.map((o) => o[newFeatures[i]]),
+                ...parallelCoordinates.newDataset.map((o) => o[newFeatures[i]]),
             ].sort((a, b) => a.localeCompare(b));
             min = sorted[sorted.length - 1];
             max = sorted[0];
         }
         else {
-            max = Math.max(...parcoords.newDataset.map((o) => o[newFeatures[i]]));
-            min = Math.min(...parcoords.newDataset.map((o) => o[newFeatures[i]]));
+            max = Math.max(...parallelCoordinates.newDataset.map((o) => o[newFeatures[i]]));
+            min = Math.min(...parallelCoordinates.newDataset.map((o) => o[newFeatures[i]]));
         }
         const ranges = getDimensionRange(newFeatures[i]);
-        parcoords.currentPosOfDims.push({
+        parallelCoordinates.currentPosOfDims.push({
             key: newFeatures[i],
             top: 50,
             bottom: 350,
@@ -9784,11 +9831,11 @@ function setUpParcoordData(data, newFeatures) {
         });
     }
     const hiddenDims = getAllHiddenDimensionNames();
-    setYaxis(setupYAxis(parcoords.yScales, parcoords.newDataset, hiddenDims));
+    setYAxes(setupYAxis(parallelCoordinates.yScales, parallelCoordinates.newDataset, hiddenDims));
     let counter = 0;
-    parcoords.features.map((x) => {
+    parallelCoordinates.features.map((x) => {
         let numberOfDigs = 0;
-        let values = parcoords.newDataset.map((o) => o[x.name]);
+        let values = parallelCoordinates.newDataset.map((o) => o[x.name]);
         for (let i = 0; i < values.length; i++) {
             if (!isNaN(values[i])) {
                 const tempNumberOfDigs = digits(Number(values[i]));
@@ -9800,8 +9847,8 @@ function setUpParcoordData(data, newFeatures) {
                 continue;
             }
         }
-        addNumberOfDigs(numberOfDigs, parcoords.currentPosOfDims, x.name, "sigDig");
-        addNumberOfDigs(counter, parcoords.currentPosOfDims, x.name, "recordId");
+        addNumberOfDigs(numberOfDigs, parallelCoordinates.currentPosOfDims, x.name, "sigDig");
+        addNumberOfDigs(counter, parallelCoordinates.currentPosOfDims, x.name, "recordId");
         counter = counter + 1;
     });
     setHoverLabel(getAllVisibleDimensionNames()[0]);
@@ -9813,13 +9860,13 @@ function createThemedCursor(svgMarkup, size, meta) {
     return `url('data:image/svg+xml,${encodeURIComponent(themedSvg)}') ${hotspotX} ${hotspotY}, auto`;
 }
 function refreshThemedCursors() {
-    if (!Array.isArray(parcoords.newFeatures)) {
+    if (!Array.isArray(parallelCoordinates.newFeatures)) {
         return;
     }
     const topCursor = createThemedCursor(getArrowTopCursor(), 12, getArrowTopCursorMeta());
     const bottomCursor = createThemedCursor(getArrowBottomCursor(), 12, getArrowBottomCursorMeta());
     const rangeCursor = createThemedCursor(getArrowTopAndBottom(), 20, getArrowTopAndBottomMeta());
-    parcoords.newFeatures.forEach((dimension) => {
+    parallelCoordinates.newFeatures.forEach((dimension) => {
         const processed = cleanString(dimension);
         const invertStatus = getInversionStatus(dimension);
         const invertCursor = invertStatus === "ascending"
@@ -9880,13 +9927,13 @@ function handlePointerEnter(event, d) {
         return;
     doNotHighlight();
     const data = getAllPointerEventsData(event);
-    setHoveredRecords(data);
+    setHoveredRecordIds(data);
     const tooltipLabel = selectAll(".spcd3-tooltip-label");
     highlight(data);
     createTooltipForLabel(data, tooltipLabel, event);
     const datasetMap = new Map();
-    parcoords.newDataset.forEach((record) => {
-        datasetMap.set(record[hoverlabel], record);
+    parallelCoordinates.newDataset.forEach((record) => {
+        datasetMap.set(record[hoverLabel], record);
     });
     data.forEach((item, i) => {
         const rec = datasetMap.get(item);
@@ -9899,7 +9946,7 @@ function handlePointerLeaveOrOut() {
     if (isRecordHoverLocked)
         return;
     doNotHighlight();
-    setHoveredRecords([]);
+    setHoveredRecordIds([]);
     selectAll(".spcd3-tooltip-label").style("visibility", "hidden");
     cleanTooltip();
 }
@@ -9919,8 +9966,8 @@ function handleClick(event, d) {
             else {
                 setSelected(record);
                 const datasetMap = new Map();
-                parcoords.newDataset.forEach((cleanedItems) => {
-                    datasetMap.set(cleanedItems[hoverlabel], cleanedItems);
+                parallelCoordinates.newDataset.forEach((cleanedItems) => {
+                    datasetMap.set(cleanedItems[hoverLabel], cleanedItems);
                 });
                 data.forEach((item, i) => {
                     const rec = datasetMap.get(item);
@@ -9940,8 +9987,8 @@ function handleClick(event, d) {
             else {
                 setSelected(record);
                 const datasetMap = new Map();
-                parcoords.newDataset.forEach((cleanedItems) => {
-                    datasetMap.set(cleanedItems[hoverlabel], cleanedItems);
+                parallelCoordinates.newDataset.forEach((cleanedItems) => {
+                    datasetMap.set(cleanedItems[hoverLabel], cleanedItems);
                 });
                 data.forEach((item, i) => {
                     const rec = datasetMap.get(item);
@@ -9956,8 +10003,8 @@ function handleClick(event, d) {
         clearSelection();
         setSelection(cleanedItems);
         const datasetMap = new Map();
-        parcoords.newDataset.forEach((cleanedItems) => {
-            datasetMap.set(cleanedItems[hoverlabel], cleanedItems);
+        parallelCoordinates.newDataset.forEach((cleanedItems) => {
+            datasetMap.set(cleanedItems[hoverLabel], cleanedItems);
         });
         data.forEach((item, i) => {
             const rec = datasetMap.get(item);
@@ -9978,14 +10025,14 @@ function setActivePathLines(svg, content, parcoords) {
         .attr("class", "hitarea")
         .attr("id", (d) => {
         const keys = Object.keys(d);
-        setKey(keys[0]);
-        const selected_value = cleanString(d[key]);
+        setRecordKey(keys[0]);
+        const selected_value = cleanString(d[recordKey]);
         return "area_" + selected_value;
     })
         .attr("d", (d) => linePath(d, parcoords.newFeatures))
         .style("stroke", "transparent")
         .style("fill", "none")
-        .style("stroke-width", thickness)
+        .style("stroke-width", selectableStrokeWidth)
         .style("pointer-events", "stroke")
         .on("pointerenter", handlePointerEnter)
         .on("pointerleave", handlePointerLeaveOrOut)
@@ -10003,11 +10050,11 @@ function setActivePathLines(svg, content, parcoords) {
         .append("path")
         .attr("class", (d) => {
         const keys = Object.keys(d);
-        setKey(keys[0]);
-        const selected_value = cleanString(d[key]);
+        setRecordKey(keys[0]);
+        const selected_value = cleanString(d[recordKey]);
         return "line " + selected_value;
     })
-        .attr("id", (d) => cleanString(d[key]))
+        .attr("id", (d) => cleanString(d[recordKey]))
         .attr("d", (d) => linePath(d, parcoords.newFeatures))
         .style("pointer-events", "none")
         .style("stroke", "var(--spcd3-active-records)")
@@ -10037,7 +10084,7 @@ function setFeatureAxis(svg, yAxis, parcoords, width) {
         .attr("x", 0)
         .attr("y", 0)
         .attr("width", width)
-        .attr("height", height)
+        .attr("height", chartHeight)
         .style("fill", "transparent")
         .style("pointer-events", "none");
     let tooltipValues = svg
@@ -10060,7 +10107,7 @@ function setFeatureAxis(svg, yAxis, parcoords, width) {
     setInvertIcon(featureAxis);
 }
 function setDefsForIcons() {
-    const svgContainer = svg;
+    const svgContainer = chartSvg;
     let defs = svgContainer.select("defs");
     defs = svgContainer.append("defs");
     createImage(defs, "arrow_image_up", 12, 12, getArrowUp());
@@ -10623,5 +10670,5 @@ function escapeCsvCell(value) {
     return value;
 }
 
-export { clearSelection, colorRecord, createSvgString, deleteChart, disableInteractivity, drawChart, enableInteractivity, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getChartZoomScale, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getExampleUiSettings, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelectableWith, getSelected, getSvgDownloadSettings, getTauriSvgSaveDirectory, hide, hideMarker, invert, invertWithoutTransition, isDimensionCategorical, isRecordColored, isRecordInactive, isSelected, isSelectedWithId, loadCSV, move, moveByOne, realignToolbar, refresh, reset, saveAsSvg, setChartZoomScale, setClassColoredFalse, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setDimensionSpacing, setExampleUiSettings, setFilter, setInversionStatus, setSelectableWidth, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setSvgDownloadSettings, setTauriSvgSaveDirectory, setUnselected, setUnselectedWithId, setWheelZoom, show, showMarker, swap, syncChartZoomState, syncDimensionOrderWithVisible, throttleShowValues, toggleSelection, toggleSelectionWithId, uncolorRecord };
+export { clearSelection, colorRecord, createSvgString, deleteChart, disableInteractivity, drawChart, enableInteractivity, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getChartZoomScale, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getExampleUiSettings, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelectableWith, getSelected, getSvgDownloadSettings, getTauriSvgSaveDirectory, hide, hideMarker, invert, invertWithoutTransition, isDimensionCategorical, isRecordColored, isRecordInactive, isSelected, isSelectedWithId, loadCSV, move, moveByOne, realignToolbar, refresh, reset, saveAsSvg, setChartBorder, setChartZoomScale, setClassColoredFalse, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setDimensionSpacing, setExampleUiSettings, setFilter, setInversionStatus, setSelectableWidth, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setSvgDownloadSettings, setTauriSvgSaveDirectory, setUnselected, setUnselectedWithId, setWheelZoom, show, showMarker, swap, syncChartZoomState, syncDimensionOrderWithVisible, throttleShowValues, toggleSelection, toggleSelectionWithId, uncolorRecord };
 //# sourceMappingURL=spcd3.js.map
