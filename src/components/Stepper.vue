@@ -45,7 +45,7 @@
             <button
               id="reset-button"
               class="stepper-button"
-              :disabled="currentStep === 0 || isUpdatingChart"
+              :disabled="currentStep <= 0 || isUpdatingChart"
               @click="reset"
             >
               <img class="icon"
@@ -55,7 +55,7 @@
             <button
               id="back-button"
               class="stepper-button"
-              :disabled="currentStep === 0 || isUpdatingChart"
+              :disabled="currentStep <= 0 || isUpdatingChart"
               @click="back"
             >
               <img class="icon"
@@ -65,7 +65,7 @@
             <button
               id="next-button"
               class="stepper-button"
-              :disabled="currentStep === steps.length - 1 || isUpdatingChart"
+              :disabled="currentStep < 0 || currentStep === steps.length - 1 || isUpdatingChart"
               @click="next"
             >
               <img class="icon"
@@ -75,7 +75,7 @@
             <button
               id="skip-button"
               class="stepper-button"
-              :disabled="currentStep === steps.length - 1 || isUpdatingChart"
+              :disabled="currentStep < 0 || currentStep === steps.length - 1 || isUpdatingChart"
               @click="skip"
             >
               <img class="icon"
@@ -177,17 +177,10 @@ const resetAction = (currentStep: number): void => {
 };
 
 const resetFilterStep = async (): Promise<void> => {
-  if (!studentDataset.value) return;
-
   isUpdatingChart.value = true;
   try {
-    await drawChart(studentDataset.value);
-    spcd3.disableInteractivity();
-
-    if (stepRan.value[0]) setRangeNext();
-    if (stepRan.value[1]) selectRecordNext();
-    if (stepRan.value[2]) moveDimensionNext();
-    if (stepRan.value[3]) spcd3.invertWithoutTransition('English');
+    const [rangeStart, rangeEnd] = spcd3.getDimensionRange('IT');
+    spcd3.setFilter('IT', rangeStart, rangeEnd);
   } finally {
     isUpdatingChart.value = false;
   }
@@ -200,7 +193,7 @@ const disableStepInteractivity = (): void => {
 
 const goToStep = (index: number): void => {
   disableStepInteractivity();
-  currentStep.value = index;
+  currentStep.value = currentStep.value === index ? -1 : index;
 }
 
 const next = (event: MouseEvent): void => {

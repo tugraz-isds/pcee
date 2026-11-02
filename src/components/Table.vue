@@ -49,7 +49,7 @@
                 >
                 <input
                   v-model="row[column.key]"
-                  :type="column.type === 'number' ? 'number' : 'text'"
+                  type="text"
                   :class="{
                     'text-right': column.type === 'number',
                     'text-left': column.type === 'string'
@@ -181,12 +181,15 @@ const redrawChart = (): void => {
 };
 
 const isFormValid = computed<boolean>(() => {
-  return rows.value.every(row =>
-    columns.value.every(column => {
-      const value = row[column.key];
-      return value != null && String(value).trim() !== '';
-    })
-  );
+  return columns.value.length > 0
+    && rows.value.length > 0
+    && columns.value.every(column => column.label.trim() !== '')
+    && rows.value.every(row =>
+      columns.value.every(column => {
+        const value = row[column.key];
+        return value != null && String(value).trim() !== '';
+      })
+    );
 });
 
 </script>

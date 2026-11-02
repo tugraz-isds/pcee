@@ -4720,6 +4720,7 @@ function getLongestVisibleTickLabel(data, header) {
 }
 function calculateChartLayout(header, dataset) {
     const n = header.length;
+    const layoutDimensionCount = Math.max(n, 4);
     const longestDimensionLabel = header.reduce((longest, column) => {
         const label = shortenAxisLabel(column.name);
         return label.length > longest.length ? label : longest;
@@ -4732,7 +4733,7 @@ function calculateChartLayout(header, dataset) {
     const requiredRightPadding = Math.max(48, Math.ceil(dimensionLabelWidth / 2 + 36));
     const leftPadding = requiredLeftPadding;
     const rightPadding = requiredRightPadding;
-    const chartWidth = Math.ceil(leftPadding + rightPadding + Math.max(0, n - 1) * axisGap);
+    const chartWidth = Math.ceil(leftPadding + rightPadding + (layoutDimensionCount - 1) * axisGap);
     return { axisGap, chartWidth, leftPadding, rightPadding };
 }
 function setupXScales(header, dataset) {
