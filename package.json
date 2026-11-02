@@ -26,12 +26,16 @@
   ],
   "author": "Romana Gruber",
   "license": "MIT",
+  "resolutions": {
+    "source-map-js": "1.2.2",
+    "undici": "8.12.2"
+  },
   "dependencies": {
     "@tauri-apps/api": "^2.11.1",
     "@tauri-apps/plugin-dialog": "^2.7.3",
     "@tauri-apps/plugin-fs": "^2.5.2",
     "gsap": "^3.15.0",
-    "vue": "^3.5.38"
+    "vue": "^3.5.42"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.11.4",
@@ -39,7 +43,7 @@
     "gulp": "^5.0.1",
     "gulp-cli": "^3.1.0",
     "typescript": "^6.0.3",
-    "vite": "^8.0.16",
+    "vite": "^8.3.5",
     "vite-plugin-vue-devtools": "^8.1.3"
   }
 }
