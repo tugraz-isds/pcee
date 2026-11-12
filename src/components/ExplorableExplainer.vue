@@ -1974,8 +1974,7 @@ button {
 
   .spcd3-toolbar-separator {
     align-self: center;
-    block-size: 0.8rem;
-    transform: translateY(0.25rem);
+    block-size: 1.1rem;
   }
 }
 

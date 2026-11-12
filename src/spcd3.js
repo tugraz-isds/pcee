@@ -7928,30 +7928,44 @@ function setClassColoredFalse(record) {
 }
 function disableInteractivity() {
     setInteractivityEnabled(false);
+    const chartShell = document.querySelector("#spcd3-parallelcoords")?.closest(".chart-wrapper");
+    const chartHost = document.querySelector("#spcd3-parallelcoords")?.closest(".main-chart");
+    chartShell?.style.setProperty("background", "var(--spcd3-chart-disabled-bg)");
+    chartHost?.style.setProperty("background", "var(--spcd3-chart-disabled-bg)");
     select("#spcd3-toolbarRow")
         .style("pointer-events", "none")
         .style("opacity", "0.45")
         .style("filter", "grayscale(1)")
+        .style("background", "var(--spcd3-chart-disabled-bg)")
         .style("cursor", "not-allowed");
     selectAll("#spcd3-toolbarRow *").style("cursor", "not-allowed");
     select("#spcd3-parallelcoords").style("pointer-events", "none");
     select("#spcd3-parallelcoords")
         .style("background", "var(--spcd3-chart-disabled-bg)")
         .style("z-index", 1);
+    select(".spcd3-chartWrapper").style("background", "var(--spcd3-chart-disabled-bg)");
+    select(".spcd3-chartFrame").style("background", "var(--spcd3-chart-disabled-bg)");
     selectAll(".hitarea").style("pointer-events", "none");
     selectAll(".spcd3-handle-hitbox").style("pointer-events", "none");
     selectAll(".hitbox").style("pointer-events", "none");
 }
 function enableInteractivity() {
     setInteractivityEnabled(true);
+    const chartShell = document.querySelector("#spcd3-parallelcoords")?.closest(".chart-wrapper");
+    const chartHost = document.querySelector("#spcd3-parallelcoords")?.closest(".main-chart");
+    chartShell?.style.removeProperty("background");
+    chartHost?.style.removeProperty("background");
     select("#spcd3-toolbarRow")
         .style("pointer-events", "auto")
         .style("opacity", "1")
         .style("filter", "none")
+        .style("background", null)
         .style("cursor", "auto");
     selectAll("#spcd3-toolbarRow *").style("cursor", null);
     select("#spcd3-parallelcoords").style("pointer-events", "auto");
-    select("#spcd3-parallelcoords").style("background", "var(--spcd3-bg)");
+    select("#spcd3-parallelcoords").style("background", "var(--spcd3-page-bg)");
+    select(".spcd3-chartWrapper").style("background", null);
+    select(".spcd3-chartFrame").style("background", null);
     selectAll(".hitarea").style("pointer-events", "stroke");
     selectAll(".spcd3-handle-hitbox").style("pointer-events", "auto");
     selectAll(".hitbox").style("pointer-events", "auto");

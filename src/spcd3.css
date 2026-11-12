@@ -562,8 +562,10 @@ table.spcd3-tablecontainer td {
 
 .spcd3-toolbar-separator {
   inline-size: 0.0625rem;
+  align-self: center;
   block-size: 1.4rem;
   background: var(--spcd3-text-disabled);
+  transform: translateY(0.25rem);
 }
 
 .spcd3-toolbar-zoom-label {
