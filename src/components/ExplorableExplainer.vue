@@ -289,10 +289,9 @@ let activePortraitDividerPointerId: number | null = null;
 let activeLandscapeDividerPointerId: number | null = null;
 let landscapeDividerCursorOffset = 0;
 let landscapeDividerChartOffset = 0;
+let landscapeChartFitFrame: number | null = null;
 let initialPortraitChartHeight: number | null = null;
 let portraitToolbarZoom = 1;
-let portraitBaseFitScale: number | null = null;
-let portraitCurrentFitScale = 1;
 let headerAnimationContext: ReturnType<typeof gsap.context> | null = null;
 let scrollPositionSaveFrame: number | null = null;
 
@@ -367,21 +366,32 @@ const updatePortraitChartFit = (): void => {
   const naturalHeight = Number(svgNode.getAttribute('height'));
   if (!Number.isFinite(naturalWidth) || !Number.isFinite(naturalHeight) || naturalWidth <= 0 || naturalHeight <= 0) return;
 
-  const requestedHeight = chartContainer.value?.getBoundingClientRect().height
-    ?? (window.visualViewport?.height ?? window.innerHeight) * 0.45;
   const chartChromeHeight = Math.max(0, (mainChart.value?.getBoundingClientRect().height ?? 0) - chartArea.clientHeight);
   const toolbarHeight = chartArea.querySelector('#spcd3-toolbarRow')?.getBoundingClientRect().height ?? 0;
-  const availableHeight = Math.max(120, requestedHeight - chartChromeHeight - toolbarHeight - 8);
-  const fitScale = availableHeight / naturalHeight;
-  portraitBaseFitScale ??= fitScale;
-  portraitCurrentFitScale = fitScale;
-  const scale = fitScale * portraitToolbarZoom;
+  const chartFrame = chartArea.querySelector<HTMLElement>('.spcd3-chartFrame');
+  const chartFrameStyle = chartFrame ? window.getComputedStyle(chartFrame) : null;
+  const frameVerticalExtras = chartFrameStyle
+    ? [
+        chartFrameStyle.marginBlockStart,
+        chartFrameStyle.marginBlockEnd,
+        chartFrameStyle.paddingBlockStart,
+        chartFrameStyle.paddingBlockEnd,
+        chartFrameStyle.borderBlockStartWidth,
+        chartFrameStyle.borderBlockEndWidth,
+      ].reduce((total, value) => total + (Number.parseFloat(value) || 0), 0)
+    : 0;
+  const requestedHeight = chartContainer.value?.getBoundingClientRect().height
+    ?? (window.visualViewport?.height ?? window.innerHeight) * 0.45;
+  const availableHeight = Math.max(
+    1,
+    requestedHeight - chartChromeHeight - toolbarHeight - frameVerticalExtras - 8,
+  );
+  const scale = (availableHeight / naturalHeight) * portraitToolbarZoom;
   svgNode.style.inlineSize = `${Math.round(naturalWidth * scale)}px`;
   svgNode.style.blockSize = `${Math.round(naturalHeight * scale)}px`;
-  spcd3.syncChartZoomState(scale, portraitBaseFitScale);
   explainerRoot.value.style.setProperty('--portrait-chart-width', `${Math.round(naturalWidth * scale)}px`);
   explainerRoot.value.style.setProperty('--portrait-chart-scroll-height', `${chartArea.clientHeight}px`);
-  explainerRoot.value.style.setProperty('--portrait-chart-content-height', `${Math.ceil(chartChromeHeight + toolbarHeight + naturalHeight * scale + 8)}px`);
+  explainerRoot.value.style.setProperty('--portrait-chart-content-height', `${Math.ceil(chartChromeHeight + frameVerticalExtras + toolbarHeight + naturalHeight * scale + 8)}px`);
   alignSpcd3ToolbarToLabels();
 
 }
@@ -404,7 +414,6 @@ const ensurePortraitChartHeight = (): void => {
   if (!isPortraitResizeMode()) {
     initialPortraitChartHeight = null;
     portraitToolbarZoom = 1;
-    portraitBaseFitScale = null;
     document.getElementById('spcd3-parallelcoords')?.removeAttribute('data-spcd3-fit-chart-to-viewport');
     explainerRoot.value.style.removeProperty('--portrait-chart-user-height');
     explainerRoot.value.style.removeProperty('--portrait-chart-width');
@@ -425,7 +434,7 @@ const resizePortraitChart = (event: PointerEvent): void => {
   const maxHeight = Math.max(minHeight, Math.min(viewportHeight * 0.65, availableHeight));
   const height = Math.max(minHeight, Math.min(maxHeight, event.clientY - chartTop));
   explainerRoot.value.style.setProperty('--portrait-chart-user-height', `${Math.round(height)}px`);
-  requestAnimationFrame(updatePortraitChartFit);
+  schedulePortraitChartFit();
 }
 
 const stopPortraitChartResize = (event: PointerEvent): void => {
@@ -433,7 +442,7 @@ const stopPortraitChartResize = (event: PointerEvent): void => {
   portraitDivider.value?.releasePointerCapture(event.pointerId);
   activePortraitDividerPointerId = null;
   isPortraitDividerDragging.value = false;
-  requestAnimationFrame(updatePortraitChartFit);
+  schedulePortraitChartFit();
 }
 
 const startPortraitChartResize = (event: PointerEvent): void => {
@@ -443,6 +452,16 @@ const startPortraitChartResize = (event: PointerEvent): void => {
   isPortraitDividerDragging.value = true;
   initialPortraitChartHeight ??= chartContainer.value?.getBoundingClientRect().height ?? null;
   portraitDivider.value.setPointerCapture(event.pointerId);
+}
+
+const scheduleLandscapeChartFit = (): void => {
+  if (landscapeChartFitFrame !== null) return;
+
+  landscapeChartFitFrame = requestAnimationFrame(() => {
+    landscapeChartFitFrame = null;
+    window.dispatchEvent(new Event('resize'));
+    alignSpcd3ToolbarToLabels();
+  });
 }
 
 const resizeLandscapeChart = (event: PointerEvent): void => {
@@ -464,6 +483,7 @@ const resizeLandscapeChart = (event: PointerEvent): void => {
 
   explainerRoot.value.style.setProperty('--landscape-chart-user-width', `${Math.round(chartWidth)}px`);
   hasLandscapeChartWidth.value = true;
+  scheduleLandscapeChartFit();
 }
 
 const stopLandscapeChartResize = (event: PointerEvent): void => {
@@ -471,7 +491,7 @@ const stopLandscapeChartResize = (event: PointerEvent): void => {
   landscapeDivider.value?.releasePointerCapture(event.pointerId);
   activeLandscapeDividerPointerId = null;
   isLandscapeDividerDragging.value = false;
-  window.dispatchEvent(new Event('resize'));
+  scheduleLandscapeChartFit();
 }
 
 const startLandscapeChartResize = (event: PointerEvent): void => {
@@ -487,12 +507,11 @@ const startLandscapeChartResize = (event: PointerEvent): void => {
 }
 
 const syncPortraitToolbarZoom = (): void => {
-  if (!isPortraitResizeMode() || portraitBaseFitScale === null) return;
+  if (!isPortraitResizeMode()) return;
   const zoomInput = document.querySelector<HTMLElement>('.spcd3-toolbar-zoom-input');
   const zoomPercentage = Number(zoomInput?.textContent?.trim());
   if (!Number.isFinite(zoomPercentage)) return;
-  const requestedScale = portraitBaseFitScale * zoomPercentage / 100;
-  portraitToolbarZoom = Math.max(0.2, Math.min(3, requestedScale / portraitCurrentFitScale));
+  portraitToolbarZoom = Math.max(0.2, Math.min(3, zoomPercentage / 100));
   updatePortraitChartFit();
 }
 
@@ -806,6 +825,9 @@ onBeforeUnmount(() => {
   window.removeEventListener('pagehide', persistScrollPosition);
   if (portraitChartFitTimer !== null) {
     window.clearTimeout(portraitChartFitTimer);
+  }
+  if (landscapeChartFitFrame !== null) {
+    cancelAnimationFrame(landscapeChartFitFrame);
   }
   portraitChartObserver?.disconnect();
   portraitResizeMediaQuery?.removeEventListener('change', ensurePortraitChartHeight);
@@ -1399,7 +1421,7 @@ onMounted(async (): Promise<void> => {
 }
 
 .chart-container {
-  flex: 1.2 1 25rem;
+  flex: 1 1 23rem;
   min-width: 0;
   position: relative;
 }
@@ -1410,7 +1432,7 @@ onMounted(async (): Promise<void> => {
   inline-size: 100%;
   min-inline-size: 0;
   max-inline-size: 100%;
-  margin-left: 1rem;
+  margin-inline: 0;
   align-self: flex-start;
 }
 
@@ -1528,6 +1550,11 @@ onMounted(async (): Promise<void> => {
     flex: 1 1 auto;
     flex-direction: column;
     min-block-size: 0;
+  }
+
+  #spcd3-parallelcoords .spcd3-chartFrame {
+    inline-size: 100% !important;
+    margin-inline: auto;
   }
 }
 
@@ -1717,6 +1744,10 @@ section {
     overflow: auto;
   }
 
+  #spcd3-parallelcoords .spcd3-chartFrame {
+    inline-size: 100% !important;
+  }
+
   #spcd3-parallelcoords #spcd3-pc_svg {
     display: block;
     max-inline-size: none;
@@ -1774,7 +1805,7 @@ section {
 
   .main-chart {
     position: sticky;
-    margin-left: 1rem;
+    margin-inline: 0;
   }
 
   .text-container {

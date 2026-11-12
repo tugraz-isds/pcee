@@ -4640,7 +4640,12 @@ function line(x$1, y$1) {
   return line;
 }
 
-const PADDING = 50;
+const CHART_HEIGHT = 400;
+const AXIS_TOP_HANDLE = 40;
+const AXIS_TOP = 50;
+const AXIS_BOTTOM = 370;
+const AXIS_LENGTH = AXIS_BOTTOM - AXIS_TOP;
+
 function prepareData(data, dimensions) {
     const dataset = [];
     data.forEach((item) => {
@@ -4667,7 +4672,7 @@ function setupYScales(header, dataset) {
             });
             yScales[x.name] = point()
                 .domain(labels)
-                .range([PADDING, chartHeight - PADDING]);
+                .range([AXIS_TOP, AXIS_BOTTOM]);
         }
         else {
             const max = Math.max(...dataset.map((o) => o[x.name]));
@@ -4676,12 +4681,12 @@ function setupYScales(header, dataset) {
                 const epsilon = min === 0 ? 1 : Math.abs(min) * 0.01;
                 yScales[x.name] = linear()
                     .domain([min - epsilon, max + epsilon])
-                    .range([chartHeight - PADDING, PADDING]);
+                    .range([AXIS_BOTTOM, AXIS_TOP]);
             }
             else {
                 yScales[x.name] = linear()
                     .domain([min, max])
-                    .range([chartHeight - PADDING, PADDING]);
+                    .range([AXIS_BOTTOM, AXIS_TOP]);
             }
         }
     });
@@ -4720,7 +4725,6 @@ function getLongestVisibleTickLabel(data, header) {
 }
 function calculateChartLayout(header, dataset) {
     const n = header.length;
-    const layoutDimensionCount = Math.max(n, 4);
     const longestDimensionLabel = header.reduce((longest, column) => {
         const label = shortenAxisLabel(column.name);
         return label.length > longest.length ? label : longest;
@@ -4729,11 +4733,11 @@ function calculateChartLayout(header, dataset) {
     const dimensionLabelWidth = getTextWidthSVG(longestDimensionLabel, "0.7rem Verdana");
     const tickLabelWidth = getTextWidthSVG(longestTickLabel, "0.75rem Verdana");
     const axisGap = dimensionSpacing ?? Math.max(96, Math.ceil(dimensionLabelWidth + 56));
-    const requiredLeftPadding = Math.max(72, Math.ceil(tickLabelWidth + 44));
+    const requiredLeftPadding = Math.max(48, Math.ceil(tickLabelWidth + 20));
     const requiredRightPadding = Math.max(48, Math.ceil(dimensionLabelWidth / 2 + 36));
     const leftPadding = requiredLeftPadding;
     const rightPadding = requiredRightPadding;
-    const chartWidth = Math.ceil(leftPadding + rightPadding + (layoutDimensionCount - 1) * axisGap);
+    const chartWidth = Math.ceil(leftPadding + rightPadding + Math.max(0, n - 1) * axisGap);
     return { axisGap, chartWidth, leftPadding, rightPadding };
 }
 function setupXScales(header, dataset) {
@@ -5828,7 +5832,19 @@ const DOWNLOAD_BRUSH_ARROW_X = -4.5;
 const DOWNLOAD_INVERT_ARROW_WIDTH = 6.8;
 const DOWNLOAD_INVERT_ARROW_HEIGHT = 11;
 const DOWNLOAD_INVERT_ARROW_X = -3.4;
-function setActivePathLinesToDownload(svg) {
+function linePathForDownload(d, features, xScales, yScales) {
+    const lineGenerator = line();
+    const points = [];
+    features.forEach((feature) => {
+        if (!(feature in d))
+            return;
+        const value = String(d[feature]);
+        const cleanedValue = value.length > 10 ? value.substr(0, 10) + "..." : value;
+        points.push([xScales(feature), yScales[feature](cleanedValue)]);
+    });
+    return lineGenerator(points);
+}
+function setActivePathLinesToDownload(svg, xScales, yScales) {
     svg
         .append("g")
         .attr("class", "records")
@@ -5845,7 +5861,7 @@ function setActivePathLinesToDownload(svg) {
         return cleanString(d[recordKey]);
     })
         .each(function (d) {
-        select(this).attr("d", linePath(d, parallelCoordinates.newFeatures));
+        select(this).attr("d", linePathForDownload(d, parallelCoordinates.newFeatures, xScales, yScales));
     });
     const records = getAllRecords();
     records.forEach((element) => {
@@ -5870,7 +5886,6 @@ function setFeatureAxisToDownload(svg, yAxis, yScales, xScales) {
     const orderedFeatures = parallelCoordinates.newFeatures.map((name) => ({
         name,
     }));
-    const hiddenDims = getAllHiddenDimensionNames();
     let featureAxis = svg
         .selectAll("g.feature")
         .data(orderedFeatures)
@@ -5879,39 +5894,9 @@ function setFeatureAxisToDownload(svg, yAxis, yScales, xScales) {
         .attr("transform", (d) => "translate(" + xScales(d.name) + ")");
     featureAxis.append("g").each(function (d) {
         const processedDimensionName = cleanString(d.name);
-        const max = getCurrentMaxRange(d.name);
-        const min = getCurrentMinRange(d.name);
-        const inversionStatus = getInversionStatus(d.name);
-        if (!isDimensionCategorical(d.name)) {
-            if (inversionStatus === "ascending") {
-                yScales[d.name].domain([min, max]);
-                yAxis = setupYAxis(yScales, parallelCoordinates.newDataset, hiddenDims);
-                select(this)
-                    .attr("id", "dimension_axis_" + processedDimensionName)
-                    .call(yAxis[d.name].scale(yScales[d.name].domain(yScales[d.name].domain())));
-            }
-            else {
-                yScales[d.name].domain([min, max]);
-                yAxis = setupYAxis(yScales, parallelCoordinates.newDataset, hiddenDims);
-                select(this)
-                    .attr("id", "dimension_axis_" + processedDimensionName)
-                    .call(yAxis[d.name].scale(yScales[d.name].domain(yScales[d.name].domain().reverse())));
-            }
-        }
-        else {
-            if (inversionStatus === "ascending") {
-                select(this)
-                    .attr("id", "dimension_axis_" + processedDimensionName)
-                    .call(yAxis[d.name]);
-            }
-            else {
-                const scale = yScales[d.name];
-                scale.domain([...scale.domain()].reverse());
-                select(this)
-                    .attr("id", "dimension_axis_" + processedDimensionName)
-                    .call(yAxis[d.name]);
-            }
-        }
+        select(this)
+            .attr("id", "dimension_axis_" + processedDimensionName)
+            .call(yAxis[d.name]);
     });
     featureAxis
         .append("text")
@@ -5949,7 +5934,9 @@ function setBrushDownToDownload(featureAxis) {
             .append("g")
             .append("use")
             .attr("id", "triangle_down_" + processedDimensionName)
-            .attr("y", item.top == 50 ? 41 : item.top - DOWNLOAD_BRUSH_ARROW_HEIGHT)
+            .attr("y", item.top == AXIS_TOP
+            ? AXIS_TOP_HANDLE + 1
+            : item.top - DOWNLOAD_BRUSH_ARROW_HEIGHT)
             .attr("x", DOWNLOAD_BRUSH_ARROW_X)
             .attr("width", DOWNLOAD_BRUSH_ARROW_WIDTH)
             .attr("height", DOWNLOAD_BRUSH_ARROW_HEIGHT)
@@ -5976,7 +5963,7 @@ function setRectToDragToDownload(featureAxis) {
         const processedDimensionName = cleanString(d.name);
         const item = parallelCoordinates.currentPosOfDims.find((object) => object.key == d.name);
         let height = item.bottom - item.top;
-        const isIdle = item.top == 50 && item.bottom == 350;
+        const isIdle = item.top == AXIS_TOP && item.bottom == AXIS_BOTTOM;
         select(this)
             .append("g")
             .append("rect")
@@ -6114,6 +6101,9 @@ function createSvgString(includeDataValues = false) {
     const rightBalancePadding = Math.max(0, layout.leftPadding - layout.rightPadding);
     const hiddenDims = getAllHiddenDimensionNames();
     let yScalesForDownload = setupYScales(parallelCoordinates.features, parallelCoordinates.newDataset);
+    Object.entries(parallelCoordinates.yScales).forEach(([dimension, scale]) => {
+        yScalesForDownload[dimension]?.domain([...scale.domain()]);
+    });
     let yAxisForDownload = setupYAxis(yScalesForDownload, parallelCoordinates.newDataset, hiddenDims);
     let xScalesForDownload = setupXScales(orderedFeatures, parallelCoordinates.newDataset);
     let svg = create$1("svg")
@@ -6157,7 +6147,7 @@ function createSvgString(includeDataValues = false) {
         },
     ]);
     setFeatureAxisToDownload(contentRoot, yAxisForDownload, yScalesForDownload, xScalesForDownload);
-    setActivePathLinesToDownload(contentRoot);
+    setActivePathLinesToDownload(contentRoot, xScalesForDownload, yScalesForDownload);
     if (includeDataValues) {
         setSelectedRecordValuesToDownload(contentRoot, xScalesForDownload, yScalesForDownload);
     }
@@ -6644,6 +6634,8 @@ function closeChartModal() {
     state.svg.style.inlineSize = state.previousSvgInlineSize;
     state.svg.style.blockSize = state.previousSvgBlockSize;
     state.chartWrapper.style.blockSize = state.previousChartWrapperBlockSize;
+    state.chartFrame.style.inlineSize = state.previousChartFrameInlineSize;
+    state.chartViewport.style.paddingInlineEnd = state.previousChartViewportPaddingInlineEnd;
     state.chartWrapper.classList.remove("spcd3-chartWrapper--pannable");
     state.chartWrapper.classList.remove("spcd3-chartWrapper--can-pan");
     chartZoomState = null;
@@ -6845,8 +6837,10 @@ function enableChartZoom(zoomInButton, zoomOutButton, zoomInput) {
     if (!zoomInButton || !zoomOutButton || !zoomInput)
         return;
     const chartWrapper = document.querySelector(".spcd3-chartWrapper");
+    const chartViewport = chartWrapper?.querySelector(".spcd3-chartViewport");
     const svg = chartWrapper?.querySelector("#spcd3-pc_svg");
-    if (!chartWrapper || !svg)
+    const chartFrame = chartWrapper?.querySelector(".spcd3-chartFrame");
+    if (!chartWrapper || !chartViewport || !svg || !chartFrame)
         return;
     const baseSvgWidth = Number(svg.getAttribute("width")) || svg.viewBox.baseVal.width;
     const baseSvgHeight = Number(svg.getAttribute("height")) || svg.viewBox.baseVal.height;
@@ -6856,8 +6850,8 @@ function enableChartZoom(zoomInButton, zoomOutButton, zoomInput) {
         if (!state?.isDraggingPan)
             return;
         state.didPan ||= Math.hypot(event.clientX - state.panStartX, event.clientY - state.panStartY) > 3;
-        state.chartWrapper.scrollLeft = state.panScrollLeft - (event.clientX - state.panStartX);
-        state.chartWrapper.scrollTop = state.panScrollTop - (event.clientY - state.panStartY);
+        state.chartViewport.scrollLeft = state.panScrollLeft - (event.clientX - state.panStartX);
+        state.chartViewport.scrollTop = state.panScrollTop - (event.clientY - state.panStartY);
     };
     const onPointerUp = () => {
         const state = chartZoomState;
@@ -6869,19 +6863,22 @@ function enableChartZoom(zoomInButton, zoomOutButton, zoomInput) {
     const onPointerDown = (event) => {
         if (event.button !== 0 && event.button !== 2)
             return;
-        // Only empty SVG space starts panning; paths and axes retain their interactions.
-        if (event.target !== svg)
+        const target = event.target;
+        if (!(target instanceof Element) || !svg.contains(target))
+            return;
+        if (target.closest(".hitarea, .hitbox, .spcd3-handle-hitbox, .spcd3-brush-overlay, .spcd3-marker, .dimensions, .dimension, .spcd3-dimensions-axis"))
             return;
         const state = chartZoomState;
-        if (!state || !state.chartWrapper.classList.contains("spcd3-chartWrapper--can-pan"))
+        if (!state)
             return;
         event.preventDefault();
+        chartWrapper.setPointerCapture(event.pointerId);
         state.isDraggingPan = true;
         state.didPan = false;
         state.panStartX = event.clientX;
         state.panStartY = event.clientY;
-        state.panScrollLeft = chartWrapper.scrollLeft;
-        state.panScrollTop = chartWrapper.scrollTop;
+        state.panScrollLeft = chartViewport.scrollLeft;
+        state.panScrollTop = chartViewport.scrollTop;
         chartWrapper.classList.add("spcd3-chartWrapper--dragging");
     };
     const onClickCapture = (event) => {
@@ -6922,11 +6919,15 @@ function enableChartZoom(zoomInButton, zoomOutButton, zoomInput) {
         }
     };
     chartZoomState = {
-        chartWrapper, zoomInButton, zoomOutButton, zoomInput, svg, baseSvgWidth, baseSvgHeight, toolbarHeight,
+        chartWrapper, chartViewport, chartFrame, zoomInButton, zoomOutButton, zoomInput, svg, baseSvgWidth, baseSvgHeight, toolbarHeight,
         previousSvgInlineSize: svg.style.inlineSize, previousSvgBlockSize: svg.style.blockSize,
         previousChartWrapperBlockSize: chartWrapper.style.blockSize,
+        previousChartFrameInlineSize: chartFrame.style.inlineSize,
         scale: 1, isDraggingPan: false, didPan: false, panStartX: 0, panStartY: 0,
         panScrollLeft: 0, panScrollTop: 0, wheelDeltaAccumulator: 0,
+        previousChartViewportPaddingInlineEnd: chartViewport.style.paddingInlineEnd,
+        chartViewportPaddingInlineEnd: Number.parseFloat(getComputedStyle(chartViewport).paddingInlineEnd) || 0,
+        zoomAnchorRevision: 0,
         onPointerMove, onPointerUp, onPointerDown, onClickCapture, onWheel, onResize,
     };
     chartWrapper.classList.add("spcd3-chartWrapper--pannable");
@@ -6952,6 +6953,7 @@ function enableChartZoom(zoomInButton, zoomOutButton, zoomInput) {
     }
     else {
         setChartScale(1);
+        lockChartFrameWidth();
     }
 }
 function shouldFitChartToViewport(chartWrapper) {
@@ -6961,20 +6963,30 @@ function fitChartToViewport() {
     const state = chartZoomState;
     if (!state)
         return;
+    state.chartFrame.style.inlineSize = "";
     state.chartWrapper.style.inlineSize = "";
     const toolbarHeight = state.chartWrapper.querySelector("#spcd3-toolbarRow")?.getBoundingClientRect().height || 0;
-    const chartViewport = state.chartWrapper.parentElement;
-    const viewportStyle = chartViewport ? getComputedStyle(chartViewport) : null;
+    const frameVerticalExtras = getChartFrameVerticalExtras(state.chartWrapper);
+    const chartHost = state.chartWrapper.parentElement;
+    const viewportStyle = chartHost ? getComputedStyle(chartHost) : null;
     const hasConstrainedHeight = viewportStyle && ["auto", "scroll", "hidden", "clip"].includes(viewportStyle.overflowY);
-    const availableViewportHeight = hasConstrainedHeight && chartViewport && chartViewport.clientHeight > toolbarHeight
-        ? chartViewport.clientHeight - toolbarHeight
+    const requiredVerticalSpace = toolbarHeight + frameVerticalExtras;
+    const availableViewportHeight = hasConstrainedHeight && chartHost && chartHost.clientHeight > requiredVerticalSpace
+        ? chartHost.clientHeight - requiredVerticalSpace
         : Infinity;
-    const scale = Math.max(MIN_CHART_SCALE, Math.min(MAX_CHART_SCALE, state.chartWrapper.clientWidth / state.baseSvgWidth, availableViewportHeight / state.baseSvgHeight));
-    state.chartWrapper.style.blockSize = `${pxToRem$1(toolbarHeight + state.baseSvgHeight * scale)}rem`;
-    state.chartWrapper.scrollLeft = 0;
-    state.chartWrapper.scrollTop = 0;
+    const scale = Math.max(MIN_CHART_SCALE, Math.min(1, MAX_CHART_SCALE, state.chartViewport.clientWidth / state.baseSvgWidth, availableViewportHeight / state.baseSvgHeight));
+    state.chartWrapper.style.blockSize = `${pxToRem$1(requiredVerticalSpace + state.baseSvgHeight * scale)}rem`;
+    state.chartViewport.scrollLeft = 0;
+    state.chartViewport.scrollTop = 0;
     setChartScale(scale);
+    lockChartFrameWidth();
     realignToolbar();
+}
+function lockChartFrameWidth() {
+    const state = chartZoomState;
+    if (!state)
+        return;
+    state.chartFrame.style.inlineSize = `${pxToRem$1(state.chartFrame.getBoundingClientRect().width)}rem`;
 }
 function updateChartZoomBaseWidth(width) {
     if (!chartZoomState)
@@ -7020,10 +7032,30 @@ function zoomChartAtCursor(nextScale, event) {
     const svgBounds = state.svg.getBoundingClientRect();
     const focalX = Math.min(svgBounds.width, Math.max(0, event.clientX - svgBounds.left));
     const focalY = Math.min(svgBounds.height, Math.max(0, event.clientY - svgBounds.top));
-    const scaleRatio = scale / previousScale;
+    const focalRatioX = svgBounds.width > 0 ? focalX / svgBounds.width : 0;
+    const focalRatioY = svgBounds.height > 0 ? focalY / svgBounds.height : 0;
     setChartScale(scale);
-    state.chartWrapper.scrollLeft += focalX * (scaleRatio - 1);
-    state.chartWrapper.scrollTop += focalY * (scaleRatio - 1);
+    const keepCursorPointInView = () => {
+        const resizedSvgBounds = state.svg.getBoundingClientRect();
+        const scrollLeftDelta = resizedSvgBounds.left + resizedSvgBounds.width * focalRatioX - event.clientX;
+        const targetScrollLeft = state.chartViewport.scrollLeft + scrollLeftDelta;
+        const maxScrollLeft = state.chartViewport.scrollWidth - state.chartViewport.clientWidth;
+        if (targetScrollLeft > maxScrollLeft) {
+            state.chartViewportPaddingInlineEnd += targetScrollLeft - maxScrollLeft;
+            state.chartViewport.style.paddingInlineEnd = `${state.chartViewportPaddingInlineEnd}px`;
+        }
+        state.chartViewport.scrollLeft +=
+            scrollLeftDelta;
+        state.chartViewport.scrollTop +=
+            resizedSvgBounds.top + resizedSvgBounds.height * focalRatioY - event.clientY;
+    };
+    keepCursorPointInView();
+    const revision = ++state.zoomAnchorRevision;
+    requestAnimationFrame(() => {
+        if (chartZoomState === state && state.zoomAnchorRevision === revision) {
+            keepCursorPointInView();
+        }
+    });
 }
 function setChartScale(nextScale) {
     const state = chartZoomState;
@@ -7033,11 +7065,12 @@ function setChartScale(nextScale) {
     state.scale = scale;
     state.svg.style.inlineSize = `${pxToRem$1(state.baseSvgWidth * scale)}rem`;
     state.svg.style.blockSize = `${pxToRem$1(state.baseSvgHeight * scale)}rem`;
-    if (!shouldFitChartToViewport(state.chartWrapper)) {
+    if (!shouldFitChartToViewport(state.chartWrapper) &&
+        !state.chartWrapper.style.blockSize) {
         const toolbarHeight = state.chartWrapper
             .querySelector("#spcd3-toolbarRow")
             ?.getBoundingClientRect().height ?? 0;
-        state.chartWrapper.style.blockSize = `${pxToRem$1(toolbarHeight + state.baseSvgHeight * scale)}rem`;
+        state.chartWrapper.style.blockSize = `${pxToRem$1(toolbarHeight + getChartFrameVerticalExtras(state.chartWrapper) + state.baseSvgHeight * scale)}rem`;
     }
     state.zoomInput.textContent = String(Math.round(scale * 100));
     state.zoomInButton.disabled = scale >= MAX_CHART_SCALE;
@@ -7045,29 +7078,31 @@ function setChartScale(nextScale) {
     setChartZoomScale(scale);
     updatePanAvailability();
 }
-function syncChartZoomState(scale, baseScale = 1) {
-    const state = chartZoomState;
-    if (!state || !Number.isFinite(scale) || !Number.isFinite(baseScale) || baseScale <= 0)
-        return;
-    const toolbarScale = Math.min(MAX_CHART_SCALE, Math.max(MIN_CHART_SCALE, scale / baseScale));
-    state.scale = toolbarScale;
-    state.zoomInput.textContent = String(Math.round(toolbarScale * 100));
-    state.zoomInButton.disabled = toolbarScale >= MAX_CHART_SCALE;
-    state.zoomOutButton.disabled = toolbarScale <= MIN_CHART_SCALE;
-    setChartZoomScale(toolbarScale);
-    updatePanAvailability();
-}
 function updatePanAvailability() {
     const state = chartZoomState;
     if (!state)
         return;
-    const canPan = state.chartWrapper.scrollWidth > state.chartWrapper.clientWidth ||
-        state.chartWrapper.scrollHeight > state.chartWrapper.clientHeight;
+    const canPan = state.chartViewport.scrollWidth > state.chartViewport.clientWidth ||
+        state.chartViewport.scrollHeight > state.chartViewport.clientHeight;
     state.chartWrapper.classList.toggle("spcd3-chartWrapper--can-pan", canPan);
     if (!canPan && state.isDraggingPan) {
         state.isDraggingPan = false;
         state.chartWrapper.classList.remove("spcd3-chartWrapper--dragging");
     }
+}
+function getChartFrameVerticalExtras(chartWrapper) {
+    const chartFrame = chartWrapper.querySelector(".spcd3-chartFrame");
+    if (!chartFrame)
+        return 0;
+    const frameStyle = getComputedStyle(chartFrame);
+    return [
+        frameStyle.marginTop,
+        frameStyle.marginBottom,
+        frameStyle.paddingTop,
+        frameStyle.paddingBottom,
+        frameStyle.borderTopWidth,
+        frameStyle.borderBottomWidth,
+    ].reduce((total, value) => total + (Number.parseFloat(value) || 0), 0);
 }
 function pxToRem$1(value) {
     const rootFontSize = Number(getComputedStyle(document.documentElement).fontSize.replace("px", ""));
@@ -7479,13 +7514,13 @@ function setFilterAfterSettingRanges(dimension, inverted) {
         .duration(300)
         .attr("y", rectY + rectH);
     triUpHit.attr("y", rectY + rectH);
-    if (isNear(rectY, 50)) {
+    if (isNear(rectY, AXIS_TOP)) {
         select("#triangle_down_" + cleanDimensionName).attr("href", "#brush_image_bottom");
     }
     else {
         select("#triangle_down_" + cleanDimensionName).attr("href", "#brush_image_bottom_active");
     }
-    if (isNear(rectY + rectH, 350)) {
+    if (isNear(rectY + rectH, AXIS_BOTTOM)) {
         select("#triangle_up_" + cleanDimensionName).attr("href", "#brush_image_top");
     }
     else {
@@ -7927,8 +7962,8 @@ function setWheelZoom(enabled) {
 function setChartBorder(border) {
     setChartFrameBorder(border);
     select(".spcd3-chartWrapper")
-        .style("border", border)
         .classed("spcd3-chartWrapper--framed", border !== null);
+    select(".spcd3-chartFrame").style("border", border);
 }
 function setSelectableWidth(width) {
     setSelectableStrokeWidth(width);
@@ -7980,10 +8015,10 @@ function setDimensionSpacing(spacingRem) {
 }
 
 // globals
-const TOP_AXIS_LOW_VALUE = 40;
-const TOP_AXIS_VALUE = 50;
-const BOTTOM_AXIS_VALUE = 350;
-const RECT_VALUE = 300;
+const TOP_AXIS_LOW_VALUE = AXIS_TOP_HANDLE;
+const TOP_AXIS_VALUE = AXIS_TOP;
+const BOTTOM_AXIS_VALUE = AXIS_BOTTOM;
+const RECT_VALUE = AXIS_LENGTH;
 const BRUSH_STATE_EPSILON = 0.75;
 const BRUSH_TOOLTIP_HEIGHT = 16;
 const BRUSH_TOOLTIP_X_OFFSET = 12;
@@ -8030,7 +8065,7 @@ function setRectToDrag(featureAxis, tooltipValuesDown, tooltipValuesTop) {
             .attr("width", 12)
             .attr("height", RECT_VALUE)
             .attr("x", -6)
-            .attr("y", 50)
+            .attr("y", TOP_AXIS_VALUE)
             .attr("fill", BRUSH_IDLE_FILL)
             .attr("opacity", "0.5")
             .call(drag()
@@ -9695,10 +9730,16 @@ function drawChart(content) {
     const chartWrapper = chart
         .append("div")
         .attr("class", "spcd3-chartWrapper")
-        .style("border", chartFrameBorder)
         .classed("spcd3-chartWrapper--framed", chartFrameBorder !== null);
-    chartWrapper.append("div").attr("id", "spcd3-toolbarRow");
-    setChartSvg(chartWrapper
+    const chartFrame = chartWrapper
+        .append("div")
+        .attr("class", "spcd3-chartFrame")
+        .style("border", chartFrameBorder);
+    chartFrame.append("div").attr("id", "spcd3-toolbarRow");
+    const chartViewport = chartFrame
+        .append("div")
+        .attr("class", "spcd3-chartViewport");
+    setChartSvg(chartViewport
         .append("svg")
         .attr("id", "spcd3-pc_svg")
         .attr("width", chartWidth)
@@ -9778,7 +9819,7 @@ function deleteChart() {
 function setUpParcoordData(data, newFeatures) {
     setXAxisPadding(60);
     setInitialDimensions(newFeatures);
-    setChartHeight(400);
+    setChartHeight(CHART_HEIGHT);
     const label = newFeatures[newFeatures.length - 1];
     data.sort((a, b) => {
         const item1 = a[label];
@@ -9818,8 +9859,8 @@ function setUpParcoordData(data, newFeatures) {
         const ranges = getDimensionRange(newFeatures[i]);
         parallelCoordinates.currentPosOfDims.push({
             key: newFeatures[i],
-            top: 50,
-            bottom: 350,
+            top: AXIS_TOP,
+            bottom: AXIS_BOTTOM,
             isInverted: false,
             index: i,
             min: min,
@@ -10671,5 +10712,5 @@ function escapeCsvCell(value) {
     return value;
 }
 
-export { clearSelection, colorRecord, createSvgString, deleteChart, disableInteractivity, drawChart, enableInteractivity, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getChartZoomScale, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getExampleUiSettings, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelectableWith, getSelected, getSvgDownloadSettings, getTauriSvgSaveDirectory, hide, hideMarker, invert, invertWithoutTransition, isDimensionCategorical, isRecordColored, isRecordInactive, isSelected, isSelectedWithId, loadCSV, move, moveByOne, realignToolbar, refresh, reset, saveAsSvg, setChartBorder, setChartZoomScale, setClassColoredFalse, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setDimensionSpacing, setExampleUiSettings, setFilter, setInversionStatus, setSelectableWidth, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setSvgDownloadSettings, setTauriSvgSaveDirectory, setUnselected, setUnselectedWithId, setWheelZoom, show, showMarker, swap, syncChartZoomState, syncDimensionOrderWithVisible, throttleShowValues, toggleSelection, toggleSelectionWithId, uncolorRecord };
+export { clearSelection, colorRecord, createSvgString, deleteChart, disableInteractivity, drawChart, enableInteractivity, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getChartZoomScale, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getExampleUiSettings, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelectableWith, getSelected, getSvgDownloadSettings, getTauriSvgSaveDirectory, hide, hideMarker, invert, invertWithoutTransition, isDimensionCategorical, isRecordColored, isRecordInactive, isSelected, isSelectedWithId, loadCSV, move, moveByOne, realignToolbar, refresh, reset, saveAsSvg, setChartBorder, setChartZoomScale, setClassColoredFalse, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setDimensionSpacing, setExampleUiSettings, setFilter, setInversionStatus, setSelectableWidth, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setSvgDownloadSettings, setTauriSvgSaveDirectory, setUnselected, setUnselectedWithId, setWheelZoom, show, showMarker, swap, syncDimensionOrderWithVisible, throttleShowValues, toggleSelection, toggleSelectionWithId, uncolorRecord };
 //# sourceMappingURL=spcd3.js.map

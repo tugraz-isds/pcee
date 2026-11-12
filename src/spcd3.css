@@ -315,17 +315,18 @@ table.spcd3-tablecontainer td {
 }
 
 #spcd3-pc_svg {
+  position: relative;
+  z-index: 0;
   display: block;
   inline-size: var(--spcd3-chart-svg-width, auto);
   block-size: var(--spcd3-chart-svg-height, auto);
-  padding-bottom: 1rem;
   box-sizing: border-box;
   touch-action: none;
 }
 
 .spcd3-chartWrapper {
   position: relative;
-  inline-size: var(--spcd3-chart-width, fit-content);
+  inline-size: var(--spcd3-chart-width, auto);
   block-size: var(--spcd3-chart-height, auto);
   min-inline-size: var(--spcd3-chart-min-width, 0);
   min-block-size: var(--spcd3-chart-min-height, 0);
@@ -336,15 +337,34 @@ table.spcd3-tablecontainer td {
   box-sizing: border-box;
 }
 
-.spcd3-chartWrapper--framed {
-  overflow: hidden;
-  padding: 0.5rem 0.5rem 0;
-  margin: 1rem;
+.spcd3-chartFrame {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  min-block-size: 0;
+  box-sizing: border-box;
+  margin-block: 1rem;
+  padding-block: 0.5rem;
 }
 
 .spcd3-chartWrapper--pannable {
+  display: flex;
+  flex-direction: column;
   touch-action: none;
   user-select: none;
+  overflow: hidden;
+  overflow-anchor: none;
+}
+
+.spcd3-chartViewport {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  min-block-size: 0;
+  box-sizing: border-box;
+  overflow: var(--spcd3-chart-overflow, auto);
 }
 
 .spcd3-chartWrapper--can-pan #spcd3-pc_svg {
@@ -496,7 +516,7 @@ table.spcd3-tablecontainer td {
   position: sticky;
   top: 0;
   left: 0;
-  z-index: 2;
+  z-index: 10;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
