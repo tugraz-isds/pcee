@@ -277,6 +277,7 @@ const DARK_MODE_MEDIA_QUERY = '(prefers-color-scheme: dark)';
 const PORTRAIT_RESIZE_QUERY = '(max-width: 60em) and (orientation: portrait)';
 const LANDSCAPE_RESIZE_QUERY = '(orientation: landscape)';
 const SCROLL_POSITION_KEY = 'pcee:scroll-position';
+const initialDevicePixelRatio = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
 const darkModeMediaQuery =
   typeof window !== 'undefined' ? window.matchMedia(DARK_MODE_MEDIA_QUERY) : null;
 const portraitResizeMediaQuery =
@@ -335,12 +336,54 @@ const isLandscapeResizeMode = (): boolean => {
   return landscapeResizeMediaQuery?.matches ?? false;
 }
 
+const getBrowserZoomFactor = (): number => {
+  return Math.max(0.1, (window.devicePixelRatio || initialDevicePixelRatio) / initialDevicePixelRatio);
+};
+
+const setHtmlTooltipScale = (scale: number): void => {
+  document.querySelectorAll<HTMLElement>('.spcd3-tooltip-label, .spcd3-tooltip-dimension').forEach((tooltip) => {
+    tooltip.style.setProperty('--spcd3-tooltip-scale', String(scale));
+  });
+};
+
+const syncChartUiToBrowserZoom = (): void => {
+  const chartArea = document.getElementById('spcd3-parallelcoords');
+  if (isPortraitResizeMode()) return;
+
+  const browserZoomFactor = getBrowserZoomFactor();
+  setHtmlTooltipScale(1 / browserZoomFactor);
+  if (!chartArea) return;
+  chartArea.style.setProperty('--spcd3-toolbar-scale', String(1 / browserZoomFactor));
+  chartArea.style.setProperty('--spcd3-tooltip-scale', String(1 / browserZoomFactor));
+};
+
+const alignToolbarControls = (toolbarRow: HTMLElement, toolbarScale: number): void => {
+  const referenceButton = toolbarRow.querySelector<HTMLElement>('.spcd3-toolbar-button');
+  if (!referenceButton) return;
+
+  toolbarRow.querySelectorAll<HTMLElement>('.spcd3-toolbar-zoom-input').forEach((input) => {
+    input.style.translate = 'none';
+  });
+  const controls = toolbarRow.querySelectorAll<HTMLElement>(
+    '.spcd3-toolbar-separator, .spcd3-toolbar-zoom-label',
+  );
+  controls.forEach((control) => {
+    control.style.translate = 'none';
+    const referenceCenter = referenceButton.getBoundingClientRect().top
+      + referenceButton.getBoundingClientRect().height / 2;
+    const controlRect = control.getBoundingClientRect();
+    const offset = referenceCenter - (controlRect.top + controlRect.height / 2);
+    control.style.translate = `0 ${offset / toolbarScale}px`;
+  });
+};
+
 const alignSpcd3ToolbarToLabels = (): void => {
   requestAnimationFrame(() => {
     const toolbarRow = document.getElementById('spcd3-toolbarRow');
     const svgNode = document.getElementById('spcd3-pc_svg');
+    const chartArea = document.getElementById('spcd3-parallelcoords');
     const axisNodes = Array.from(document.querySelectorAll<SVGGElement>('#spcd3-pc_svg .dimensions'));
-    if (!toolbarRow || !svgNode || axisNodes.length === 0) return;
+    if (!toolbarRow || !svgNode || !chartArea || axisNodes.length === 0) return;
 
     const leftmostAxis = axisNodes.reduce((leftmost, axis) => (
       axis.getBoundingClientRect().left < leftmost.getBoundingClientRect().left ? axis : leftmost
@@ -350,7 +393,11 @@ const alignSpcd3ToolbarToLabels = (): void => {
       (left, label) => Math.min(left, label.getBoundingClientRect().left),
       leftmostAxis.getBoundingClientRect().left,
     );
-    toolbarRow.style.paddingLeft = `${Math.max(0, labelLeft - toolbarRow.getBoundingClientRect().left)}px`;
+    const toolbarScale = Number.parseFloat(
+      window.getComputedStyle(chartArea).getPropertyValue('--spcd3-toolbar-scale'),
+    ) || 1;
+    toolbarRow.style.paddingLeft = `${Math.max(0, labelLeft - toolbarRow.getBoundingClientRect().left) / toolbarScale}px`;
+    alignToolbarControls(toolbarRow, toolbarScale);
   });
 };
 
@@ -367,7 +414,11 @@ const updatePortraitChartFit = (): void => {
   if (!Number.isFinite(naturalWidth) || !Number.isFinite(naturalHeight) || naturalWidth <= 0 || naturalHeight <= 0) return;
 
   const chartChromeHeight = Math.max(0, (mainChart.value?.getBoundingClientRect().height ?? 0) - chartArea.clientHeight);
-  const toolbarHeight = chartArea.querySelector('#spcd3-toolbarRow')?.getBoundingClientRect().height ?? 0;
+  const currentToolbarScale = Number.parseFloat(
+    window.getComputedStyle(chartArea).getPropertyValue('--spcd3-toolbar-scale'),
+  ) || 1;
+  const toolbarHeight = (chartArea.querySelector('#spcd3-toolbarRow')?.getBoundingClientRect().height ?? 0)
+    / currentToolbarScale;
   const chartFrame = chartArea.querySelector<HTMLElement>('.spcd3-chartFrame');
   const chartFrameStyle = chartFrame ? window.getComputedStyle(chartFrame) : null;
   const frameVerticalExtras = chartFrameStyle
@@ -384,14 +435,20 @@ const updatePortraitChartFit = (): void => {
     ?? (window.visualViewport?.height ?? window.innerHeight) * 0.45;
   const availableHeight = Math.max(
     1,
-    requestedHeight - chartChromeHeight - toolbarHeight - frameVerticalExtras - 8,
+    requestedHeight - chartChromeHeight - frameVerticalExtras - 8,
   );
-  const scale = (availableHeight / naturalHeight) * portraitToolbarZoom;
+  const proportionalScale = (availableHeight / (naturalHeight + toolbarHeight)) * portraitToolbarZoom;
+  const browserZoomFactor = getBrowserZoomFactor();
+  const toolbarScale = proportionalScale / browserZoomFactor;
+  const scale = proportionalScale;
   svgNode.style.inlineSize = `${Math.round(naturalWidth * scale)}px`;
   svgNode.style.blockSize = `${Math.round(naturalHeight * scale)}px`;
+  chartArea.style.setProperty('--spcd3-toolbar-scale', String(toolbarScale));
+  chartArea.style.setProperty('--spcd3-tooltip-scale', String(1 / browserZoomFactor));
+  setHtmlTooltipScale(1 / browserZoomFactor);
   explainerRoot.value.style.setProperty('--portrait-chart-width', `${Math.round(naturalWidth * scale)}px`);
   explainerRoot.value.style.setProperty('--portrait-chart-scroll-height', `${chartArea.clientHeight}px`);
-  explainerRoot.value.style.setProperty('--portrait-chart-content-height', `${Math.ceil(chartChromeHeight + frameVerticalExtras + toolbarHeight + naturalHeight * scale + 8)}px`);
+  explainerRoot.value.style.setProperty('--portrait-chart-content-height', `${Math.ceil(chartChromeHeight + frameVerticalExtras + toolbarHeight * toolbarScale + naturalHeight * scale + 8)}px`);
   alignSpcd3ToolbarToLabels();
 
 }
@@ -415,6 +472,8 @@ const ensurePortraitChartHeight = (): void => {
     initialPortraitChartHeight = null;
     portraitToolbarZoom = 1;
     document.getElementById('spcd3-parallelcoords')?.removeAttribute('data-spcd3-fit-chart-to-viewport');
+    document.getElementById('spcd3-parallelcoords')?.style.removeProperty('--spcd3-toolbar-scale');
+    document.getElementById('spcd3-parallelcoords')?.style.removeProperty('--spcd3-tooltip-scale');
     explainerRoot.value.style.removeProperty('--portrait-chart-user-height');
     explainerRoot.value.style.removeProperty('--portrait-chart-width');
     explainerRoot.value.style.removeProperty('--portrait-chart-scroll-height');
@@ -460,6 +519,7 @@ const scheduleLandscapeChartFit = (): void => {
   landscapeChartFitFrame = requestAnimationFrame(() => {
     landscapeChartFitFrame = null;
     window.dispatchEvent(new Event('resize'));
+    syncChartUiToBrowserZoom();
     alignSpcd3ToolbarToLabels();
   });
 }
@@ -808,6 +868,7 @@ window.addEventListener('scroll', () => {
       schedulePortraitChartFit();
     }
     if (!isPortraitResizeMode()) {
+      syncChartUiToBrowserZoom();
       resetCurrentStep();
     }
     
@@ -950,6 +1011,7 @@ onMounted(async (): Promise<void> => {
   }
 
   ensurePortraitChartHeight();
+  syncChartUiToBrowserZoom();
   const chartArea = document.getElementById('spcd3-parallelcoords');
   if (chartArea) {
     portraitChartObserver = new MutationObserver(() => {
@@ -967,6 +1029,7 @@ onMounted(async (): Promise<void> => {
   portraitResizeMediaQuery?.addEventListener('change', ensurePortraitChartHeight);
   window.addEventListener('resize', () => {
     ensurePortraitChartHeight();
+    syncChartUiToBrowserZoom();
     requestAnimationFrame(updatePortraitChartFit);
     alignSpcd3ToolbarToLabels();
   });
@@ -1477,6 +1540,23 @@ onMounted(async (): Promise<void> => {
   max-width: none;
 }
 
+#spcd3-parallelcoords #spcd3-toolbarRow {
+  zoom: var(--spcd3-toolbar-scale, 1);
+}
+
+.spcd3-tooltip-label,
+.spcd3-tooltip-dimension {
+  transform: scale(var(--spcd3-tooltip-scale, 1));
+  transform-origin: top left;
+}
+
+.spcd3-tooltip-dimension {
+  margin: 0.3rem;
+  padding: 0.14rem 0.22rem;
+  border-width: 0.07rem;
+  font-size: 0.65rem;
+}
+
 .portrait-chart-divider {
   display: none;
 }
@@ -1753,6 +1833,7 @@ section {
     max-inline-size: none;
     margin-inline: auto;
   }
+
 }
 
 @media (max-width: 50em) and (orientation: portrait) {

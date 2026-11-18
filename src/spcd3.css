@@ -350,6 +350,10 @@ table.spcd3-tablecontainer td {
   padding-block: 0.5rem;
 }
 
+.spcd3-chartWrapper--framed .spcd3-chartFrame {
+  border: 0.08rem solid var(--spcd3-border-emphasis);
+}
+
 .spcd3-chartWrapper--pannable {
   display: flex;
   flex-direction: column;
@@ -364,6 +368,14 @@ table.spcd3-tablecontainer td {
   min-inline-size: 0;
   min-block-size: 0;
   box-sizing: border-box;
+  overflow: var(--spcd3-chart-overflow, auto);
+}
+
+.spcd3-chartWrapper--pannable .spcd3-chartViewport {
+  overflow: hidden;
+}
+
+.spcd3-chartWrapper--pannable.spcd3-chartWrapper--can-pan .spcd3-chartViewport {
   overflow: var(--spcd3-chart-overflow, auto);
 }
 
@@ -562,10 +574,128 @@ table.spcd3-tablecontainer td {
 
 .spcd3-toolbar-separator {
   inline-size: 0.0625rem;
-  align-self: center;
   block-size: 1.4rem;
   background: var(--spcd3-text-disabled);
-  transform: translateY(0.25rem);
+}
+
+.spcd3-toolbar-settings-popover {
+  inset: auto;
+  margin: 0;
+  padding: 0.45rem 0.5rem;
+  color: var(--spcd3-text-primary);
+  background: var(--spcd3-panel-bg);
+  border: 0.08rem solid var(--spcd3-border-emphasis);
+  border-radius: 0.2rem;
+  box-shadow: 0 0.25rem 0.6rem var(--spcd3-shadow-popover);
+}
+
+.spcd3-toolbar-settings-popover:popover-open {
+  position: fixed;
+}
+
+.spcd3-toolbar-range-control {
+  display: grid;
+  grid-template-columns: auto 5rem auto;
+  align-items: center;
+  gap: 0.25rem;
+  min-block-size: 1.4rem;
+  color: var(--spcd3-text-secondary);
+  font-size: 0.72rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.spcd3-toolbar-range-label {
+  color: var(--spcd3-text-primary);
+}
+
+.spcd3-toolbar-range-input {
+  --value-ratio: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  z-index: 1;
+  inline-size: 5rem;
+  block-size: 1rem;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.spcd3-toolbar-range-shell {
+  --default-ratio: 0.5;
+  --slider-thumb-size: 0.65rem;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  inline-size: 5rem;
+  block-size: 1rem;
+}
+
+.spcd3-toolbar-range-default-marker {
+  position: absolute;
+  z-index: 2;
+  inset-block-start: 50%;
+  inset-inline-start: calc(
+    (100% - var(--slider-thumb-size)) * var(--default-ratio) +
+      var(--slider-thumb-size) / 2
+  );
+  inline-size: 0.1rem;
+  block-size: 0.9rem;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  background: var(--spcd3-text-secondary);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.spcd3-toolbar-range-input::-webkit-slider-runnable-track {
+  block-size: 0.25rem;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--spcd3-text-secondary) 0%,
+    var(--spcd3-text-secondary) calc(var(--value-ratio) * 100%),
+    var(--spcd3-border-subtle) calc(var(--value-ratio) * 100%),
+    var(--spcd3-border-subtle) 100%
+  );
+}
+
+.spcd3-toolbar-range-input::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  inline-size: var(--slider-thumb-size);
+  block-size: var(--slider-thumb-size);
+  margin-block-start: calc((0.25rem - var(--slider-thumb-size)) / 2);
+  border: 0.06rem solid var(--spcd3-border-emphasis);
+  border-radius: 50%;
+  background: var(--spcd3-control-bg-hover);
+}
+
+.spcd3-toolbar-range-input::-moz-range-track {
+  block-size: 0.25rem;
+  border-radius: 999px;
+  background: var(--spcd3-border-subtle);
+}
+
+.spcd3-toolbar-range-input::-moz-range-progress {
+  block-size: 0.25rem;
+  border-radius: 999px;
+  background: var(--spcd3-text-secondary);
+}
+
+.spcd3-toolbar-range-input::-moz-range-thumb {
+  inline-size: calc(var(--slider-thumb-size) - 0.12rem);
+  block-size: calc(var(--slider-thumb-size) - 0.12rem);
+  border: 0.06rem solid var(--spcd3-border-emphasis);
+  border-radius: 50%;
+  background: var(--spcd3-control-bg-hover);
+}
+
+.spcd3-toolbar-range-value {
+  min-inline-size: 3.6rem;
+  color: var(--spcd3-text-secondary);
+  font-variant-numeric: tabular-nums;
 }
 
 .spcd3-toolbar-zoom-label {
@@ -627,7 +757,7 @@ table.spcd3-tablecontainer td {
   color: inherit;
 }
 
-.spcd3-toolbar-svg [stroke]:not([stroke="none"]) {
+.spcd3-toolbar-svg [stroke]:not([stroke="none"]):not(.spcd3-icon-fixed-stroke) {
   stroke: currentColor;
 }
 

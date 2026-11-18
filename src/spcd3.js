@@ -3036,10 +3036,10 @@ function getArrowRightMeta() {
     return { "hotspotX": 0, "hotspotY": 30.5, "viewBoxMinX": 0, "viewBoxMinY": 0, "viewBoxWidth": 100, "viewBoxHeight": 61 };
 }
 function getArrowTopAndBottom() {
-    return "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 90 110\">\n  <path fill=\"white\" stroke=\"black\" stroke-width=\"6\" d=\"M 7 50 L 45 7 L 83 50 z\"/>\n  <path fill=\"white\" stroke=\"black\" stroke-width=\"6\" d=\"M 7 60 L 45 103 L 83 60 z\"/>\n</svg>";
+    return "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 182\">\n  <path fill=\"white\" fill-opacity=\"0.7\" stroke=\"black\" stroke-width=\"7\" d=\"M 7 79 L 50 7 L 93 79 z\"/>\n  <path fill=\"white\" fill-opacity=\"0.5\" stroke=\"black\" stroke-width=\"7\" d=\"M 7 103 L 93 103 L 50 175 z\"/>\n</svg>";
 }
 function getArrowTopAndBottomMeta() {
-    return { "hotspotX": 45, "hotspotY": 55, "viewBoxMinX": 0, "viewBoxMinY": 0, "viewBoxWidth": 90, "viewBoxHeight": 110 };
+    return { "hotspotX": 50, "hotspotY": 91, "viewBoxMinX": 0, "viewBoxMinY": 0, "viewBoxWidth": 100, "viewBoxHeight": 182 };
 }
 function getArrowTopCursor() {
     return "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 86\">\n  <path fill=\"white\" fill-opacity=\"0.7\" stroke=\"black\" stroke-width=\"7\" d=\"M 7 79 L 50 7 L 93 79 z\"/>\n</svg>";
@@ -3079,6 +3079,12 @@ function getResetIcon() {
 }
 function getDownloadButton() {
     return "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 10 10\">\n  <path fill=\"currentColor\" d=\"M 4.65 7 L 4.65 1.4 L 5.25 1.4 L 5.25 7 z\"/>\n  <polyline points=\"2.07 5.00 4.93 7.14 7.79 5.00\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"0.5\"/>\n  <path fill=\"currentColor\" d=\"M 2 8.5 L 8 8.5 L 8 9 L 2 9 z\"/>\n</svg>";
+}
+function getSelectionSensitivityIcon() {
+    return "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 10 10\">\n  <line x1=\"2\" y1=\"8\" x2=\"8\" y2=\"2\" stroke=\"currentColor\" stroke-width=\"0.45\" stroke-linecap=\"round\"/>\n  <path d=\"M5.2 4.8 L5.2 7.7 L6.05 6.85 L6.75 8.1 L7.35 7.75 L6.65 6.5 L7.95 6.5 Z\" fill=\"currentColor\"/>\n</svg>";
+}
+function getDimensionSpacingIcon() {
+    return "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 10 10\">\n  <line class=\"spcd3-icon-fixed-stroke\" x1=\"2.25\" y1=\"1.25\" x2=\"2.25\" y2=\"8.75\" stroke=\"rgb(242, 242, 76)\" stroke-width=\"0.75\"/>\n  <line class=\"spcd3-icon-fixed-stroke\" x1=\"7.75\" y1=\"1.25\" x2=\"7.75\" y2=\"8.75\" stroke=\"rgb(242, 242, 76)\" stroke-width=\"0.75\"/>\n  <line class=\"spcd3-icon-fixed-stroke\" x1=\"2.25\" y1=\"1.25\" x2=\"2.25\" y2=\"8.75\" stroke=\"black\" stroke-width=\"0.2\"/>\n  <line class=\"spcd3-icon-fixed-stroke\" x1=\"7.75\" y1=\"1.25\" x2=\"7.75\" y2=\"8.75\" stroke=\"black\" stroke-width=\"0.2\"/>\n  <line x1=\"3.5\" y1=\"5\" x2=\"6.5\" y2=\"5\" stroke=\"currentColor\" stroke-width=\"0.25\" stroke-linecap=\"round\"/>\n  <path d=\"M3.5 5 L4.65 3.85 M3.5 5 L4.65 6.15 M6.5 5 L5.35 3.85 M6.5 5 L5.35 6.15\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"0.25\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>\n</svg>";
 }
 function getZoomInButton() {
     return "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\">\n  <circle cx=\"10.5\" cy=\"10.5\" r=\"7.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>\n  <path d=\"M16 16L22 22\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>\n  <path d=\"M7.5 10.5h6\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>\n  <path d=\"M10.5 7.5v6\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>\n</svg>";
@@ -3217,51 +3223,33 @@ function getMouseCoords(event, targetContainer = document.body) {
     }
 }
 
-let xAxisPadding;
-let chartWidth;
-let chartHeight;
-let yAxes;
-let parallelCoordinates = {
-    xScales: {},
-    yScales: {},
-    dragging: {},
-    dragPosStart: {},
-    currentPosOfDims: [],
-    newFeatures: null,
-    features: [],
-    newDataset: null,
-    data: null,
-};
-let activePaths;
-let recordKey;
-let chartSvg;
-let hoverLabel;
-let chartColumns;
-let initialDimensions;
-let selectableStrokeWidth;
-let recordCount;
-let dimensionCount;
-let chartContent;
-let dimensionSpacing = null;
-let hoveredRecordIds = [];
-let chartFrameBorder = null;
+let hasChartFrame = false;
+let isToolbarOpen = false;
 let isWheelZoomEnabled = false;
 let isInteractivityEnabled = true;
-const getSelectableStrokeWidth = () => selectableStrokeWidth;
-function setChartContent(contentdata) {
-    chartContent = contentdata;
-}
-function setHoveredRecordIds(records) {
-    hoveredRecordIds = records;
+let dimensionSpacing;
+let selectableWidthRem;
+let recordCount;
+let dimensionCount;
+let hoverLabel;
+let activeRecords;
+let recordKey;
+let chartSvg;
+let dataColumnNames = [];
+let allDimensionNames = [];
+let chartWidth;
+let chartHeight;
+let chartContent;
+const getSelectableWidthRem$1 = () => selectableWidthRem;
+const getDimensionSpacing = () => dimensionSpacing;
+function setChartContent(content) {
+    chartContent = content;
 }
 function setHoverLabel(label) {
     hoverLabel = label;
 }
-function setYAxes(axis) {
-    yAxes = axis;
-}
-function setChartColumns(cols) {
-    chartColumns = cols;
+function setDataColumnNames(columnNames) {
+    dataColumnNames = columnNames;
 }
 function setChartSvg(svgData) {
     chartSvg = svgData;
@@ -3272,15 +3260,53 @@ function setChartWidth(value) {
 function setChartHeight(value) {
     chartHeight = value;
 }
-function setXAxisPadding(value) {
-    xAxisPadding = value;
+function setAllDimensionNames(dimensions) {
+    allDimensionNames = [...dimensions];
 }
-function setInitialDimensions(dimensions) {
-    initialDimensions = Array.isArray(dimensions) ? [...dimensions] : dimensions;
+function setActiveRecords(paths) {
+    activeRecords = paths;
 }
-function setActivePaths(paths) {
-    activePaths = paths;
+function setRecordKey(value) {
+    recordKey = value;
 }
+function setSelectableWidthRem$1(value) {
+    selectableWidthRem = value;
+}
+function setRecordCount(value) {
+    recordCount = value;
+}
+function setDimensionCount(value) {
+    dimensionCount = value;
+}
+function setDimensionSpacing$1(value) {
+    dimensionSpacing = value;
+}
+function setHasChartFrame(value) {
+    hasChartFrame = value;
+}
+function setToolbarOpen$2(value) {
+    isToolbarOpen = value;
+}
+function setWheelZoomEnabled$1(value) {
+    isWheelZoomEnabled = value;
+}
+function setInteractivityEnabled(value) {
+    isInteractivityEnabled = value;
+}
+
+let parallelCoordinates = {
+    xScales: {},
+    yScales: {},
+    yAxes: {},
+    dragging: {},
+    dragPosStart: {},
+    currentPosOfDims: [],
+    newFeatures: null,
+    features: [],
+    newDataset: null,
+    data: null,
+    hoveredRecordIds: [],
+};
 function setXScales(value) {
     parallelCoordinates.xScales = value;
 }
@@ -3298,30 +3324,6 @@ function setNewDataset(value) {
 }
 function setData(value) {
     parallelCoordinates.data = value;
-}
-function setRecordKey(value) {
-    recordKey = value;
-}
-function setSelectableStrokeWidth(value) {
-    selectableStrokeWidth = value;
-}
-function setRecordCount(value) {
-    recordCount = value;
-}
-function setDimensionCount(value) {
-    dimensionCount = value;
-}
-function setDimensionSpacing$1(value) {
-    dimensionSpacing = value;
-}
-function setChartFrameBorder(value) {
-    chartFrameBorder = value;
-}
-function setWheelZoomEnabled$1(value) {
-    isWheelZoomEnabled = value;
-}
-function setInteractivityEnabled(value) {
-    isInteractivityEnabled = value;
 }
 
 function ascending(a, b) {
@@ -4823,7 +4825,7 @@ function getAllVisibleDimensionNames$1() {
     let listOfDimensions = parallelCoordinates.newFeatures.slice();
     return listOfDimensions.reverse();
 }
-const TOOLTIP_LABEL_HEIGHT = 16;
+const TOOLTIP_LABEL_HEIGHT = 14;
 const TOOLTIP_LABEL_GAP = 3;
 const TOOLTIP_LABEL_X_OFFSET = 10;
 const TOOLTIP_LABEL_X_OFFSET_SELECTED = TOOLTIP_LABEL_X_OFFSET;
@@ -4878,7 +4880,7 @@ function createToolTipForValues(records, isSelect, svgSelection = select("#spcd3
         .style("pointer-events", "none")
         .each(function (d) {
         const label = select(this);
-        const badgeWidth = Math.max(d.text.length * 6 + 8, 18);
+        const badgeWidth = Math.max(d.text.length * 5.5 + 7, 16);
         label
             .attr("data-dim", d.dim)
             .attr("data-anchor-x", d.x)
@@ -4901,19 +4903,26 @@ function createToolTipForValues(records, isSelect, svgSelection = select("#spcd3
             .attr("rx", 2)
             .attr("ry", 2)
             .attr("width", badgeWidth)
-            .attr("height", 16)
+            .attr("height", TOOLTIP_LABEL_HEIGHT)
             .attr("fill", isSelect ? "rgb(255, 165, 0)" : "var(--spcd3-tooltip-record-bg)")
             .attr("stroke", isSelect ? "rgb(255, 165, 0)" : "var(--spcd3-tooltip-record-bg)")
             .attr("stroke-width", 1);
-        label
+        const valueText = label
             .selectAll("text")
             .data([d])
             .join("text")
-            .attr("x", 4)
-            .attr("y", 11)
-            .attr("font-size", 10)
+            .attr("x", badgeWidth / 2)
+            .attr("y", 0)
+            .attr("text-anchor", "middle")
+            .attr("font-size", 9)
+            .attr("font-weight", 600)
             .attr("fill", isSelect ? "black" : "var(--spcd3-tooltip-record-text)")
             .text(d.text);
+        const valueTextNode = valueText.node();
+        if (valueTextNode) {
+            const textBox = valueTextNode.getBBox();
+            valueText.attr("y", TOOLTIP_LABEL_HEIGHT / 2 - textBox.y - textBox.height / 2);
+        }
     });
     relayoutValueTooltips(svgSelection);
 }
@@ -4985,7 +4994,7 @@ function relayoutValueTooltips(svgSelection) {
                 .select("rect")
                 .attr("width", item.badgeWidth)
                 .attr("height", TOOLTIP_LABEL_HEIGHT);
-            select(item.node).select("text").attr("x", 4).attr("y", 11);
+            select(item.node).select("text").attr("x", item.badgeWidth / 2);
         });
     });
 }
@@ -5832,19 +5841,7 @@ const DOWNLOAD_BRUSH_ARROW_X = -4.5;
 const DOWNLOAD_INVERT_ARROW_WIDTH = 6.8;
 const DOWNLOAD_INVERT_ARROW_HEIGHT = 11;
 const DOWNLOAD_INVERT_ARROW_X = -3.4;
-function linePathForDownload(d, features, xScales, yScales) {
-    const lineGenerator = line();
-    const points = [];
-    features.forEach((feature) => {
-        if (!(feature in d))
-            return;
-        const value = String(d[feature]);
-        const cleanedValue = value.length > 10 ? value.substr(0, 10) + "..." : value;
-        points.push([xScales(feature), yScales[feature](cleanedValue)]);
-    });
-    return lineGenerator(points);
-}
-function setActivePathLinesToDownload(svg, xScales, yScales) {
+function setActivePathLinesToDownload(svg) {
     svg
         .append("g")
         .attr("class", "records")
@@ -5861,7 +5858,7 @@ function setActivePathLinesToDownload(svg, xScales, yScales) {
         return cleanString(d[recordKey]);
     })
         .each(function (d) {
-        select(this).attr("d", linePathForDownload(d, parallelCoordinates.newFeatures, xScales, yScales));
+        select(this).attr("d", linePath(d, parallelCoordinates.newFeatures));
     });
     const records = getAllRecords();
     records.forEach((element) => {
@@ -5886,6 +5883,7 @@ function setFeatureAxisToDownload(svg, yAxis, yScales, xScales) {
     const orderedFeatures = parallelCoordinates.newFeatures.map((name) => ({
         name,
     }));
+    const hiddenDims = getAllHiddenDimensionNames();
     let featureAxis = svg
         .selectAll("g.feature")
         .data(orderedFeatures)
@@ -5894,9 +5892,39 @@ function setFeatureAxisToDownload(svg, yAxis, yScales, xScales) {
         .attr("transform", (d) => "translate(" + xScales(d.name) + ")");
     featureAxis.append("g").each(function (d) {
         const processedDimensionName = cleanString(d.name);
-        select(this)
-            .attr("id", "dimension_axis_" + processedDimensionName)
-            .call(yAxis[d.name]);
+        const max = getCurrentMaxRange(d.name);
+        const min = getCurrentMinRange(d.name);
+        const inversionStatus = getInversionStatus(d.name);
+        if (!isDimensionCategorical(d.name)) {
+            if (inversionStatus === "ascending") {
+                yScales[d.name].domain([min, max]);
+                yAxis = setupYAxis(yScales, parallelCoordinates.newDataset, hiddenDims);
+                select(this)
+                    .attr("id", "dimension_axis_" + processedDimensionName)
+                    .call(yAxis[d.name].scale(yScales[d.name].domain(yScales[d.name].domain())));
+            }
+            else {
+                yScales[d.name].domain([min, max]);
+                yAxis = setupYAxis(yScales, parallelCoordinates.newDataset, hiddenDims);
+                select(this)
+                    .attr("id", "dimension_axis_" + processedDimensionName)
+                    .call(yAxis[d.name].scale(yScales[d.name].domain(yScales[d.name].domain().reverse())));
+            }
+        }
+        else {
+            if (inversionStatus === "ascending") {
+                select(this)
+                    .attr("id", "dimension_axis_" + processedDimensionName)
+                    .call(yAxis[d.name]);
+            }
+            else {
+                const scale = yScales[d.name];
+                scale.domain([...scale.domain()].reverse());
+                select(this)
+                    .attr("id", "dimension_axis_" + processedDimensionName)
+                    .call(yAxis[d.name]);
+            }
+        }
     });
     featureAxis
         .append("text")
@@ -5909,9 +5937,9 @@ function setFeatureAxisToDownload(svg, yAxis, yScales, xScales) {
         .selectAll(".tick text")
         .attr("dy", 0)
         .attr("dominant-baseline", "middle");
-    setBrushDownToDownload(featureAxis);
-    setBrushUpToDownload(featureAxis);
-    setRectToDragToDownload(featureAxis);
+    setBrushDownToDownload(featureAxis, yScales);
+    setBrushUpToDownload(featureAxis, yScales);
+    setRectToDragToDownload(featureAxis, yScales);
     setInvertIconToDownload(featureAxis);
 }
 function setSelectedRecordValuesToDownload(svg, xScales, yScales) {
@@ -5926,54 +5954,88 @@ function setSelectedRecordValuesToDownload(svg, xScales, yScales) {
         createToolTipForValues(record, true, svg, xScales, yScales);
     });
 }
-function setBrushDownToDownload(featureAxis) {
+function getDownloadBrushLayout(dimension, yScale) {
+    const settings = parallelCoordinates.currentPosOfDims.find((item) => item.key === dimension);
+    if (!settings) {
+        return { rectY: AXIS_TOP, rectHeight: AXIS_BOTTOM - AXIS_TOP, isIdle: true };
+    }
+    let top;
+    let bottom;
+    if (isDimensionCategorical(dimension)) {
+        const filteredCategories = settings.currentFilterCategories;
+        const domain = yScale.domain();
+        const hasActiveCategoryFilter = Array.isArray(filteredCategories) &&
+            filteredCategories.length > 0 &&
+            filteredCategories.length < domain.length;
+        if (hasActiveCategoryFilter) {
+            const sorted = [...filteredCategories].sort((a, b) => yScale(a) - yScale(b));
+            top = yScale(sorted[0]);
+            bottom = yScale(sorted[sorted.length - 1]);
+        }
+        else {
+            top = AXIS_TOP;
+            bottom = AXIS_BOTTOM;
+        }
+    }
+    else {
+        top = yScale(settings.currentFilterTop);
+        bottom = yScale(settings.currentFilterBottom);
+    }
+    if (settings.isInverted) {
+        [top, bottom] = [bottom, top];
+    }
+    const rectY = Math.min(top, bottom);
+    const rectHeight = Math.abs(bottom - top);
+    const isIdle = Math.abs(rectY - AXIS_TOP) < 0.75 &&
+        Math.abs(rectY + rectHeight - AXIS_BOTTOM) < 0.75;
+    return { rectY, rectHeight, isIdle };
+}
+function setBrushDownToDownload(featureAxis, yScales) {
     featureAxis.each(function (d) {
         const processedDimensionName = cleanString(d.name);
-        const item = parallelCoordinates.currentPosOfDims.find((object) => object.key == d.name);
+        const layout = getDownloadBrushLayout(d.name, yScales[d.name]);
         select(this)
             .append("g")
             .append("use")
             .attr("id", "triangle_down_" + processedDimensionName)
-            .attr("y", item.top == AXIS_TOP
+            .attr("y", layout.isIdle
             ? AXIS_TOP_HANDLE + 1
-            : item.top - DOWNLOAD_BRUSH_ARROW_HEIGHT)
+            : layout.rectY - DOWNLOAD_BRUSH_ARROW_HEIGHT)
             .attr("x", DOWNLOAD_BRUSH_ARROW_X)
             .attr("width", DOWNLOAD_BRUSH_ARROW_WIDTH)
             .attr("height", DOWNLOAD_BRUSH_ARROW_HEIGHT)
             .attr("href", "#brush_image_bottom");
     });
 }
-function setBrushUpToDownload(featureAxis) {
+function setBrushUpToDownload(featureAxis, yScales) {
     featureAxis.each(function (d) {
         const processedDimensionName = cleanString(d.name);
-        const item = parallelCoordinates.currentPosOfDims.find((object) => object.key == d.name);
+        const layout = getDownloadBrushLayout(d.name, yScales[d.name]);
         select(this)
             .append("g")
             .append("use")
             .attr("id", "triangle_up_" + processedDimensionName)
-            .attr("y", item.bottom)
+            .attr("y", layout.rectY + layout.rectHeight)
             .attr("x", DOWNLOAD_BRUSH_ARROW_X)
             .attr("width", DOWNLOAD_BRUSH_ARROW_WIDTH)
             .attr("height", DOWNLOAD_BRUSH_ARROW_HEIGHT)
             .attr("href", "#brush_image_top");
     });
 }
-function setRectToDragToDownload(featureAxis) {
+function setRectToDragToDownload(featureAxis, yScales) {
     featureAxis.each(function (d) {
         const processedDimensionName = cleanString(d.name);
-        const item = parallelCoordinates.currentPosOfDims.find((object) => object.key == d.name);
-        let height = item.bottom - item.top;
-        const isIdle = item.top == AXIS_TOP && item.bottom == AXIS_BOTTOM;
+        const layout = getDownloadBrushLayout(d.name, yScales[d.name]);
         select(this)
             .append("g")
             .append("rect")
             .attr("id", "rect_" + processedDimensionName)
             .attr("width", 12)
-            .attr("height", height)
+            .attr("height", layout.rectHeight)
             .attr("x", -6)
-            .attr("y", item.top)
-            .attr("fill", isIdle ? BRUSH_IDLE_FILL : BRUSH_ACTIVE_FILL)
-            .attr("opacity", isIdle ? "0.5" : "0.7");
+            .attr("y", layout.rectY)
+            .attr("fill", layout.isIdle ? BRUSH_IDLE_FILL : BRUSH_ACTIVE_FILL)
+            .attr("opacity", layout.isIdle ? "0.5" : "0.7");
     });
 }
 function setInvertIconToDownload(featureAxis) {
@@ -6101,9 +6163,6 @@ function createSvgString(includeDataValues = false) {
     const rightBalancePadding = Math.max(0, layout.leftPadding - layout.rightPadding);
     const hiddenDims = getAllHiddenDimensionNames();
     let yScalesForDownload = setupYScales(parallelCoordinates.features, parallelCoordinates.newDataset);
-    Object.entries(parallelCoordinates.yScales).forEach(([dimension, scale]) => {
-        yScalesForDownload[dimension]?.domain([...scale.domain()]);
-    });
     let yAxisForDownload = setupYAxis(yScalesForDownload, parallelCoordinates.newDataset, hiddenDims);
     let xScalesForDownload = setupXScales(orderedFeatures, parallelCoordinates.newDataset);
     let svg = create$1("svg")
@@ -6147,7 +6206,7 @@ function createSvgString(includeDataValues = false) {
         },
     ]);
     setFeatureAxisToDownload(contentRoot, yAxisForDownload, yScalesForDownload, xScalesForDownload);
-    setActivePathLinesToDownload(contentRoot, xScalesForDownload, yScalesForDownload);
+    setActivePathLinesToDownload(contentRoot);
     if (includeDataValues) {
         setSelectedRecordValuesToDownload(contentRoot, xScalesForDownload, yScalesForDownload);
     }
@@ -6534,7 +6593,8 @@ function setWheelZoomEnabled(enabled) {
 }
 function createToolbar(dataset) {
     const toolbarRow = select("#spcd3-toolbarRow");
-    const { btn: toggleButton, tip: toggleTip } = makeIconButton(toolbarRow, {
+    setToolbarOpen$2(false);
+    const { btn: toggleButton } = makeIconButton(toolbarRow, {
         id: "toggleButton",
         iconHtml: getExpandToolbarIcon(),
         tipText: "Expand Toolbar",
@@ -6592,6 +6652,12 @@ function createToolbar(dataset) {
         .attr("class", "spcd3-toolbar-separator")
         .attr("role", "separator")
         .attr("aria-orientation", "vertical");
+    addChartSettingsControls(toolbar);
+    toolbar
+        .append("span")
+        .attr("class", "spcd3-toolbar-separator")
+        .attr("role", "separator")
+        .attr("aria-orientation", "vertical");
     enableChartZoom(zoomInButton.node(), zoomOutButton.node(), zoomInput.node());
     makeIconButton(toolbar, {
         id: "refreshButton",
@@ -6605,20 +6671,156 @@ function createToolbar(dataset) {
         tipText: "Reset",
         onClick: reset,
     });
-    let isExpanded = false;
     toggleButton.on("click", () => {
-        isExpanded = !isExpanded;
-        toolbar
-            .style("max-width", isExpanded ? "14rem" : "0")
-            .style("opacity", isExpanded ? "1" : "0")
-            .style("pointer-events", isExpanded ? "auto" : "none")
-            .style("overflow", isExpanded ? "visible" : "hidden");
-        toggleTip.text(isExpanded ? "Collapse Toolbar" : "Expand Toolbar");
-        const currentIcon = isExpanded
-            ? getCollapseToolbarIcon()
-            : getExpandToolbarIcon();
-        toggleButton.select("#toggleButtonicon").html(currentIcon);
+        setToolbarOpen$1(!isToolbarOpen);
     });
+}
+function addChartSettingsControls(toolbar) {
+    const rootFontSize = getRootFontSize$1();
+    const currentSpacing = getDimensionSpacing();
+    const selectionSensitivity = getSelectableWidthRem$1() ?? 0.4;
+    const dimensionSpacing = Number.isFinite(currentSpacing) ? Number(currentSpacing) / rootFontSize : 6;
+    makeSettingsPopover(toolbar, {
+        id: "selectionSensitivity",
+        label: "Selection Sensitivity",
+        iconHtml: getSelectionSensitivityIcon(),
+        min: 0.1,
+        max: 1,
+        step: 0.1,
+        value: Math.min(1, Math.max(0.1, selectionSensitivity)),
+        defaultValue: 0.4,
+        formatValue: (value) => `${value.toFixed(2)} rem`,
+        onInput: (value) => setSelectableWidthRem(value),
+    });
+    makeSettingsPopover(toolbar, {
+        id: "dimensionSpacing",
+        label: "Dimension Spacing",
+        iconHtml: getDimensionSpacingIcon(),
+        min: 3,
+        max: 12,
+        step: 0.25,
+        value: Math.min(12, Math.max(3, dimensionSpacing)),
+        defaultValue: 6,
+        formatValue: (value) => `${value.toFixed(2)} rem`,
+        onInput: (value) => setDimensionSpacing(value),
+    });
+}
+function makeSettingsPopover(parent, opts) {
+    const { btn, tip } = makeIconButton(parent, {
+        id: `${opts.id}Button`,
+        iconHtml: opts.iconHtml,
+        tipText: opts.label,
+    });
+    const popoverId = `spcd3-toolbar-${opts.id}-popover`;
+    const inputId = `spcd3-toolbar-${opts.id}`;
+    const popover = parent
+        .append("div")
+        .attr("id", popoverId)
+        .attr("class", "spcd3-toolbar-settings-popover")
+        .attr("popover", "auto");
+    const control = popover
+        .append("label")
+        .attr("class", "spcd3-toolbar-range-control")
+        .attr("for", inputId);
+    control
+        .append("span")
+        .attr("class", "spcd3-toolbar-range-label")
+        .text(opts.label);
+    const defaultRatio = (opts.defaultValue - opts.min) / (opts.max - opts.min);
+    const sliderShell = control
+        .append("span")
+        .attr("class", "spcd3-toolbar-range-shell")
+        .style("--default-ratio", `${Math.min(1, Math.max(0, defaultRatio))}`);
+    sliderShell
+        .append("span")
+        .attr("class", "spcd3-toolbar-range-default-marker")
+        .attr("aria-hidden", "true");
+    const input = sliderShell
+        .append("input")
+        .attr("class", "spcd3-toolbar-range-input")
+        .attr("id", inputId)
+        .attr("type", "range")
+        .attr("min", opts.min)
+        .attr("max", opts.max)
+        .attr("step", opts.step)
+        .property("value", opts.value);
+    setRangeFill(input.node(), opts);
+    const output = control
+        .append("output")
+        .attr("class", "spcd3-toolbar-range-value")
+        .attr("for", inputId)
+        .text(opts.formatValue(opts.value));
+    input.on("input", function () {
+        const value = Number(this.value);
+        if (!Number.isFinite(value))
+            return;
+        setRangeFill(this, opts);
+        output.text(opts.formatValue(value));
+        opts.onInput(value);
+    });
+    const buttonNode = btn.node();
+    const tipNode = tip.node();
+    const popoverNode = popover.node();
+    if (!buttonNode || !popoverNode)
+        return;
+    btn
+        .attr("aria-controls", popoverId)
+        .attr("aria-expanded", "false")
+        .on("click", () => {
+        if (tipNode?.matches(":popover-open"))
+            tipNode.hidePopover();
+        if (popoverNode.matches(":popover-open")) {
+            popoverNode.hidePopover();
+        }
+        else {
+            document
+                .querySelectorAll(".spcd3-toolbar-settings-popover:popover-open")
+                .forEach((openPopover) => openPopover.hidePopover());
+            popoverNode.showPopover();
+            positionSettingsPopover(buttonNode, popoverNode);
+        }
+    });
+    popover.on("toggle", () => {
+        btn.attr("aria-expanded", popoverNode.matches(":popover-open") ? "true" : "false");
+    });
+    select(window).on(`resize.${opts.id}Settings`, () => {
+        if (popoverNode.matches(":popover-open")) {
+            positionSettingsPopover(buttonNode, popoverNode);
+        }
+    });
+}
+function setRangeFill(input, opts) {
+    if (!input)
+        return;
+    const value = Number(input.value);
+    const ratio = (value - opts.min) / (opts.max - opts.min);
+    input.style.setProperty("--value-ratio", `${Math.min(1, Math.max(0, ratio))}`);
+}
+function positionSettingsPopover(buttonNode, popoverNode) {
+    const buttonRect = buttonNode.getBoundingClientRect();
+    const gap = 6;
+    const viewportPadding = 8;
+    const popoverRect = popoverNode.getBoundingClientRect();
+    const left = Math.min(window.innerWidth - popoverRect.width - viewportPadding, Math.max(viewportPadding, buttonRect.left));
+    popoverNode.style.left = `${left}px`;
+    popoverNode.style.top = `${buttonRect.bottom + gap}px`;
+}
+function getRootFontSize$1() {
+    const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
+    return Number.isFinite(rootFontSize) && rootFontSize > 0
+        ? rootFontSize
+        : 16;
+}
+function setToolbarOpen$1(open) {
+    setToolbarOpen$2(open);
+    const toolbar = select("#spcd3-toolbar");
+    toolbar
+        .style("max-width", open ? "18rem" : "0")
+        .style("opacity", open ? "1" : "0")
+        .style("pointer-events", open ? "auto" : "none")
+        .style("overflow", open ? "visible" : "hidden");
+    select("#toggleButtontip").text(open ? "Collapse Toolbar" : "Expand Toolbar");
+    select("#toggleButtonicon").html(open ? getCollapseToolbarIcon() : getExpandToolbarIcon());
 }
 function closeChartModal() {
     if (!chartZoomState)
@@ -6719,8 +6921,10 @@ function positionTip(btnNode, tipNode) {
     }
     if (top < padding)
         top = padding;
-    tipNode.style.left = `${left / 16}rem`;
-    tipNode.style.top = `${top / 16}rem`;
+    const toolbarRow = btnNode.closest("#spcd3-toolbarRow");
+    const toolbarScale = Number.parseFloat(toolbarRow ? window.getComputedStyle(toolbarRow).zoom : "") || 1;
+    tipNode.style.left = `${left / (16 * toolbarScale)}rem`;
+    tipNode.style.top = `${top / (16 * toolbarScale)}rem`;
 }
 function showModalWithData(dataset) {
     const overlay = select("body")
@@ -6869,9 +7073,8 @@ function enableChartZoom(zoomInButton, zoomOutButton, zoomInput) {
         if (target.closest(".hitarea, .hitbox, .spcd3-handle-hitbox, .spcd3-brush-overlay, .spcd3-marker, .dimensions, .dimension, .spcd3-dimensions-axis"))
             return;
         const state = chartZoomState;
-        if (!state)
+        if (!state || !state.chartWrapper.classList.contains("spcd3-chartWrapper--can-pan"))
             return;
-        event.preventDefault();
         chartWrapper.setPointerCapture(event.pointerId);
         state.isDraggingPan = true;
         state.didPan = false;
@@ -7156,7 +7359,7 @@ function realignToolbarAfterSpacingChange() {
     });
 }
 function getDimensionOrderIndex(dimension) {
-    const index = initialDimensions.indexOf(dimension);
+    const index = allDimensionNames.indexOf(dimension);
     return index === -1 ? Number.MAX_SAFE_INTEGER : index;
 }
 function restoreVisibleDimensionOrder() {
@@ -7170,12 +7373,12 @@ function syncFeatureObjectsToVisibleOrder() {
     });
 }
 function syncDimensionOrderWithVisible() {
-    if (!Array.isArray(initialDimensions) || !Array.isArray(parallelCoordinates.newFeatures)) {
+    if (!Array.isArray(parallelCoordinates.newFeatures)) {
         return;
     }
     const visibleDimensions = [...parallelCoordinates.newFeatures];
     let visibleIndex = 0;
-    setInitialDimensions(initialDimensions.map((dimension) => visibleDimensions.includes(dimension)
+    setAllDimensionNames(allDimensionNames.map((dimension) => visibleDimensions.includes(dimension)
         ? visibleDimensions[visibleIndex++]
         : dimension));
     syncFeatureObjectsToVisibleOrder();
@@ -7243,7 +7446,7 @@ function hide(dimension) {
 function show(dimension) {
     if (parallelCoordinates.newFeatures.includes(dimension))
         return;
-    if (initialDimensions.includes(dimension)) {
+    if (allDimensionNames.includes(dimension)) {
         parallelCoordinates.newFeatures.push(dimension);
         parallelCoordinates.features.push({ name: dimension });
         restoreVisibleDimensionOrder();
@@ -7451,16 +7654,16 @@ function setDimensionRange(dimension, min, max) {
     const hiddenDims = getAllHiddenDimensionNames();
     if (inverted) {
         parallelCoordinates.yScales[dimension].domain([max, min]);
-        setYAxes(setupYAxis(parallelCoordinates.yScales, parallelCoordinates.newDataset, hiddenDims));
+        parallelCoordinates.yAxes = setupYAxis(parallelCoordinates.yScales, parallelCoordinates.newDataset, hiddenDims);
     }
     else {
         parallelCoordinates.yScales[dimension].domain([min, max]);
-        setYAxes(setupYAxis(parallelCoordinates.yScales, parallelCoordinates.newDataset, hiddenDims));
+        parallelCoordinates.yAxes = setupYAxis(parallelCoordinates.yScales, parallelCoordinates.newDataset, hiddenDims);
     }
     addRange$1(min, parallelCoordinates.currentPosOfDims, dimension, "currentRangeBottom");
     addRange$1(max, parallelCoordinates.currentPosOfDims, dimension, "currentRangeTop");
     select("#dimension_axis_" + cleanString(dimension))
-        .call(yAxes[dimension])
+        .call(parallelCoordinates.yAxes[dimension])
         .transition()
         .duration(1000)
         .ease(cubicInOut);
@@ -7542,11 +7745,11 @@ function setDimensionRangeRounded(dimension, min, max) {
     const hiddenDims = getAllHiddenDimensionNames();
     if (inverted) {
         parallelCoordinates.yScales[dimension].domain([max, min]).nice();
-        setYAxes(setupYAxis(parallelCoordinates.yScales, parallelCoordinates.newDataset, hiddenDims));
+        parallelCoordinates.yAxes = setupYAxis(parallelCoordinates.yScales, parallelCoordinates.newDataset, hiddenDims);
     }
     else {
         parallelCoordinates.yScales[dimension].domain([min, max]).nice();
-        setYAxes(setupYAxis(parallelCoordinates.yScales, parallelCoordinates.newDataset, hiddenDims));
+        parallelCoordinates.yAxes = setupYAxis(parallelCoordinates.yScales, parallelCoordinates.newDataset, hiddenDims);
     }
     const roundedRanges = parallelCoordinates.yScales[dimension].domain();
     if (inverted) {
@@ -7558,7 +7761,7 @@ function setDimensionRangeRounded(dimension, min, max) {
         addRange$1(roundedRanges[1], parallelCoordinates.currentPosOfDims, dimension, "currentRangeTop");
     }
     select("#dimension_axis_" + cleanString(dimension))
-        .call(yAxes[dimension])
+        .call(parallelCoordinates.yAxes[dimension])
         .transition()
         .duration(1000)
         .ease(cubicInOut);
@@ -7625,8 +7828,8 @@ function invertWithoutTransition(dimension) {
     textElement.attr("d", arrow);
     textElement.style("cursor", `url('data:image/svg+xml,${encodeURIComponent(arrowSvg)}') ${hotspotX} ${hotspotY}, auto`);
     select("#invert_hitbox_" + cleanDimensionName).style("cursor", `url('data:image/svg+xml,${encodeURIComponent(arrowSvg)}') ${hotspotX} ${hotspotY}, auto`);
-    select(dimensionId).call(yAxes[dimension].scale(parallelCoordinates.yScales[dimension].domain(parallelCoordinates.yScales[dimension].domain().reverse())));
-    trans(activePaths).each(function (d) {
+    select(dimensionId).call(parallelCoordinates.yAxes[dimension].scale(parallelCoordinates.yScales[dimension].domain(parallelCoordinates.yScales[dimension].domain().reverse())));
+    trans(activeRecords).each(function (d) {
         select(this).attr("d", (d) => {
             return linePath(d, parallelCoordinates.newFeatures);
         });
@@ -7671,9 +7874,9 @@ function setInversionStatus(dimension, status) {
     select(dimensionId)
         .transition()
         .duration(1000)
-        .call(yAxes[dimension].scale(parallelCoordinates.yScales[dimension].domain(parallelCoordinates.yScales[dimension].domain().reverse())))
+        .call(parallelCoordinates.yAxes[dimension].scale(parallelCoordinates.yScales[dimension].domain(parallelCoordinates.yScales[dimension].domain().reverse())))
         .ease(cubicInOut);
-    trans(activePaths).each(function (d) {
+    trans(activeRecords).each(function (d) {
         select(this)
             .transition()
             .duration(1000)
@@ -7724,9 +7927,9 @@ function invert(dimension) {
     select(dimensionId)
         .transition()
         .duration(1000)
-        .call(yAxes[dimension].scale(parallelCoordinates.yScales[dimension].domain(parallelCoordinates.yScales[dimension].domain().reverse())))
+        .call(parallelCoordinates.yAxes[dimension].scale(parallelCoordinates.yScales[dimension].domain(parallelCoordinates.yScales[dimension].domain().reverse())))
         .ease(cubicInOut);
-    trans(activePaths).each(function (d) {
+    trans(activeRecords).each(function (d) {
         select(this)
             .transition()
             .duration(1000)
@@ -7872,10 +8075,10 @@ function uncolorRecord(record) {
 }
 //---------- Helper Functions ----------
 function getAllRecords() {
-    if (!activePaths || typeof activePaths.nodes !== "function") {
+    if (!activeRecords || typeof activeRecords.nodes !== "function") {
         return [];
     }
-    return activePaths
+    return activeRecords
         .nodes()
         .map((node) => node.id)
         .filter((id) => id.length > 0);
@@ -7885,7 +8088,7 @@ function getAllVisibleDimensionNames() {
     return listOfDimensions.reverse();
 }
 function getAllDimensionNames() {
-    return Array.isArray(initialDimensions) ? initialDimensions : chartColumns;
+    return allDimensionNames.length > 0 ? allDimensionNames : dataColumnNames;
 }
 function getAllHiddenDimensionNames() {
     const dimensions = getAllDimensionNames();
@@ -7928,44 +8131,30 @@ function setClassColoredFalse(record) {
 }
 function disableInteractivity() {
     setInteractivityEnabled(false);
-    const chartShell = document.querySelector("#spcd3-parallelcoords")?.closest(".chart-wrapper");
-    const chartHost = document.querySelector("#spcd3-parallelcoords")?.closest(".main-chart");
-    chartShell?.style.setProperty("background", "var(--spcd3-chart-disabled-bg)");
-    chartHost?.style.setProperty("background", "var(--spcd3-chart-disabled-bg)");
     select("#spcd3-toolbarRow")
         .style("pointer-events", "none")
         .style("opacity", "0.45")
         .style("filter", "grayscale(1)")
-        .style("background", "var(--spcd3-chart-disabled-bg)")
         .style("cursor", "not-allowed");
     selectAll("#spcd3-toolbarRow *").style("cursor", "not-allowed");
     select("#spcd3-parallelcoords").style("pointer-events", "none");
     select("#spcd3-parallelcoords")
         .style("background", "var(--spcd3-chart-disabled-bg)")
         .style("z-index", 1);
-    select(".spcd3-chartWrapper").style("background", "var(--spcd3-chart-disabled-bg)");
-    select(".spcd3-chartFrame").style("background", "var(--spcd3-chart-disabled-bg)");
     selectAll(".hitarea").style("pointer-events", "none");
     selectAll(".spcd3-handle-hitbox").style("pointer-events", "none");
     selectAll(".hitbox").style("pointer-events", "none");
 }
 function enableInteractivity() {
     setInteractivityEnabled(true);
-    const chartShell = document.querySelector("#spcd3-parallelcoords")?.closest(".chart-wrapper");
-    const chartHost = document.querySelector("#spcd3-parallelcoords")?.closest(".main-chart");
-    chartShell?.style.removeProperty("background");
-    chartHost?.style.removeProperty("background");
     select("#spcd3-toolbarRow")
         .style("pointer-events", "auto")
         .style("opacity", "1")
         .style("filter", "none")
-        .style("background", null)
         .style("cursor", "auto");
     selectAll("#spcd3-toolbarRow *").style("cursor", null);
     select("#spcd3-parallelcoords").style("pointer-events", "auto");
-    select("#spcd3-parallelcoords").style("background", "var(--spcd3-page-bg)");
-    select(".spcd3-chartWrapper").style("background", null);
-    select(".spcd3-chartFrame").style("background", null);
+    select("#spcd3-parallelcoords").style("background", "var(--spcd3-bg)");
     selectAll(".hitarea").style("pointer-events", "stroke");
     selectAll(".spcd3-handle-hitbox").style("pointer-events", "auto");
     selectAll(".hitbox").style("pointer-events", "auto");
@@ -7973,22 +8162,24 @@ function enableInteractivity() {
 function setWheelZoom(enabled) {
     setWheelZoomEnabled(enabled);
 }
-function setChartBorder(border) {
-    setChartFrameBorder(border);
-    select(".spcd3-chartWrapper")
-        .classed("spcd3-chartWrapper--framed", border !== null);
-    select(".spcd3-chartFrame").style("border", border);
+function setToolbarOpen(open) {
+    setToolbarOpen$1(open);
 }
-function setSelectableWidth(width) {
-    setSelectableStrokeWidth(width);
+function setChartFrame(hasFrame) {
+    setHasChartFrame(hasFrame);
+    select(".spcd3-chartWrapper")
+        .classed("spcd3-chartWrapper--framed", hasFrame);
+}
+function setSelectableWidthRem(width) {
+    setSelectableWidthRem$1(width);
     let hitarea_active = selectAll("path.hitarea");
     hitarea_active.each(function (d) {
-        const value = width;
+        const value = `${width}rem`;
         select(this).style("stroke-width", value);
     });
 }
-function getSelectableWith() {
-    return getSelectableStrokeWidth();
+function getSelectableWidthRem() {
+    return getSelectableWidthRem$1();
 }
 function setDimensionSpacing(spacingRem) {
     setDimensionSpacing$1(remToPixels(spacingRem));
@@ -8034,7 +8225,7 @@ const TOP_AXIS_VALUE = AXIS_TOP;
 const BOTTOM_AXIS_VALUE = AXIS_BOTTOM;
 const RECT_VALUE = AXIS_LENGTH;
 const BRUSH_STATE_EPSILON = 0.75;
-const BRUSH_TOOLTIP_HEIGHT = 16;
+const BRUSH_TOOLTIP_HEIGHT = 14;
 const BRUSH_TOOLTIP_X_OFFSET = 12;
 const BRUSH_HANDLE_CENTER_OFFSET = 5;
 const FILTER_STATE_EPSILON = 0.75;
@@ -8066,6 +8257,15 @@ function hasActiveBrushFilter(dimension) {
         Math.abs(settings.currentFilterBottom - settings.currentRangeBottom) >
             FILTER_STATE_EPSILON);
 }
+function updateRectCursor(dimension, cleanDimensionName) {
+    const rect = select("#rect_" + (cleanDimensionName ?? cleanString(dimension)));
+    if (!hasActiveBrushFilter(dimension)) {
+        rect.style("cursor", "default").style("pointer-events", "none");
+        return;
+    }
+    const [hotspotX, hotspotY] = getCursorHotspot(getArrowTopAndBottomMeta(), 20);
+    rect.style("cursor", `url('data:image/svg+xml,${encodeURIComponent(applyThemeToCursorSvg(setSize(getArrowTopAndBottom(), 20)))}') ${hotspotX} ${hotspotY}, auto`).style("pointer-events", "all");
+}
 // Brushing
 function setRectToDrag(featureAxis, tooltipValuesDown, tooltipValuesTop) {
     let delta;
@@ -8082,6 +8282,8 @@ function setRectToDrag(featureAxis, tooltipValuesDown, tooltipValuesTop) {
             .attr("y", TOP_AXIS_VALUE)
             .attr("fill", BRUSH_IDLE_FILL)
             .attr("opacity", "0.5")
+            .style("cursor", "default")
+            .style("pointer-events", "none")
             .call(drag()
             .on("drag", (event, d) => {
             selectAll("path.hitarea").style("pointer-events", "none");
@@ -8142,7 +8344,10 @@ function setBrushUp(featureAxis, brushOverlay, tooltipValues) {
             return this.ownerSVGElement || this;
         })
             .on("start", () => {
-            brushOverlay.raise().style("pointer-events", "all");
+            brushOverlay
+                .raise()
+                .style("pointer-events", "all")
+                .style("cursor", `url('data:image/svg+xml,${encodeURIComponent(applyThemeToCursorSvg(setSize(getArrowTopCursor(), 12)))}') ${arrowTopHotspotX} ${arrowTopHotspotY}, auto`);
             g.select("#triangle_up_" + processedDimensionName).raise();
             g.selectAll(".spcd3-handle-hitbox").raise();
         })
@@ -8203,7 +8408,10 @@ function setBrushDown(featureAxis, brushOverlay, tooltipValues) {
             return this.ownerSVGElement || this;
         })
             .on("start", () => {
-            brushOverlay.raise().style("pointer-events", "all");
+            brushOverlay
+                .raise()
+                .style("pointer-events", "all")
+                .style("cursor", `url('data:image/svg+xml,${encodeURIComponent(applyThemeToCursorSvg(setSize(getArrowBottomCursor(), 12)))}') ${arrowBottomHotspotX} 0, auto`);
             g.select("#triangle_down_" + processedDimensionName).raise();
             g.selectAll(".spcd3-handle-hitbox").raise();
         })
@@ -8235,11 +8443,11 @@ function setBrushDown(featureAxis, brushOverlay, tooltipValues) {
     });
 }
 function cleanup(brushOverlay, tooltipValues) {
-    brushOverlay.style("pointer-events", "none").lower();
+    brushOverlay.style("pointer-events", "none").style("cursor", null).lower();
     tooltipValues.style("visibility", "hidden");
 }
 function setBrushTooltipPosition(tooltipValues, textValue, x, y) {
-    const badgeWidth = Math.max(textValue.length * 6 + 8, 18);
+    const badgeWidth = Math.max(textValue.length * 5.5 + 7, 16);
     tooltipValues
         .style("visibility", "visible")
         .attr("transform", `translate(${x + BRUSH_TOOLTIP_X_OFFSET}, ${y - BRUSH_TOOLTIP_HEIGHT / 2})`);
@@ -8254,18 +8462,24 @@ function setBrushTooltipPosition(tooltipValues, textValue, x, y) {
         .attr("fill", "var(--spcd3-tooltip-surface)")
         .attr("stroke", "var(--spcd3-border-emphasis)")
         .attr("stroke-width", 1);
-    tooltipValues
+    const valueTextNode = tooltipValues
         .selectAll("text")
         .data([textValue])
         .join("text")
-        .attr("x", 4)
-        .attr("y", 11)
-        .attr("font-size", 10)
+        .attr("x", badgeWidth / 2)
+        .attr("y", 0)
+        .attr("text-anchor", "middle")
+        .attr("font-size", 9)
+        .attr("font-weight", 600)
         .attr("fill", "var(--spcd3-text-primary)")
         .text(textValue);
+    const valueTextElement = valueTextNode.node();
+    if (valueTextElement) {
+        const textBox = valueTextElement.getBBox();
+        valueTextNode.attr("y", BRUSH_TOOLTIP_HEIGHT / 2 - textBox.y - textBox.height / 2);
+    }
 }
 function brushDown(cleanDimensionName, event, d, tooltipValues, window) {
-    const [arrowTopAndBottomHotspotX, arrowTopAndBottomHotspotY] = getCursorHotspot(getArrowTopAndBottomMeta(), 20);
     const yPosBottom = Number(select("#triangle_up_" + cleanDimensionName).attr("y"));
     let yPosTop;
     let yPosRect;
@@ -8287,12 +8501,6 @@ function brushDown(cleanDimensionName, event, d, tooltipValues, window) {
         yPosRect = event.y + 10;
     }
     addPosition(yPosRect, d.name, "top");
-    if (isAtTopHandle(yPosTop) && isAtBottom(yPosBottom)) {
-        select("#rect_" + cleanDimensionName).style("cursor", "default");
-    }
-    else {
-        select("#rect_" + cleanDimensionName).style("cursor", `url('data:image/svg+xml,${encodeURIComponent(applyThemeToCursorSvg(setSize(getArrowTopAndBottom(), 20)))}') ${arrowTopAndBottomHotspotX} ${arrowTopAndBottomHotspotY}, auto`);
-    }
     if (isAtTopHandle(yPosTop)) {
         select("#triangle_down_" + cleanDimensionName).attr("href", "#brush_image_bottom");
         select("#rect_" + cleanDimensionName)
@@ -8318,7 +8526,6 @@ function brushDown(cleanDimensionName, event, d, tooltipValues, window) {
     updateLines(d.name, cleanDimensionName);
 }
 function brushUp(cleanDimensionName, event, d, tooltipValues, window) {
-    const [arrowTopAndBottomHotspotX, arrowTopAndBottomHotspotY] = getCursorHotspot(getArrowTopAndBottomMeta(), 20);
     const yPosTop = Number(select("#triangle_down_" + cleanDimensionName).attr("y"));
     let yPosBottom;
     if (event.y < yPosTop + 10) {
@@ -8337,14 +8544,12 @@ function brushUp(cleanDimensionName, event, d, tooltipValues, window) {
     if (isAtTopHandle(yPosTop) && isAtBottom(yPosBottom)) {
         select("#rect_" + cleanDimensionName)
             .attr("href", "#brush_image_top_active")
-            .style("cursor", "default")
             .attr("fill", BRUSH_IDLE_FILL)
             .attr("opacity", "0.5");
     }
     else {
         select("#rect_" + cleanDimensionName)
             .attr("href", "#brush_image_top_active")
-            .style("cursor", `url('data:image/svg+xml,${encodeURIComponent(applyThemeToCursorSvg(setSize(getArrowTopAndBottom(), 20)))}') ${arrowTopAndBottomHotspotX} ${arrowTopAndBottomHotspotY}, auto`)
             .attr("fill", BRUSH_ACTIVE_FILL)
             .attr("opacity", "0.7");
     }
@@ -8475,6 +8680,7 @@ function filter(dimensionName, min, max) {
         addRange(yScale.invert(rectBottom), parallelCoordinates.currentPosOfDims, dimensionName, "currentFilterBottom");
         addRange(yScale.invert(rectTop), parallelCoordinates.currentPosOfDims, dimensionName, "currentFilterTop");
     }
+    updateRectCursor(dimensionName, cleanDimensionName);
     active.each(function (d) {
         const value = yScale(d[dimensionName]);
         const currentLine = getLineName(d);
@@ -8632,6 +8838,7 @@ function updateLines(dimension, cleanDimensionName) {
         addRange(currentFilters[0], parallelCoordinates.currentPosOfDims, dimension, "currentFilterBottom");
         addRange(currentFilters[1], parallelCoordinates.currentPosOfDims, dimension, "currentFilterTop");
     }
+    updateRectCursor(dimension, cleanDimensionName);
     let active = select("g.active").selectAll("path");
     active.each(function (d) {
         let value;
@@ -8768,7 +8975,7 @@ function makeActive(currentLineName, record, duration) {
         select("#area_" + currentLineName)
             .style("pointer-events", "stroke")
             .style("stroke", "transparent")
-            .style("stroke-width", getSelectableStrokeWidth())
+            .style("stroke-width", `${getSelectableWidthRem$1()}rem`)
             .text("");
         if (!select("." + currentLineName).classed("colored")) {
             createToolTipForValues(record, true);
@@ -8784,7 +8991,7 @@ function makeActive(currentLineName, record, duration) {
         select("#area_" + currentLineName)
             .style("pointer-events", "stroke")
             .style("stroke", "transparent")
-            .style("stroke-width", getSelectableStrokeWidth())
+            .style("stroke-width", `${getSelectableWidthRem$1()}rem`)
             .text("");
     }
     else {
@@ -8796,7 +9003,7 @@ function makeActive(currentLineName, record, duration) {
         select("#area_" + currentLineName)
             .style("pointer-events", "stroke")
             .style("stroke", "transparent")
-            .style("stroke-width", getSelectableStrokeWidth())
+            .style("stroke-width", `${getSelectableWidthRem$1()}rem`)
             .text("");
     }
 }
@@ -8815,7 +9022,7 @@ function makeInactive(currentLineName, dimension, duration) {
         .transition()
         .duration(duration)
         .style("stroke", "transparent")
-        .style("stroke-width", getSelectableStrokeWidth())
+        .style("stroke-width", `${getSelectableWidthRem$1()}rem`)
         .on("end", function () {
         select(this).style("pointer-events", "none");
     });
@@ -8888,6 +9095,7 @@ function addSettingsForBrushing(dimension, invertStatus) {
     else {
         rect.attr("fill", BRUSH_IDLE_FILL).attr("opacity", "0.5");
     }
+    updateRectCursor(dimension, processedName);
     if (isDimensionCategorical(dimension)) {
         addPosition(bottom, dimension, "top");
         addPosition(top, dimension, "bottom");
@@ -8918,17 +9126,18 @@ const throttleDragAndBrush = throttle(dragAndBrush, delay);
 
 let scrollXPos;
 let timer = null;
+const fallbackDragBoundsPadding = 60;
 function getDragBounds() {
     const range = parallelCoordinates.xScales?.range?.();
     if (!Array.isArray(range) || range.length < 2) {
         return {
-            min: xAxisPadding,
-            max: chartWidth - xAxisPadding,
+            min: fallbackDragBoundsPadding,
+            max: chartWidth - fallbackDragBoundsPadding,
         };
     }
     const minRange = Math.min(...range);
     const maxRange = Math.max(...range);
-    const edgeSlack = Math.max(0, minRange - xAxisPadding);
+    const edgeSlack = Math.max(0, minRange - fallbackDragBoundsPadding);
     return {
         min: minRange - edgeSlack,
         max: maxRange + edgeSlack,
@@ -8960,6 +9169,16 @@ function setToolTipsOnFeatureAxis(featureAxis) {
         .append("div")
         .attr("id", "tooltip")
         .attr("class", "spcd3-tooltip-dimension");
+    const axisDrag = drag()
+        .on("start", onDragStartEventHandler())
+        .on("drag", onDragEventHandler(featureAxis))
+        .on("end", onDragEndEventHandler(featureAxis));
+    featureAxis
+        .select(".spcd3-axis-drag-hitbox")
+        .call(axisDrag)
+        .on("mousemove", (event, d) => {
+        setCursorForDimensions(d, featureAxis);
+    });
     featureAxis
         .append("text")
         .attr("class", "dimension")
@@ -8967,10 +9186,7 @@ function setToolTipsOnFeatureAxis(featureAxis) {
         .attr("y", 18)
         .text((d) => d.name.length > 10 ? d.name.substr(0, 10) + "..." : d.name)
         .style("font-size", "0.7rem")
-        .call(drag()
-        .on("start", onDragStartEventHandler())
-        .on("drag", onDragEventHandler(featureAxis))
-        .on("end", onDragEndEventHandler(featureAxis)))
+        .call(axisDrag)
         .on("mouseover", function () {
         return tooltipFeatures.style("visibility", "visible");
     })
@@ -9328,23 +9544,23 @@ function styleContextMenu(event) {
     selectAll(".contextmenu").style("padding", 0.35 + "rem");
 }
 function setCursorForDimensions(d, featureAxis) {
+    const axisControls = featureAxis
+        .filter((axis) => axis.name === d.name)
+        .selectAll(".dimension, .spcd3-axis-drag-hitbox");
     if (getDimensionPosition(d.name) == 0) {
         const [hotspotX, hotspotY] = getCursorHotspot(getArrowRightMeta(), 14);
-        featureAxis
-            .select(".dimension")
+        axisControls
             .style("cursor", `url('data:image/svg+xml,${encodeURIComponent(applyThemeToCursorSvg(setSize(getArrowRight(), 14)))}') ${hotspotX} ${hotspotY}, auto`);
     }
     else if (getDimensionPosition(d.name) ==
         parallelCoordinates.newFeatures.length - 1) {
         const [hotspotX, hotspotY] = getCursorHotspot(getArrowLeftMeta(), 14);
-        featureAxis
-            .select(".dimension")
+        axisControls
             .style("cursor", `url('data:image/svg+xml,${encodeURIComponent(applyThemeToCursorSvg(setSize(getArrowLeft(), 14)))}') ${hotspotX} ${hotspotY}, auto`);
     }
     else {
         const [hotspotX, hotspotY] = getCursorHotspot(getArrowLeftAndRightMeta(), 14);
-        featureAxis
-            .select(".dimension")
+        axisControls
             .style("cursor", `url('data:image/svg+xml,${encodeURIComponent(applyThemeToCursorSvg(setSize(getArrowLeftAndRight(), 15)))}') ${hotspotX} ${hotspotY}, auto`);
     }
 }
@@ -9373,7 +9589,7 @@ function onDragEventHandler(featureAxis) {
             });
             const { min, max } = getDragBounds();
             parallelCoordinates.dragging[d.subject.name] = Math.min(max, Math.max(min, (this.__origin__ += d.x)));
-            activePaths.each(function (d) {
+            activeRecords.each(function (d) {
                 select(this).attr("d", linePath(d, parallelCoordinates.newFeatures));
             });
             let hitarea_active = selectAll("path.hitarea");
@@ -9416,7 +9632,7 @@ function onDragEndEventHandler(featureAxis) {
                     position(d.name, parallelCoordinates.dragging, parallelCoordinates.xScales) +
                     ")");
             });
-            trans(activePaths).each(function (d) {
+            trans(activeRecords).each(function (d) {
                 select(this).attr("d", linePath(d, parallelCoordinates.newFeatures));
             });
             trans(selectAll("path.hitarea")).each(function (d) {
@@ -9458,7 +9674,7 @@ function createContextMenu() {
         .append("div")
         .attr("id", "copyDimensionName")
         .attr("class", "contextmenu")
-        .attr("title", "Copy name of dimension")
+        .attr("title", "Copy name of dimension.")
         .text("Copy Name");
     contextMenu
         .append("div")
@@ -9476,31 +9692,31 @@ function createContextMenu() {
         .append("div")
         .attr("id", "rangeMenu")
         .attr("class", "contextmenu")
-        .attr("title", "Set range on a dimension")
+        .attr("title", "Set range on a dimension.")
         .text("Set Range...");
     contextMenu
         .append("div")
         .attr("id", "resetRangeMenu")
         .attr("class", "contextmenu")
-        .attr("title", "Set range on a dimension from data")
+        .attr("title", "Set range for dimension from minimum and maximum data values.")
         .text("Set Range from Data");
     contextMenu
         .append("div")
         .attr("id", "resetRoundRangeMenu")
         .attr("class", "contextmenu")
-        .attr("title", "Set rounded range on a dimension from data")
+        .attr("title", "Set range for dimension from rounded down minimum and rounded up maximum data values.")
         .text("Set Rounded Range from Data");
     contextMenu
         .append("div")
         .attr("id", "filterMenu")
         .attr("class", "contextmenu")
-        .attr("title", "Set filter on a dimension")
+        .attr("title", "Set filter on a dimension.")
         .text("Set Filter...");
     contextMenu
         .append("div")
         .attr("id", "resetfilterMenu")
         .attr("class", "contextmenu")
-        .attr("title", "Reset filter on a dimension")
+        .attr("title", "Reset filter on a dimension.")
         .text("Reset Filter");
     contextMenu
         .append("div")
@@ -9640,8 +9856,8 @@ function handleRecordContextMenu(contextMenu, event, d, onClose) {
     if (!menuElement)
         return false;
     const rect = container.getBoundingClientRect();
-    const data = hoveredRecordIds.length > 0
-        ? hoveredRecordIds
+    const data = parallelCoordinates.hoveredRecordIds.length > 0
+        ? parallelCoordinates.hoveredRecordIds
         : getAllPointerEventsData(event);
     const cleanedItems = Array.from(new Set(data.map((item) => cleanString(item).replace(/[.,]/g, ""))));
     const clickedRecord = d?.[hoverLabel]
@@ -9722,17 +9938,17 @@ function handleRecordContextMenu(contextMenu, event, d, onClose) {
     return true;
 }
 
+const DEFAULT_DIMENSION_SPACING_REM = 6;
 //---------- IO Functions ----------
 function drawChart(content) {
     setChartContent(content);
-    const chartContent = content;
-    var columns = structuredClone(chartContent["columns"]).reverse();
-    setChartColumns(columns);
+    const columns = structuredClone(content.columns).reverse();
+    setDataColumnNames(columns);
     setDimensionCount(columns.length);
     setRecordCount(content.length);
     deleteChart();
-    if (selectableStrokeWidth === undefined) {
-        setSelectableStrokeWidth("0.4rem");
+    if (selectableWidthRem === undefined) {
+        setSelectableWidthRem$1(0.4);
     }
     setUpParcoordData(content, columns);
     let chart = select("#spcd3-parallelcoords");
@@ -9744,11 +9960,10 @@ function drawChart(content) {
     const chartWrapper = chart
         .append("div")
         .attr("class", "spcd3-chartWrapper")
-        .classed("spcd3-chartWrapper--framed", chartFrameBorder !== null);
+        .classed("spcd3-chartWrapper--framed", hasChartFrame);
     const chartFrame = chartWrapper
         .append("div")
-        .attr("class", "spcd3-chartFrame")
-        .style("border", chartFrameBorder);
+        .attr("class", "spcd3-chartFrame");
     chartFrame.append("div").attr("id", "spcd3-toolbarRow");
     const chartViewport = chartFrame
         .append("div")
@@ -9763,8 +9978,8 @@ function drawChart(content) {
     createToolbar(parallelCoordinates.newDataset);
     const plot = chartSvg.append("g").attr("class", "plot");
     setDefsForIcons();
-    setActivePaths(setActivePathLines(plot, content, parallelCoordinates));
-    setFeatureAxis(plot, yAxes, parallelCoordinates, chartWidth);
+    setActiveRecords(setActivePathLines(plot, content, parallelCoordinates));
+    setFeatureAxis(plot, parallelCoordinates.yAxes, parallelCoordinates, chartWidth);
     ensureCursorThemeSync();
     refreshThemedCursors();
     realignToolbar();
@@ -9804,7 +10019,14 @@ function drawChart(content) {
 }
 function reset() {
     setChartZoomScale(1);
+    setDimensionSpacing$1(DEFAULT_DIMENSION_SPACING_REM * getRootFontSize());
     drawChart(chartContent);
+}
+function getRootFontSize() {
+    const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
+    return Number.isFinite(rootFontSize) && rootFontSize > 0
+        ? rootFontSize
+        : 16;
 }
 function refresh() {
     const dimensions = getAllVisibleDimensionNames();
@@ -9831,8 +10053,7 @@ function deleteChart() {
 }
 // ---------- Needed for Built-In Interactivity Functions ---------- //
 function setUpParcoordData(data, newFeatures) {
-    setXAxisPadding(60);
-    setInitialDimensions(newFeatures);
+    setAllDimensionNames(newFeatures);
     setChartHeight(CHART_HEIGHT);
     const label = newFeatures[newFeatures.length - 1];
     data.sort((a, b) => {
@@ -9887,7 +10108,7 @@ function setUpParcoordData(data, newFeatures) {
         });
     }
     const hiddenDims = getAllHiddenDimensionNames();
-    setYAxes(setupYAxis(parallelCoordinates.yScales, parallelCoordinates.newDataset, hiddenDims));
+    parallelCoordinates.yAxes = setupYAxis(parallelCoordinates.yScales, parallelCoordinates.newDataset, hiddenDims);
     let counter = 0;
     parallelCoordinates.features.map((x) => {
         let numberOfDigs = 0;
@@ -9983,7 +10204,7 @@ function handlePointerEnter(event, d) {
         return;
     doNotHighlight();
     const data = getAllPointerEventsData(event);
-    setHoveredRecordIds(data);
+    parallelCoordinates.hoveredRecordIds = data;
     const tooltipLabel = selectAll(".spcd3-tooltip-label");
     highlight(data);
     createTooltipForLabel(data, tooltipLabel, event);
@@ -10002,7 +10223,7 @@ function handlePointerLeaveOrOut() {
     if (isRecordHoverLocked)
         return;
     doNotHighlight();
-    setHoveredRecordIds([]);
+    parallelCoordinates.hoveredRecordIds = [];
     selectAll(".spcd3-tooltip-label").style("visibility", "hidden");
     cleanTooltip();
 }
@@ -10088,7 +10309,7 @@ function setActivePathLines(svg, content, parcoords) {
         .attr("d", (d) => linePath(d, parcoords.newFeatures))
         .style("stroke", "transparent")
         .style("fill", "none")
-        .style("stroke-width", selectableStrokeWidth)
+        .style("stroke-width", `${selectableWidthRem}rem`)
         .style("pointer-events", "stroke")
         .on("pointerenter", handlePointerEnter)
         .on("pointerleave", handlePointerLeaveOrOut)
@@ -10133,6 +10354,15 @@ function setFeatureAxis(svg, yAxis, parcoords, width) {
             .attr("id", "dimension_axis_" + processedDimensionName)
             .call(yAxis[d.name]);
     });
+    featureAxis
+        .append("rect")
+        .attr("class", "spcd3-axis-drag-hitbox")
+        .attr("x", -15)
+        .attr("y", 0)
+        .attr("width", 30)
+        .attr("height", CHART_HEIGHT)
+        .style("fill", "transparent")
+        .style("pointer-events", "all");
     select("body").append("div").attr("class", "spcd3-tooltip-label");
     const brushOverlay = svg
         .append("rect")
@@ -10726,5 +10956,5 @@ function escapeCsvCell(value) {
     return value;
 }
 
-export { clearSelection, colorRecord, createSvgString, deleteChart, disableInteractivity, drawChart, enableInteractivity, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getChartZoomScale, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getExampleUiSettings, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelectableWith, getSelected, getSvgDownloadSettings, getTauriSvgSaveDirectory, hide, hideMarker, invert, invertWithoutTransition, isDimensionCategorical, isRecordColored, isRecordInactive, isSelected, isSelectedWithId, loadCSV, move, moveByOne, realignToolbar, refresh, reset, saveAsSvg, setChartBorder, setChartZoomScale, setClassColoredFalse, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setDimensionSpacing, setExampleUiSettings, setFilter, setInversionStatus, setSelectableWidth, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setSvgDownloadSettings, setTauriSvgSaveDirectory, setUnselected, setUnselectedWithId, setWheelZoom, show, showMarker, swap, syncDimensionOrderWithVisible, throttleShowValues, toggleSelection, toggleSelectionWithId, uncolorRecord };
+export { clearSelection, colorRecord, createSvgString, deleteChart, disableInteractivity, drawChart, enableInteractivity, getAllDimensionNames, getAllHiddenDimensionNames, getAllRecords, getAllVisibleDimensionNames, getChartZoomScale, getCurrentMaxRange, getCurrentMinRange, getDimensionPosition, getDimensionRange, getExampleUiSettings, getFilter, getHiddenStatus, getInversionStatus, getMaxValue, getMinValue, getNumberOfDimensions, getRecordWithId, getSelectableWidthRem, getSelected, getSvgDownloadSettings, getTauriSvgSaveDirectory, hide, hideMarker, invert, invertWithoutTransition, isDimensionCategorical, isRecordColored, isRecordInactive, isSelected, isSelectedWithId, loadCSV, move, moveByOne, realignToolbar, refresh, reset, saveAsSvg, setChartFrame, setChartZoomScale, setClassColoredFalse, setDimensionForHovering, setDimensionRange, setDimensionRangeRounded, setDimensionSpacing, setExampleUiSettings, setFilter, setInversionStatus, setSelectableWidthRem, setSelected, setSelectedWithId, setSelection, setSelectionWithId, setSvgDownloadSettings, setTauriSvgSaveDirectory, setToolbarOpen, setUnselected, setUnselectedWithId, setWheelZoom, show, showMarker, swap, syncDimensionOrderWithVisible, throttleShowValues, toggleSelection, toggleSelectionWithId, uncolorRecord };
 //# sourceMappingURL=spcd3.js.map
