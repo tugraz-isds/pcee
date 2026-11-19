@@ -7114,7 +7114,10 @@ function enableChartZoom(zoomInButton, zoomOutButton, zoomInput) {
         zoomChartAtCursor(state.scale + direction * WHEEL_CHART_SCALE_STEP, event);
     };
     const onResize = () => {
-        if (shouldFitChartToViewport(chartWrapper)) {
+        if (chartZoomState?.hasUserZoom) {
+            setChartScale(chartZoomState.scale);
+        }
+        else if (shouldFitChartToViewport(chartWrapper)) {
             requestAnimationFrame(fitChartToViewport);
         }
         else {
@@ -7126,7 +7129,7 @@ function enableChartZoom(zoomInButton, zoomOutButton, zoomInput) {
         previousSvgInlineSize: svg.style.inlineSize, previousSvgBlockSize: svg.style.blockSize,
         previousChartWrapperBlockSize: chartWrapper.style.blockSize,
         previousChartFrameInlineSize: chartFrame.style.inlineSize,
-        scale: 1, isDraggingPan: false, didPan: false, panStartX: 0, panStartY: 0,
+        scale: 1, hasUserZoom: false, isDraggingPan: false, didPan: false, panStartX: 0, panStartY: 0,
         panScrollLeft: 0, panScrollTop: 0, wheelDeltaAccumulator: 0,
         previousChartViewportPaddingInlineEnd: chartViewport.style.paddingInlineEnd,
         chartViewportPaddingInlineEnd: Number.parseFloat(getComputedStyle(chartViewport).paddingInlineEnd) || 0,
@@ -7208,21 +7211,25 @@ function setChartScaleFromInput() {
         return;
     const percentage = Number(state.zoomInput.textContent?.trim().replace(/%$/, ""));
     if (Number.isFinite(percentage)) {
-        setChartScale(percentage / 100);
+        state.hasUserZoom = true;
+        setChartScale(percentage / 100, percentage / 100 > state.scale);
     }
     else {
         state.zoomInput.textContent = String(Math.round(state.scale * 100));
     }
 }
 function adjustChartScaleFromToolbar(direction) {
-    const currentScale = chartZoomState?.scale ?? 1;
+    const state = chartZoomState;
+    const currentScale = state?.scale ?? 1;
     const epsilon = 0.0001;
     const nextScale = direction === 1
         ? TOOLBAR_ZOOM_SCALES.find((scale) => scale > currentScale + epsilon)
         : [...TOOLBAR_ZOOM_SCALES]
             .reverse()
             .find((scale) => scale < currentScale - epsilon);
-    setChartScale(nextScale ?? (direction === 1 ? MAX_CHART_SCALE : MIN_CHART_SCALE));
+    if (state)
+        state.hasUserZoom = true;
+    setChartScale(nextScale ?? (direction === 1 ? MAX_CHART_SCALE : MIN_CHART_SCALE), direction === 1);
 }
 function zoomChartAtCursor(nextScale, event) {
     const state = chartZoomState;
@@ -7237,7 +7244,8 @@ function zoomChartAtCursor(nextScale, event) {
     const focalY = Math.min(svgBounds.height, Math.max(0, event.clientY - svgBounds.top));
     const focalRatioX = svgBounds.width > 0 ? focalX / svgBounds.width : 0;
     const focalRatioY = svgBounds.height > 0 ? focalY / svgBounds.height : 0;
-    setChartScale(scale);
+    state.hasUserZoom = true;
+    setChartScale(scale, scale > previousScale);
     const keepCursorPointInView = () => {
         const resizedSvgBounds = state.svg.getBoundingClientRect();
         const scrollLeftDelta = resizedSvgBounds.left + resizedSvgBounds.width * focalRatioX - event.clientX;
@@ -7260,11 +7268,22 @@ function zoomChartAtCursor(nextScale, event) {
         }
     });
 }
-function setChartScale(nextScale) {
+function setChartScale(nextScale, fillLandscapeContainer = false) {
     const state = chartZoomState;
     if (!state)
         return;
-    const scale = Math.min(MAX_CHART_SCALE, Math.max(MIN_CHART_SCALE, nextScale));
+    let scale = Math.min(MAX_CHART_SCALE, Math.max(MIN_CHART_SCALE, nextScale));
+    const isLandscapeChart = window.matchMedia("(orientation: landscape)").matches &&
+        state.chartWrapper.closest(".chart-container");
+    // In landscape, a user-initiated zoom should make use of the resizable
+    // chart area instead of leaving unused space below the SVG.
+    if (fillLandscapeContainer && isLandscapeChart && scale > 1) {
+        const frameVerticalExtras = getChartFrameVerticalExtras(state.chartWrapper);
+        const availableSvgHeight = state.chartViewport.clientHeight - frameVerticalExtras;
+        if (availableSvgHeight > 0) {
+            scale = Math.min(MAX_CHART_SCALE, Math.max(scale, availableSvgHeight / state.baseSvgHeight));
+        }
+    }
     state.scale = scale;
     state.svg.style.inlineSize = `${pxToRem$1(state.baseSvgWidth * scale)}rem`;
     state.svg.style.blockSize = `${pxToRem$1(state.baseSvgHeight * scale)}rem`;

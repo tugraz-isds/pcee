@@ -80,7 +80,10 @@
   >
     <div
       ref="chartContainer"
-      :class="['chart-container', { 'has-landscape-chart-width': hasLandscapeChartWidth }]"
+      :class="['chart-container', {
+        'has-landscape-chart-width': hasLandscapeChartWidth,
+        'has-landscape-chart-height': hasLandscapeChartHeight,
+      }]"
     >
       <div
         ref="mainChart"
@@ -93,6 +96,19 @@
           </h3>
           <div id="spcd3-parallelcoords" />
         </div>
+      </div>
+      <div
+        ref="landscapeHeightDivider"
+        :class="['landscape-chart-height-divider', { 'is-dragging': isLandscapeHeightDividerDragging }]"
+        role="separator"
+        aria-label="Chart height"
+        aria-orientation="horizontal"
+        @pointerdown="startLandscapeChartHeightResize"
+        @pointermove="resizeLandscapeChartHeight"
+        @pointerup="stopLandscapeChartHeightResize"
+        @pointercancel="stopLandscapeChartHeightResize"
+      >
+        <span aria-hidden="true" />
       </div>
     </div>
     <div
@@ -245,6 +261,7 @@ const chartContainer = ref<HTMLElement | null>(null);
 const mainChart = ref<HTMLElement | null>(null);
 const portraitDivider = ref<HTMLElement | null>(null);
 const landscapeDivider = ref<HTMLElement | null>(null);
+const landscapeHeightDivider = ref<HTMLElement | null>(null);
 const usageContainer = ref<HTMLDivElement | null>(null);
 const multipleViewsContainer = ref<HTMLDivElement | null>(null);
 const zoomSrc = ref<string | null>(null);
@@ -259,7 +276,9 @@ const imageOffsetX = ref(0);
 const imageOffsetY = ref(0);
 const showAbout = ref(false);
 const hasLandscapeChartWidth = ref(false);
+const hasLandscapeChartHeight = ref(false);
 const isLandscapeDividerDragging = ref(false);
+const isLandscapeHeightDividerDragging = ref(false);
 const isPortraitDividerDragging = ref(false);
 let activeImagePointerId: number | null = null;
 let imageDragStartX = 0;
@@ -288,9 +307,10 @@ let portraitChartFitTimer: number | null = null;
 let portraitChartObserver: MutationObserver | null = null;
 let activePortraitDividerPointerId: number | null = null;
 let activeLandscapeDividerPointerId: number | null = null;
+let activeLandscapeHeightDividerPointerId: number | null = null;
+let landscapeChartFitFrame: number | null = null;
 let landscapeDividerCursorOffset = 0;
 let landscapeDividerChartOffset = 0;
-let landscapeChartFitFrame: number | null = null;
 let initialPortraitChartHeight: number | null = null;
 let portraitToolbarZoom = 1;
 let headerAnimationContext: ReturnType<typeof gsap.context> | null = null;
@@ -564,6 +584,38 @@ const startLandscapeChartResize = (event: PointerEvent): void => {
   activeLandscapeDividerPointerId = event.pointerId;
   isLandscapeDividerDragging.value = true;
   landscapeDivider.value.setPointerCapture(event.pointerId);
+}
+
+const resizeLandscapeChartHeight = (event: PointerEvent): void => {
+  if (event.pointerId !== activeLandscapeHeightDividerPointerId || !explainerRoot.value) return;
+
+  const chartTop = mainChart.value?.getBoundingClientRect().top ?? event.clientY;
+  const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+  const availableHeight = Math.max(0, viewportHeight - chartTop - viewportHeight * 0.08);
+  const minimumChartHeight = 24 * 16;
+  const minHeight = Math.min(minimumChartHeight, availableHeight);
+  const maxHeight = Math.max(minHeight, Math.min(viewportHeight * 0.82, availableHeight));
+  const height = Math.max(minHeight, Math.min(maxHeight, event.clientY - chartTop));
+
+  explainerRoot.value.style.setProperty('--landscape-chart-user-height', `${Math.round(height)}px`);
+  hasLandscapeChartHeight.value = true;
+  scheduleLandscapeChartFit();
+}
+
+const stopLandscapeChartHeightResize = (event: PointerEvent): void => {
+  if (event.pointerId !== activeLandscapeHeightDividerPointerId) return;
+  landscapeHeightDivider.value?.releasePointerCapture(event.pointerId);
+  activeLandscapeHeightDividerPointerId = null;
+  isLandscapeHeightDividerDragging.value = false;
+  scheduleLandscapeChartFit();
+}
+
+const startLandscapeChartHeightResize = (event: PointerEvent): void => {
+  if (!isLandscapeResizeMode() || !landscapeHeightDivider.value) return;
+  event.preventDefault();
+  activeLandscapeHeightDividerPointerId = event.pointerId;
+  isLandscapeHeightDividerDragging.value = true;
+  landscapeHeightDivider.value.setPointerCapture(event.pointerId);
 }
 
 const syncPortraitToolbarZoom = (): void => {
@@ -1480,7 +1532,7 @@ onMounted(async (): Promise<void> => {
   --header-content-offset: calc(var(--sticky-header-height) + var(--sticky-header-gap));
   display: flex;
   flex-direction: row;
-  gap: 1rem;
+  gap: 0;
 }
 
 .chart-container {
@@ -1565,9 +1617,23 @@ onMounted(async (): Promise<void> => {
   display: none;
 }
 
+.landscape-chart-height-divider {
+  display: none;
+}
+
 @media (orientation: landscape) {
+  .explorable-explainer {
+    --landscape-chart-height: min(72svh, 46rem);
+    margin-inline-start: 0.5rem;
+  }
+
   .chart-container {
     display: flex;
+    flex-direction: column;
+    block-size: var(--landscape-chart-user-height, var(--landscape-chart-height));
+    position: sticky;
+    top: var(--header-content-offset);
+    align-self: flex-start;
   }
 
   .chart-container.has-landscape-chart-width {
@@ -1622,14 +1688,68 @@ onMounted(async (): Promise<void> => {
     display: flex;
     flex: 1 1 auto;
     flex-direction: column;
+    block-size: 100%;
     min-block-size: 0;
+    position: static;
+  }
+
+  .landscape-chart-height-divider {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    justify-content: center;
+    inline-size: 100%;
+    block-size: 0.75rem;
+    cursor: row-resize;
+    touch-action: none;
+  }
+
+  .landscape-chart-height-divider::before {
+    position: absolute;
+    top: 50%;
+    inset-inline: 0;
+    block-size: 0.0625rem;
+    background: var(--ui-border-color);
+    content: '';
+    transform: translateY(-50%);
+  }
+
+  .landscape-chart-height-divider span {
+    position: relative;
+    z-index: 1;
+    align-self: center;
+    inline-size: 2.8rem;
+    block-size: 0.2rem;
+    border-radius: 999rem;
+    background: var(--ui-border-color);
+    box-shadow: 0 0 0.3rem color-mix(in srgb, var(--ui-border-color) 35%, transparent);
+    transition: background 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+  }
+
+  .landscape-chart-height-divider.is-dragging::before,
+  .landscape-chart-height-divider.is-dragging span {
+    background: var(--accent-text-color);
+  }
+
+  .landscape-chart-height-divider.is-dragging span {
+    transform: scaleY(1.8);
+    box-shadow: 0 0 0.55rem color-mix(in srgb, var(--accent-text-color) 65%, transparent);
   }
 
   .chart-wrapper {
     display: flex;
     flex: 1 1 auto;
     flex-direction: column;
+    block-size: 100%;
     min-block-size: 0;
+  }
+
+  #spcd3-parallelcoords {
+    overflow: clip;
+  }
+
+  #spcd3-parallelcoords .spcd3-chartWrapper {
+    block-size: 100% !important;
   }
 
   #spcd3-parallelcoords .spcd3-chartFrame {
@@ -1643,15 +1763,23 @@ onMounted(async (): Promise<void> => {
   min-width: 23rem;
   display: flex;
   flex-direction: column;
-  margin-right: 0.5rem;
   overflow: visible;
   max-height: none;
   height: auto;
 }
 
+.text-container > :last-child section {
+  margin-block-end: 0;
+}
+
 @media (orientation: landscape) {
   .text-container {
     min-inline-size: 0;
+  }
+
+  .text-container section,
+  .text-container .table-container {
+    margin-inline-start: 0;
   }
 }
 
@@ -1747,7 +1875,7 @@ section {
     z-index: 1;
     block-size: auto;
     min-width: 0;
-    margin-right: 0;
+    margin-inline: 0;
     padding: 0 0 1rem;
     border-top: 0;
     border-radius: 1rem 1rem 0 0;
@@ -1878,6 +2006,7 @@ section {
   .explorable-explainer {
     flex-direction: row;
     align-items: stretch;
+    margin-inline-start: 0.5rem;
   }
 
   .chart-container {
@@ -1891,7 +2020,6 @@ section {
 
   .text-container {
     flex: 1 1 50%;
-    margin-right: 1rem;
   }
 
   #chart-title {
