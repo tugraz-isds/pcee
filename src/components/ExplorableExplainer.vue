@@ -312,9 +312,10 @@ let landscapeChartFitFrame: number | null = null;
 let landscapeDividerCursorOffset = 0;
 let landscapeDividerChartOffset = 0;
 let initialPortraitChartHeight: number | null = null;
-let portraitToolbarZoom = 1;
+let portraitToolbarZoom = 0.7;
 let headerAnimationContext: ReturnType<typeof gsap.context> | null = null;
 let scrollPositionSaveFrame: number | null = null;
+const INITIAL_CHART_SCALE = 0.7;
 
 const persistScrollPosition = (): void => {
   try {
@@ -451,13 +452,9 @@ const updatePortraitChartFit = (): void => {
         chartFrameStyle.borderBlockEndWidth,
       ].reduce((total, value) => total + (Number.parseFloat(value) || 0), 0)
     : 0;
-  const requestedHeight = chartContainer.value?.getBoundingClientRect().height
-    ?? (window.visualViewport?.height ?? window.innerHeight) * 0.45;
-  const availableHeight = Math.max(
-    1,
-    requestedHeight - chartChromeHeight - frameVerticalExtras - 8,
-  );
-  const proportionalScale = (availableHeight / (naturalHeight + toolbarHeight)) * portraitToolbarZoom;
+  // Keep the initial zoom identical when the displayed dataset changes. The
+  // chart can still be resized and users can adjust the zoom via the toolbar.
+  const proportionalScale = portraitToolbarZoom;
   const browserZoomFactor = getBrowserZoomFactor();
   const toolbarScale = proportionalScale / browserZoomFactor;
   const scale = proportionalScale;
@@ -490,7 +487,7 @@ const ensurePortraitChartHeight = (): void => {
   if (!explainerRoot.value) return;
   if (!isPortraitResizeMode()) {
     initialPortraitChartHeight = null;
-    portraitToolbarZoom = 1;
+    portraitToolbarZoom = INITIAL_CHART_SCALE;
     document.getElementById('spcd3-parallelcoords')?.removeAttribute('data-spcd3-fit-chart-to-viewport');
     document.getElementById('spcd3-parallelcoords')?.style.removeProperty('--spcd3-toolbar-scale');
     document.getElementById('spcd3-parallelcoords')?.style.removeProperty('--spcd3-tooltip-scale');
@@ -542,6 +539,41 @@ const scheduleLandscapeChartFit = (): void => {
     syncChartUiToBrowserZoom();
     alignSpcd3ToolbarToLabels();
   });
+}
+
+const updateInitialLandscapeChartHeight = (): void => {
+  if (!explainerRoot.value || !isLandscapeResizeMode() || hasLandscapeChartHeight.value) return;
+
+  const chartArea = document.getElementById('spcd3-parallelcoords');
+  const svgNode = document.getElementById('spcd3-pc_svg') as SVGSVGElement | null;
+  const chartFrame = chartArea?.querySelector<HTMLElement>('.spcd3-chartFrame');
+  if (!chartArea || !svgNode || !chartFrame || !mainChart.value) return;
+
+  const naturalHeight = Number(svgNode.getAttribute('height'));
+  if (!Number.isFinite(naturalHeight) || naturalHeight <= 0) return;
+
+  const frameStyle = window.getComputedStyle(chartFrame);
+  const frameVerticalExtras = [
+    frameStyle.marginBlockStart,
+    frameStyle.marginBlockEnd,
+    frameStyle.paddingBlockStart,
+    frameStyle.paddingBlockEnd,
+    frameStyle.borderBlockStartWidth,
+    frameStyle.borderBlockEndWidth,
+  ].reduce((total, value) => total + (Number.parseFloat(value) || 0), 0);
+  const toolbarHeight = chartArea.querySelector('#spcd3-toolbarRow')?.getBoundingClientRect().height ?? 0;
+  const chartChromeHeight = Math.max(
+    0,
+    chartArea.getBoundingClientRect().top - mainChart.value.getBoundingClientRect().top,
+  );
+  const dividerHeight = landscapeHeightDivider.value?.getBoundingClientRect().height ?? 0;
+  const height = chartChromeHeight
+    + dividerHeight
+    + frameVerticalExtras
+    + toolbarHeight
+    + naturalHeight * INITIAL_CHART_SCALE;
+
+  explainerRoot.value.style.setProperty('--landscape-chart-content-height', `${Math.ceil(height)}px`);
 }
 
 const resizeLandscapeChart = (event: PointerEvent): void => {
@@ -826,6 +858,7 @@ const handleStudentDataset = (chart: HTMLDivElement, dataset: string | undefined
   chart.style.maxHeight = 'auto';
   drawChart(dataset);
   spcd3.disableInteractivity();
+  spcd3.setToolbarOpen(false);
 
   (document.getElementById('outlier-button') as HTMLButtonElement | null)?.setAttribute('disabled', '');
   (document.getElementById('cluster-button') as HTMLButtonElement | null)?.setAttribute('disabled', '');
@@ -854,6 +887,7 @@ const handleMisc = (chart: HTMLDivElement, dataset: string | undefined) : void =
   resetTable();
   resetUsageState();
   spcd3.enableInteractivity();
+  spcd3.setToolbarOpen(true);
 
   (document.getElementById('outlier-button') as HTMLButtonElement | null)?.removeAttribute('disabled');
   (document.getElementById('cluster-button') as HTMLButtonElement | null)?.removeAttribute('disabled');
@@ -1063,11 +1097,13 @@ onMounted(async (): Promise<void> => {
   }
 
   ensurePortraitChartHeight();
+  requestAnimationFrame(updateInitialLandscapeChartHeight);
   syncChartUiToBrowserZoom();
   const chartArea = document.getElementById('spcd3-parallelcoords');
   if (chartArea) {
     portraitChartObserver = new MutationObserver(() => {
       schedulePortraitChartFit();
+      requestAnimationFrame(updateInitialLandscapeChartHeight);
       alignSpcd3ToolbarToLabels();
     });
     portraitChartObserver.observe(chartArea, {
@@ -1081,6 +1117,7 @@ onMounted(async (): Promise<void> => {
   portraitResizeMediaQuery?.addEventListener('change', ensurePortraitChartHeight);
   window.addEventListener('resize', () => {
     ensurePortraitChartHeight();
+    updateInitialLandscapeChartHeight();
     syncChartUiToBrowserZoom();
     requestAnimationFrame(updatePortraitChartFit);
     alignSpcd3ToolbarToLabels();
@@ -1285,7 +1322,9 @@ onMounted(async (): Promise<void> => {
 }
 
 .multi-line {
-  font-size: clamp(1.2rem, 3.2vw, 2.6rem);
+  --intro-info-size: 1.4rem;
+  --intro-info-gap: 6rem;
+  font-size: 2.6rem;
   line-height: 1.1;
   opacity: 1;
   visibility: visible;
@@ -1314,9 +1353,9 @@ onMounted(async (): Promise<void> => {
 
 .info {
   display: block;
-  font-size: clamp(1.1rem, 1vw + 0.4rem, 1.4rem);
+  font-size: var(--intro-info-size);
   color: var(--highlight-text-color);
-  margin-top: 6rem;
+  margin-top: var(--intro-info-gap);
 }
 
 .about-overlay {
@@ -1594,6 +1633,7 @@ onMounted(async (): Promise<void> => {
 
 #spcd3-parallelcoords #spcd3-toolbarRow {
   zoom: var(--spcd3-toolbar-scale, 1);
+  background: transparent;
 }
 
 .spcd3-tooltip-label,
@@ -1623,7 +1663,7 @@ onMounted(async (): Promise<void> => {
 
 @media (orientation: landscape) {
   .explorable-explainer {
-    --landscape-chart-height: min(72svh, 46rem);
+    --landscape-chart-height: min(72svh, var(--landscape-chart-content-height, 46rem));
     margin-inline-start: 0.5rem;
   }
 

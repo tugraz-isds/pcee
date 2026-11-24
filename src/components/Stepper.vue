@@ -5,42 +5,6 @@
         content-section
         >
         <div v-html="studentDatasetText" />
-        <ol class="steps">
-            <li
-              v-for="(step, index) in steps"
-              :key="step.title"
-              :class="{ active: index === currentStep }"
-            >
-            <div
-            class="li-header"
-            :style="{ cursor: 'pointer' }"
-            :aria-expanded="index === currentStep ? 'true' : 'false'"
-            @click="goToStep(index)"
-            >
-            <span class="triangle-bullet"></span>
-            {{ step.title }}
-            </div>
-            <transition name="expand">
-                <div
-                  v-show="index === currentStep"
-                  class="step-panel"
-                >
-                <div
-                  class="step-text"
-                  v-html="step.content.value" 
-                />
-                  <button
-                    class="action-buttons"
-                    :id="`activate-button-${index}`"
-                    :disabled="isUpdatingChart"
-                    @click="handleStepAction(index)"
-                  >
-                    {{ getButtonLabel(index) }}
-                  </button>
-                </div>
-            </transition>
-            </li>
-        </ol>
         <div class="buttons">
             <button
               id="reset-button"
@@ -95,6 +59,42 @@
               {{ index + 1 }}
             </span>
         </div>
+        <ol class="steps">
+            <li
+              v-for="(step, index) in steps"
+              :key="step.title"
+              :class="{ active: index === currentStep }"
+            >
+            <div
+            class="li-header"
+            :style="{ cursor: 'pointer' }"
+            :aria-expanded="index === currentStep ? 'true' : 'false'"
+            @click="goToStep(index)"
+            >
+            <span class="triangle-bullet"></span>
+            {{ step.title }}
+            </div>
+            <transition name="expand">
+                <div
+                  v-show="index === currentStep"
+                  class="step-panel"
+                >
+                <div
+                  class="step-text"
+                  v-html="step.content.value" 
+                />
+                  <button
+                    class="action-buttons"
+                    :id="`activate-button-${index}`"
+                    :disabled="isUpdatingChart"
+                    @click="handleStepAction(index)"
+                  >
+                    {{ getButtonLabel(index) }}
+                  </button>
+                </div>
+            </transition>
+            </li>
+        </ol>
         <p>
             In summary, interactive parallel coordinates are helpful to identify
             outliers, clusters, and correlations within a multidimensional
@@ -188,6 +188,7 @@ const resetFilterStep = async (): Promise<void> => {
 
 const disableStepInteractivity = (): void => {
   spcd3.disableInteractivity();
+  spcd3.setToolbarOpen(false);
   stepRan.value[steps.length - 1] = false;
 };
 
@@ -212,6 +213,7 @@ const reset = async (): Promise<void> => {
   try {
     if (studentDataset.value) await drawChart(studentDataset.value);
     spcd3.disableInteractivity();
+    spcd3.setToolbarOpen(false);
     stepRan.value = steps.map(() => false);
     currentStep.value = 0;
   } finally {
@@ -230,6 +232,7 @@ const activateChart = async (currentStep: number): Promise<void> => {
     if (studentDataset.value) await drawChart(studentDataset.value);
     stepRan.value = steps.map(() => false);
     spcd3.enableInteractivity();
+    spcd3.setToolbarOpen(true);
     stepRan.value[currentStep] = true;
   } finally {
     isUpdatingChart.value = false;
@@ -238,6 +241,7 @@ const activateChart = async (currentStep: number): Promise<void> => {
 
 const deactivateChart = (currentStep: number): void => {
   spcd3.disableInteractivity();
+  spcd3.setToolbarOpen(false);
   stepRan.value[currentStep] = false;
 }
 

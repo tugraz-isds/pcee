@@ -6582,6 +6582,7 @@ function parseSvgNumber(value, fallback = 0) {
 let chartZoomState = null;
 const MIN_CHART_SCALE = 0.2;
 const MAX_CHART_SCALE = 3;
+const INITIAL_CHART_SCALE = 0.7;
 const WHEEL_CHART_SCALE_STEP = 0.25;
 const TOUCHPAD_ZOOM_DELTA_THRESHOLD = 100;
 const TOOLBAR_ZOOM_SCALES = [
@@ -7158,7 +7159,7 @@ function enableChartZoom(zoomInButton, zoomOutButton, zoomInput) {
         fitChartToViewport();
     }
     else {
-        setChartScale(1);
+        setChartScale(INITIAL_CHART_SCALE);
         lockChartFrameWidth();
     }
 }
@@ -7173,14 +7174,8 @@ function fitChartToViewport() {
     state.chartWrapper.style.inlineSize = "";
     const toolbarHeight = state.chartWrapper.querySelector("#spcd3-toolbarRow")?.getBoundingClientRect().height || 0;
     const frameVerticalExtras = getChartFrameVerticalExtras(state.chartWrapper);
-    const chartHost = state.chartWrapper.parentElement;
-    const viewportStyle = chartHost ? getComputedStyle(chartHost) : null;
-    const hasConstrainedHeight = viewportStyle && ["auto", "scroll", "hidden", "clip"].includes(viewportStyle.overflowY);
     const requiredVerticalSpace = toolbarHeight + frameVerticalExtras;
-    const availableViewportHeight = hasConstrainedHeight && chartHost && chartHost.clientHeight > requiredVerticalSpace
-        ? chartHost.clientHeight - requiredVerticalSpace
-        : Infinity;
-    const scale = Math.max(MIN_CHART_SCALE, Math.min(1, MAX_CHART_SCALE, state.chartViewport.clientWidth / state.baseSvgWidth, availableViewportHeight / state.baseSvgHeight));
+    const scale = INITIAL_CHART_SCALE;
     state.chartWrapper.style.blockSize = `${pxToRem$1(requiredVerticalSpace + state.baseSvgHeight * scale)}rem`;
     state.chartViewport.scrollLeft = 0;
     state.chartViewport.scrollTop = 0;

@@ -103,6 +103,7 @@ export const drawChart = async (dataset: string | undefined): Promise<void> => {
       let newData = spcd3.loadCSV(dataset);
       if (newData !== undefined) {
         spcd3.drawChart(newData);
+        spcd3.setToolbarOpen(true);
       }
     }
   } catch (error) {

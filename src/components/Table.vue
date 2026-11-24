@@ -18,6 +18,7 @@
                     >
                     <button
                     class="header-button"
+                    title="Remove Column"
                     @click="deleteColumn(column.key)"
                     >
                     -
@@ -27,6 +28,7 @@
                 <th class="narrow-column">
                 <button
                   class="add-button"
+                  title="Add Column"
                   @click="addColumn"
                 >
                 +
@@ -61,6 +63,7 @@
                 <!-- Delete Row Button -->
                 <button
                   class="delete-button"
+                  title="Remove Row"
                   @click="deleteRow(rowIndex)"
                 >
                 -
@@ -72,12 +75,14 @@
                 <button
                   class="table-button"
                   :disabled="!isFormValid"
+                  title="Redraw Chart"
                   @click="redrawChart"
                 >
                   Redraw Chart
                 </button>
                 <button
                   class="table-button"
+                  title="Reset Table"
                   @click="resetTable">
                   Reset Table
                 </button>
@@ -86,6 +91,7 @@
                 <!-- Add Row Button -->
                 <button
                   class="add-button"
+                  title="Add Row"
                   @click="addRow"
                 >
                 +
@@ -145,9 +151,20 @@ const recomputeColumnType = (col: Column) => {
 };
 
 let colCounter = 0;
+const getNextDefaultColumnLabel = (): string => {
+  const existingLabels = new Set(columns.value.map(column => column.label.trim()));
+  let index = 1;
+
+  while (existingLabels.has(`New ${index}`)) {
+    index += 1;
+  }
+
+  return `New ${index}`;
+};
+
 const addColumn = (): void => {
   const trimmed = newColumn.value.trim();
-  const label = trimmed;
+  const label = trimmed || getNextDefaultColumnLabel();
   const newCol: Column = { key: `col_${colCounter++}`, label };
   columns.value.push(newCol);
   rows.value.forEach(row => {
@@ -178,6 +195,7 @@ const redrawChart = (): void => {
   const csvData = `${headers}\n${newRows}`;
   let newData = spcd3.loadCSV(csvData);
   spcd3.drawChart(newData);
+  spcd3.setToolbarOpen(true);
 };
 
 const isFormValid = computed<boolean>(() => {
@@ -248,6 +266,10 @@ th {
 .header-input {
   flex: 1 1 auto;
   min-width: 4rem;
+  width: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   padding: 0.25rem 0.5rem;
   background: transparent;
   color: inherit;

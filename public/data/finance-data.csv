@@ -1,7 +1,7 @@
-Name,Income (€),Accomodation (€),Living (€)
-Alice,3500,1200,2300
-Bob,2800,900,1900
-Charlie,4200,1500,2700
-Fiona,2700,800,1900
-Ursula,6000,500,5500
-Victor,3400,1100,2300
+Name,Accomodation (€),Transport (€),Food (€)
+Alice,850,320,420
+Bob,650,180,550
+Charlie,1100,250,350
+Fiona,720,480,460
+Ursula,1250,120,600
+Victor,950,400,300
